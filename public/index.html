@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduFunHub - Belajar Asik, Quiz Berhadiah & Anti Ngebosenin!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'cursive'],
+                        quicksand: ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        bubbleYellow: '#FFF176',
+                        bubbleOrange: '#FF9E44',
+                        bubblePink: '#FF6584',
+                        bubblePurple: '#845EC2',
+                        bubbleBlue: '#4D8FAC',
+                        bubbleGreen: '#00C9A7',
+                    },
+                    keyframes: {
+                        wiggle: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' },
+                        },
+                        floatSlow: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        },
+                        pop: {
+                            '0%': { transform: 'scale(0.95)' },
+                            '50%': { transform: 'scale(1.05)' },
+                            '100%': { transform: 'scale(1)' },
+                        }
+                    },
+                    animation: {
+                        wiggle: 'wiggle 2s ease-in-out infinite',
+                        float: 'floatSlow 4s ease-in-out infinite',
+                        pop: 'pop 0.3s ease-out',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+        }
+        .cartoon-border {
+            border: 3.5px solid #2D3748;
+            box-shadow: 4px 4px 0px #2D3748;
+        }
+        .cartoon-border-lg {
+            border: 4px solid #2D3748;
+            box-shadow: 6px 6px 0px #2D3748;
+        }
+        .cartoon-btn {
+            border: 3.5px solid #2D3748;
+            box-shadow: 4px 4px 0px #2D3748;
+            transition: all 0.15s ease-in-out;
+        }
+        .cartoon-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #2D3748;
+        }
+        .cartoon-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #2D3748;
+        }
+    </style>
+</head>
+<body class="bg-[#FFF9E6] text-slate-800 min-h-screen flex flex-col justify-between relative overflow-x-hidden selection:bg-bubblePink selection:text-white">
+
+    <!-- Decorative Cartoon Floating Shapes -->
+    <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <!-- Floating Sun / Star -->
+        <div class="absolute top-10 left-8 sm:left-16 animate-float opacity-80">
+            <svg class="w-16 h-16 text-[#FFD15C]" viewBox="0 0 100 100" fill="currentColor">
+                <circle cx="50" cy="50" r="28" fill="#FFC043" stroke="#2D3748" stroke-width="6"/>
+                <path d="M50 6 L50 16 M50 84 L50 94 M6 50 L16 50 M84 50 L94 50 M19 19 L26 26 M74 74 L81 81 M19 81 L26 74 M74 19 L81 26" stroke="#2D3748" stroke-width="6" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <!-- Floating Cloud -->
+        <div class="absolute top-20 right-10 sm:right-24 animate-float opacity-85" style="animation-delay: 1.5s;">
+            <div class="bg-white px-5 py-3 rounded-full cartoon-border flex items-center gap-2">
+                <span class="text-xl">☁️</span>
+                <span class="font-fredoka text-xs font-bold text-slate-600">Under Construction</span>
+            </div>
+        </div>
+        <!-- Floating Doodles -->
+        <div class="absolute bottom-24 left-8 hidden sm:block animate-wiggle">
+            <span class="text-4xl">🚀</span>
+        </div>
+        <div class="absolute bottom-32 right-10 hidden sm:block animate-float" style="animation-delay: 0.8s;">
+            <span class="text-4xl">🎮</span>
+        </div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="w-full max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-bubblePink rounded-2xl cartoon-border flex items-center justify-center rotate-[-4deg] shadow-lg">
+                <span class="text-2xl">🎪</span>
+            </div>
+            <div>
+                <span class="font-fredoka text-2xl sm:text-3xl font-extrabold tracking-wide text-[#2D3748]">
+                    Edu<span class="text-bubblePink">Fun</span><span class="text-bubbleOrange">Hub</span>
+                </span>
+            </div>
+        </div>
+        
+        <div class="bg-bubbleYellow px-4 py-2 rounded-2xl cartoon-border flex items-center gap-2 rotate-[2deg]">
+            <span class="text-lg animate-bounce">🚧</span>
+            <span class="font-fredoka font-bold text-xs sm:text-sm text-[#2D3748]">Lagi Dibangun!</span>
+        </div>
+    </header>
+
+    <!-- Main Hero -->
+    <main class="w-full max-w-4xl mx-auto px-6 py-6 sm:py-10 flex flex-col items-center text-center">
+        
+        <!-- Big Cartoon Badge -->
+        <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#E0F7FA] cartoon-border mb-6 rotate-[-1deg]">
+            <span class="text-lg">✨</span>
+            <span class="font-fredoka font-bold text-xs sm:text-sm text-bubbleBlue">
+                Platform Belajar & Quiz Berhadiah Paling Asik!
+            </span>
+            <span class="text-lg">🎁</span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="font-fredoka text-4xl sm:text-6xl font-extrabold text-[#2D3748] leading-tight mb-4">
+            Belajar Jadi Lebih <br class="hidden sm:inline" />
+            <span class="text-bubblePink inline-block hover:rotate-2 transition transform">Seru,</span> 
+            <span class="text-bubbleGreen inline-block hover:-rotate-2 transition transform">Aktif,</span> & 
+            <span class="text-bubbleOrange inline-block hover:rotate-3 transition transform">Gembira!</span>
+        </h1>
+
+        <p class="text-base sm:text-lg font-semibold text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Tinggalkan cara belajar lama yang bikin ngantuk! Di <strong>EduFunHub</strong>, setiap bab pelajaran dikemas jadi tantangan interaktif, kuis berhadiah, dan adu wawasan bareng teman. 🌟
+        </p>
+
+        <!-- Section: Fitur Anti Ngebosenin (NEW) -->
+        <div class="w-full text-left mb-12">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-3xl animate-bounce">⚡</span>
+                    <div>
+                        <h2 class="font-fredoka text-2xl sm:text-3xl font-extrabold text-[#2D3748]">Fitur Belajar Anti-Ngebosenin</h2>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-500">Bikin kamu ketagihan belajar tiap hari tanpa disuruh!</p>
+                    </div>
+                </div>
+                <span class="inline-block px-3 py-1 bg-bubblePink text-white font-fredoka font-bold text-xs rounded-xl cartoon-border rotate-[1deg] self-start sm:self-auto">
+                    🔥 LEVEL UP SKILL
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Feature 1: Quiz Berhadiah -->
+                <div class="bg-white p-5 rounded-3xl cartoon-border-lg hover:rotate-[-1deg] transition transform flex gap-4 items-start">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-100 cartoon-border flex items-center justify-center text-3xl shrink-0">
+                        🎁
+                    </div>
+                    <div>
+                        <div class="inline-block px-2.5 py-0.5 rounded-lg bg-amber-200 text-[#2D3748] font-fredoka font-bold text-[11px] mb-1.5 border border-amber-300">
+                            REWARD NYATA
+                        </div>
+                        <h3 class="font-fredoka font-bold text-lg text-[#2D3748] mb-1">Quiz Harian Berhadiah</h3>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-600">Kumpulkan koin & poin dari tiap kuis yang kamu taklukkan. Tukarkan dengan merchandise keren, voucher belajar, dan sertifikat digital eksklusif!</p>
+                    </div>
+                </div>
+
+                <!-- Feature 2: Battle 1 vs 1 -->
+                <div class="bg-white p-5 rounded-3xl cartoon-border-lg hover:rotate-[1deg] transition transform flex gap-4 items-start">
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-100 cartoon-border flex items-center justify-center text-3xl shrink-0">
+                        ⚔️
+                    </div>
+                    <div>
+                        <div class="inline-block px-2.5 py-0.5 rounded-lg bg-indigo-200 text-indigo-900 font-fredoka font-bold text-[11px] mb-1.5 border border-indigo-300">
+                            MULTIPLAYER ARENA
+                        </div>
+                        <h3 class="font-fredoka font-bold text-lg text-[#2D3748] mb-1">Live Duel 1 vs 1 & Room Kelas</h3>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-600">Ajak teman sekelas tanding kuis real-time dalam arena duel seru dengan timer mendebarkan layaknya game e-sport edukasi.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 3: Petualangan & Karakter -->
+                <div class="bg-white p-5 rounded-3xl cartoon-border-lg hover:rotate-[1deg] transition transform flex gap-4 items-start">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-100 cartoon-border flex items-center justify-center text-3xl shrink-0">
+                        👾
+                    </div>
+                    <div>
+                        <div class="inline-block px-2.5 py-0.5 rounded-lg bg-emerald-200 text-emerald-900 font-fredoka font-bold text-[11px] mb-1.5 border border-emerald-300">
+                            RPG GAMIFICATION
+                        </div>
+                        <h3 class="font-fredoka font-bold text-lg text-[#2D3748] mb-1">Avatar & Petualangan Pulau Ilmu</h3>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-600">Pilih avatar favoritmu, upgrade kostum & badge dengan rajin belajar, dan jelajahi peta zona ilmu dari hutan dasar sampai menara master.</p>
+                    </div>
+                </div>
+
+                <!-- Feature 4: Leaderboard & Streak -->
+                <div class="bg-white p-5 rounded-3xl cartoon-border-lg hover:rotate-[-1deg] transition transform flex gap-4 items-start">
+                    <div class="w-14 h-14 rounded-2xl bg-rose-100 cartoon-border flex items-center justify-center text-3xl shrink-0">
+                        🏆
+                    </div>
+                    <div>
+                        <div class="inline-block px-2.5 py-0.5 rounded-lg bg-rose-200 text-rose-900 font-fredoka font-bold text-[11px] mb-1.5 border border-rose-300">
+                            PRESTASI & PRESTISE
+                        </div>
+                        <h3 class="font-fredoka font-bold text-lg text-[#2D3748] mb-1">Leaderboard Juara & Daily Streak</h3>
+                        <p class="text-xs sm:text-sm font-semibold text-slate-600">Jaga streak harian belajarmu agar api semangat tidak padam, dan rebut peringkat TOP 10 nasional di papan peringkat mingguan.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Mini Quiz Card -->
+        <div class="w-full bg-[#FFF0F5] p-6 sm:p-8 rounded-3xl cartoon-border-lg mb-12 text-left relative overflow-hidden">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-bubbleYellow/50 rounded-full pointer-events-none"></div>
+            
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-bubblePink cartoon-border text-xs font-fredoka font-bold text-white">
+                    <span>⚡ COBA MINI QUIZ PREVIEW</span>
+                </div>
+                <div class="font-fredoka font-bold text-xs sm:text-sm text-slate-600 bg-white px-3 py-1 rounded-xl cartoon-border">
+                    Skor: <span id="quizScore" class="text-bubblePink font-black">0</span> / 100 Poin
+                </div>
+            </div>
+
+            <h3 id="quizQuestion" class="font-fredoka font-bold text-xl sm:text-2xl text-[#2D3748] mb-2">
+                Berapakah hasil dari 7 × 8 ?
+            </h3>
+            <p class="text-xs sm:text-sm font-semibold text-slate-500 mb-5">Pilih jawaban yang tepat untuk mengklaim 100 koin pertamamu:</p>
+
+            <!-- Quiz Options Grid -->
+            <div id="quizOptions" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <button onclick="checkAnswer(48, this)" class="quiz-btn w-full p-3.5 rounded-2xl bg-white text-left font-fredoka font-bold text-slate-700 cartoon-btn flex items-center justify-between">
+                    <span>A. 48</span>
+                    <span class="text-slate-300 text-lg">👉</span>
+                </button>
+                <button onclick="checkAnswer(54, this)" class="quiz-btn w-full p-3.5 rounded-2xl bg-white text-left font-fredoka font-bold text-slate-700 cartoon-btn flex items-center justify-between">
+                    <span>B. 54</span>
+                    <span class="text-slate-300 text-lg">👉</span>
+                </button>
+                <button onclick="checkAnswer(56, this)" class="quiz-btn w-full p-3.5 rounded-2xl bg-white text-left font-fredoka font-bold text-slate-700 cartoon-btn flex items-center justify-between">
+                    <span>C. 56</span>
+                    <span class="text-slate-300 text-lg">👉</span>
+                </button>
+                <button onclick="checkAnswer(64, this)" class="quiz-btn w-full p-3.5 rounded-2xl bg-white text-left font-fredoka font-bold text-slate-700 cartoon-btn flex items-center justify-between">
+                    <span>D. 64</span>
+                    <span class="text-slate-300 text-lg">👉</span>
+                </button>
+            </div>
+
+            <div id="quizResult" class="hidden p-3.5 rounded-2xl font-fredoka font-bold text-sm text-center"></div>
+        </div>
+
+        <!-- Quiz Category Showcase -->
+        <div class="w-full text-left mb-12">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">📚</span>
+                <h2 class="font-fredoka text-xl sm:text-2xl font-extrabold text-[#2D3748]">Materi & Kategori Quiz Terlengkap</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 w-full">
+                <!-- Card 1 -->
+                <div class="bg-[#FFF0F5] p-5 rounded-3xl cartoon-border-lg hover:rotate-[-1deg] transition transform">
+                    <div class="w-12 h-12 rounded-2xl bg-bubblePink cartoon-border flex items-center justify-center text-2xl mb-4">
+                        🔢
+                    </div>
+                    <h3 class="font-fredoka font-bold text-lg text-[#2D3748] mb-1">Matematika Cepat</h3>
+                    <p class="text-xs sm:text-sm font-semibold text-slate-600">Latih ketangkasan hitung dengan tebak angka, pecahan ceria, dan logika seru.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-[#E8F8F5] p-5 rounded-3xl cartoon-border-lg hover:rotate-[1deg] transition transform">
+                    <div class="w-12 h-12 rounded-2xl bg-bubbleGreen cartoon-border flex items-center justify-center text-2xl mb-4">
+                        🧪
+                    </div>
+                    <h3 class="font-fredoka font-bold text-lg text-[#2D3748] mb-1">Sains & Alam</h3>
+                    <p class="text-xs sm:text-sm font-semibold text-slate-600">Jelajahi luar angkasa, dunia hewan, dan eksperimen ilmiah lewat ilustrasi lucu.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-[#FFF8E7] p-5 rounded-3xl cartoon-border-lg hover:rotate-[-1deg] transition transform">
+                    <div class="w-12 h-12 rounded-2xl bg-bubbleYellow cartoon-border flex items-center justify-center text-2xl mb-4">
+                        🌍
+                    </div>
+                    <h3 class="font-fredoka font-bold text-lg text-[#2D3748] mb-1">Pengetahuan Umum</h3>
+                    <p class="text-xs sm:text-sm font-semibold text-slate-600">Tebak bendera dunia, sejarah nusantara, dan budaya unik dengan seru.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notify Action Box -->
+        <div class="w-full max-w-lg bg-white p-3 sm:p-4 rounded-3xl cartoon-border-lg flex flex-col sm:flex-row items-center gap-3">
+            <input 
+                type="email" 
+                id="emailInput" 
+                placeholder="Tulis emailmu untuk tiket hadiah perdana..." 
+                class="w-full px-4 py-3 rounded-2xl bg-[#F8FAFC] border-2 border-slate-300 font-semibold text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-bubblePurple"
+            >
+            <button 
+                onclick="handleNotify()"
+                class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-bubbleOrange text-white font-fredoka font-bold text-sm sm:text-base cartoon-btn whitespace-nowrap"
+            >
+                🎁 Mau Ikut & Raih Hadiah!
+            </button>
+        </div>
+
+        <p id="msg" class="font-fredoka font-bold text-sm text-bubbleGreen mt-4 hidden animate-bounce">
+            🎉 Yey! Email kamu sudah dicatat. Tunggu tiket bonus kuis perdana dari kami ya!
+        </p>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-6xl mx-auto px-6 py-8 border-t-4 border-[#2D3748]/10 text-center font-fredoka flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
+            <span>&copy; 2026 <strong>EduFunHub</strong>. All rights reserved.</span>
+        </div>
+        <div class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white cartoon-border text-xs sm:text-sm font-bold text-slate-800 shadow-sm">
+            <span>Made with</span>
+            <span class="text-red-500 animate-pulse text-sm">❤️</span>
+            <span>by <strong class="text-bubblePurple font-black">Fatwarachman</strong></span>
+        </div>
+    </footer>
+
+    <script>
+        function checkAnswer(val, btn) {
+            const resultBox = document.getElementById('quizResult');
+            const score = document.getElementById('quizScore');
+            const allBtns = document.querySelectorAll('.quiz-btn');
+            
+            allBtns.forEach(b => b.disabled = true);
+
+            if(val === 56) {
+                btn.classList.remove('bg-white');
+                btn.classList.add('bg-bubbleGreen', 'text-white');
+                resultBox.className = "p-4 rounded-2xl font-fredoka font-bold text-sm text-center bg-[#E8F8F5] text-emerald-800 cartoon-border";
+                resultBox.innerHTML = "🎉 <strong>HEBAT! JAWABAN BENAR (56)!</strong> Kamu dapat 100 koin perdana! Siap kumpulkan ribuan koin untuk ditukar reward menarik di EduFunHub?";
+                score.innerText = "100";
+            } else {
+                btn.classList.remove('bg-white');
+                btn.classList.add('bg-bubblePink', 'text-white');
+                resultBox.className = "p-4 rounded-2xl font-fredoka font-bold text-sm text-center bg-[#FFF0F5] text-rose-800 cartoon-border";
+                resultBox.innerHTML = "😅 <strong>Ups, belum tepat!</strong> Jawaban yang benar adalah <strong>56</strong>. Tenang, nanti di EduFunHub ada banyak kesempatan kuis berhadiah lainnya!";
+            }
+            resultBox.classList.remove('hidden');
+        }
+
+        function handleNotify() {
+            const input = document.getElementById('emailInput');
+            const msg = document.getElementById('msg');
+            if(input.value.trim() !== '') {
+                msg.classList.remove('hidden');
+                input.value = '';
+                setTimeout(() => { msg.classList.add('hidden'); }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

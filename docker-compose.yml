@@ -1,0 +1,24 @@
+services:
+  web:
+    image: nginx:alpine
+    container_name: edufunhub-web
+    restart: unless-stopped
+    ports:
+      - "8095:80"
+    volumes:
+      - ./public:/usr/share/nginx/html:ro
+    networks:
+      - edufunhub-net
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: edufunhub-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token eyJhIjoiNDY4MmFkOTZlOGUyOWM1MTNhZWIwNDY2ZTBkNTMxMDYiLCJ0IjoiY2I2NDI4NmQtZTI1Yy00ODliLTljYjktMWI4M2I1YTFlNjdlIiwicyI6IlpqbGhZakF6TldVdFl6azNaaTAwTURsa0xXRXhOVEF0WXpnek5tVTRNMk15TlRKbCJ9
+    networks:
+      - edufunhub-net
+
+networks:
+  edufunhub-net:
+    name: edufunhub-net
+    driver: bridge
