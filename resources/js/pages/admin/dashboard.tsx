@@ -15,6 +15,10 @@ import {
     Clock,
     CreditCard,
     DollarSign,
+    Flame,
+    Gamepad2,
+    Sparkles,
+    Trophy,
     Users,
 } from 'lucide-react';
 import {
@@ -75,7 +79,7 @@ interface AdminDashboardProps {
 
 function Sparkline({
     data,
-    color = '#1d4aff',
+    color = '#ff9e44',
 }: {
     data: number[];
     color?: string;
@@ -116,7 +120,6 @@ function GrowthBadge({
 }) {
     const isPositive = value >= 0;
 
-    // For churn, negative growth is good (green), positive growth is bad (red)
     const healthyClass = 'text-emerald-600 dark:text-emerald-400';
     const unhealthyClass = 'text-red-600 dark:text-red-400';
 
@@ -142,7 +145,7 @@ function GrowthBadge({
     );
 }
 
-const COLORS = ['#1d4aff', '#cd68d4', '#2ab7a9', '#6aa84f'];
+const COLORS = ['#ff9e44', '#845ec2', '#00c9a7', '#4d8fac'];
 
 export default function AdminDashboard({
     metrics,
@@ -152,7 +155,6 @@ export default function AdminDashboard({
     planDistribution,
     recent_users,
 }: AdminDashboardProps) {
-    // Combine daily stats for the multi-line chart
     const combinedDailyStats = dailySignups
         .map((signupDay, index) => {
             const workspaceDay = dailyWorkspaces[index] || { count: 0 };
@@ -161,8 +163,7 @@ export default function AdminDashboard({
                 users: signupDay.count,
                 workspaces: workspaceDay.count,
             };
-        })
-        .reverse(); // Reverse to show chronological order left-to-right
+        });
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('en-US', {
@@ -192,74 +193,125 @@ export default function AdminDashboard({
         return `${remainingSeconds}s`;
     };
 
+    const avatarColor = (name: string) => {
+        const colors = [
+            'bg-bubble-orange/20 text-bubble-orange',
+            'bg-bubble-purple/20 text-bubble-purple',
+            'bg-bubble-green/20 text-bubble-green',
+            'bg-bubble-blue/20 text-bubble-blue',
+            'bg-bubble-pink/20 text-bubble-pink',
+        ];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+        }
+        return colors[hash % colors.length];
+    };
+
+    const initials = (name: string) =>
+        name
+            .split(' ')
+            .map((n) => n[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase();
+
+    const metricCardClass =
+        'rounded-2xl border-0 shadow-sm transition-shadow hover:shadow-md';
+
     return (
         <AdminLayout>
             <Head title="Admin Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">
-                        System Overview
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        Monitor platform metrics across all workspaces.
-                    </p>
+                {/* Header */}
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-bubble-yellow/40 px-2.5 py-0.5 text-[11px] font-semibold text-foreground/70">
+                            <Sparkles className="h-3 w-3 text-bubble-orange" />
+                            EduFunHub Admin
+                        </div>
+                        <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+                            Pusat Kendali Pulau Ilmu 🎮
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            Monitor platform: pemain, kelas, dan aktivitas
+                            belajar.
+                        </p>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                        <Link href="/admin/system-health">
+                            <Activity className="mr-1.5 h-3.5 w-3.5" />
+                            System Health
+                        </Link>
+                    </Button>
                 </div>
 
                 {/* Top Metric Cards */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    <Card>
+                    {/* MRR */}
+                    <Card className={metricCardClass}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
                                 Monthly Recurring Revenue
                             </CardTitle>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-orange/15">
+                                <DollarSign className="h-4 w-4 text-bubble-orange" />
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
+                            <div className="font-display text-2xl font-bold text-foreground">
                                 {formatCurrency(metrics.mrr)}
                             </div>
                             <div className="mt-2 flex items-center justify-between">
                                 <p className="text-xs text-muted-foreground">
-                                    From active subscriptions
+                                    Dari subscription aktif
                                 </p>
                                 <Sparkline
                                     data={sparklines.new_subscriptions}
+                                    color="#ff9e44"
                                 />
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    {/* Active Subscriptions */}
+                    <Card className={metricCardClass}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
                                 Active Subscriptions
                             </CardTitle>
-                            <CreditCard className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-purple/15">
+                                <CreditCard className="h-4 w-4 text-bubble-purple" />
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
+                            <div className="font-display text-2xl font-bold text-foreground">
                                 {metrics.active_subscriptions}
                             </div>
                             <div className="mt-2 flex items-center justify-between">
                                 <p className="text-xs text-muted-foreground">
-                                    Paying and trialing workspaces
+                                    Workspace berbayar & trial
                                 </p>
                                 <Sparkline
                                     data={sparklines.new_subscriptions}
+                                    color="#845ec2"
                                 />
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    {/* Active Workspaces → Kelas */}
+                    <Card className={metricCardClass}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Active Workspaces (7d)
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Kelas Aktif (Workspaces)
                             </CardTitle>
-                            <Activity className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-green/15">
+                                <Gamepad2 className="h-4 w-4 text-bubble-green" />
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
+                            <div className="font-display text-2xl font-bold text-foreground">
                                 {metrics.total_workspaces}
                             </div>
                             <div className="mt-2 flex items-center justify-between">
@@ -267,22 +319,28 @@ export default function AdminDashboard({
                                     <GrowthBadge
                                         value={metrics.workspace_growth_percent}
                                     />{' '}
-                                    vs prior 30d
+                                    vs 30 hari lalu
                                 </p>
-                                <Sparkline data={sparklines.new_workspaces} />
+                                <Sparkline
+                                    data={sparklines.new_workspaces}
+                                    color="#00c9a7"
+                                />
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    {/* Total Users */}
+                    <Card className={metricCardClass}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Total Users
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Pemain
                             </CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-blue/15">
+                                <Users className="h-4 w-4 text-bubble-blue" />
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
+                            <div className="font-display text-2xl font-bold text-foreground">
                                 {metrics.total_users}
                             </div>
                             <div className="mt-2 flex items-center justify-between">
@@ -290,44 +348,81 @@ export default function AdminDashboard({
                                     <GrowthBadge
                                         value={metrics.user_growth_percent}
                                     />{' '}
-                                    from previous 30d
+                                    dari 30 hari lalu
                                 </p>
-                                <Sparkline data={sparklines.new_users} />
+                                <Sparkline
+                                    data={sparklines.new_users}
+                                    color="#4d8fac"
+                                />
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
+                    {/* Churn */}
+                    <Card className={metricCardClass}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Avg. First Response
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Churn Rate
                             </CardTitle>
-                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-pink/15">
+                                <Flame className="h-4 w-4 text-bubble-pink" />
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
+                            <div className="font-display text-2xl font-bold text-foreground">
+                                {metrics.churn_rate}%
+                            </div>
+                            <div className="mt-2 flex items-center justify-between">
+                                <p className="text-xs text-muted-foreground">
+                                    <GrowthBadge
+                                        value={metrics.churn_rate}
+                                        invertColors
+                                    />{' '}
+                                    cancel 30 hari
+                                </p>
+                                <Sparkline
+                                    data={sparklines.new_subscriptions}
+                                    color="#ff6584"
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Avg First Response */}
+                    <Card className={metricCardClass}>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Avg. First Response
+                            </CardTitle>
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-yellow/30">
+                                <Clock className="h-4 w-4 text-bubble-orange" />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="font-display text-2xl font-bold text-foreground">
                                 {formatDuration(
                                     metrics.avg_first_response_seconds,
                                 )}
                             </div>
                             <div className="mt-2">
                                 <p className="text-xs text-muted-foreground">
-                                    From ticket creation to first reply
+                                    Dari tiket ke balasan pertama
                                 </p>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Second Row: Charts */}
+                {/* Charts Row */}
                 <div className="grid gap-4 md:grid-cols-7">
                     {/* Growth Chart */}
-                    <Card className="md:col-span-4">
+                    <Card className="rounded-2xl border-0 shadow-sm md:col-span-4">
                         <CardHeader>
-                            <CardTitle>Platform Growth</CardTitle>
+                            <CardTitle className="font-display text-lg">
+                                Pertumbuhan Platform
+                            </CardTitle>
                             <CardDescription>
-                                Daily new users and workspaces over the last 14
-                                days
+                                Pemain & kelas baru per hari (14 hari terakhir)
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="pl-0">
@@ -352,12 +447,12 @@ export default function AdminDashboard({
                                             >
                                                 <stop
                                                     offset="5%"
-                                                    stopColor="#1d4aff"
+                                                    stopColor="#ff9e44"
                                                     stopOpacity={0.3}
                                                 />
                                                 <stop
                                                     offset="95%"
-                                                    stopColor="#1d4aff"
+                                                    stopColor="#ff9e44"
                                                     stopOpacity={0}
                                                 />
                                             </linearGradient>
@@ -370,12 +465,12 @@ export default function AdminDashboard({
                                             >
                                                 <stop
                                                     offset="5%"
-                                                    stopColor="#cd68d4"
+                                                    stopColor="#845ec2"
                                                     stopOpacity={0.3}
                                                 />
                                                 <stop
                                                     offset="95%"
-                                                    stopColor="#cd68d4"
+                                                    stopColor="#845ec2"
                                                     stopOpacity={0}
                                                 />
                                             </linearGradient>
@@ -405,10 +500,10 @@ export default function AdminDashboard({
                                         />
                                         <Tooltip
                                             contentStyle={{
-                                                backgroundColor: '#1d1d1d',
-                                                borderColor: '#404040',
-                                                borderRadius: '4px',
-                                                border: '1px solid #404040',
+                                                backgroundColor: '#1f2a44',
+                                                borderColor: '#2d3a5e',
+                                                borderRadius: '10px',
+                                                border: '1px solid #2d3a5e',
                                             }}
                                             itemStyle={{
                                                 color: '#f5f5f5',
@@ -422,8 +517,8 @@ export default function AdminDashboard({
                                         <Area
                                             type="monotone"
                                             dataKey="users"
-                                            name="New Users"
-                                            stroke="#1d4aff"
+                                            name="Pemain Baru"
+                                            stroke="#ff9e44"
                                             strokeWidth={2}
                                             fillOpacity={1}
                                             fill="url(#colorUsers)"
@@ -431,8 +526,8 @@ export default function AdminDashboard({
                                         <Area
                                             type="monotone"
                                             dataKey="workspaces"
-                                            name="New Workspaces"
-                                            stroke="#cd68d4"
+                                            name="Kelas Baru"
+                                            stroke="#845ec2"
                                             strokeWidth={2}
                                             fillOpacity={1}
                                             fill="url(#colorWorkspaces)"
@@ -444,12 +539,13 @@ export default function AdminDashboard({
                     </Card>
 
                     {/* Plan Distribution */}
-                    <Card className="md:col-span-3">
+                    <Card className="rounded-2xl border-0 shadow-sm md:col-span-3">
                         <CardHeader>
-                            <CardTitle>Plan Distribution</CardTitle>
+                            <CardTitle className="font-display text-lg">
+                                Distribusi Paket
+                            </CardTitle>
                             <CardDescription>
-                                Active workspace subscriptions across pricing
-                                tiers
+                                Subscription workspace per tier harga
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -482,10 +578,10 @@ export default function AdminDashboard({
                                         </Pie>
                                         <Tooltip
                                             contentStyle={{
-                                                backgroundColor: '#1d1d1d',
-                                                borderColor: '#404040',
-                                                borderRadius: '4px',
-                                                border: '1px solid #404040',
+                                                backgroundColor: '#1f2a44',
+                                                borderColor: '#2d3a5e',
+                                                borderRadius: '10px',
+                                                border: '1px solid #2d3a5e',
                                             }}
                                             itemStyle={{
                                                 color: '#f5f5f5',
@@ -512,28 +608,29 @@ export default function AdminDashboard({
                 {/* Recent Users */}
                 <div>
                     <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-lg font-semibold tracking-tight">
-                            Recent Users
+                        <h3 className="flex items-center gap-2 font-display text-lg font-semibold tracking-tight">
+                            <Trophy className="h-4 w-4 text-bubble-orange" />
+                            Pemain Terbaru
                         </h3>
                         <Button variant="outline" size="sm" asChild>
-                            <Link href="/admin/users">View All Users →</Link>
+                            <Link href="/admin/users">Lihat Semua →</Link>
                         </Button>
                     </div>
-                    <div className="overflow-hidden rounded-md border bg-card text-card-foreground shadow-sm">
+                    <div className="overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-sm">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-muted/50 text-xs text-muted-foreground uppercase">
                                 <tr>
                                     <th className="px-6 py-3 font-medium">
-                                        Name
+                                        Pemain
                                     </th>
                                     <th className="px-6 py-3 font-medium">
                                         Email
                                     </th>
                                     <th className="px-6 py-3 font-medium">
-                                        Joined
+                                        Bergabung
                                     </th>
                                     <th className="px-6 py-3 text-right font-medium">
-                                        Actions
+                                        Aksi
                                     </th>
                                 </tr>
                             </thead>
@@ -544,7 +641,7 @@ export default function AdminDashboard({
                                             colSpan={4}
                                             className="px-6 py-8 text-center text-muted-foreground"
                                         >
-                                            No users found.
+                                            Belum ada pemain.
                                         </td>
                                     </tr>
                                 ) : (
@@ -553,8 +650,19 @@ export default function AdminDashboard({
                                             key={user.id}
                                             className="transition-colors hover:bg-muted/50"
                                         >
-                                            <td className="px-6 py-4 font-medium">
-                                                {user.name}
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div
+                                                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${avatarColor(
+                                                            user.name,
+                                                        )}`}
+                                                    >
+                                                        {initials(user.name)}
+                                                    </div>
+                                                    <span className="font-medium">
+                                                        {user.name}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 text-muted-foreground">
                                                 {user.email}

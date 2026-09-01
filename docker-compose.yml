@@ -10,6 +10,8 @@ services:
       - "8096:8000"
     volumes:
       - edufunhub-storage:/app/storage
+      - ./public/build:/app/public/build
+      - ./lang:/app/lang
     depends_on:
       - db
     networks:

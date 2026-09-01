@@ -41,10 +41,10 @@ export default function Login({
 
     return (
         <AuthLayout
-            title={t('auth.login.title', 'Log in to your account')}
+            title={t('auth.login.title', 'Welcome back, Pejuang Ilmu! 🎮')}
             description={t(
                 'auth.login.description',
-                'Enter your email and password below to log in',
+                'Masuk untuk lanjutkan petualangan belajarmu',
             )}
         >
             <Head title={t('auth.login.page_title', 'Log in')} />
@@ -179,7 +179,7 @@ export default function Login({
                                     type="button"
                                     variant="secondary"
                                     size="sm"
-                                    className="h-8 bg-red-100 px-2 text-xs text-red-800 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
+                                    className="h-8 bg-bubble-orange/15 px-2 text-xs text-bubble-orange hover:bg-bubble-orange/25 dark:bg-bubble-orange/20 dark:text-orange-300 dark:hover:bg-bubble-orange/30"
                                     onClick={() => {
                                         const e = document.getElementById(
                                             'email',
@@ -200,7 +200,7 @@ export default function Login({
                                     type="button"
                                     variant="secondary"
                                     size="sm"
-                                    className="h-8 px-2 text-xs"
+                                    className="h-8 bg-bubble-purple/15 px-2 text-xs text-bubble-purple hover:bg-bubble-purple/25 dark:bg-bubble-purple/20 dark:text-purple-300 dark:hover:bg-bubble-purple/30"
                                     onClick={() => {
                                         const e = document.getElementById(
                                             'email',
@@ -221,7 +221,7 @@ export default function Login({
                                     type="button"
                                     variant="secondary"
                                     size="sm"
-                                    className="h-8 px-2 text-xs"
+                                    className="h-8 bg-bubble-green/15 px-2 text-xs text-bubble-green hover:bg-bubble-green/25 dark:bg-bubble-green/20 dark:text-teal-300 dark:hover:bg-bubble-green/30"
                                     onClick={() => {
                                         const e = document.getElementById(
                                             'email',
