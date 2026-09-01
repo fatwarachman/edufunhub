@@ -14,11 +14,13 @@ use App\Http\Controllers\Admin\ImpersonationLogController;
 use App\Http\Controllers\Admin\LogViewerController;
 use App\Http\Controllers\Admin\MailTemplateController;
 use App\Http\Controllers\Admin\MaintenanceController;
+use App\Http\Controllers\Admin\ModuleController;
 use App\Http\Controllers\Admin\NotificationAnalyticsController;
 use App\Http\Controllers\Admin\OnboardingInsightsController;
 use App\Http\Controllers\Admin\PermissionPresetController;
 use App\Http\Controllers\Admin\RetentionController;
 use App\Http\Controllers\Admin\RevenueAnalyticsController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ScheduledTaskController;
 use App\Http\Controllers\Admin\SecurityController;
 use App\Http\Controllers\Admin\SeoMetadataController;
@@ -485,6 +487,18 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->name('admin.')->grou
         Route::post('/permission-presets', [PermissionPresetController::class, 'store'])->name('permission-presets.store');
         Route::put('/permission-presets/{permissionPreset}', [PermissionPresetController::class, 'update'])->name('permission-presets.update');
         Route::delete('/permission-presets/{permissionPreset}', [PermissionPresetController::class, 'destroy'])->name('permission-presets.destroy');
+
+        // Roles (RBAC)
+        Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+        Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+        Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+
+        // Modules
+        Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
+        Route::post('/modules', [ModuleController::class, 'store'])->name('modules.store');
+        Route::patch('/modules/{module}/toggle', [ModuleController::class, 'toggle'])->name('modules.toggle');
+        Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
 
         // System Notifications
         Route::get('/system-notifications', [AdminNotificationController::class, 'index'])->name('system-notifications.index');

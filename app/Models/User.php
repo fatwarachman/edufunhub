@@ -132,6 +132,33 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * The global roles assigned to this user.
+     *
+     * @return BelongsToMany<Role, $this>
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class)->withTimestamps();
+    }
+
+    /**
+     * Check whether this user has a given global role.
+     */
+    public function hasRole(string $slug): bool
+    {
+        return $this->roles()->where('slug', $slug)->exists();
+    }
+
+    /**
+     * Check whether this user has a given permission through their roles.
+     */
+    public function hasPermission(string $slug): bool
+    {
+        return $this->is_superadmin
+            || $this->roles()->whereHas('permissions', fn ($q) => $q->where('slug', $slug))->exists();
+    }
+
+    /**
      * Get all workspaces owned by the user.
      */
     public function ownedWorkspaces(): HasMany

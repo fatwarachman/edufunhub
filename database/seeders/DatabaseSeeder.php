@@ -2,28 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Announcement;
-use App\Models\ChangelogEntry;
-use App\Models\ConnectedAccount;
-use App\Models\FeatureFlag;
-use App\Models\Feedback;
-use App\Models\LoginActivity;
-use App\Models\NotificationDeliveryLog;
-use App\Models\OnboardingStepLog;
-use App\Models\PermissionPreset;
-use App\Models\SeoMetadata;
-use App\Models\StatusIncident;
+use App\Models\Module;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
-use App\Models\UserNote;
-use App\Models\WebhookEndpoint;
-use App\Models\WebhookLog;
-use App\Models\Workspace;
-use App\Models\WorkspaceApiKey;
-use App\Models\WorkspaceInvitation;
-use App\Models\WorkspaceInviteLink;
-use App\Services\WorkspaceService;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -34,814 +17,139 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::transaction(function () {
-            $workspaceService = app(WorkspaceService::class);
+        // 1. System modules with their permissions.
+        $modules = [
+            'Dashboard' => ['view' => 'Lihat dashboard'],
+            'Quiz' => [
+                'view' => 'Lihat quiz',
+                'create' => 'Buat quiz',
+                'edit' => 'Ubah quiz',
+                'delete' => 'Hapus quiz',
+            ],
+            'Duel' => [
+                'view' => 'Lihat duel',
+                'create' => 'Buat duel',
+                'manage' => 'Kelola duel',
+            ],
+            'Leaderboard' => ['view' => 'Lihat leaderboard'],
+            'User' => [
+                'view' => 'Lihat pengguna',
+                'create' => 'Tambah pengguna',
+                'edit' => 'Ubah pengguna',
+                'delete' => 'Hapus pengguna',
+            ],
+            'Role' => [
+                'view' => 'Lihat role',
+                'create' => 'Tambah role',
+                'edit' => 'Ubah role',
+                'delete' => 'Hapus role',
+            ],
+            'Module' => [
+                'view' => 'Lihat modul',
+                'create' => 'Tambah modul',
+                'edit' => 'Ubah modul',
+                'delete' => 'Hapus modul',
+            ],
+            'Workspace' => [
+                'view' => 'Lihat workspace',
+                'manage' => 'Kelola workspace',
+            ],
+        ];
 
-            // 1. Create admin and demo users
-            $admin = User::firstOrCreate(
-                ['email' => 'admin@example.com'],
-                [
-                    'name' => 'Admin User',
-                    'password' => Hash::make('password'),
-                    'email_verified_at' => now(),
-                    'locale' => 'en',
-                    'onboarded_at' => now(),
-                ]
+        $permissionModelBySlug = [];
+
+        foreach ($modules as $moduleName => $permissions) {
+            $module = Module::updateOrCreate(
+                ['slug' => Str::slug($moduleName)],
+                ['name' => $moduleName, 'is_active' => true]
             );
 
-            $demo = User::firstOrCreate(
-                ['email' => 'demo@example.com'],
-                [
-                    'name' => 'Demo User',
-                    'password' => Hash::make('password'),
-                    'email_verified_at' => now(),
-                    'locale' => 'en',
-                    'onboarded_at' => now(),
-                ]
-            );
-
-            // 1.5. Create Superadmin User
-            $superadmin = User::firstOrCreate(
-                ['email' => 'superadmin@example.com'],
-                [
-                    'name' => 'Superadmin System',
-                    'password' => Hash::make('password'),
-                    'email_verified_at' => now(),
-                    'locale' => 'en',
-                    'is_superadmin' => true,
-                    'onboarded_at' => now(),
-                ]
-            );
-
-            // 1.6 Generate API Tokens for Core Users
-            $admin->createToken('Desktop App Token')->plainTextToken;
-            $demo->createToken('CLI Access Token')->plainTextToken;
-            $demo->createToken('Mobile Client', ['read'])->plainTextToken;
-            $superadmin->createToken('Integration Agent')->plainTextToken;
-
-            // 2. Create additional users (20+ users) for team memberships
-            $users = collect([$admin, $demo, $superadmin]);
-
-            // Create users with different locales and verification statuses
-            $locales = ['en', 'fr', 'es', 'de'];
-            $additionalUsers = User::factory(20)->create([
-                'password' => Hash::make('password'),
-            ]);
-
-            // Set varied attributes for additional users
-            $additionalUsers->each(function (User $user, int $index) use ($locales) {
-                // Mix of verified and unverified
-                if ($index % 3 === 0) {
-                    $user->update(['email_verified_at' => null]);
-                }
-
-                // Set different locales
-                $user->update(['locale' => $locales[$index % count($locales)]]);
-
-                // Some users without 2FA
-                if ($index % 4 === 0) {
-                    $user->update([
-                        'two_factor_secret' => null,
-                        'two_factor_recovery_codes' => null,
-                        'two_factor_confirmed_at' => null,
-                    ]);
-                }
-            });
-
-            $users = $users->merge($additionalUsers);
-
-            // 3. Create personal workspaces for all users
-            $users->each(function (User $user) use ($workspaceService) {
-                $workspaceService->createPersonalWorkspace($user);
-            });
-
-            // 4. DEMO ACCOUNT: Create multiple workspaces owned by demo user
-            $demoWorkspaceNames = [
-                'Acme Corporation', // Free plan workspace
-                'Tech Startup Inc', // Pro plan workspace (with trial)
-                'Digital Solutions LLC', // Business plan workspace
-                'Creative Agency', // Small team workspace
-                'Global Enterprises', // Large team workspace
-            ];
-
-            $demoWorkspaces = collect();
-            $otherUsers = $users->reject(fn (User $user) => $user->id === $demo->id);
-
-            foreach ($demoWorkspaceNames as $index => $name) {
-                $workspace = $workspaceService->create($demo, [
-                    'name' => $name,
-                ]);
-
-                // Set different trial/plan scenarios for demo workspaces
-                match ($index) {
-                    0 => $workspace->update(['allowed_email_domains' => ['acme.com', 'acmecorp.com']]), // Free plan – domain restricted to Acme
-                    1 => $workspace->update(['trial_ends_at' => now()->addDays(10)]), // Pro plan with active trial
-                    2 => $workspace->update(['trial_ends_at' => now()->addDays(5)]), // Business plan with shorter trial
-                    default => $workspace->update(['trial_ends_at' => now()->addDays(14)]), // Others with full trial
-                };
-
-                // Add sample Webhooks to some Demo Workspaces
-                if ($index % 2 === 0) {
-                    WebhookEndpoint::create([
-                        'workspace_id' => $workspace->id,
-                        'url' => 'https://webhook.site/'.fake()->uuid(),
-                        'events' => ['workspace.updated', 'member.added'],
-                        'is_active' => true,
-                        'secret' => Str::random(32),
-                    ]);
-
-                    if ($index === 2) {
-                        // Add a disabled secondary hook
-                        WebhookEndpoint::create([
-                            'workspace_id' => $workspace->id,
-                            'url' => 'https://legacy-crm.example.com/ingest',
-                            'events' => ['member.removed'],
-                            'is_active' => false,
-                            'secret' => Str::random(32),
-                        ]);
-                    }
-                }
-
-                // Append historical Activity Logs demonstrating tracking timeline
-                activity()
-                    ->performedOn($workspace)
-                    ->causedBy($demo)
-                    ->createdAt(now()->subDays(rand(1, 30)))
-                    ->log('created');
-
-                activity()
-                    ->performedOn($workspace)
-                    ->causedBy($demo)
-                    ->createdAt(now()->subDays(rand(1, 15)))
-                    ->log('updated');
-
-                $demoWorkspaces->push($workspace);
-            }
-
-            // 5. DEMO ACCOUNT: Add team members to demo workspaces with different configurations
-            foreach ($demoWorkspaces as $index => $workspace) {
-                $availableUsers = $otherUsers->shuffle();
-
-                // Different team configurations for each workspace
-                $teamConfig = match ($index) {
-                    0 => ['size' => 2, 'admins' => 0], // Free plan - just 2 members (at limit)
-                    1 => ['size' => 5, 'admins' => 1], // Pro plan - 5 members with 1 admin
-                    2 => ['size' => 12, 'admins' => 2], // Business plan - 12 members with 2 admins
-                    3 => ['size' => 3, 'admins' => 0], // Small team - 3 members
-                    4 => ['size' => 15, 'admins' => 3], // Large team - 15 members with 3 admins
-                    default => ['size' => 6, 'admins' => 1], // Default - 6 members with 1 admin
-                };
-
-                $membersToAdd = min($teamConfig['size'], $availableUsers->count());
-                $selectedMembers = $availableUsers->take($membersToAdd);
-
-                foreach ($selectedMembers as $memberIndex => $member) {
-                    $role = match (true) {
-                        $memberIndex < $teamConfig['admins'] => 'admin',
-                        default => 'member',
-                    };
-
-                    $workspace->addUser($member, $role);
-                }
-
-                // Grant one member explicit granular permissions to demonstrate capability-based access
-                $granularMember = $workspace->users()
-                    ->wherePivot('role', 'member')
-                    ->first();
-
-                if ($granularMember) {
-                    $workspace->users()->updateExistingPivot($granularMember->id, [
-                        'permissions' => json_encode(['manage_team']),
-                    ]);
-                }
-            }
-
-            // 6. DEMO ACCOUNT: Create workspace invitations for demo workspaces
-            foreach ($demoWorkspaces as $index => $workspace) {
-                // Create multiple invitations per workspace
-                $invitationCount = match ($index) {
-                    4 => 5, // Global Enterprises - many invitations
-                    2 => 4, // Business workspace - several invitations
-                    default => rand(2, 3), // Others - 2-3 invitations
-                };
-
-                $usedEmails = [];
-
-                for ($i = 0; $i < $invitationCount; $i++) {
-                    do {
-                        $email = $i % 2 === 0
-                            ? $otherUsers->random()->email
-                            : fake()->unique()->safeEmail();
-                    } while (in_array($email, $usedEmails));
-
-                    $usedEmails[] = $email;
-
-                    $role = match (true) {
-                        $i === 0 && $index > 2 => 'admin', // First invitation in larger workspaces can be admin
-                        default => 'member',
-                    };
-
-                    // Mix of active and expired invitations
-                    $isExpired = $i === 1 && rand(0, 1) === 1;
-
-                    WorkspaceInvitation::create([
-                        'workspace_id' => $workspace->id,
-                        'email' => $email,
-                        'role' => $role,
-                        'expires_at' => $isExpired ? now()->subDay() : now()->addDays(7),
-                    ]);
-                }
-            }
-
-            // 7. Create additional team workspaces owned by other users (for variety)
-            $otherWorkspaceNames = [
-                'Startup Hub',
-                'Design Studio',
-                'Marketing Agency',
-                'Consulting Group',
-            ];
-
-            $otherWorkspaces = collect();
-            $otherOwners = $otherUsers->random(min(4, $otherUsers->count()));
-
-            foreach ($otherWorkspaceNames as $index => $name) {
-                if ($index < $otherOwners->count()) {
-                    $owner = $otherOwners->get($index);
-                    $workspace = $workspaceService->create($owner, [
-                        'name' => $name,
-                    ]);
-
-                    // Add core test users as admins to 'Startup Hub' for full feature testing
-                    if ($name === 'Startup Hub') {
-                        $workspace->addUser($superadmin, 'admin');
-                        $workspace->addUser($admin, 'admin');
-                        $workspace->addUser($demo, 'admin');
-
-                        // Add some regular members too
-                        $members = $otherUsers->reject(fn (User $user) => $user->id === $owner->id)->random(rand(2, 4));
-                        foreach ($members as $member) {
-                            $workspace->addUser($member, 'member');
-                        }
-                    } else {
-                        // Add some members to these workspaces too
-                        $members = $users->reject(fn (User $user) => $user->id === $owner->id)->random(rand(2, 5));
-                        foreach ($members as $member) {
-                            $workspace->addUser($member, 'member');
-                        }
-                    }
-
-                    $otherWorkspaces->push($workspace);
-                }
-            }
-
-            // 8. DEMO ACCOUNT: Add demo user as member to some other workspaces (not owner)
-            // Skip Startup Hub since demo is already an admin there
-            $workspacesForDemo = $otherWorkspaces
-                ->reject(fn (Workspace $w) => $w->name === 'Startup Hub')
-                ->random(min(2, $otherWorkspaces->count() - 1));
-            foreach ($workspacesForDemo as $workspace) {
-                $workspace->addUser($demo, 'member');
-            }
-
-            // 9. Set demo user's current workspace to first team workspace
-            if ($demoWorkspaces->isNotEmpty()) {
-                $demo->switchWorkspace($demoWorkspaces->first());
-            }
-
-            // Set superadmin's current workspace to Startup Hub (for testing all workspace features)
-            $startupHub = $otherWorkspaces->firstWhere('name', 'Startup Hub');
-            if ($startupHub) {
-                $superadmin->switchWorkspace($startupHub);
-            }
-
-            // 10. Create some invitations for other workspaces too
-            foreach ($otherWorkspaces->take(2) as $workspace) {
-                WorkspaceInvitation::create([
-                    'workspace_id' => $workspace->id,
-                    'email' => fake()->unique()->safeEmail(),
-                    'role' => 'member',
-                    'expires_at' => now()->addDays(7),
-                ]);
-            }
-            // 11. DEMO ACCOUNT: Seed dummy real-time notifications for the primary demo user
-            $demo->notifications()->create([
-                'id' => Str::uuid(),
-                'type' => 'App\Notifications\SystemMessage',
-                'data' => [
-                    'title' => 'Welcome to the Platform',
-                    'message' => 'Thanks for signing up! Your workspace is ready. Click here to invite your team members.',
-                    'action_url' => '/team',
-                ],
-                'read_at' => null,
-            ]);
-            $demo->notifications()->create([
-                'id' => Str::uuid(),
-                'type' => 'App\Notifications\BillingAlert',
-                'data' => [
-                    'title' => 'Trial Expiring Soon',
-                    'message' => 'Your workspace trial will safely expire in a few days. Pick a plan to guarantee continued access.',
-                    'action_url' => '/billing',
-                ],
-                'read_at' => null,
-            ]);
-            $demo->notifications()->create([
-                'id' => Str::uuid(),
-                'type' => 'App\Notifications\SecurityAlert',
-                'data' => [
-                    'title' => 'New Login Detected',
-                    'message' => 'We detected a login from a new device (Mac OS X - Chrome).',
-                    'action_url' => null,
-                ],
-                'read_at' => now()->subDay(), // Already read
-            ]);
-
-            // Seed one for Admin just to have coverage
-            $admin->notifications()->create([
-                'id' => Str::uuid(),
-                'type' => 'App\Notifications\SystemMessage',
-                'data' => [
-                    'title' => 'Admin Credentials Provisioned',
-                    'message' => 'Your administrative scopes have been successfully hydrated.',
-                ],
-                'read_at' => null,
-            ]);
-            // Seed announcements
-            Announcement::create([
-                'title' => 'Welcome to v1.5!',
-                'body' => 'We just shipped seat-based billing, 2FA enforcement, and a new system health monitor. Check it out!',
-                'type' => 'info',
-                'link_text' => 'View Changelog',
-                'link_url' => '/changelog',
-                'is_active' => true,
-                'is_dismissible' => true,
-                'starts_at' => now()->subDays(3),
-                'ends_at' => now()->addDays(14),
-            ]);
-
-            Announcement::create([
-                'title' => 'Scheduled Maintenance',
-                'body' => 'We will be performing maintenance on March 5th from 2:00 AM to 4:00 AM UTC.',
-                'type' => 'warning',
-                'link_text' => null,
-                'link_url' => null,
-                'is_active' => false,
-                'is_dismissible' => true,
-                'starts_at' => now()->addDays(5),
-                'ends_at' => now()->addDays(6),
-            ]);
-
-            Announcement::create([
-                'title' => 'New: Dark Mode',
-                'body' => 'Dark mode is now available! Toggle it from your profile settings.',
-                'type' => 'success',
-                'link_text' => 'Try It',
-                'link_url' => '/settings/profile',
-                'is_active' => false,
-                'is_dismissible' => true,
-                'starts_at' => now()->subDays(60),
-                'ends_at' => now()->subDays(30),
-            ]);
-
-            // Seed feature flags
-            FeatureFlag::create([
-                'key' => 'new-dashboard',
-                'name' => 'New Dashboard',
-                'description' => 'Enables the redesigned dashboard with analytics widgets.',
-                'is_global' => false,
-                'workspace_ids' => $demoWorkspaces->take(2)->pluck('id')->toArray(),
-            ]);
-
-            FeatureFlag::create([
-                'key' => 'ai-assistant',
-                'name' => 'AI Assistant',
-                'description' => 'Enables the AI-powered assistant in the command palette.',
-                'is_global' => true,
-                'workspace_ids' => [],
-            ]);
-
-            FeatureFlag::create([
-                'key' => 'advanced-analytics',
-                'name' => 'Advanced Analytics',
-                'description' => 'Unlocks advanced analytics and reporting for Pro+ workspaces.',
-                'is_global' => false,
-                'workspace_ids' => $demoWorkspaces->slice(1, 2)->pluck('id')->toArray(),
-            ]);
-
-            FeatureFlag::create([
-                'key' => 'beta-api-v2',
-                'name' => 'Beta API v2',
-                'description' => 'Grants access to the beta version of API v2 endpoints.',
-                'is_global' => false,
-                'workspace_ids' => [],
-            ]);
-
-            // Seed webhook delivery logs for workspaces that have webhook endpoints
-            $webhookEndpoints = WebhookEndpoint::all();
-            foreach ($webhookEndpoints as $endpoint) {
-                // Successful deliveries
-                for ($i = 0; $i < 3; $i++) {
-                    WebhookLog::create([
-                        'workspace_id' => $endpoint->workspace_id,
-                        'webhook_endpoint_id' => $endpoint->id,
-                        'event_type' => $endpoint->events[array_rand($endpoint->events)],
-                        'url' => $endpoint->url,
-                        'status' => 200,
-                        'payload' => ['event' => 'workspace.updated', 'data' => ['id' => $endpoint->workspace_id]],
-                        'response' => 'OK',
-                        'error' => null,
-                        'created_at' => now()->subHours(rand(1, 72)),
-                    ]);
-                }
-
-                // One failed delivery
-                WebhookLog::create([
-                    'workspace_id' => $endpoint->workspace_id,
-                    'webhook_endpoint_id' => $endpoint->id,
-                    'event_type' => 'member.added',
-                    'url' => $endpoint->url,
-                    'status' => 500,
-                    'payload' => ['event' => 'member.added', 'data' => ['user_id' => 1]],
-                    'response' => 'Internal Server Error',
-                    'error' => 'Connection timed out after 30 seconds',
-                    'created_at' => now()->subHours(rand(1, 48)),
-                ]);
-
-                // One timeout
-                WebhookLog::create([
-                    'workspace_id' => $endpoint->workspace_id,
-                    'webhook_endpoint_id' => $endpoint->id,
-                    'event_type' => 'workspace.updated',
-                    'url' => $endpoint->url,
-                    'status' => 0,
-                    'payload' => ['event' => 'workspace.updated', 'data' => ['id' => $endpoint->workspace_id]],
-                    'response' => null,
-                    'error' => 'cURL error 28: Connection timed out',
-                    'created_at' => now()->subDays(rand(1, 7)),
-                ]);
-            }
-
-            // Seed email templates for the admin panel
-            (new EmailTemplateSeeder)->run();
-
-            // Seed demo feedback submissions
-            $feedbackSamples = [
-                ['user' => $demo,  'type' => 'bug',     'message' => 'The workspace settings page scrolls unexpectedly after saving changes on mobile.', 'status' => 'new'],
-                ['user' => $demo,  'type' => 'idea',    'message' => 'It would be helpful to have bulk actions for managing team members (e.g., bulk remove or role change).', 'status' => 'reviewed'],
-                ['user' => $demo,  'type' => 'general', 'message' => 'Overall the UI is clean and fast. Really enjoying the dark mode!', 'status' => 'reviewed'],
-                ['user' => $demo,  'type' => 'bug',     'message' => 'Notification badge count does not reset after clicking "Mark all as read".', 'status' => 'new'],
-                ['user' => $demo,  'type' => 'idea',    'message' => 'Would love a CSV export of audit log entries for compliance reporting.', 'status' => 'new'],
-                ['user' => $demo,  'type' => 'general', 'message' => 'The onboarding flow is very intuitive. Took me under 2 minutes to set up.', 'status' => 'archived'],
-                ['user' => $admin, 'type' => 'bug',     'message' => 'Email template editor loses formatting when switching between HTML and plain text tabs.', 'status' => 'new'],
-                ['user' => $admin, 'type' => 'idea',    'message' => 'Add support for Slack/Discord webhook notifications in addition to HTTP endpoints.', 'status' => 'reviewed'],
-                ['user' => $admin, 'type' => 'general', 'message' => 'Feature flags integration with Pennant is seamless. Nice work!', 'status' => 'archived'],
-                ['user' => $admin, 'type' => 'bug',     'message' => 'The impersonation banner sometimes overlaps the announcement banner on smaller screens.', 'status' => 'reviewed'],
-                ['user' => $admin, 'type' => 'idea',    'message' => 'Allow workspace admins to configure their own webhook signing secrets.', 'status' => 'new'],
-                ['user' => $admin, 'type' => 'general', 'message' => 'The command palette (⌘K) is a game changer. Very fast to navigate.', 'status' => 'reviewed'],
-            ];
-
-            foreach ($feedbackSamples as $sample) {
-                Feedback::create([
-                    'user_id' => $sample['user']->id,
-                    'type' => $sample['type'],
-                    'message' => $sample['message'],
-                    'status' => $sample['status'],
-                    'created_at' => now()->subDays(rand(1, 30)),
-                    'updated_at' => now()->subDays(rand(0, 5)),
-                ]);
-            }
-
-            // Seed public changelog entries
-            $changelogSamples = [
-                ['version' => '1.0.0', 'title' => 'Initial Release', 'body' => "Workspaces, team management, Stripe billing, and authentication are all live.\n\nThis is the foundation of the platform.", 'type' => 'feature', 'days_ago' => 60],
-                ['version' => '1.1.0', 'title' => 'Dark Mode & Internationalization', 'body' => 'Full dark mode support across all pages. Added i18n with English, French, Spanish, and German translations.', 'type' => 'feature', 'days_ago' => 45],
-                ['version' => '1.2.0', 'title' => 'Admin Panel & Audit Logs', 'body' => 'Super admin dashboard with user/workspace management, impersonation, and a complete audit log system powered by Spatie Activity Log.', 'type' => 'feature', 'days_ago' => 35],
-                ['version' => '1.3.0', 'title' => 'Feature Flags & Announcements', 'body' => 'Laravel Pennant integration for targeted feature rollouts. Global announcement banners with scheduling and dismissal.', 'type' => 'feature', 'days_ago' => 25],
-                ['version' => '1.3.1', 'title' => 'Command Palette Performance', 'body' => 'Improved the command palette (⌘K) search speed and added keyboard navigation hints.', 'type' => 'improvement', 'days_ago' => 20],
-                ['version' => '1.4.0', 'title' => 'Webhook Delivery Logs', 'body' => 'Track every outbound webhook delivery with status codes, payloads, and response bodies. Retry failed deliveries from the UI.', 'type' => 'feature', 'days_ago' => 15],
-                ['version' => '1.4.1', 'title' => 'Notification Badge Fix', 'body' => 'Fixed an issue where the notification badge count did not update after marking all notifications as read.', 'type' => 'fix', 'days_ago' => 12],
-                ['version' => '1.5.0', 'title' => 'Seat-Based Billing & 2FA Enforcement', 'body' => 'Workspaces now support seat-based billing with Stripe quantity sync. Admins can enforce two-factor authentication for all workspace members.', 'type' => 'feature', 'days_ago' => 5],
-                ['version' => '1.5.1', 'title' => 'System Health Monitor', 'body' => 'New admin page to monitor queue health, failed jobs, storage usage, and infrastructure drivers.', 'type' => 'improvement', 'days_ago' => 1],
-            ];
-
-            foreach ($changelogSamples as $sample) {
-                ChangelogEntry::create([
-                    'version' => $sample['version'],
-                    'title' => $sample['title'],
-                    'body' => $sample['body'],
-                    'type' => $sample['type'],
-                    'is_published' => true,
-                    'published_at' => now()->subDays($sample['days_ago']),
-                ]);
-            }
-
-            // Seed SEO metadata entries
-            SeoMetadata::create([
-                'path' => null,
-                'title' => 'Laravel SaaS Starter - Build Your SaaS Faster',
-                'description' => 'A production-ready Laravel SaaS starter kit with billing, teams, workspaces, and more.',
-                'keywords' => 'laravel, saas, starter, billing, teams, workspaces',
-                'og_title' => 'Laravel SaaS Starter',
-                'og_description' => 'Build your next SaaS product faster with our production-ready starter kit.',
-                'og_type' => 'website',
-                'twitter_card' => 'summary_large_image',
-                'is_global' => true,
-            ]);
-
-            SeoMetadata::create([
-                'path' => '/',
-                'title' => 'Home - Laravel SaaS Starter',
-                'description' => 'Welcome to the Laravel SaaS Starter. Get started with authentication, billing, and team management out of the box.',
-                'keywords' => 'homepage, laravel, saas',
-                'og_title' => 'Welcome to Laravel SaaS Starter',
-                'og_description' => 'Everything you need to launch your SaaS product.',
-                'og_type' => 'website',
-                'twitter_card' => 'summary_large_image',
-                'is_global' => false,
-            ]);
-
-            SeoMetadata::create([
-                'path' => '/changelog',
-                'title' => 'Changelog - Laravel SaaS Starter',
-                'description' => 'See what\'s new in the Laravel SaaS Starter. Latest features, improvements, and bug fixes.',
-                'keywords' => 'changelog, updates, releases',
-                'og_title' => 'Changelog',
-                'og_description' => 'Track the latest updates and improvements.',
-                'og_type' => 'website',
-                'twitter_card' => 'summary',
-                'is_global' => false,
-            ]);
-
-            // Seed workspace API keys for demo workspaces
-            if ($demoWorkspaces->isNotEmpty()) {
-                $first = $demoWorkspaces->first();
-                WorkspaceApiKey::generateKey($first, $demo, 'Production API', ['read', 'write']);
-                WorkspaceApiKey::generateKey($first, $demo, 'CI/CD Pipeline', ['read', 'webhooks']);
-                WorkspaceApiKey::generateKey($first, $demo, 'Analytics Reader', ['read', 'billing:read'], now()->addMonths(3));
-
-                // Seed invite links
-                WorkspaceInviteLink::create([
-                    'workspace_id' => $first->id,
-                    'created_by' => $demo->id,
-                    'token' => Str::random(32),
-                    'role' => 'member',
-                    'max_uses' => 10,
-                    'uses_count' => 3,
-                    'expires_at' => now()->addDays(14),
-                ]);
-
-                WorkspaceInviteLink::create([
-                    'workspace_id' => $first->id,
-                    'created_by' => $demo->id,
-                    'token' => Str::random(32),
-                    'role' => 'admin',
-                    'max_uses' => null,
-                    'uses_count' => 0,
-                    'expires_at' => null,
-                ]);
-
-                // Set accent color on demo workspace
-                $first->update(['accent_color' => '#6366f1']);
-
-                // Soft-delete the last demo workspace to populate the Trash page
-                $lastWorkspace = $demoWorkspaces->last();
-                if ($lastWorkspace) {
-                    $lastWorkspace->delete();
-                }
-            }
-
-            // Seed login activities for demo user
-            LoginActivity::create([
-                'user_id' => $demo->id,
-                'ip_address' => '192.168.1.100',
-                'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'is_successful' => true,
-                'login_at' => now()->subHours(2),
-            ]);
-
-            LoginActivity::create([
-                'user_id' => $demo->id,
-                'ip_address' => '10.0.0.50',
-                'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-                'is_successful' => true,
-                'login_at' => now()->subDay(),
-            ]);
-
-            LoginActivity::create([
-                'user_id' => $demo->id,
-                'ip_address' => '203.0.113.42',
-                'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'is_successful' => false,
-                'login_at' => now()->subDays(3),
-            ]);
-
-            // Seed notification delivery logs for analytics demo
-            $notificationTypes = [
-                ['type' => 'DataExportCompleted', 'category' => 'security'],
-                ['type' => 'TeamInvitationNotification', 'category' => 'team'],
-                ['type' => 'MagicLinkNotification', 'category' => 'security'],
-            ];
-
-            $allSeededUsers = $users->pluck('id')->toArray();
-
-            foreach (range(0, 29) as $daysAgo) {
-                $deliveriesPerDay = rand(3, 12);
-
-                for ($d = 0; $d < $deliveriesPerDay; $d++) {
-                    $notifConfig = $notificationTypes[array_rand($notificationTypes)];
-                    $channel = rand(0, 1) ? 'email' : 'in_app';
-                    $userId = $allSeededUsers[array_rand($allSeededUsers)];
-
-                    NotificationDeliveryLog::create([
-                        'user_id' => $userId,
-                        'notification_type' => $notifConfig['type'],
-                        'channel' => $channel,
-                        'category' => $notifConfig['category'],
-                        'is_successful' => true,
-                        'delivered_at' => now()->subDays($daysAgo)->subMinutes(rand(0, 1440)),
-                    ]);
-                }
-            }
-
-            // Seed onboarding step logs for funnel demo
-            $onboardingSteps = ['welcome', 'workspace', 'plan'];
-            $onboardingUsers = $users->take(18);
-
-            foreach ($onboardingUsers as $index => $u) {
-                // All users view welcome
-                OnboardingStepLog::create([
-                    'user_id' => $u->id,
-                    'step' => 'welcome',
-                    'action' => 'viewed',
-                    'created_at' => $u->created_at->addMinutes(1),
-                ]);
-
-                // Most complete welcome
-                if ($index < 15) {
-                    OnboardingStepLog::create([
-                        'user_id' => $u->id,
-                        'step' => 'welcome',
-                        'action' => 'completed',
-                        'created_at' => $u->created_at->addMinutes(2),
-                    ]);
-                }
-
-                // Fewer view workspace
-                if ($index < 14) {
-                    OnboardingStepLog::create([
-                        'user_id' => $u->id,
-                        'step' => 'workspace',
-                        'action' => 'viewed',
-                        'created_at' => $u->created_at->addMinutes(3),
-                    ]);
-                }
-
-                // Even fewer complete workspace
-                if ($index < 11) {
-                    OnboardingStepLog::create([
-                        'user_id' => $u->id,
-                        'step' => 'workspace',
-                        'action' => 'completed',
-                        'created_at' => $u->created_at->addMinutes(5),
-                    ]);
-                }
-
-                // Some view plan
-                if ($index < 10) {
-                    OnboardingStepLog::create([
-                        'user_id' => $u->id,
-                        'step' => 'plan',
-                        'action' => 'viewed',
-                        'created_at' => $u->created_at->addMinutes(6),
-                    ]);
-                }
-
-                // Fewer complete plan
-                if ($index < 8) {
-                    OnboardingStepLog::create([
-                        'user_id' => $u->id,
-                        'step' => 'plan',
-                        'action' => 'completed',
-                        'created_at' => $u->created_at->addMinutes(8),
-                    ]);
-                }
-            }
-
-            // Seed default permission presets
-            $presets = [
-                ['name' => 'Team Lead', 'description' => 'Manage team members and view activity logs', 'permissions' => json_encode(['manage_team', 'view_activity_logs'])],
-                ['name' => 'Finance Manager', 'description' => 'Full billing access with activity visibility', 'permissions' => json_encode(['manage_billing', 'view_activity_logs'])],
-                ['name' => 'Operations Admin', 'description' => 'Manage webhooks and view activity logs', 'permissions' => json_encode(['manage_webhooks', 'view_activity_logs'])],
-                ['name' => 'Full Access', 'description' => 'All available permissions', 'permissions' => json_encode(['manage_team', 'manage_billing', 'manage_webhooks', 'view_activity_logs'])],
-            ];
-
-            foreach ($presets as $preset) {
-                PermissionPreset::firstOrCreate(
-                    ['name' => $preset['name']],
-                    $preset,
+            foreach ($permissions as $action => $description) {
+                $permission = Permission::updateOrCreate(
+                    ['slug' => Str::slug($moduleName).'-'.$action],
+                    [
+                        'name' => ucfirst($action).' '.$moduleName,
+                        'module_id' => $module->id,
+                        'description' => $description,
+                    ]
                 );
+
+                $permissionModelBySlug[$permission->slug] = $permission;
             }
+        }
 
-            // Seed sample status page incidents
-            $statusIncidents = [
+        // 2. Default roles.
+        $roles = [
+            'Super Admin' => 'Akses penuh ke seluruh sistem',
+            'Admin' => 'Mengelola pengguna, quiz, dan konten',
+            'Guru' => 'Membuat dan mengelola quiz untuk kelas',
+            'Siswa' => 'Mengikuti quiz dan duel',
+        ];
+
+        $roleModels = [];
+
+        foreach ($roles as $roleName => $description) {
+            $role = Role::updateOrCreate(
+                ['slug' => Str::slug($roleName)],
                 [
-                    'title' => 'Elevated API response times',
-                    'message' => 'We are investigating increased latency on API endpoints. Engineers are working on identifying the root cause.',
-                    'status' => 'degraded',
-                    'resolved_at' => now()->subDays(10),
-                    'created_at' => now()->subDays(10)->subHours(2),
-                ],
-                [
-                    'title' => 'Scheduled database maintenance',
-                    'message' => 'Routine database maintenance window from 02:00–04:00 UTC. Expect brief interruptions to write operations.',
-                    'status' => 'operational',
-                    'resolved_at' => now()->subDays(5),
-                    'created_at' => now()->subDays(5)->subHours(3),
-                ],
-                [
-                    'title' => 'Webhook delivery delays',
-                    'message' => 'Some webhook deliveries are being delayed by up to 10 minutes due to a queue backlog. Deliveries are not being lost.',
-                    'status' => 'degraded',
-                    'resolved_at' => null,
-                    'created_at' => now()->subHours(4),
-                ],
-            ];
+                    'name' => $roleName,
+                    'description' => $description,
+                    'is_system' => true,
+                ]
+            );
 
-            foreach ($statusIncidents as $incident) {
-                StatusIncident::create($incident);
-            }
+            $roleModels[$role->slug] = $role;
+        }
 
-            // Seed connected social accounts for demo user
-            ConnectedAccount::create([
-                'user_id' => $demo->id,
-                'provider' => 'github',
-                'provider_id' => '12345678',
-                'name' => 'Demo User',
-                'email' => 'demo@example.com',
-                'avatar' => 'https://avatars.githubusercontent.com/u/12345678?v=4',
-                'token' => encrypt('ghp_demo_token_'.Str::random(20)),
-            ]);
+        // 3. Permission assignments per role.
+        // Super Admin: everything.
+        $roleModels['super-admin']->permissions()->sync(collect($permissionModelBySlug)->pluck('id'));
 
-            ConnectedAccount::create([
-                'user_id' => $demo->id,
-                'provider' => 'google',
-                'provider_id' => '987654321',
-                'name' => 'Demo User',
-                'email' => 'demo.user@gmail.com',
-                'avatar' => null,
-                'token' => encrypt('ya29.demo_token_'.Str::random(20)),
-            ]);
+        // Admin: all except role/module delete.
+        $adminPermissions = collect($permissionModelBySlug)->filter(function (Permission $permission) {
+            return ! in_array($permission->slug, ['role-delete', 'module-delete']);
+        })->pluck('id');
+        $roleModels['admin']->permissions()->sync($adminPermissions);
 
-            // Seed user sessions for demo user (active sessions)
-            DB::table('sessions')->insert([
-                'id' => Str::random(40),
-                'user_id' => $demo->id,
-                'ip_address' => '192.168.1.100',
-                'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'payload' => base64_encode(serialize(['_token' => Str::random(40)])),
-                'last_activity' => time(),
+        // Guru: quiz + leaderboard view + dashboard.
+        $guruPermissions = collect($permissionModelBySlug)->filter(function (Permission $permission) {
+            return in_array($permission->slug, [
+                'dashboard-view',
+                'quiz-view',
+                'quiz-create',
+                'quiz-edit',
+                'leaderboard-view',
+                'user-view',
             ]);
+        })->pluck('id');
+        $roleModels['guru']->permissions()->sync($guruPermissions);
 
-            DB::table('sessions')->insert([
-                'id' => Str::random(40),
-                'user_id' => $demo->id,
-                'ip_address' => '10.0.0.50',
-                'user_agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-                'payload' => base64_encode(serialize(['_token' => Str::random(40)])),
-                'last_activity' => time() - 3600, // 1 hour ago
+        // Siswa: quiz + duel + leaderboard view only.
+        $siswaPermissions = collect($permissionModelBySlug)->filter(function (Permission $permission) {
+            return in_array($permission->slug, [
+                'dashboard-view',
+                'quiz-view',
+                'duel-view',
+                'duel-create',
+                'leaderboard-view',
             ]);
+        })->pluck('id');
+        $roleModels['siswa']->permissions()->sync($siswaPermissions);
 
-            // Seed admin notes on some users
-            UserNote::create([
-                'user_id' => $demo->id,
-                'admin_id' => $superadmin->id,
-                'note' => 'High-value customer. Engaged with premium features and submitted helpful feedback.',
-            ]);
+        // 4. Superadmin user only — no dummy data.
+        $superadmin = User::firstOrCreate(
+            ['email' => 'superadmin@example.com'],
+            [
+                'name' => 'Superadmin System',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+                'locale' => 'id',
+                'is_superadmin' => true,
+                'onboarded_at' => now(),
+            ]
+        );
 
-            UserNote::create([
-                'user_id' => $additionalUsers->first()->id,
-                'admin_id' => $superadmin->id,
-                'note' => 'Technical issue reported last week. Follow up required.',
-            ]);
-
-            // Create a workspace with 2FA enforced
-            $secureWorkspace = $workspaceService->create($admin, [
-                'name' => 'Secure Operations',
-            ]);
-            $secureWorkspace->update([
-                'require_two_factor' => true,
-                'allowed_email_domains' => ['securecorp.com'],
-            ]);
-
-            // Add demo user to this workspace
-            $secureWorkspace->addUser($demo, 'member');
-
-            // Create workspace with expired trial
-            $expiredWorkspace = $workspaceService->create($demo, [
-                'name' => 'Expired Trial Workspace',
-            ]);
-            $expiredWorkspace->update([
-                'trial_ends_at' => now()->subDays(5),
-            ]);
-        });
+        $superadmin->roles()->syncWithoutDetaching($roleModels['super-admin']->id);
+        $superadmin->createToken('Integration Agent')->plainTextToken;
     }
 }

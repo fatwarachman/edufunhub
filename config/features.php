@@ -52,6 +52,8 @@ return [
         'status_page' => env('FEATURE_STATUS_PAGE', true),
         'scheduled_tasks' => env('FEATURE_SCHEDULED_TASKS', true),
         'permission_presets' => env('FEATURE_PERMISSION_PRESETS', true),
+        'roles' => env('FEATURE_ROLES', true),
+        'modules' => env('FEATURE_MODULES', true),
         'maintenance_mode' => env('FEATURE_MAINTENANCE_MODE', true),
         'mail_templates' => env('FEATURE_MAIL_TEMPLATES', true),
         'system_notifications' => env('FEATURE_SYSTEM_NOTIFICATIONS', true),
