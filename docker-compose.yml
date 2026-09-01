@@ -1,4 +1,34 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edufunhub-app
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8096:8000"
+    volumes:
+      - edufunhub-storage:/app/storage
+    depends_on:
+      - db
+    networks:
+      - edufunhub-net
+
+  db:
+    image: mariadb:11
+    container_name: edufunhub-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-edufunhub_root_secret}
+      MARIADB_DATABASE: ${DB_DATABASE:-edufunhub}
+      MARIADB_USER: ${DB_USERNAME:-edufunhub}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-edufunhub_secret}
+    volumes:
+      - edufunhub-db:/var/lib/mysql
+    networks:
+      - edufunhub-net
+
   web:
     image: nginx:alpine
     container_name: edufunhub-web
@@ -14,7 +44,7 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: edufunhub-tunnel
     restart: unless-stopped
-    command: tunnel --no-autoupdate run --token eyJhIjoiNDY4MmFkOTZlOGUyOWM1MTNhZWIwNDY2ZTBkNTMxMDYiLCJ0IjoiY2I2NDI4NmQtZTI1Yy00ODliLTljYjktMWI4M2I1YTFlNjdlIiwicyI6IlpqbGhZakF6TldVdFl6azNaaTAwTURsa0xXRXhOVEF0WXpnek5tVTRNMk15TlRKbCJ9
+    command: tunnel --no-autoupdate run --token eyJhIj...bCJ9
     networks:
       - edufunhub-net
 
@@ -22,3 +52,7 @@ networks:
   edufunhub-net:
     name: edufunhub-net
     driver: bridge
+
+volumes:
+  edufunhub-storage:
+  edufunhub-db:

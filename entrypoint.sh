@@ -3,17 +3,15 @@
 # Run database migrations
 php artisan migrate --force
 
-# Optimize the application
+# Cache config + views (skip route cache — starter has duplicate route name collision)
 php artisan config:cache
-php artisan route:cache
 php artisan view:cache
-php artisan optimize
 
 # queue work in background
-php artisan queue:work --daemon --queue=high,low &
+php artisan queue:work --queue=high,low &
 
-# Start Reverb WebSocket server in background
-php artisan reverb:start --host=0.0.0.0 --port=8080 &
+# Start Reverb WebSocket server in background (skip on error, optional)
+php artisan reverb:start --host=0.0.0.0 --port=8080 2>/dev/null &
 
-# Start the server
-exec php artisan octane:frankenphp --host=0.0.0.0 --port=8000
+# Start the server (plain PHP dev server — robust for docker stack)
+exec php artisan serve --host=0.0.0.0 --port=8000

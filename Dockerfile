@@ -1,28 +1,40 @@
-FROM xcoagency/laravel-frankenphp-octane:latest
-
+# Build stage: composer deps (platform requirements incl. bcmath)
+FROM php:8.4-cli-alpine AS composer-build
+RUN docker-php-ext-install bcmath pdo_mysql && \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 WORKDIR /app
-COPY . /app
+COPY composer.json composer.lock ./
+RUN composer install --no-scripts --no-interaction --prefer-dist
 
-# Install Node.js and pnpm
+# Runtime: FrankenPHP + Node + pnpm (Node stage needs PHP for wayfinder:generate)
+FROM dunglas/frankenphp:1 AS app
+WORKDIR /app
+
+# PHP extensions
+RUN install-php-extensions pdo_mysql redis bcmath pcntl
+
+# Node.js + pnpm for asset build
 RUN apt-get update && \
-    apt-get install -y curl && \
     curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g pnpm && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP dependencies (with dev deps for wayfinder)
-RUN composer install --optimize-autoloader --ignore-platform-reqs --no-scripts --no-interaction
+# Laravel app + composer deps
+COPY . /app
+COPY --from=composer-build /app/vendor /app/vendor
 
 # Build frontend assets
 ENV CI=true
-RUN pnpm install && pnpm run build
+# Generate autoloader before pnpm build (wayfinder needs artisan; no-autoloader install skips it)
+RUN composer dump-autoload --no-interaction 2>/dev/null; \
+    php artisan key:generate --force 2>/dev/null || true; \
+    pnpm install && pnpm run build
 
-# # Remove dev dependencies after build
-# RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
+# Prod autoloader
+RUN composer dump-autoload --optimize --classmap-authoritative --no-interaction 2>/dev/null || true
 
-# Add entrypoint script
+# Entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
