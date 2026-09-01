@@ -1,0 +1,381 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\PermissionPreset;
+use App\Models\User;
+use App\Models\Workspace;
+use App\Models\WorkspaceInvitation;
+use App\Services\InvitationService;
+use App\Services\WorkspaceService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+class TeamController extends Controller
+{
+    public function __construct(
+        protected InvitationService $invitationService,
+        protected WorkspaceService $workspaceService
+    ) {}
+
+    /**
+     * Display the team members list.
+     */
+    public function index(Request $request): Response
+    {
+        $user = $request->user();
+        $workspace = $user->currentWorkspace;
+
+        return Inertia::render('Team/index', [
+            'workspace' => [
+                'id' => $workspace->id,
+                'name' => $workspace->name,
+                'owner_id' => $workspace->owner_id,
+                'plan' => $workspace->plan_name,
+            ],
+            'members' => $workspace->users()
+                ->select('users.id', 'users.name', 'users.email', 'users.bio', 'users.timezone', 'users.last_seen_at')
+                ->get()
+                ->map(fn ($member) => [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'email' => $member->email,
+                    'bio' => $member->bio,
+                    'timezone' => $member->timezone,
+                    'last_seen_at' => $member->last_seen_at?->toISOString(),
+                    'role' => $member->pivot->role,
+                    'permissions' => json_decode($member->pivot->permissions, true) ?? [],
+                    'joined_at' => $member->pivot->created_at,
+                    'is_current_user' => $member->id === $user->id,
+                ]),
+            'pendingInvitations' => $workspace->invitations()
+                ->select('id', 'email', 'role', 'expires_at', 'created_at')
+                ->get(),
+            'inviteLinks' => $workspace->inviteLinks()
+                ->select('id', 'token', 'role', 'max_uses', 'uses_count', 'expires_at', 'created_at')
+                ->latest()
+                ->get()
+                ->map(fn ($link) => [
+                    'id' => $link->id,
+                    'token' => $link->token,
+                    'role' => $link->role,
+                    'max_uses' => $link->max_uses,
+                    'uses_count' => $link->uses_count,
+                    'expires_at' => $link->expires_at?->toISOString(),
+                    'created_at' => $link->created_at->toISOString(),
+                    'url' => route('invite-links.show', $link->token),
+                    'is_usable' => $link->isUsable(),
+                ]),
+            'userRole' => $workspace->getUserRole($user),
+            'canInvite' => $this->invitationService->canInvite($workspace),
+            'memberLimitMessage' => $this->invitationService->getMemberLimitMessage($workspace),
+            'permissionPresets' => PermissionPreset::query()->orderBy('name')->get(['id', 'name', 'description', 'permissions']),
+        ]);
+    }
+
+    /**
+     * Send an invitation to join the workspace.
+     */
+    public function invite(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $workspace = $user->currentWorkspace;
+        Gate::authorize('manageTeam', $workspace);
+
+        $validated = $request->validate([
+            'email' => ['required', 'email', 'max:255'],
+            'role' => ['required', Rule::in([Workspace::ROLE_ADMIN, Workspace::ROLE_MEMBER, Workspace::ROLE_VIEWER])],
+        ]);
+
+        if (! $this->invitationService->canInvite($workspace)) {
+            return redirect()->back()
+                ->with('error', 'You have reached your team member limit. Please upgrade your plan to invite more members.');
+        }
+
+        try {
+            $this->invitationService->invite($workspace, $validated['email'], $validated['role']);
+
+            return redirect()->back()
+                ->with('success', "Invitation sent to {$validated['email']}.");
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->back()
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Remove a member from the workspace.
+     */
+    public function removeMember(Request $request, User $user): RedirectResponse
+    {
+        $currentUser = $request->user();
+        $workspace = $currentUser->currentWorkspace;
+        Gate::authorize('manageTeam', $workspace);
+
+        // Cannot remove the owner
+        if ($workspace->userIsOwner($user)) {
+            return redirect()->back()
+                ->with('error', 'Cannot remove the workspace owner.');
+        }
+
+        // Cannot remove yourself unless you're not the owner
+        if ($user->id === $currentUser->id) {
+            return redirect()->back()
+                ->with('error', 'You cannot remove yourself from the workspace.');
+        }
+
+        $workspace->removeUser($user);
+        $workspace->syncSubscriptionQuantity();
+
+        // If the removed user's current workspace is this one, switch them to their personal workspace
+        if ($user->current_workspace_id === $workspace->id) {
+            $personalWorkspace = $user->personalWorkspace();
+            if ($personalWorkspace) {
+                $user->switchWorkspace($personalWorkspace);
+            }
+        }
+
+        return redirect()->back()
+            ->with('success', "{$user->name} has been removed from the workspace.");
+    }
+
+    /**
+     * Update a member's role.
+     */
+    public function updateRole(Request $request, User $user): RedirectResponse
+    {
+        $currentUser = $request->user();
+        $workspace = $currentUser->currentWorkspace;
+        Gate::authorize('manageTeam', $workspace);
+
+        if (! $workspace->hasUser($user)) {
+            abort(404);
+        }
+
+        if ($user->id === $currentUser->id) {
+            return redirect()->back()
+                ->with('error', 'You cannot change your own role.');
+        }
+
+        $validated = $request->validate([
+            'role' => ['required', Rule::in([Workspace::ROLE_ADMIN, Workspace::ROLE_MEMBER, Workspace::ROLE_VIEWER])],
+        ]);
+
+        // Cannot change owner's role
+        if ($workspace->userIsOwner($user)) {
+            return redirect()->back()
+                ->with('error', 'Cannot change the role of the workspace owner.');
+        }
+
+        $workspace->updateUserRole($user, $validated['role']);
+
+        return redirect()->back()
+            ->with('success', "{$user->name}'s role has been updated to {$validated['role']}.");
+    }
+
+    /**
+     * Update a member's granular permissions.
+     */
+    public function updatePermissions(Request $request, User $user): RedirectResponse
+    {
+        $currentUser = $request->user();
+        $workspace = $currentUser->currentWorkspace;
+        Gate::authorize('manageTeam', $workspace);
+
+        if ($user->id === $currentUser->id) {
+            return redirect()->back()
+                ->with('error', 'You cannot change your own permissions.');
+        }
+
+        $allowedPermissions = [
+            'manage_team',
+            'manage_billing',
+            'manage_webhooks',
+            'view_activity_logs',
+        ];
+
+        $validated = $request->validate([
+            'permissions' => ['present', 'array'],
+            'permissions.*' => ['string', Rule::in($allowedPermissions)],
+        ]);
+
+        if (! $workspace->hasUser($user)) {
+            abort(404);
+        }
+
+        if ($workspace->userIsOwner($user)) {
+            return redirect()->back()->with('error', 'Cannot modify the permissions of the workspace owner.');
+        }
+
+        if ($workspace->userIsAdmin($user)) {
+            return redirect()->back()->with('error', 'Cannot modify granular permissions for admin users.');
+        }
+
+        $workspace->users()->updateExistingPivot($user->id, [
+            'permissions' => json_encode($validated['permissions']),
+        ]);
+
+        return redirect()->back()
+            ->with('success', "{$user->name}'s granular permissions have been updated.");
+    }
+
+    /**
+     * Transfer workspace ownership to another user.
+     */
+    public function transferOwnership(Request $request, User $user): RedirectResponse
+    {
+        $currentUser = $request->user();
+        $workspace = $currentUser->currentWorkspace;
+        Gate::authorize('delete', $workspace);
+
+        // Cannot transfer personal workspace
+        if ($workspace->personal_workspace) {
+            return redirect()->back()
+                ->with('error', 'Cannot transfer ownership of a personal workspace.');
+        }
+
+        // Target must be an admin
+        if (! $workspace->userIsAdmin($user)) {
+            return redirect()->back()
+                ->with('error', 'You can only transfer ownership to an admin.');
+        }
+
+        try {
+            $this->workspaceService->transferOwnership($workspace, $user);
+
+            return redirect()->back()
+                ->with('success', "Workspace ownership has been transferred to {$user->name}.");
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->back()
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Export workspace members as a CSV file.
+     */
+    public function exportMembers(Request $request): StreamedResponse
+    {
+        $user = $request->user();
+        $workspace = $user->currentWorkspace;
+
+        Gate::authorize('manageTeam', $workspace);
+
+        $members = $workspace->users()
+            ->select('users.id', 'users.name', 'users.email', 'users.timezone')
+            ->get()
+            ->map(fn ($member) => [
+                $member->id,
+                $member->name,
+                $member->email,
+                $member->pivot->role,
+                $member->timezone ?? '',
+                $member->pivot->created_at?->toDateTimeString() ?? '',
+            ]);
+
+        return response()->streamDownload(function () use ($members) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['ID', 'Name', 'Email', 'Role', 'Timezone', 'Joined At']);
+            foreach ($members as $row) {
+                fputcsv($handle, $row);
+            }
+            fclose($handle);
+        }, 'members-'.now()->format('Y-m-d').'.csv', [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    /**
+     * Perform a bulk action (remove or change_role) on multiple workspace members.
+     */
+    public function bulkAction(Request $request): RedirectResponse
+    {
+        $currentUser = $request->user();
+        $workspace = $currentUser->currentWorkspace;
+        Gate::authorize('manageTeam', $workspace);
+
+        $validated = $request->validate([
+            'action' => ['required', Rule::in(['remove', 'change_role'])],
+            'user_ids' => ['required', 'array', 'min:1'],
+            'user_ids.*' => ['required', 'integer', 'exists:users,id'],
+            'role' => ['required_if:action,change_role', Rule::in([Workspace::ROLE_ADMIN, Workspace::ROLE_MEMBER, Workspace::ROLE_VIEWER])],
+        ]);
+
+        $targets = User::whereIn('id', $validated['user_ids'])->get();
+        $processed = 0;
+
+        foreach ($targets as $target) {
+            if ($workspace->userIsOwner($target) || $target->id === $currentUser->id || ! $workspace->hasUser($target)) {
+                continue;
+            }
+
+            if ($validated['action'] === 'remove') {
+                $workspace->removeUser($target);
+                $workspace->syncSubscriptionQuantity();
+
+                if ($target->current_workspace_id === $workspace->id) {
+                    $personalWorkspace = $target->personalWorkspace();
+                    if ($personalWorkspace) {
+                        $target->switchWorkspace($personalWorkspace);
+                    }
+                }
+            } else {
+                $workspace->updateUserRole($target, $validated['role']);
+            }
+
+            $processed++;
+        }
+
+        $noun = $processed !== 1 ? 'members' : 'member';
+
+        $message = $validated['action'] === 'remove'
+            ? "{$processed} {$noun} removed from the workspace."
+            : "{$processed} {$noun} role updated to {$validated['role']}.";
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    /**
+     * Cancel a pending invitation.
+     */
+    public function cancelInvitation(Request $request, WorkspaceInvitation $invitation): RedirectResponse
+    {
+        $user = $request->user();
+        $workspace = $user->currentWorkspace;
+        Gate::authorize('manageTeam', $workspace);
+
+        // Ensure invitation belongs to current workspace
+        if ($invitation->workspace_id !== $workspace->id) {
+            abort(403);
+        }
+
+        $this->invitationService->cancel($invitation);
+
+        return redirect()->back()
+            ->with('success', 'Invitation cancelled.');
+    }
+
+    /**
+     * Resend an invitation, resetting the expiry to 7 days from now.
+     */
+    public function resendInvitation(Request $request, WorkspaceInvitation $invitation): RedirectResponse
+    {
+        $user = $request->user();
+        $workspace = $user->currentWorkspace;
+        Gate::authorize('manageTeam', $workspace);
+
+        if ($invitation->workspace_id !== $workspace->id) {
+            abort(403);
+        }
+
+        $this->invitationService->invite($workspace, $invitation->email, $invitation->role);
+
+        return redirect()->back()
+            ->with('success', 'Invitation resent.');
+    }
+}

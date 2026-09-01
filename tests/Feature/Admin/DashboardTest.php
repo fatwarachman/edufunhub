@@ -1,0 +1,64 @@
+<?php
+
+use App\Models\User;
+use App\Models\Workspace;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
+
+uses(RefreshDatabase::class);
+
+it('redirects guests to login when accessing admin dashboard', function () {
+    $response = $this->get('/admin/dashboard');
+
+    $response->assertRedirect('/login');
+});
+
+it('aborts with 403 when a standard user accesses admin dashboard', function () {
+    $user = User::factory()->create([
+        'is_superadmin' => false,
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->get('/admin/dashboard');
+
+    $response->assertForbidden();
+});
+
+it('allows superadmins to access the dashboard and see system metrics', function () {
+    // Create some dummy data to count
+    User::factory()->count(3)->create();
+    Workspace::factory()->count(2)->create();
+
+    $superadmin = User::factory()->create([
+        'is_superadmin' => true,
+    ]);
+
+    $this->actingAs($superadmin);
+
+    $response = $this->get('/admin/dashboard');
+
+    $response->assertSuccessful();
+
+    // In an Inertia test, you can test the Inertia page and passed props
+    $response->assertInertia(
+        fn (AssertableInertia $page) => $page
+            ->component('admin/dashboard')
+            ->has(
+                'metrics',
+                fn (AssertableInertia $metrics) => $metrics
+                    ->where('total_users', User::count())
+                    ->where('total_workspaces', Workspace::count())
+                    ->has('active_subscriptions')
+                    ->has('new_users_30d')
+                    ->has('user_growth_percent')
+                    ->has('workspace_growth_percent')
+                    ->has('mrr')
+                    ->has('churn_rate')
+                    ->has('avg_first_response_seconds')
+            )
+            ->has('dailySignups')
+            ->has('planDistribution')
+            ->has('recent_users')
+    );
+});

@@ -1,0 +1,105 @@
+import {
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { UserInfo } from '@/components/user-info';
+import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import { useTranslations } from '@/hooks/use-translations';
+import { logout } from '@/routes';
+import { edit } from '@/routes/profile';
+import { type User } from '@/types';
+import { Link, router } from '@inertiajs/react';
+import { CreditCard, LogOut, Settings, UserCog, Users } from 'lucide-react';
+
+interface UserMenuContentProps {
+    user: User;
+}
+
+export function UserMenuContent({ user }: UserMenuContentProps) {
+    const cleanup = useMobileNavigation();
+    const { t } = useTranslations();
+
+    const handleLogout = () => {
+        cleanup();
+        router.flushAll();
+    };
+
+    return (
+        <>
+            <DropdownMenuLabel className="p-0 font-normal">
+                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    <UserInfo user={user} showEmail={true} />
+                </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full"
+                        href="/workspaces/settings"
+                        as="button"
+                        prefetch
+                        onClick={cleanup}
+                    >
+                        <Settings className="mr-2" />
+                        {t(
+                            'navigation.workspace_settings',
+                            'Workspace Settings',
+                        )}
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full"
+                        href={edit()}
+                        as="button"
+                        prefetch
+                        onClick={cleanup}
+                    >
+                        <UserCog className="mr-2" />
+                        {t('navigation.profile_settings', 'Profile Settings')}
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full"
+                        href="/team"
+                        as="button"
+                        prefetch
+                        onClick={cleanup}
+                    >
+                        <Users className="mr-2" />
+                        {t('navigation.team', 'Team')}
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full"
+                        href="/billing"
+                        as="button"
+                        prefetch
+                        onClick={cleanup}
+                    >
+                        <CreditCard className="mr-2" />
+                        {t('navigation.billing', 'Billing')}
+                    </Link>
+                </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+                <Link
+                    className="block w-full"
+                    href={logout()}
+                    as="button"
+                    onClick={handleLogout}
+                    data-test="logout-button"
+                >
+                    <LogOut className="mr-2" />
+                    {t('navigation.log_out', 'Log out')}
+                </Link>
+            </DropdownMenuItem>
+        </>
+    );
+}
