@@ -174,12 +174,12 @@ export default function Login({
                             <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                                 Developer Quick Login
                             </span>
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-1 gap-2">
                                 <Button
                                     type="button"
                                     variant="secondary"
                                     size="sm"
-                                    className="h-8 bg-bubble-orange/15 px-2 text-xs text-bubble-orange hover:bg-bubble-orange/25 dark:bg-bubble-orange/20 dark:text-orange-300 dark:hover:bg-bubble-orange/30"
+                                    className="h-9 bg-bubble-orange/15 px-2 text-xs text-bubble-orange hover:bg-bubble-orange/25 dark:bg-bubble-orange/20 dark:text-orange-300 dark:hover:bg-bubble-orange/30"
                                     onClick={() => {
                                         const e = document.getElementById(
                                             'email',
@@ -195,48 +195,6 @@ export default function Login({
                                     }}
                                 >
                                     Super Admin
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    className="h-8 bg-bubble-purple/15 px-2 text-xs text-bubble-purple hover:bg-bubble-purple/25 dark:bg-bubble-purple/20 dark:text-purple-300 dark:hover:bg-bubble-purple/30"
-                                    onClick={() => {
-                                        const e = document.getElementById(
-                                            'email',
-                                        ) as HTMLInputElement;
-                                        const p = document.getElementById(
-                                            'password',
-                                        ) as HTMLInputElement;
-                                        if (e && p) {
-                                            e.value = 'admin@example.com';
-                                            p.value = 'password';
-                                            e.form?.requestSubmit();
-                                        }
-                                    }}
-                                >
-                                    Admin
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    className="h-8 bg-bubble-green/15 px-2 text-xs text-bubble-green hover:bg-bubble-green/25 dark:bg-bubble-green/20 dark:text-teal-300 dark:hover:bg-bubble-green/30"
-                                    onClick={() => {
-                                        const e = document.getElementById(
-                                            'email',
-                                        ) as HTMLInputElement;
-                                        const p = document.getElementById(
-                                            'password',
-                                        ) as HTMLInputElement;
-                                        if (e && p) {
-                                            e.value = 'demo@example.com';
-                                            p.value = 'password';
-                                            e.form?.requestSubmit();
-                                        }
-                                    }}
-                                >
-                                    Demo
                                 </Button>
                             </div>
                         </div>
