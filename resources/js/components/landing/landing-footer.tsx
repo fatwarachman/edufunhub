@@ -1,16 +1,5 @@
 import { Link } from '@inertiajs/react';
-import {
-    Award,
-    Dice6,
-    Gamepad2,
-    Heart,
-    MapPin,
-    Shield,
-    ShieldCheck,
-    Sparkles,
-    Trophy,
-    User,
-} from 'lucide-react';
+import { Gamepad2, Heart, ShieldCheck } from 'lucide-react';
 
 export function LandingFooter() {
     const footerLinks = {
@@ -59,7 +48,10 @@ export function LandingFooter() {
     };
 
     return (
-        <footer className="border-t-4 border-[#1f2a44] bg-[#1f2a44] text-white">
+        <footer
+            data-gsap-footer
+            className="border-t-4 border-[#1f2a44] bg-[#1f2a44] text-white"
+        >
             <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-6">
                     {/* Brand column */}
@@ -69,12 +61,16 @@ export function LandingFooter() {
                                 <Gamepad2 className="h-6 w-6 stroke-[2.5] text-white" />
                             </div>
                             <span className="font-display text-2xl font-black text-white">
-                                EduFun<span className="text-[#FF6584]">Hub</span>
+                                EduFun
+                                <span className="text-[#FF6584]">Hub</span>
                             </span>
                         </Link>
 
-                        <p className="mt-4 max-w-sm text-sm font-semibold leading-relaxed text-white/70">
-                            Portal pembelajaran online gamifikasi #1 di Indonesia. Mengubah materi pelajaran menjadi petualangan game seru agar siswa mengerti dengan tuntas tanpa rasa bosan. 100% Gratis selamanya!
+                        <p className="mt-4 max-w-sm text-sm leading-relaxed font-semibold text-white/70">
+                            Portal pembelajaran online gamifikasi #1 di
+                            Indonesia. Mengubah materi pelajaran menjadi
+                            petualangan game seru agar siswa mengerti dengan
+                            tuntas tanpa rasa bosan. 100% Gratis selamanya!
                         </p>
 
                         <div className="mt-6 flex flex-wrap gap-2 text-xs font-bold text-white/80">
@@ -91,7 +87,7 @@ export function LandingFooter() {
                     {/* Link columns */}
                     {Object.values(footerLinks).map((section) => (
                         <div key={section.title}>
-                            <h3 className="font-display text-xs font-black uppercase tracking-wider text-[#FFF176]">
+                            <h3 className="font-display text-xs font-black tracking-wider text-[#FFF176] uppercase">
                                 {section.title}
                             </h3>
                             <ul className="mt-4 space-y-2.5">
@@ -113,13 +109,23 @@ export function LandingFooter() {
                 {/* Bottom Bar */}
                 <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-xs font-bold text-white/60 sm:flex-row">
                     <p>
-                        © {new Date().getFullYear()} EduFunHub Indonesia. Dikembangkan oleh{' '}
-                        <span className="font-black text-[#FFF176]">fatwarachman</span>. Seluruh hak cipta dilindungi.
+                        © {new Date().getFullYear()} EduFunHub Indonesia.
+                        Dikembangkan oleh{' '}
+                        <span className="font-black text-[#FFF176]">
+                            fatwarachman
+                        </span>
+                        . Seluruh hak cipta dilindungi.
                     </p>
                     <p className="flex items-center gap-1 text-[#00C9A7]">
                         <span>Dibuat dengan</span>
                         <Heart className="h-3.5 w-3.5 fill-[#FF6584] text-[#FF6584]" />
-                        <span>oleh <span className="font-bold text-white">fatwarachman</span> untuk kemajuan pendidikan Indonesia</span>
+                        <span>
+                            oleh{' '}
+                            <span className="font-bold text-white">
+                                fatwarachman
+                            </span>{' '}
+                            untuk kemajuan pendidikan Indonesia
+                        </span>
                     </p>
                 </div>
             </div>

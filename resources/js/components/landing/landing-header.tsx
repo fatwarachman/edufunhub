@@ -9,7 +9,6 @@ import {
     Menu,
     Sparkles,
     Trophy,
-    Users,
     Zap,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -23,7 +22,12 @@ export function LandingHeader({ canRegister = true }: LandingHeaderProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const navLinks = [
-        { href: '/gamelist', label: 'Daftar Game', icon: Gamepad2, isRoute: true },
+        {
+            href: '/gamelist',
+            label: 'Daftar Game',
+            icon: Gamepad2,
+            isRoute: true,
+        },
         { href: '#game-modes', label: 'Mode Game', icon: Zap },
         { href: '#leaderboard', label: 'Top Komunitas', icon: Trophy },
         { href: '#teachers', label: 'Ruang Guru', icon: GraduationCap },
@@ -33,7 +37,11 @@ export function LandingHeader({ canRegister = true }: LandingHeaderProps) {
     const scrollTo = (href: string) => {
         const el = document.querySelector(href);
         if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const headerOffset = 92;
+            const top =
+                el.getBoundingClientRect().top + window.scrollY - headerOffset;
+
+            window.scrollTo({ top, behavior: 'smooth' });
         }
         setMobileMenuOpen(false);
     };
@@ -53,9 +61,10 @@ export function LandingHeader({ canRegister = true }: LandingHeaderProps) {
                     <div className="flex flex-col">
                         <div className="flex items-center gap-1.5">
                             <span className="font-display text-2xl font-black tracking-tight text-[#1f2a44]">
-                                EduFun<span className="text-[#FF6584]">Hub</span>
+                                EduFun
+                                <span className="text-[#FF6584]">Hub</span>
                             </span>
-                            <span className="rounded-full border-2 border-[#1f2a44] bg-[#FFF176] px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#1f2a44] shadow-[1.5px_1.5px_0px_#1f2a44]">
+                            <span className="rounded-full border-2 border-[#1f2a44] bg-[#FFF176] px-2 py-0.5 text-[10px] font-black tracking-wider text-[#1f2a44] uppercase shadow-[1.5px_1.5px_0px_#1f2a44]">
                                 100% Free
                             </span>
                         </div>
@@ -136,6 +145,16 @@ export function LandingHeader({ canRegister = true }: LandingHeaderProps) {
 
                 {/* Mobile Hamburger */}
                 <div className="flex items-center gap-2 lg:hidden">
+                    <Button
+                        asChild
+                        size="sm"
+                        className="rounded-xl border-2 border-[#1f2a44] bg-[#FF9E44] px-3 font-display font-black text-white shadow-[2px_2px_0px_#1f2a44] hover:bg-[#ff8f29]"
+                    >
+                        <Link href={auth.user ? dashboard() : register()}>
+                            <Gamepad2 className="mr-1.5 h-4 w-4" />
+                            Main
+                        </Link>
+                    </Button>
                     <Sheet
                         open={mobileMenuOpen}
                         onOpenChange={setMobileMenuOpen}
@@ -160,7 +179,10 @@ export function LandingHeader({ canRegister = true }: LandingHeaderProps) {
                                         <Gamepad2 className="h-6 w-6 text-white" />
                                     </div>
                                     <div className="font-display text-xl font-black text-[#1f2a44]">
-                                        EduFun<span className="text-[#FF6584]">Hub</span>
+                                        EduFun
+                                        <span className="text-[#FF6584]">
+                                            Hub
+                                        </span>
                                     </div>
                                 </div>
 
@@ -174,7 +196,9 @@ export function LandingHeader({ canRegister = true }: LandingHeaderProps) {
                                                 <Link
                                                     key={link.href}
                                                     href={link.href}
-                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    onClick={() =>
+                                                        setMobileMenuOpen(false)
+                                                    }
                                                     className="flex items-center gap-3 rounded-2xl border-2 border-transparent px-4 py-3 text-base font-bold text-[#1f2a44] transition-all hover:border-[#1f2a44] hover:bg-white hover:shadow-[3px_3px_0px_#1f2a44]"
                                                 >
                                                     <Icon className="h-5 w-5 text-[#FF9E44]" />
@@ -216,7 +240,9 @@ export function LandingHeader({ canRegister = true }: LandingHeaderProps) {
                                                 asChild
                                                 className="w-full rounded-2xl border-3 border-[#1f2a44] bg-white py-5 font-bold text-[#1f2a44] shadow-[3px_3px_0px_#1f2a44]"
                                             >
-                                                <Link href={login()}>Masuk</Link>
+                                                <Link href={login()}>
+                                                    Masuk
+                                                </Link>
                                             </Button>
                                             {canRegister && (
                                                 <Button

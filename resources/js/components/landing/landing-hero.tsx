@@ -14,11 +14,9 @@ import {
     Flame,
     Gamepad2,
     GraduationCap,
-    Heart,
     School,
     Shield,
     Sparkles,
-    Star,
     Swords,
     Trophy,
     Users,
@@ -28,7 +26,10 @@ import { useState } from 'react';
 
 export function LandingHero() {
     const { auth } = usePage<SharedData>().props;
-    const [heroLevelTab, setHeroLevelTab] = useState<'tk' | 'sd1' | 'univ'>('tk');
+    const [heroLevelTab, setHeroLevelTab] = useState<'tk' | 'sd1' | 'univ'>(
+        'tk',
+    );
+    const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 
     const quickStats = [
         {
@@ -69,7 +70,8 @@ export function LandingHero() {
     const heroQuestions = {
         tk: {
             title: 'Taman Kanak-Kanak & PAUD • Berhitung Ceria',
-            question: '🍎 Ada 3 buah apel manis di keranjang. Ibu menambah lagi 2 buah apel. Sekarang ada berapa apel?',
+            question:
+                '🍎 Ada 3 buah apel manis di keranjang. Ibu menambah lagi 2 buah apel. Sekarang ada berapa apel?',
             badge: 'TK / PAUD',
             badgeBg: 'bg-[#FF9E44]',
             options: [
@@ -82,7 +84,8 @@ export function LandingHero() {
         },
         sd1: {
             title: 'SD Kelas 1 • Pengenalan Huruf & Kata',
-            question: '🦁 Lengkapi huruf yang hilang untuk nama hewan raja hutan ini: "S - I - N - G - [...]"',
+            question:
+                '🦁 Lengkapi huruf yang hilang untuk nama hewan raja hutan ini: "S - I - N - G - [...]"',
             badge: 'SD Kelas 1',
             badgeBg: 'bg-[#00C9A7]',
             options: [
@@ -95,7 +98,8 @@ export function LandingHero() {
         },
         univ: {
             title: 'Fisika Terapan • Level Lanjut / SMA',
-            question: '"Jika sebuah satelit mengorbit Bumi pada ketinggian tetap, gaya apa yang bertindak sebagai gaya sentripetalnya?"',
+            question:
+                '"Jika sebuah satelit mengorbit Bumi pada ketinggian tetap, gaya apa yang bertindak sebagai gaya sentripetalnya?"',
             badge: 'SMA / Universitas',
             badgeBg: 'bg-[#845EC2]',
             options: [
@@ -114,17 +118,30 @@ export function LandingHero() {
         <section className="relative overflow-hidden bg-[#FFF9E6] pt-12 pb-20 lg:pt-16 lg:pb-28">
             {/* Animated Background Doodles & Dots */}
             <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-                <div className="absolute top-10 left-10 h-72 w-72 rounded-full bg-[#FFF176]/40 blur-3xl" />
-                <div className="absolute top-40 right-10 h-96 w-96 rounded-full bg-[#FF6584]/20 blur-3xl" />
-                <div className="absolute -bottom-10 left-1/3 h-80 w-80 rounded-full bg-[#00C9A7]/25 blur-3xl" />
+                <div
+                    data-gsap-hero-bg
+                    className="absolute top-10 left-10 h-72 w-72 rounded-full bg-[#FFF176]/40 blur-3xl"
+                />
+                <div
+                    data-gsap-hero-bg
+                    className="absolute top-40 right-10 h-96 w-96 rounded-full bg-[#FF6584]/20 blur-3xl"
+                />
+                <div
+                    data-gsap-hero-bg
+                    className="absolute -bottom-10 left-1/3 h-80 w-80 rounded-full bg-[#00C9A7]/25 blur-3xl"
+                />
 
                 {/* Floating Geometric Ornaments */}
-                <div className="animate-float absolute top-24 left-8 hidden lg:block">
+                <div
+                    data-gsap-hero-ornament
+                    className="animate-float absolute top-24 left-8 hidden lg:block"
+                >
                     <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-3 border-[#1f2a44] bg-[#FFF176] shadow-[3px_3px_0px_#1f2a44]">
                         <Coins className="h-7 w-7 text-[#FF9E44]" />
                     </div>
                 </div>
                 <div
+                    data-gsap-hero-ornament
                     className="animate-float absolute top-36 right-12 hidden lg:block"
                     style={{ animationDelay: '1.2s' }}
                 >
@@ -133,6 +150,7 @@ export function LandingHero() {
                     </div>
                 </div>
                 <div
+                    data-gsap-hero-ornament
                     className="animate-wiggle absolute bottom-20 left-16 hidden lg:block"
                     style={{ animationDelay: '0.8s' }}
                 >
@@ -145,7 +163,10 @@ export function LandingHero() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 {/* Hero Header Pill: 100% Gratis Dikedepankan */}
                 <div className="mx-auto max-w-4xl text-center">
-                    <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full border-3 border-[#1f2a44] bg-[#FFF176] px-4 py-1.5 shadow-[3px_3px_0px_#1f2a44]">
+                    <div
+                        data-gsap-hero-pill
+                        className="inline-flex flex-wrap items-center justify-center gap-2 rounded-full border-3 border-[#1f2a44] bg-[#FFF176] px-4 py-1.5 shadow-[3px_3px_0px_#1f2a44]"
+                    >
                         <span className="rounded-full border-2 border-[#1f2a44] bg-[#FF6584] px-2.5 py-0.5 font-display text-xs font-black text-white shadow-[1px_1px_0px_#1f2a44]">
                             100% GRATIS SELAMANYA
                         </span>
@@ -156,7 +177,10 @@ export function LandingHero() {
                     </div>
 
                     {/* Headline */}
-                    <h1 className="mt-6 font-display text-4xl font-black tracking-tight text-[#1f2a44] sm:text-6xl lg:text-7xl">
+                    <h1
+                        data-gsap-hero-title
+                        className="mt-6 font-display text-4xl font-black tracking-tight text-[#1f2a44] sm:text-6xl lg:text-7xl"
+                    >
                         Belajar Jadi{' '}
                         <span className="relative inline-block text-[#FF9E44]">
                             Game Seru
@@ -181,12 +205,27 @@ export function LandingHero() {
                     </h1>
 
                     {/* Subheadline */}
-                    <p className="mx-auto mt-6 max-w-2xl text-lg font-bold leading-relaxed text-slate-700 sm:text-xl">
-                        Mulai dari adik-adik <span className="text-[#FF6584]">TK & SD Kelas 1</span> hingga tingkat <span className="text-[#845EC2]">Universitas</span>, taklukkan kuis kilat, board game, dan quest edukasi. <strong className="text-[#1f2a44] underline decoration-[#00C9A7] decoration-4">100% Bebas Biaya</strong>, main solo atau mabar, kumpulkan poin dan harumkan nama sekolahmu!
+                    <p
+                        data-gsap-hero-copy
+                        className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed font-bold text-slate-700 sm:text-xl"
+                    >
+                        Mulai dari adik-adik{' '}
+                        <span className="text-[#FF6584]">TK & SD Kelas 1</span>{' '}
+                        hingga tingkat{' '}
+                        <span className="text-[#845EC2]">Universitas</span>,
+                        taklukkan kuis kilat, board game, dan quest edukasi.{' '}
+                        <strong className="text-[#1f2a44] underline decoration-[#00C9A7] decoration-4">
+                            100% Bebas Biaya
+                        </strong>
+                        , main solo atau mabar, kumpulkan poin dan harumkan nama
+                        sekolahmu!
                     </p>
 
                     {/* Badges Pill */}
-                    <div className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3">
+                    <div
+                        data-gsap-hero-badges
+                        className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3"
+                    >
                         {badges.map((b) => (
                             <span
                                 key={b}
@@ -199,7 +238,10 @@ export function LandingHero() {
                     </div>
 
                     {/* CTAs */}
-                    <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                    <div
+                        data-gsap-hero-ctas
+                        className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row"
+                    >
                         <Button
                             size="lg"
                             asChild
@@ -224,7 +266,10 @@ export function LandingHero() {
                         </Button>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-slate-600">
+                    <div
+                        data-gsap-hero-trust
+                        className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-slate-600"
+                    >
                         <span className="flex items-center gap-1 rounded-md border border-[#1f2a44] bg-[#E8FAF6] px-2 py-0.5 text-[#00C9A7]">
                             <Shield className="h-3.5 w-3.5" />
                             100% Gratis Tanpa Syarat
@@ -239,7 +284,10 @@ export function LandingHero() {
                 </div>
 
                 {/* Interactive Gaming Window Preview (Roblox/RPG Style Mockup) */}
-                <div className="relative mx-auto mt-12 max-w-5xl">
+                <div
+                    data-gsap-hero-preview
+                    className="relative mx-auto mt-12 max-w-5xl"
+                >
                     <div className="overflow-hidden rounded-3xl border-4 border-[#1f2a44] bg-white shadow-[8px_8px_0px_#1f2a44]">
                         {/* Game Topbar Chrome */}
                         <div className="flex flex-wrap items-center justify-between border-b-4 border-[#1f2a44] bg-[#1f2a44] px-4 py-3 text-white">
@@ -248,7 +296,8 @@ export function LandingHero() {
                                 <span className="h-3.5 w-3.5 rounded-full border border-black bg-[#FFF176]" />
                                 <span className="h-3.5 w-3.5 rounded-full border border-black bg-[#00C9A7]" />
                                 <span className="ml-3 font-display text-xs font-black tracking-wider text-[#FFF176] uppercase">
-                                    EduFunHub Arena • Pilihan Contoh Soal Jenjang
+                                    EduFunHub Arena • Pilihan Contoh Soal
+                                    Jenjang
                                 </span>
                             </div>
                             <div className="flex items-center gap-3 text-xs font-bold">
@@ -265,14 +314,17 @@ export function LandingHero() {
 
                         {/* Level Switcher Tab: TK, SD Kelas 1, Universitas */}
                         <div className="flex flex-wrap items-center justify-between gap-2 border-b-3 border-[#1f2a44] bg-[#FFFDE6] px-4 py-3">
-                            <span className="text-xs font-black uppercase text-[#1f2a44]">
+                            <span className="text-xs font-black text-[#1f2a44] uppercase">
                                 🎯 Klik Jenjang untuk Mencoba Soal:
                             </span>
                             <div className="flex flex-wrap gap-2">
                                 <button
                                     type="button"
-                                    onClick={() => setHeroLevelTab('tk')}
-                                    className={`flex items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3.5 py-1.5 text-xs font-black transition-all cursor-pointer ${
+                                    onClick={() => {
+                                        setHeroLevelTab('tk');
+                                        setSelectedAnswer(null);
+                                    }}
+                                    className={`flex cursor-pointer items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3.5 py-1.5 text-xs font-black transition-all ${
                                         heroLevelTab === 'tk'
                                             ? 'bg-[#FF9E44] text-white shadow-[2px_2px_0px_#1f2a44]'
                                             : 'bg-white text-[#1f2a44] hover:bg-slate-50'
@@ -283,8 +335,11 @@ export function LandingHero() {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setHeroLevelTab('sd1')}
-                                    className={`flex items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3.5 py-1.5 text-xs font-black transition-all cursor-pointer ${
+                                    onClick={() => {
+                                        setHeroLevelTab('sd1');
+                                        setSelectedAnswer(null);
+                                    }}
+                                    className={`flex cursor-pointer items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3.5 py-1.5 text-xs font-black transition-all ${
                                         heroLevelTab === 'sd1'
                                             ? 'bg-[#00C9A7] text-[#1f2a44] shadow-[2px_2px_0px_#1f2a44]'
                                             : 'bg-white text-[#1f2a44] hover:bg-slate-50'
@@ -295,8 +350,11 @@ export function LandingHero() {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setHeroLevelTab('univ')}
-                                    className={`flex items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3.5 py-1.5 text-xs font-black transition-all cursor-pointer ${
+                                    onClick={() => {
+                                        setHeroLevelTab('univ');
+                                        setSelectedAnswer(null);
+                                    }}
+                                    className={`flex cursor-pointer items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3.5 py-1.5 text-xs font-black transition-all ${
                                         heroLevelTab === 'univ'
                                             ? 'bg-[#845EC2] text-white shadow-[2px_2px_0px_#1f2a44]'
                                             : 'bg-white text-[#1f2a44] hover:bg-slate-50'
@@ -324,15 +382,68 @@ export function LandingHero() {
                                                     fill="none"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                 >
-                                                    <circle cx="24" cy="24" r="20" fill="#1f2a44" />
-                                                    <rect x="14" y="16" width="20" height="15" rx="5" fill="#FFF176" stroke="#1f2a44" strokeWidth="2" />
-                                                    <circle cx="20" cy="22" r="2.5" fill="#1f2a44" />
-                                                    <circle cx="28" cy="22" r="2.5" fill="#1f2a44" />
-                                                    <path d="M21 27 C22.5 28.5 25.5 28.5 27 27" stroke="#1f2a44" strokeWidth="2" strokeLinecap="round" />
-                                                    <rect x="11" y="20" width="3" height="7" rx="1.5" fill="#FF6584" />
-                                                    <rect x="34" y="20" width="3" height="7" rx="1.5" fill="#FF6584" />
-                                                    <path d="M18 16 L20 11 L28 11 L30 16" stroke="#FF6584" strokeWidth="2.5" strokeLinecap="round" />
-                                                    <path d="M12 40 C14 34 20 33 24 33 C28 33 34 34 36 40" fill="#00C9A7" stroke="#1f2a44" strokeWidth="2" />
+                                                    <circle
+                                                        cx="24"
+                                                        cy="24"
+                                                        r="20"
+                                                        fill="#1f2a44"
+                                                    />
+                                                    <rect
+                                                        x="14"
+                                                        y="16"
+                                                        width="20"
+                                                        height="15"
+                                                        rx="5"
+                                                        fill="#FFF176"
+                                                        stroke="#1f2a44"
+                                                        strokeWidth="2"
+                                                    />
+                                                    <circle
+                                                        cx="20"
+                                                        cy="22"
+                                                        r="2.5"
+                                                        fill="#1f2a44"
+                                                    />
+                                                    <circle
+                                                        cx="28"
+                                                        cy="22"
+                                                        r="2.5"
+                                                        fill="#1f2a44"
+                                                    />
+                                                    <path
+                                                        d="M21 27 C22.5 28.5 25.5 28.5 27 27"
+                                                        stroke="#1f2a44"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                    />
+                                                    <rect
+                                                        x="11"
+                                                        y="20"
+                                                        width="3"
+                                                        height="7"
+                                                        rx="1.5"
+                                                        fill="#FF6584"
+                                                    />
+                                                    <rect
+                                                        x="34"
+                                                        y="20"
+                                                        width="3"
+                                                        height="7"
+                                                        rx="1.5"
+                                                        fill="#FF6584"
+                                                    />
+                                                    <path
+                                                        d="M18 16 L20 11 L28 11 L30 16"
+                                                        stroke="#FF6584"
+                                                        strokeWidth="2.5"
+                                                        strokeLinecap="round"
+                                                    />
+                                                    <path
+                                                        d="M12 40 C14 34 20 33 24 33 C28 33 34 34 36 40"
+                                                        fill="#00C9A7"
+                                                        stroke="#1f2a44"
+                                                        strokeWidth="2"
+                                                    />
                                                 </svg>
                                                 <span className="absolute -top-2 -right-2 rounded-full border-2 border-[#1f2a44] bg-[#FFF176] px-1.5 text-[10px] font-black text-[#1f2a44]">
                                                     Lv.18
@@ -367,15 +478,31 @@ export function LandingHero() {
 
                                     {/* Inventory & Items Box */}
                                     <div className="rounded-2xl border-3 border-[#1f2a44] bg-white p-4 shadow-[4px_4px_0px_#1f2a44]">
-                                        <div className="font-display text-xs font-black uppercase tracking-wider text-[#1f2a44]">
+                                        <div className="font-display text-xs font-black tracking-wider text-[#1f2a44] uppercase">
                                             🎒 Item Karakter Aktif
                                         </div>
                                         <div className="mt-2.5 grid grid-cols-4 gap-2">
                                             {[
-                                                { icon: Crown, label: 'Mahkota Emas', color: 'text-[#FF9E44]' },
-                                                { icon: Zap, label: 'Speed Boost', color: 'text-[#00C9A7]' },
-                                                { icon: Shield, label: 'Shield 2x', color: 'text-[#845EC2]' },
-                                                { icon: Sparkles, label: 'Hint Mistis', color: 'text-[#FF6584]' },
+                                                {
+                                                    icon: Crown,
+                                                    label: 'Mahkota Emas',
+                                                    color: 'text-[#FF9E44]',
+                                                },
+                                                {
+                                                    icon: Zap,
+                                                    label: 'Speed Boost',
+                                                    color: 'text-[#00C9A7]',
+                                                },
+                                                {
+                                                    icon: Shield,
+                                                    label: 'Shield 2x',
+                                                    color: 'text-[#845EC2]',
+                                                },
+                                                {
+                                                    icon: Sparkles,
+                                                    label: 'Hint Mistis',
+                                                    color: 'text-[#FF6584]',
+                                                },
                                             ].map((item, i) => {
                                                 const ItemIcon = item.icon;
                                                 return (
@@ -383,7 +510,9 @@ export function LandingHero() {
                                                         key={i}
                                                         className="flex flex-col items-center justify-center rounded-xl border-2 border-[#1f2a44] bg-[#FFF9E6] p-2 text-center shadow-[2px_2px_0px_#1f2a44]"
                                                     >
-                                                        <ItemIcon className={`h-6 w-6 stroke-[2.5] ${item.color}`} />
+                                                        <ItemIcon
+                                                            className={`h-6 w-6 stroke-[2.5] ${item.color}`}
+                                                        />
                                                         <span className="mt-1 text-[9px] font-bold text-slate-700">
                                                             {item.label}
                                                         </span>
@@ -400,7 +529,9 @@ export function LandingHero() {
                                         {/* Arena Match Header */}
                                         <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-100 pb-3">
                                             <div className="flex items-center gap-2">
-                                                <div className={`rounded-xl border-2 border-[#1f2a44] ${activeQuestionData.badgeBg} px-3 py-1 font-display text-xs font-black text-white shadow-[2px_2px_0px_#1f2a44]`}>
+                                                <div
+                                                    className={`rounded-xl border-2 border-[#1f2a44] ${activeQuestionData.badgeBg} px-3 py-1 font-display text-xs font-black text-white shadow-[2px_2px_0px_#1f2a44]`}
+                                                >
                                                     {activeQuestionData.badge}
                                                 </div>
                                                 <span className="text-xs font-bold text-slate-500">
@@ -415,7 +546,7 @@ export function LandingHero() {
 
                                         {/* Question Box */}
                                         <div className="my-4 rounded-2xl border-2 border-[#1f2a44] bg-[#FFF9E6] p-4 text-center">
-                                            <div className="text-xs font-black uppercase tracking-wider text-[#845EC2]">
+                                            <div className="text-xs font-black tracking-wider text-[#845EC2] uppercase">
                                                 {activeQuestionData.title}
                                             </div>
                                             <div className="mt-2 font-display text-lg font-black text-[#1f2a44] sm:text-xl">
@@ -425,36 +556,96 @@ export function LandingHero() {
 
                                         {/* Options (Game Buttons) */}
                                         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                                            {activeQuestionData.options.map((opt) => (
-                                                <div
-                                                    key={opt.key}
-                                                    className={`flex items-center gap-3 rounded-xl border-2 border-[#1f2a44] p-3 text-left transition-all ${
-                                                        opt.correct
-                                                            ? 'bg-[#00C9A7]/20 border-[#00C9A7] shadow-[2px_2px_0px_#00C9A7]'
-                                                            : 'bg-white shadow-[2px_2px_0px_#1f2a44]'
-                                                    }`}
-                                                >
-                                                    <span
-                                                        className={`flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#1f2a44] font-display text-xs font-black ${
-                                                            opt.correct
-                                                                ? 'bg-[#00C9A7] text-[#1f2a44]'
-                                                                : 'bg-[#FFF176] text-[#1f2a44]'
-                                                        }`}
-                                                    >
-                                                        {opt.key}
+                                            {activeQuestionData.options.map(
+                                                (opt) => {
+                                                    const isSelected =
+                                                        selectedAnswer ===
+                                                        opt.key;
+                                                    const isCorrectSelection =
+                                                        isSelected &&
+                                                        opt.correct;
+
+                                                    return (
+                                                        <button
+                                                            key={opt.key}
+                                                            type="button"
+                                                            onClick={() =>
+                                                                setSelectedAnswer(
+                                                                    opt.key,
+                                                                )
+                                                            }
+                                                            aria-pressed={
+                                                                isSelected
+                                                            }
+                                                            className={`flex items-center gap-3 rounded-xl border-2 p-3 text-left transition-all hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[#845EC2] focus-visible:ring-offset-2 ${
+                                                                isCorrectSelection
+                                                                    ? 'border-[#00C9A7] bg-[#00C9A7]/20 shadow-[2px_2px_0px_#00C9A7]'
+                                                                    : isSelected
+                                                                      ? 'border-[#FF6584] bg-[#FFEBF0] shadow-[2px_2px_0px_#FF6584]'
+                                                                      : 'border-[#1f2a44] bg-white shadow-[2px_2px_0px_#1f2a44]'
+                                                            }`}
+                                                        >
+                                                            <span
+                                                                className={`flex h-7 w-7 items-center justify-center rounded-lg border-2 border-[#1f2a44] font-display text-xs font-black ${
+                                                                    isCorrectSelection
+                                                                        ? 'bg-[#00C9A7] text-[#1f2a44]'
+                                                                        : isSelected
+                                                                          ? 'bg-[#FF6584] text-white'
+                                                                          : 'bg-[#FFF176] text-[#1f2a44]'
+                                                                }`}
+                                                            >
+                                                                {isCorrectSelection ? (
+                                                                    <CheckCircle2 className="h-4 w-4" />
+                                                                ) : (
+                                                                    opt.key
+                                                                )}
+                                                            </span>
+                                                            <span className="text-xs font-bold text-[#1f2a44]">
+                                                                {opt.text}
+                                                            </span>
+                                                        </button>
+                                                    );
+                                                },
+                                            )}
+                                        </div>
+
+                                        <div
+                                            className="mt-3 min-h-9 rounded-xl border-2 border-dashed border-[#1f2a44]/30 px-3 py-2 text-center text-xs font-black"
+                                            role="status"
+                                            aria-live="polite"
+                                        >
+                                            {selectedAnswer ? (
+                                                activeQuestionData.options.find(
+                                                    (opt) =>
+                                                        opt.key ===
+                                                        selectedAnswer,
+                                                )?.correct ? (
+                                                    <span className="text-[#008f79]">
+                                                        Jawaban tepat! Bonus
+                                                        ronde siap diklaim.
                                                     </span>
-                                                    <span className="text-xs font-bold text-[#1f2a44]">
-                                                        {opt.text}
+                                                ) : (
+                                                    <span className="text-[#d84b68]">
+                                                        Belum tepat. Coba opsi
+                                                        lain.
                                                     </span>
-                                                </div>
-                                            ))}
+                                                )
+                                            ) : (
+                                                <span className="text-slate-500">
+                                                    Pilih jawaban untuk mencoba
+                                                    ronde ini.
+                                                </span>
+                                            )}
                                         </div>
 
                                         {/* Bottom Live Opponents Status */}
                                         <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">
                                             <div className="flex items-center gap-2">
                                                 <Swords className="h-4 w-4 text-[#FF6584]" />
-                                                <span>Mabar Online: 12 Pemain Berpartisipasi</span>
+                                                <span>
+                                                    Mabar Online: 12 Pemain
+                                                    Berpartisipasi
+                                                </span>
                                             </div>
                                             <span className="font-black text-[#00C9A7]">
                                                 {activeQuestionData.bonus}

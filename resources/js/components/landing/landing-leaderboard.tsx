@@ -161,6 +161,7 @@ export function LandingLeaderboard() {
     return (
         <section
             id="leaderboard"
+            data-gsap-section="leaderboard"
             className="border-b-4 border-[#1f2a44] bg-[#FFF9E6] py-20 lg:py-28"
         >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -276,6 +277,7 @@ export function LandingLeaderboard() {
                             {topPlayers.map((p) => (
                                 <div
                                     key={p.rank}
+                                    data-gsap-stagger="leaderboard-card"
                                     className={`relative flex flex-col items-center rounded-3xl border-3 border-[#1f2a44] p-6 text-center shadow-[5px_5px_0px_#1f2a44] ${p.color}`}
                                 >
                                     <div className="absolute -top-3.5 rounded-full border-2 border-[#1f2a44] bg-[#1f2a44] px-3 py-0.5 text-xs font-black text-[#FFF176]">
@@ -307,6 +309,7 @@ export function LandingLeaderboard() {
                                 (item) => (
                                     <div
                                         key={item.rank}
+                                        data-gsap-stagger="leaderboard-row"
                                         className={`flex flex-wrap items-center justify-between gap-4 rounded-2xl border-3 border-[#1f2a44] p-4 shadow-[4px_4px_0px_#1f2a44] transition-all hover:-translate-y-0.5 sm:p-5 ${item.color}`}
                                     >
                                         <div className="flex items-center gap-4">

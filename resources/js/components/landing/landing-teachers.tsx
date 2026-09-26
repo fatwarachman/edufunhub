@@ -4,17 +4,11 @@ import { Link } from '@inertiajs/react';
 import {
     Award,
     Banknote,
-    BookOpen,
     CheckCircle2,
-    Coins,
     GraduationCap,
-    Lightbulb,
-    MessageSquare,
     PenTool,
     Sparkles,
-    TrendingUp,
     Video,
-    Zap,
 } from 'lucide-react';
 
 export function LandingTeachers() {
@@ -46,23 +40,35 @@ export function LandingTeachers() {
     ];
 
     return (
-        <section id="teachers" className="bg-white py-20 lg:py-28">
+        <section
+            id="teachers"
+            data-gsap-section="teachers"
+            className="bg-white py-20 lg:py-28"
+        >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid items-center gap-12 lg:grid-cols-12">
                     {/* Left Copy */}
                     <div className="lg:col-span-6">
-                        <div className="inline-flex items-center gap-2 rounded-full border-3 border-[#1f2a44] bg-[#845EC2] px-4 py-1 text-xs font-black uppercase tracking-wider text-white shadow-[3px_3px_0px_#1f2a44]">
+                        <div className="inline-flex items-center gap-2 rounded-full border-3 border-[#1f2a44] bg-[#845EC2] px-4 py-1 text-xs font-black tracking-wider text-white uppercase shadow-[3px_3px_0px_#1f2a44]">
                             <GraduationCap className="h-4 w-4" />
                             Pemberdayaan Guru & Dosen
                         </div>
 
                         <h2 className="mt-5 font-display text-3xl font-black text-[#1f2a44] sm:text-5xl">
                             Ruang Kreatif &{' '}
-                            <span className="text-[#00C9A7]">Penghasilan Tambahan</span> Guru
+                            <span className="text-[#00C9A7]">
+                                Penghasilan Tambahan
+                            </span>{' '}
+                            Guru
                         </h2>
 
-                        <p className="mt-4 text-base font-bold leading-relaxed text-slate-700 sm:text-lg">
-                            EduFunHub bukan hanya arena bermain siswa, tapi juga ekosistem pengajaran masa depan yang menghargai karya intelektual pendidik. Guru dan dosen dapat memonetisasi konten kuis kreatif, mengadakan kelas interaktif langsung, dan mengumpulkan penghasilan tambahan secara transparan.
+                        <p className="mt-4 text-base leading-relaxed font-bold text-slate-700 sm:text-lg">
+                            EduFunHub bukan hanya arena bermain siswa, tapi juga
+                            ekosistem pengajaran masa depan yang menghargai
+                            karya intelektual pendidik. Guru dan dosen dapat
+                            memonetisasi konten kuis kreatif, mengadakan kelas
+                            interaktif langsung, dan mengumpulkan penghasilan
+                            tambahan secara transparan.
                         </p>
 
                         <div className="mt-8 space-y-4">
@@ -72,7 +78,10 @@ export function LandingTeachers() {
                                 'Kuis interaktif kilat live dengan leaderboard dan evaluasi real-time',
                                 'Analitik perkembangan pemahaman materi akurat per individu siswa',
                             ].map((text, i) => (
-                                <div key={i} className="flex items-center gap-3">
+                                <div
+                                    key={i}
+                                    className="flex items-center gap-3"
+                                >
                                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-[#1f2a44] bg-[#00C9A7] shadow-[1.5px_1.5px_0px_#1f2a44]">
                                         <CheckCircle2 className="h-4 w-4 stroke-[3] text-[#1f2a44]" />
                                     </div>
@@ -110,7 +119,8 @@ export function LandingTeachers() {
                                             Studio & Penghasilan Guru
                                         </div>
                                         <div className="text-xs font-bold text-slate-500">
-                                            Kompensasi Karya & Fitur Interaktif Pengajar
+                                            Kompensasi Karya & Fitur Interaktif
+                                            Pengajar
                                         </div>
                                     </div>
                                 </div>
@@ -125,6 +135,7 @@ export function LandingTeachers() {
                                     return (
                                         <div
                                             key={idx}
+                                            data-gsap-stagger="teacher-card"
                                             className="flex flex-col justify-between rounded-2xl border-3 border-[#1f2a44] bg-white p-4 shadow-[3px_3px_0px_#1f2a44]"
                                         >
                                             <div>
@@ -136,7 +147,7 @@ export function LandingTeachers() {
                                                 <h4 className="mt-3 font-display text-sm font-black text-[#1f2a44]">
                                                     {perk.title}
                                                 </h4>
-                                                <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600">
+                                                <p className="mt-1 text-xs leading-relaxed font-semibold text-slate-600">
                                                     {perk.desc}
                                                 </p>
                                             </div>
@@ -156,7 +167,9 @@ export function LandingTeachers() {
                                             Bu Anita, S.Pd • Guru Fisika
                                         </div>
                                         <div className="text-[11px] font-bold text-slate-500">
-                                            "Kuis Cepat Dinamika Gerak dibuka! Soal dimainkan 1.250 siswa — royalti reward masuk ke saldo."
+                                            "Kuis Cepat Dinamika Gerak dibuka!
+                                            Soal dimainkan 1.250 siswa — royalti
+                                            reward masuk ke saldo."
                                         </div>
                                     </div>
                                     <div className="rounded-xl border border-[#1f2a44] bg-[#00C9A7]/20 px-2.5 py-1 text-[11px] font-black text-[#008f75]">

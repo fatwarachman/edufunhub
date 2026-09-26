@@ -7,47 +7,46 @@ export function LandingFaq() {
     const faqs = [
         {
             question: 'Apa itu EduFunHub dan bagaimana cara kerjanya?',
-            answer:
-                'EduFunHub adalah portal pembelajaran online berbasis gamifikasi interaktif. Materi pelajaran disajikan dalam bentuk gameplay seperti Kuis Kilat Cepat, Duel 1 vs 1, Misi Tim Kolaboratif, Board Game, Arcade, dan Petualangan 3D. Setiap jawaban benar menghasilkan poin yang langsung terakumulasi ke akunmu.',
+            answer: 'EduFunHub adalah portal pembelajaran online berbasis gamifikasi interaktif. Materi pelajaran disajikan dalam bentuk gameplay seperti Kuis Kilat Cepat, Duel 1 vs 1, Misi Tim Kolaboratif, Board Game, Arcade, dan Petualangan 3D. Setiap jawaban benar menghasilkan poin yang langsung terakumulasi ke akunmu.',
         },
         {
             question: 'Bagaimana fungsi poin akumulasi dan item shop?',
-            answer:
-                'Setiap poin yang kamu peroleh dari seluruh tantangan, kuis kilat, dan duel otomatis terakumulasi. Poin ini digunakan di Item Shop untuk mendandani karakter avatar 3D-mu (kostum mecha, sayap aura, topi, aksesori) dan membeli booster tantangan.',
+            answer: 'Setiap poin yang kamu peroleh dari seluruh tantangan, kuis kilat, dan duel otomatis terakumulasi. Poin ini digunakan di Item Shop untuk mendandani karakter avatar 3D-mu (kostum mecha, sayap aura, topi, aksesori) dan membeli booster tantangan.',
         },
         {
             question: 'Apakah peserta bisa saling berkenalan dan duel?',
-            answer:
-                'Tentu saja! Kamu dapat menemukan teman baru sesama pelajar dari berbagai daerah, saling menambahkan daftar teman, mengirim pesan ramah, dan langsung menantang duel 1 vs 1 secara real-time untuk menguji penguasaan materi pelajaran.',
+            answer: 'Tentu saja! Kamu dapat menemukan teman baru sesama pelajar dari berbagai daerah, saling menambahkan daftar teman, mengirim pesan ramah, dan langsung menantang duel 1 vs 1 secara real-time untuk menguji penguasaan materi pelajaran.',
         },
         {
-            question: 'Bisakah saya membentuk tim bersama peserta dari sekolah lain?',
-            answer:
-                'Bisa banget! EduFunHub mendukung mode Co-Op Squad lintas sekolah. Kamu bebas mengundang sahabat dari sekolah atau kampus mana pun untuk membentuk satu regu dan bersama-sama menaklukkan quest atau turnamen akbar.',
+            question:
+                'Bisakah saya membentuk tim bersama peserta dari sekolah lain?',
+            answer: 'Bisa banget! EduFunHub mendukung mode Co-Op Squad lintas sekolah. Kamu bebas mengundang sahabat dari sekolah atau kampus mana pun untuk membentuk satu regu dan bersama-sama menaklukkan quest atau turnamen akbar.',
         },
         {
             question: 'Apakah ada kuis interaktif cepat (fast-paced)?',
-            answer:
-                'Ya! Tersedia mode Kuis Interaktif Kilat dengan durasi hitungan detik per soal, diiringi audio dinamis dan live scoreboard real-time. Mode ini sangat memacu adrenalin dan mengasah ketangkasan berpikir cepat.',
+            answer: 'Ya! Tersedia mode Kuis Interaktif Kilat dengan durasi hitungan detik per soal, diiringi audio dinamis dan live scoreboard real-time. Mode ini sangat memacu adrenalin dan mengasah ketangkasan berpikir cepat.',
         },
         {
-            question: 'Apakah EduFunHub benar-benar 100% gratis & no pay-to-win?',
-            answer:
-                '100% gratis tanpa biaya tersembunyi! Tidak ada sistem pay-to-win. Kemenangan dan peringkat di leaderboard nasional murni ditentukan oleh ketekunan belajar dan ketepatan menjawab soal.',
+            question:
+                'Apakah EduFunHub benar-benar 100% gratis & no pay-to-win?',
+            answer: '100% gratis tanpa biaya tersembunyi! Tidak ada sistem pay-to-win. Kemenangan dan peringkat di leaderboard nasional murni ditentukan oleh ketekunan belajar dan ketepatan menjawab soal.',
         },
         {
             question: 'Bagaimana cara guru mendapatkan penghasilan tambahan?',
-            answer:
-                'Guru dan dosen dapat merancang paket soal kreatif dan berkualitas di Quiz Studio. Setiap kali paket soal dimainkan dan diapresiasi oleh ribuan pelajar, pembuat soal akan menerima royalti koin dan insentif finansial yang dapat dicairkan secara transparan.',
+            answer: 'Guru dan dosen dapat merancang paket soal kreatif dan berkualitas di Quiz Studio. Setiap kali paket soal dimainkan dan diapresiasi oleh ribuan pelajar, pembuat soal akan menerima royalti koin dan insentif finansial yang dapat dicairkan secara transparan.',
         },
     ];
 
     return (
-        <section id="faq" className="bg-white py-20 lg:py-28">
+        <section
+            id="faq"
+            data-gsap-section="faq"
+            className="bg-white py-20 lg:py-28"
+        >
             <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
                 <div className="text-center">
-                    <div className="inline-flex items-center gap-2 rounded-full border-3 border-[#1f2a44] bg-[#FFF176] px-4 py-1 text-xs font-black uppercase tracking-wider text-[#1f2a44] shadow-[3px_3px_0px_#1f2a44]">
+                    <div className="inline-flex items-center gap-2 rounded-full border-3 border-[#1f2a44] bg-[#FFF176] px-4 py-1 text-xs font-black tracking-wider text-[#1f2a44] uppercase shadow-[3px_3px_0px_#1f2a44]">
                         <HelpCircle className="h-4 w-4" />
                         Tanya Jawab Seputar EduFunHub
                     </div>
@@ -56,7 +55,8 @@ export function LandingFaq() {
                         <span className="text-[#FF9E44]">Diajukan</span>
                     </h2>
                     <p className="mt-4 text-base font-bold text-slate-600 sm:text-lg">
-                        Punya pertanyaan lain? Tim EduFunHub dan komunitas pengajar kami siap membantu kapan saja.
+                        Punya pertanyaan lain? Tim EduFunHub dan komunitas
+                        pengajar kami siap membantu kapan saja.
                     </p>
                 </div>
 
@@ -67,6 +67,7 @@ export function LandingFaq() {
                         return (
                             <div
                                 key={index}
+                                data-gsap-stagger="faq-item"
                                 className={`overflow-hidden rounded-2xl border-3 border-[#1f2a44] transition-all duration-300 ease-out ${
                                     isOpen
                                         ? 'bg-[#FFF9E6] shadow-[5px_5px_0px_#1f2a44]'
@@ -78,7 +79,7 @@ export function LandingFaq() {
                                     onClick={() =>
                                         setOpenIndex(isOpen ? null : index)
                                     }
-                                    className="flex w-full items-center justify-between p-5 text-left font-display text-base font-black text-[#1f2a44] sm:text-lg cursor-pointer select-none"
+                                    className="flex w-full cursor-pointer items-center justify-between p-5 text-left font-display text-base font-black text-[#1f2a44] select-none sm:text-lg"
                                 >
                                     <span className="pr-4">{faq.question}</span>
                                     <div
@@ -99,8 +100,8 @@ export function LandingFaq() {
                                     }`}
                                 >
                                     <div className="overflow-hidden">
-                                        <div className="border-t-2 border-[#1f2a44]/15 px-5 pb-5 pt-3">
-                                            <p className="text-sm font-semibold leading-relaxed text-slate-700 sm:text-base">
+                                        <div className="border-t-2 border-[#1f2a44]/15 px-5 pt-3 pb-5">
+                                            <p className="text-sm leading-relaxed font-semibold text-slate-700 sm:text-base">
                                                 {faq.answer}
                                             </p>
                                         </div>

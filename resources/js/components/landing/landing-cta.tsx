@@ -2,25 +2,21 @@ import { Button } from '@/components/ui/button';
 import { register } from '@/routes';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import {
-    ArrowRight,
-    Coins,
-    Crown,
-    Gamepad2,
-    GraduationCap,
-    School,
-    Sparkles,
-    Trophy,
-    Zap,
-} from 'lucide-react';
+import { ArrowRight, Gamepad2, Sparkles, Trophy, Zap } from 'lucide-react';
 
 export function LandingCta() {
     const { auth } = usePage<SharedData>().props;
 
     return (
-        <section className="border-t-4 border-[#1f2a44] bg-[#FFF9E6] py-16 sm:py-24">
+        <section
+            data-gsap-section="cta"
+            className="border-t-4 border-[#1f2a44] bg-[#FFF9E6] py-16 sm:py-24"
+        >
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="relative overflow-hidden rounded-3xl border-4 border-[#1f2a44] bg-[#1f2a44] p-8 text-white shadow-[8px_8px_0px_#1f2a44] sm:p-14 lg:p-16">
+                <div
+                    data-gsap-cta-card
+                    className="relative overflow-hidden rounded-3xl border-4 border-[#1f2a44] bg-[#1f2a44] p-8 text-white shadow-[8px_8px_0px_#1f2a44] sm:p-14 lg:p-16"
+                >
                     {/* Background Modern Geometry Icons */}
                     <div className="pointer-events-none absolute inset-0 -z-0 opacity-15">
                         <div className="absolute top-10 left-10 flex h-24 w-24 -rotate-12 items-center justify-center rounded-3xl border-3 border-white/20 bg-white/10">
@@ -35,7 +31,7 @@ export function LandingCta() {
                     </div>
 
                     <div className="relative z-10 mx-auto max-w-3xl text-center">
-                        <div className="mb-5 inline-flex items-center gap-2 rounded-full border-2 border-white/30 bg-white/10 px-4 py-1 text-xs font-black uppercase tracking-wider text-[#FFF176]">
+                        <div className="mb-5 inline-flex items-center gap-2 rounded-full border-2 border-white/30 bg-white/10 px-4 py-1 text-xs font-black tracking-wider text-[#FFF176] uppercase">
                             <Sparkles className="h-4 w-4" />
                             Ayo Bergabung Bersama 50.000+ Pembelajar
                         </div>
@@ -46,7 +42,9 @@ export function LandingCta() {
                         </h2>
 
                         <p className="mt-5 text-base font-bold text-white/80 sm:text-xl">
-                            Pilih avatarmu, ajak teman sekolah dan kampusmu, lalu taklukkan leaderboard nasional sekarang juga. 100% Gratis!
+                            Pilih avatarmu, ajak teman sekolah dan kampusmu,
+                            lalu taklukkan leaderboard nasional sekarang juga.
+                            100% Gratis!
                         </p>
 
                         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -55,7 +53,9 @@ export function LandingCta() {
                                 asChild
                                 className="h-14 w-full rounded-2xl border-3 border-white bg-[#FF9E44] px-8 font-display text-lg font-black text-white shadow-[4px_4px_0px_white] transition-all hover:-translate-y-1 hover:bg-[#ff8f29] sm:w-auto"
                             >
-                                <Link href={auth.user ? '/dashboard' : register()}>
+                                <Link
+                                    href={auth.user ? '/dashboard' : register()}
+                                >
                                     <Gamepad2 className="mr-2 h-6 w-6 stroke-[2.5]" />
                                     Daftar & Mainkan Sekarang
                                     <ArrowRight className="ml-2 h-5 w-5" />
