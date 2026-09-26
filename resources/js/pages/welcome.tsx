@@ -1,14 +1,16 @@
 import {
     LandingCta,
+    LandingEconomy,
     LandingFaq,
     LandingFeatures,
     LandingFooter,
     LandingHeader,
     LandingHero,
+    LandingLeaderboard,
     LandingPricing,
+    LandingTeachers,
     LandingTestimonials,
 } from '@/components/landing';
-import { useTranslations } from '@/hooks/use-translations';
 import { Head } from '@inertiajs/react';
 
 export default function Welcome({
@@ -16,72 +18,46 @@ export default function Welcome({
 }: {
     canRegister?: boolean;
 }) {
-    const { t } = useTranslations();
-
     return (
         <>
-            <Head
-                title={t(
-                    'landing.meta.title',
-                    'Laravel SAAS Starter - Launch Your SaaS 10x Faster',
-                )}
-            >
+            <Head title="EduFunHub - Belajar Asik, Gamifikasi Interaktif & Anti-Bosan!">
                 <meta
                     name="description"
-                    content={t(
-                        'landing.meta.description',
-                        'Laravel SAAS Starter is a production-ready Laravel SaaS starter kit with authentication, billing, teams, and everything you need to launch faster. Built by XCO Agency.',
-                    )}
+                    content="Portal pembelajaran online gamifikasi untuk semua jenjang TK hingga Universitas. Mainkan board game, arcade, petualangan 3D, kumpulkan koin avatar, dan menangkan leaderboard sekolahmu. 100% Gratis!"
                 />
                 <meta
                     name="keywords"
-                    content={t(
-                        'landing.meta.keywords',
-                        'laravel, saas, starter kit, boilerplate, authentication, stripe, billing, teams',
-                    )}
+                    content="edufunhub, game edukasi, kuis interaktif, gamifikasi belajar, leaderboard sekolah, kuis online indonesia, belajar seru"
                 />
                 <meta
                     property="og:title"
-                    content={t(
-                        'landing.meta.og_title',
-                        'Laravel SAAS Starter - Launch Your SaaS 10x Faster',
-                    )}
+                    content="EduFunHub - Belajar Jadi Game Seru & Penuh Prestasi"
                 />
                 <meta
                     property="og:description"
-                    content={t(
-                        'landing.meta.og_description',
-                        'Production-ready Laravel SaaS starter kit. 100% free and open source. Launch your SaaS 10x faster with authentication, billing, teams, and more.',
-                    )}
+                    content="Taklukkan materi pelajaran dengan petualangan game seru! Dari TK sampai Universitas, main solo atau mabar online, 100% gratis selamanya."
                 />
                 <meta property="og:type" content="website" />
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta
-                    name="twitter:title"
-                    content={t(
-                        'landing.meta.twitter_title',
-                        'Laravel SAAS Starter - Launch Your SaaS 10x Faster',
-                    )}
-                />
-                <meta
-                    name="twitter:description"
-                    content={t(
-                        'landing.meta.twitter_description',
-                        'Production-ready Laravel SaaS starter kit by XCO Agency.',
-                    )}
-                />
-                <link rel="preconnect" href="https://fonts.bunny.net" />
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link
-                    href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800"
+                    rel="preconnect"
+                    href="https://fonts.gstatic.com"
+                    crossOrigin="anonymous"
+                />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700;800&display=swap"
                     rel="stylesheet"
                 />
             </Head>
 
-            <div className="min-h-screen bg-background text-foreground">
+            <div className="min-h-screen bg-[#FFF9E6] text-slate-800 selection:bg-[#FF6584] selection:text-white">
                 <LandingHeader canRegister={canRegister} />
                 <main>
                     <LandingHero />
                     <LandingFeatures />
+                    <LandingLeaderboard />
+                    <LandingEconomy />
+                    <LandingTeachers />
                     <LandingPricing />
                     <LandingTestimonials />
                     <LandingFaq />

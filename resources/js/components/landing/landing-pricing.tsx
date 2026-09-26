@@ -1,125 +1,105 @@
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { useTranslations } from '@/hooks/use-translations';
 import { register } from '@/routes';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowRight, Check, Sparkles } from 'lucide-react';
+import {
+    ArrowRight,
+    Check,
+    Coins,
+    Crown,
+    Gift,
+    HeartHandshake,
+    ShieldCheck,
+    Sparkles,
+    Trophy,
+    Users,
+} from 'lucide-react';
 
 export function LandingPricing() {
     const { auth } = usePage<SharedData>().props;
-    const { t } = useTranslations();
+
+    const freeBenefits = [
+        'Semua mode game terbuka penuh sesuai point dan level peserta',
+        'Akses materi dari jenjang TK hingga Universitas',
+        'Fitur multiplayer arena & live matchmaking',
+        'Akumulasi poin & leaderboard sekolah/kampus',
+        'Kustomisasi avatar dengan koin hasil belajar',
+        'Ruang kelas dan studio pembuatan soal bagi guru',
+    ];
 
     return (
-        <section id="pricing" className="bg-muted/30 py-20 sm:py-32">
+        <section id="pricing" className="border-t-4 border-[#1f2a44] bg-white py-20 lg:py-28">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
                 <div className="mx-auto max-w-3xl text-center">
-                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-                        {t('landing.pricing.title.part1', 'Completely')}{' '}
-                        <span className="text-primary">
-                            {t('landing.pricing.title.part2', 'Free')}
-                        </span>{' '}
-                        & {t('landing.pricing.title.part3', 'Open Source')}
+                    <div className="inline-flex items-center gap-2 rounded-full border-3 border-[#1f2a44] bg-[#00C9A7] px-4 py-1 text-xs font-black uppercase tracking-wider text-[#1f2a44] shadow-[3px_3px_0px_#1f2a44]">
+                        <Gift className="h-4 w-4" />
+                        Akses Pendidikan Terbuka
+                    </div>
+                    <h2 className="mt-4 font-display text-3xl font-black text-[#1f2a44] sm:text-5xl">
+                        100% Gratis Untuk{' '}
+                        <span className="text-[#00C9A7]">Semua Pengguna!</span>
                     </h2>
-                    <p className="mt-4 text-lg text-muted-foreground">
-                        {t(
-                            'landing.pricing.description',
-                            'No credit card required. No hidden fees. Use it for unlimited personal and commercial projects.',
-                        )}
+                    <p className="mt-4 text-base font-bold text-slate-600 sm:text-lg">
+                        Pendidikan berkualitas harus dapat diakses oleh setiap anak bangsa. Tanpa langganan bulanan, tanpa biaya tersembunyi, dan tanpa paywall materi.
                     </p>
                 </div>
 
-                {/* Open Source Benefits */}
-                <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    <Card className="relative border-border">
-                        <CardHeader>
-                            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10">
-                                <Sparkles className="h-5 w-5 text-primary" />
+                {/* Big Free Card */}
+                <div className="mx-auto mt-12 max-w-3xl rounded-3xl border-4 border-[#1f2a44] bg-[#FFF9E6] p-8 shadow-[8px_8px_0px_#1f2a44] sm:p-12">
+                    <div className="flex flex-col items-center justify-between gap-6 border-b-3 border-[#1f2a44] pb-8 text-center sm:flex-row sm:text-left">
+                        <div>
+                            <span className="rounded-full border-2 border-[#1f2a44] bg-[#FFF176] px-3 py-1 font-display text-xs font-black text-[#1f2a44]">
+                                EDUFUN FOREVER TIER
+                            </span>
+                            <h3 className="mt-3 font-display text-3xl font-black text-[#1f2a44] sm:text-4xl">
+                                Akses Penuh Pelajar & Guru
+                            </h3>
+                            <p className="text-sm font-bold text-slate-600">
+                                Berlaku seumur hidup untuk seluruh sekolah se-Indonesia
+                            </p>
+                        </div>
+                        <div className="rounded-2xl border-3 border-[#1f2a44] bg-white px-6 py-4 text-center shadow-[4px_4px_0px_#1f2a44]">
+                            <div className="font-display text-4xl font-black text-[#00C9A7] sm:text-5xl">
+                                Rp 0
                             </div>
-                            <CardTitle className="text-xl">
-                                {t(
-                                    'landing.pricing.items.free.title',
-                                    '100% Free',
-                                )}
-                            </CardTitle>
-                            <CardDescription>
-                                {t(
-                                    'landing.pricing.items.free.description',
-                                    'No subscriptions, no per-project fees, no royalties. Use it however you want.',
-                                )}
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
-
-                    <Card className="relative border-border">
-                        <CardHeader>
-                            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10">
-                                <Check className="h-5 w-5 text-primary" />
+                            <div className="text-xs font-black uppercase tracking-wider text-[#1f2a44]">
+                                Gratis Selamanya
                             </div>
-                            <CardTitle className="text-xl">
-                                {t(
-                                    'landing.pricing.items.license.title',
-                                    'MIT License',
-                                )}
-                            </CardTitle>
-                            <CardDescription>
-                                {t(
-                                    'landing.pricing.items.license.description',
-                                    'Completely open source with permissive licensing. Commercial use is welcome.',
-                                )}
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                        </div>
+                    </div>
 
-                    <Card className="relative border-border">
-                        <CardHeader>
-                            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10">
-                                <Sparkles className="h-5 w-5 text-primary" />
-                            </div>
-                            <CardTitle className="text-xl">
-                                {t(
-                                    'landing.pricing.items.production.title',
-                                    'Production Ready',
-                                )}
-                            </CardTitle>
-                            <CardDescription>
-                                {t(
-                                    'landing.pricing.items.production.description',
-                                    'Battle-tested code following Laravel best practices. Ready for production use.',
-                                )}
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
-                </div>
+                    <div className="mt-8">
+                        <div className="font-display text-base font-black text-[#1f2a44]">
+                            Fitur Lengkap Yang Kamu Dapatkan:
+                        </div>
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                            {freeBenefits.map((benefit, i) => (
+                                <div key={i} className="flex items-start gap-2.5">
+                                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-[#1f2a44] bg-[#00C9A7]">
+                                        <Check className="h-3.5 w-3.5 stroke-[3] text-[#1f2a44]" />
+                                    </div>
+                                    <span className="text-xs font-bold text-slate-700 sm:text-sm">
+                                        {benefit}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-                {/* CTA */}
-                <div className="mt-12 text-center">
-                    <Button size="lg" asChild className="h-12 px-8 text-base">
-                        <Link href={auth.user ? '/dashboard' : register()}>
-                            {t(
-                                'landing.pricing.cta.get_started',
-                                'Get Started Free',
-                            )}
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <p className="mt-4 text-sm text-muted-foreground">
-                        {t('landing.pricing.cta.or', 'Or')}{' '}
-                        <a
-                            href="https://github.com/xco-agency/laravel-saas-starter"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium text-primary hover:underline"
+                    <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                        <Button
+                            size="lg"
+                            asChild
+                            className="h-14 w-full rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-8 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] transition-all hover:-translate-y-1 hover:bg-[#ff8f29] hover:shadow-[6px_6px_0px_#1f2a44] sm:w-auto"
                         >
-                            {t('landing.pricing.cta.github', 'view on GitHub')}
-                        </a>
-                    </p>
+                            <Link href={auth.user ? '/dashboard' : register()}>
+                                <Sparkles className="mr-2 h-5 w-5" />
+                                Buat Akun & Mulai Main Gratis
+                                <ArrowRight className="ml-2 h-5 w-5" />
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
             </div>
         </section>

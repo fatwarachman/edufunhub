@@ -1,199 +1,108 @@
-import { Github } from '@/components/brand-icons';
-import { Card, CardContent } from '@/components/ui/card';
-import { useTranslations } from '@/hooks/use-translations';
-import { Quote, Star } from 'lucide-react';
+import {
+    Heart,
+    Star,
+} from 'lucide-react';
 
 export function LandingTestimonials() {
-    const { t } = useTranslations();
-
-    const testimonials = [
+    const stories = [
         {
-            quote: t(
-                'landing.testimonials.items.sarah.quote',
-                'Laravel SAAS Starter saved us months of development time. The authentication, billing, and team management were all ready to go. We launched our MVP in just 2 weeks!',
-            ),
-            author: 'Sarah Chen',
-            role: t('landing.testimonials.items.sarah.role', 'CTO at TechFlow'),
-            avatar: null,
+            quote:
+                'Anak saya yang tadinya malas belajar IPA dan matematika, sekarang malah tiap pulang sekolah langsung login EduFunHub. Dia bangga banget bisa bawa nama kelompok belajarnya masuk peringkat atas!',
+            author: 'Ibu Ratna Dewi',
+            role: 'Orang Tua Siswa Tingkat Dasar',
+            initials: 'RD',
+            avatarBg: 'bg-[#FF9E44]',
             rating: 5,
+            tag: 'Orang Tua Siswa',
+            badgeColor: 'bg-[#FF9E44]',
         },
         {
-            quote: t(
-                'landing.testimonials.items.michael.quote',
-                "The code quality is exceptional. It's clear that experienced Laravel developers built this. The multi-workspace feature was exactly what we needed.",
-            ),
-            author: 'Michael Rodriguez',
-            role: t(
-                'landing.testimonials.items.michael.role',
-                'Founder at DataSync',
-            ),
-            avatar: null,
+            quote:
+                'Fitur ruang kelas dan pembuatan soalnya luar biasa praktis. Saya bisa bikin turnamen kuis interaktif fisika dengan format battle royale dan kuis kilat. Semua siswa aktif dan sangat antusias!',
+            author: 'Bapak Hendra Wijaya, M.Pd',
+            role: 'Guru Sains & Fisika Menengah',
+            initials: 'HW',
+            avatarBg: 'bg-[#845EC2]',
             rating: 5,
+            tag: 'Guru Pengajar',
+            badgeColor: 'bg-[#845EC2]',
         },
         {
-            quote: t(
-                'landing.testimonials.items.emily.quote',
-                "Best SaaS starter kit I've used. The Stripe integration worked flawlessly, and the dark mode looks beautiful. Highly recommended!",
-            ),
-            author: 'Emily Watson',
-            role: t(
-                'landing.testimonials.items.emily.role',
-                'Lead Developer at CloudBase',
-            ),
-            avatar: null,
+            quote:
+                'Kuis level perguruan tingginya menantang banget, terutama kalkulus dan logika komputasi. Main bareng teman seangkatan buat nambah poin tim di leaderboard nasional seru abis!',
+            author: 'Dimas Wicaksono',
+            role: 'Mahasiswa Teknik Informatika',
+            initials: 'DW',
+            avatarBg: 'bg-[#00C9A7]',
             rating: 5,
-        },
-    ];
-
-    const stats = [
-        {
-            value: '1,000+',
-            label: t('landing.testimonials.stats.stars', 'GitHub Stars'),
-        },
-        {
-            value: '50+',
-            label: t('landing.testimonials.stats.features', 'Features'),
-        },
-        {
-            value: '100%',
-            label: t('landing.testimonials.stats.opensource', 'Open Source'),
-        },
-        {
-            value: 'MIT',
-            label: t('landing.testimonials.stats.license', 'License'),
+            tag: 'Mahasiswa',
+            badgeColor: 'bg-[#00C9A7]',
         },
     ];
 
     return (
-        <section id="testimonials" className="py-20 sm:py-32">
+        <section id="testimonials" className="border-t-4 border-[#1f2a44] bg-[#FFF9E6] py-20 lg:py-28">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
                 <div className="mx-auto max-w-3xl text-center">
-                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-                        {t('landing.testimonials.title.part1', 'Loved by')}{' '}
-                        <span className="text-primary">
-                            {t(
-                                'landing.testimonials.title.part2',
-                                'Developers',
-                            )}
-                        </span>{' '}
-                        {t('landing.testimonials.title.part3', 'Worldwide')}
+                    <div className="inline-flex items-center gap-2 rounded-full border-3 border-[#1f2a44] bg-[#FF6584] px-4 py-1 text-xs font-black uppercase tracking-wider text-white shadow-[3px_3px_0px_#1f2a44]">
+                        <Heart className="h-4 w-4" />
+                        Kisah Sukses Komunitas
+                    </div>
+                    <h2 className="mt-4 font-display text-3xl font-black text-[#1f2a44] sm:text-5xl">
+                        Cerita Mereka yang Belajar Jadi{' '}
+                        <span className="text-[#845EC2]">Lebih Menyenangkan</span>
                     </h2>
-                    <p className="mt-4 text-lg text-muted-foreground">
-                        {t(
-                            'landing.testimonials.description',
-                            "Don't just take our word for it. Here's what developers are saying about Laravel SAAS Starter.",
-                        )}
+                    <p className="mt-4 text-base font-bold text-slate-600 sm:text-lg">
+                        Dipercaya oleh puluhan ribu pelajar, mahasiswa, dan ribuan pengajar di seluruh nusantara.
                     </p>
                 </div>
 
-                {/* Stats */}
-                <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {stats.map((stat) => (
+                {/* Testimonial Cards */}
+                <div className="mt-12 grid gap-6 md:grid-cols-3">
+                    {stories.map((item, index) => (
                         <div
-                            key={stat.label}
-                            className="rounded-md border bg-card p-4 text-center"
+                            key={index}
+                            className="flex flex-col justify-between rounded-3xl border-3 border-[#1f2a44] bg-white p-6 shadow-[5px_5px_0px_#1f2a44] transition-all hover:-translate-y-1"
                         >
-                            <div className="text-2xl font-bold text-foreground tabular-nums sm:text-3xl">
-                                {stat.value}
+                            <div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex gap-1">
+                                        {Array.from({ length: item.rating }).map((_, i) => (
+                                            <Star
+                                                key={i}
+                                                className="h-4 w-4 fill-[#FFF176] text-[#FF9E44]"
+                                            />
+                                        ))}
+                                    </div>
+                                    <span
+                                        className={`rounded-full border border-[#1f2a44] px-2.5 py-0.5 text-[10px] font-black text-white ${item.badgeColor}`}
+                                    >
+                                        {item.tag}
+                                    </span>
+                                </div>
+
+                                <blockquote className="mt-4 text-sm font-semibold leading-relaxed text-slate-700">
+                                    "{item.quote}"
+                                </blockquote>
                             </div>
-                            <div className="mt-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                {stat.label}
+
+                            <div className="mt-6 flex items-center gap-3 border-t-2 border-slate-100 pt-4">
+                                {/* Clean Geometric Monogram Avatar */}
+                                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border-2 border-[#1f2a44] ${item.avatarBg} font-display text-sm font-black text-white shadow-[2px_2px_0px_#1f2a44]`}>
+                                    {item.initials}
+                                </div>
+                                <div>
+                                    <div className="font-display text-sm font-black text-[#1f2a44]">
+                                        {item.author}
+                                    </div>
+                                    <div className="text-xs font-bold text-slate-500">
+                                        {item.role}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}
-                </div>
-
-                {/* Testimonials */}
-                <div className="mt-10 grid gap-4 md:grid-cols-3">
-                    {testimonials.map((testimonial, index) => (
-                        <Card key={index} className="relative">
-                            <CardContent className="pt-5">
-                                <Quote className="h-6 w-6 text-muted-foreground/30" />
-
-                                {/* Stars */}
-                                <div className="mt-3 flex gap-0.5">
-                                    {Array.from({
-                                        length: testimonial.rating,
-                                    }).map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            className="h-3.5 w-3.5 fill-accent text-accent"
-                                        />
-                                    ))}
-                                </div>
-
-                                {/* Quote */}
-                                <blockquote className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                                    "{testimonial.quote}"
-                                </blockquote>
-
-                                {/* Author */}
-                                <div className="mt-5 flex items-center gap-3">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-foreground text-xs font-semibold text-background">
-                                        {testimonial.author
-                                            .split(' ')
-                                            .map((n) => n[0])
-                                            .join('')}
-                                    </div>
-                                    <div>
-                                        <div className="text-sm font-medium">
-                                            {testimonial.author}
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {testimonial.role}
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-
-                {/* GitHub Stats */}
-                <div className="mt-16">
-                    <p className="text-center text-sm text-muted-foreground">
-                        {t(
-                            'landing.testimonials.community.join',
-                            'Join the community',
-                        )}
-                    </p>
-                    <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-                        <a
-                            href="https://github.com/xco-agency/laravel-saas-starter"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted"
-                        >
-                            <Github className="h-4 w-4" />
-                            {t(
-                                'landing.testimonials.community.star',
-                                'Star on GitHub',
-                            )}
-                        </a>
-                        <a
-                            href="https://github.com/xco-agency/laravel-saas-starter/issues"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted"
-                        >
-                            {t(
-                                'landing.testimonials.community.issues',
-                                'Report Issues',
-                            )}
-                        </a>
-                        <a
-                            href="https://github.com/xco-agency/laravel-saas-starter/discussions"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-muted"
-                        >
-                            {t(
-                                'landing.testimonials.community.discussions',
-                                'Join Discussions',
-                            )}
-                        </a>
-                    </div>
                 </div>
             </div>
         </section>
