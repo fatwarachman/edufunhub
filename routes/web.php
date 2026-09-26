@@ -75,6 +75,7 @@ use App\Http\Middleware\RequireAdminTwoFactor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Inertia\Response;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
@@ -94,6 +95,19 @@ Route::middleware('guest')->group(function () {
 
 // Public changelog
 Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog');
+
+// Games Arena & Snakes and Ladders
+Route::get('/gamelist', function () {
+    return Inertia::render('games/index');
+})->name('gamelist');
+
+Route::get('/games/snakes-and-ladders', function () {
+    return Inertia::render('games/snakes-and-ladders');
+})->name('games.snakes-and-ladders');
+
+Route::get('/games/sky-quiz', function (): Response {
+    return Inertia::render('games/sky-quiz');
+})->name('games.sky-quiz');
 
 // Public status page
 Route::get('/status', [StatusPageController::class, 'index'])->name('status');
