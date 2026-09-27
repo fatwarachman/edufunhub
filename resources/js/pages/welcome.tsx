@@ -41,23 +41,31 @@ export default function Welcome({
                     }
 
                     const sections = gsap.utils.toArray<HTMLElement>(
-                        'main > *, [data-gsap-footer]',
+                        '[data-gsap-section], [data-gsap-footer]',
                         landingRef.current as HTMLElement,
                     );
 
                     sections.forEach((section, index) => {
-                        gsap.from(section, {
-                            autoAlpha: 0,
-                            y: conditions?.desktop ? 36 : 20,
-                            duration: 0.7,
-                            delay: index === 0 ? 0.1 : 0,
-                            ease: 'power3.out',
-                            scrollTrigger: {
-                                trigger: section,
-                                start: index === 0 ? 'top 92%' : 'top 82%',
-                                once: true,
+                        gsap.fromTo(
+                            section,
+                            {
+                                autoAlpha: 0,
+                                y: conditions?.desktop ? 36 : 20,
                             },
-                        });
+                            {
+                                autoAlpha: 1,
+                                y: 0,
+                                duration: conditions?.desktop ? 0.85 : 0.7,
+                                delay: index === 0 ? 0.1 : 0,
+                                ease: 'power3.out',
+                                overwrite: 'auto',
+                                scrollTrigger: {
+                                    trigger: section,
+                                    start: index === 0 ? 'top 92%' : 'top 86%',
+                                    once: true,
+                                },
+                            },
+                        );
                     });
 
                     const staggerItems = gsap.utils.toArray<HTMLElement>(
