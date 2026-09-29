@@ -9,14 +9,11 @@ import {
 import AdminLayout from '@/layouts/admin-layout';
 import { Head, Link, router } from '@inertiajs/react';
 import {
-    Activity,
     ArrowDownRight,
     ArrowUpRight,
-    Clock,
-    CreditCard,
-    DollarSign,
-    Flame,
+    Boxes,
     Gamepad2,
+    Shield,
     Sparkles,
     Trophy,
     Users,
@@ -37,14 +34,11 @@ import {
 
 interface Metrics {
     total_users: number;
-    total_workspaces: number;
-    active_subscriptions: number;
+    total_roles: number;
+    total_permissions: number;
+    total_superadmins: number;
     new_users_30d: number;
     user_growth_percent: number;
-    workspace_growth_percent: number;
-    mrr: number;
-    churn_rate: number;
-    avg_first_response_seconds: number;
 }
 
 interface DailyStat {
@@ -52,23 +46,20 @@ interface DailyStat {
     count: number;
 }
 
-interface PlanDistItem {
-    plan: string;
+interface RoleDistItem {
+    role: string;
     count: number;
 }
 
 interface Sparklines {
     new_users: number[];
-    new_workspaces: number[];
-    new_subscriptions: number[];
 }
 
 interface AdminDashboardProps {
     metrics: Metrics;
     sparklines: Sparklines;
     dailySignups: DailyStat[];
-    dailyWorkspaces: DailyStat[];
-    planDistribution: PlanDistItem[];
+    roleDistribution: RoleDistItem[];
     recent_users: {
         id: number;
         name: string;
@@ -111,25 +102,13 @@ function Sparkline({
     );
 }
 
-function GrowthBadge({
-    value,
-    invertColors = false,
-}: {
-    value: number;
-    invertColors?: boolean;
-}) {
+function GrowthBadge({ value }: { value: number }) {
     const isPositive = value >= 0;
 
     const healthyClass = 'text-emerald-600 dark:text-emerald-400';
     const unhealthyClass = 'text-red-600 dark:text-red-400';
 
-    const colorClass = invertColors
-        ? isPositive
-            ? unhealthyClass
-            : healthyClass
-        : isPositive
-          ? healthyClass
-          : unhealthyClass;
+    const colorClass = isPositive ? healthyClass : unhealthyClass;
 
     return (
         <span
@@ -145,54 +124,22 @@ function GrowthBadge({
     );
 }
 
-const COLORS = ['#ff9e44', '#845ec2', '#00c9a7', '#4d8fac'];
+const COLORS = ['#ff9e44', '#845ec2', '#00c9a7', '#4d8fac', '#ff6584'];
+
+const tooltipStyle = {
+    backgroundColor: 'var(--popover)',
+    border: '1px solid var(--border)',
+    borderRadius: '10px',
+    color: 'var(--popover-foreground)',
+} as const;
 
 export default function AdminDashboard({
     metrics,
     sparklines,
     dailySignups,
-    dailyWorkspaces,
-    planDistribution,
+    roleDistribution,
     recent_users,
 }: AdminDashboardProps) {
-    const combinedDailyStats = dailySignups
-        .map((signupDay, index) => {
-            const workspaceDay = dailyWorkspaces[index] || { count: 0 };
-            return {
-                date: signupDay.date,
-                users: signupDay.count,
-                workspaces: workspaceDay.count,
-            };
-        });
-
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 0,
-        }).format(value);
-    };
-
-    const formatDuration = (seconds: number) => {
-        if (seconds <= 0) {
-            return '—';
-        }
-
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const remainingSeconds = Math.floor(seconds % 60);
-
-        if (hours > 0) {
-            return `${hours}h ${minutes}m`;
-        }
-
-        if (minutes > 0) {
-            return `${minutes}m ${remainingSeconds}s`;
-        }
-
-        return `${remainingSeconds}s`;
-    };
-
     const avatarColor = (name: string) => {
         const colors = [
             'bg-bubble-orange/20 text-bubble-orange',
@@ -234,101 +181,19 @@ export default function AdminDashboard({
                             Pusat Kendali Pulau Ilmu 🎮
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            Monitor platform: pemain, kelas, dan aktivitas
-                            belajar.
+                            Kelola pemain, role, dan permission platform.
                         </p>
                     </div>
                     <Button variant="outline" size="sm" asChild>
-                        <Link href="/admin/system-health">
-                            <Activity className="mr-1.5 h-3.5 w-3.5" />
-                            System Health
+                        <Link href="/admin/users">
+                            <Users className="mr-1.5 h-3.5 w-3.5" />
+                            Kelola User
                         </Link>
                     </Button>
                 </div>
 
                 {/* Top Metric Cards */}
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    {/* MRR */}
-                    <Card className={metricCardClass}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Monthly Recurring Revenue
-                            </CardTitle>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-orange/15">
-                                <DollarSign className="h-4 w-4 text-bubble-orange" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="font-display text-2xl font-bold text-foreground">
-                                {formatCurrency(metrics.mrr)}
-                            </div>
-                            <div className="mt-2 flex items-center justify-between">
-                                <p className="text-xs text-muted-foreground">
-                                    Dari subscription aktif
-                                </p>
-                                <Sparkline
-                                    data={sparklines.new_subscriptions}
-                                    color="#ff9e44"
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Active Subscriptions */}
-                    <Card className={metricCardClass}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Active Subscriptions
-                            </CardTitle>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-purple/15">
-                                <CreditCard className="h-4 w-4 text-bubble-purple" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="font-display text-2xl font-bold text-foreground">
-                                {metrics.active_subscriptions}
-                            </div>
-                            <div className="mt-2 flex items-center justify-between">
-                                <p className="text-xs text-muted-foreground">
-                                    Workspace berbayar & trial
-                                </p>
-                                <Sparkline
-                                    data={sparklines.new_subscriptions}
-                                    color="#845ec2"
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Active Workspaces → Kelas */}
-                    <Card className={metricCardClass}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Kelas Aktif (Workspaces)
-                            </CardTitle>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-green/15">
-                                <Gamepad2 className="h-4 w-4 text-bubble-green" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="font-display text-2xl font-bold text-foreground">
-                                {metrics.total_workspaces}
-                            </div>
-                            <div className="mt-2 flex items-center justify-between">
-                                <p className="text-xs text-muted-foreground">
-                                    <GrowthBadge
-                                        value={metrics.workspace_growth_percent}
-                                    />{' '}
-                                    vs 30 hari lalu
-                                </p>
-                                <Sparkline
-                                    data={sparklines.new_workspaces}
-                                    color="#00c9a7"
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-
                     {/* Total Users */}
                     <Card className={metricCardClass}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -358,55 +223,68 @@ export default function AdminDashboard({
                         </CardContent>
                     </Card>
 
-                    {/* Churn */}
+                    {/* Superadmins */}
                     <Card className={metricCardClass}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Churn Rate
+                                Superadmin
                             </CardTitle>
                             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-pink/15">
-                                <Flame className="h-4 w-4 text-bubble-pink" />
+                                <Shield className="h-4 w-4 text-bubble-pink" />
                             </div>
                         </CardHeader>
                         <CardContent>
                             <div className="font-display text-2xl font-bold text-foreground">
-                                {metrics.churn_rate}%
+                                {metrics.total_superadmins}
                             </div>
-                            <div className="mt-2 flex items-center justify-between">
+                            <div className="mt-2">
                                 <p className="text-xs text-muted-foreground">
-                                    <GrowthBadge
-                                        value={metrics.churn_rate}
-                                        invertColors
-                                    />{' '}
-                                    cancel 30 hari
+                                    Akses penuh ke admin panel
                                 </p>
-                                <Sparkline
-                                    data={sparklines.new_subscriptions}
-                                    color="#ff6584"
-                                />
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* Avg First Response */}
+                    {/* Roles */}
                     <Card className={metricCardClass}>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Avg. First Response
+                                Role Aktif
                             </CardTitle>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-yellow/30">
-                                <Clock className="h-4 w-4 text-bubble-orange" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-green/15">
+                                <Gamepad2 className="h-4 w-4 text-bubble-green" />
                             </div>
                         </CardHeader>
                         <CardContent>
                             <div className="font-display text-2xl font-bold text-foreground">
-                                {formatDuration(
-                                    metrics.avg_first_response_seconds,
-                                )}
+                                {metrics.total_roles}
                             </div>
                             <div className="mt-2">
                                 <p className="text-xs text-muted-foreground">
-                                    Dari tiket ke balasan pertama
+                                    Kelompok permission untuk user
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Permissions */}
+                    <Card className={metricCardClass}>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Permission
+                            </CardTitle>
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-orange/15">
+                                <Boxes className="h-4 w-4 text-bubble-orange" />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="font-display text-2xl font-bold text-foreground">
+                                {metrics.total_permissions}
+                            </div>
+                            <div className="mt-2">
+                                <p className="text-xs text-muted-foreground">
+                                    Dari {metrics.new_users_30d} pemain baru 30
+                                    hari
                                 </p>
                             </div>
                         </CardContent>
@@ -419,17 +297,20 @@ export default function AdminDashboard({
                     <Card className="rounded-2xl border-0 shadow-sm md:col-span-4">
                         <CardHeader>
                             <CardTitle className="font-display text-lg">
-                                Pertumbuhan Platform
+                                Pemain Baru
                             </CardTitle>
                             <CardDescription>
-                                Pemain & kelas baru per hari (14 hari terakhir)
+                                Registrasi per hari (14 hari terakhir)
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="pl-0">
                             <div className="h-[300px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart
-                                        data={combinedDailyStats}
+                                        data={dailySignups.map((d) => ({
+                                            ...d,
+                                            users: d.count,
+                                        }))}
                                         margin={{
                                             top: 10,
                                             right: 30,
@@ -456,64 +337,29 @@ export default function AdminDashboard({
                                                     stopOpacity={0}
                                                 />
                                             </linearGradient>
-                                            <linearGradient
-                                                id="colorWorkspaces"
-                                                x1="0"
-                                                y1="0"
-                                                x2="0"
-                                                y2="1"
-                                            >
-                                                <stop
-                                                    offset="5%"
-                                                    stopColor="#845ec2"
-                                                    stopOpacity={0.3}
-                                                />
-                                                <stop
-                                                    offset="95%"
-                                                    stopColor="#845ec2"
-                                                    stopOpacity={0}
-                                                />
-                                            </linearGradient>
                                         </defs>
                                         <XAxis
                                             dataKey="date"
-                                            stroke="#9ca3af"
+                                            stroke="var(--muted-foreground)"
                                             fontSize={12}
                                             tickLine={false}
                                             axisLine={false}
                                             dy={10}
                                         />
                                         <YAxis
-                                            stroke="#9ca3af"
+                                            stroke="var(--muted-foreground)"
                                             fontSize={12}
                                             tickLine={false}
                                             axisLine={false}
-                                            tickFormatter={(value) =>
-                                                `${value}`
-                                            }
+                                            allowDecimals={false}
                                         />
                                         <CartesianGrid
                                             strokeDasharray="3 3"
                                             vertical={false}
-                                            stroke="#e5e7eb"
-                                            strokeOpacity={0.5}
+                                            stroke="var(--border)"
+                                            strokeOpacity={0.6}
                                         />
-                                        <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: '#1f2a44',
-                                                borderColor: '#2d3a5e',
-                                                borderRadius: '10px',
-                                                border: '1px solid #2d3a5e',
-                                            }}
-                                            itemStyle={{
-                                                color: '#f5f5f5',
-                                            }}
-                                        />
-                                        <Legend
-                                            wrapperStyle={{
-                                                paddingTop: '10px',
-                                            }}
-                                        />
+                                        <Tooltip contentStyle={tooltipStyle} />
                                         <Area
                                             type="monotone"
                                             dataKey="users"
@@ -523,29 +369,20 @@ export default function AdminDashboard({
                                             fillOpacity={1}
                                             fill="url(#colorUsers)"
                                         />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="workspaces"
-                                            name="Kelas Baru"
-                                            stroke="#845ec2"
-                                            strokeWidth={2}
-                                            fillOpacity={1}
-                                            fill="url(#colorWorkspaces)"
-                                        />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* Plan Distribution */}
+                    {/* Role Distribution */}
                     <Card className="rounded-2xl border-0 shadow-sm md:col-span-3">
                         <CardHeader>
                             <CardTitle className="font-display text-lg">
-                                Distribusi Paket
+                                Distribusi Role
                             </CardTitle>
                             <CardDescription>
-                                Subscription workspace per tier harga
+                                Jumlah user per role
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -553,16 +390,16 @@ export default function AdminDashboard({
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
-                                            data={planDistribution}
+                                            data={roleDistribution}
                                             cx="50%"
                                             cy="50%"
                                             innerRadius={60}
                                             outerRadius={100}
                                             paddingAngle={2}
                                             dataKey="count"
-                                            nameKey="plan"
+                                            nameKey="role"
                                         >
-                                            {planDistribution.map(
+                                            {roleDistribution.map(
                                                 (entry, index) => (
                                                     <Cell
                                                         key={`cell-${index}`}
@@ -577,19 +414,11 @@ export default function AdminDashboard({
                                             )}
                                         </Pie>
                                         <Tooltip
-                                            contentStyle={{
-                                                backgroundColor: '#1f2a44',
-                                                borderColor: '#2d3a5e',
-                                                borderRadius: '10px',
-                                                border: '1px solid #2d3a5e',
-                                            }}
-                                            itemStyle={{
-                                                color: '#f5f5f5',
-                                            }}
+                                            contentStyle={tooltipStyle}
                                             formatter={
                                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                                 (value: any) => [
-                                                    `${value} Workspaces`,
+                                                    `${value} Users`,
                                                 ]
                                             }
                                         />

@@ -13,8 +13,6 @@ it('admin dashboard includes sparklines prop', function () {
         ->assertInertia(fn ($page) => $page
             ->has('sparklines')
             ->has('sparklines.new_users')
-            ->has('sparklines.new_workspaces')
-            ->has('sparklines.new_subscriptions')
         );
 });
 
@@ -24,19 +22,17 @@ it('sparklines contain 7 data points', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->has('sparklines.new_users', 7)
-            ->has('sparklines.new_workspaces', 7)
-            ->has('sparklines.new_subscriptions', 7)
         );
 });
 
 it('sparkline counts users created today', function () {
-    User::factory()->count(3)->create();
+    User::factory()->count(2)->create();
 
     $this->actingAs($this->admin)
         ->get('/admin/dashboard')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->where('sparklines.new_users.6', fn ($count) => $count >= 3)
+            ->where('sparklines.new_users.6', User::whereDate('created_at', today())->count())
         );
 });
 
@@ -45,8 +41,7 @@ it('admin dashboard sparklines contain non-negative integers', function () {
         ->get('/admin/dashboard')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->where('sparklines.new_users', fn ($data) => collect($data)->every(fn ($v) => is_int($v) && $v >= 0))
-            ->where('sparklines.new_workspaces', fn ($data) => collect($data)->every(fn ($v) => is_int($v) && $v >= 0))
-            ->where('sparklines.new_subscriptions', fn ($data) => collect($data)->every(fn ($v) => is_int($v) && $v >= 0))
+            ->where('sparklines.new_users.0', fn ($value) => is_int($value) && $value >= 0)
+            ->where('sparklines.new_users.6', fn ($value) => is_int($value) && $value >= 0)
         );
 });

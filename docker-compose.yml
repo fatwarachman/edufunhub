@@ -8,10 +8,14 @@ services:
     env_file: .env
     ports:
       - "8096:8000"
+      - "80:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
     volumes:
       - edufunhub-storage:/app/storage
-      - ./public/build:/app/public/build
-      - ./lang:/app/lang
     depends_on:
       - db
     networks:
@@ -22,31 +26,12 @@ services:
     container_name: edufunhub-db
     restart: unless-stopped
     environment:
-      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-edufunhub_root_secret}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-edufunhub_prod_secret_2026}
       MARIADB_DATABASE: ${DB_DATABASE:-edufunhub}
       MARIADB_USER: ${DB_USERNAME:-edufunhub}
-      MARIADB_PASSWORD: ${DB_PASSWORD:-edufunhub_secret}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-edufunhub_prod_secret_2026}
     volumes:
       - edufunhub-db:/var/lib/mysql
-    networks:
-      - edufunhub-net
-
-  web:
-    image: nginx:alpine
-    container_name: edufunhub-web
-    restart: unless-stopped
-    ports:
-      - "8095:80"
-    volumes:
-      - ./public:/usr/share/nginx/html:ro
-    networks:
-      - edufunhub-net
-
-  tunnel:
-    image: cloudflare/cloudflared:latest
-    container_name: edufunhub-tunnel
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run --token eyJhIj...bCJ9
     networks:
       - edufunhub-net
 

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,10 +27,12 @@ it('aborts with 403 when a standard user accesses admin dashboard', function () 
     $response->assertForbidden();
 });
 
-it('allows superadmins to access the dashboard and see system metrics', function () {
+it('allows superadmins to access the dashboard and see user metrics', function () {
     // Create some dummy data to count
     User::factory()->count(3)->create();
     Workspace::factory()->count(2)->create();
+    Role::factory()->count(2)->create();
+    Permission::factory()->count(5)->create();
 
     $superadmin = User::factory()->create([
         'is_superadmin' => true,
@@ -48,17 +52,14 @@ it('allows superadmins to access the dashboard and see system metrics', function
                 'metrics',
                 fn (AssertableInertia $metrics) => $metrics
                     ->where('total_users', User::count())
-                    ->where('total_workspaces', Workspace::count())
-                    ->has('active_subscriptions')
+                    ->where('total_roles', Role::count())
+                    ->where('total_permissions', Permission::count())
+                    ->has('total_superadmins')
                     ->has('new_users_30d')
                     ->has('user_growth_percent')
-                    ->has('workspace_growth_percent')
-                    ->has('mrr')
-                    ->has('churn_rate')
-                    ->has('avg_first_response_seconds')
             )
             ->has('dailySignups')
-            ->has('planDistribution')
+            ->has('roleDistribution')
             ->has('recent_users')
     );
 });

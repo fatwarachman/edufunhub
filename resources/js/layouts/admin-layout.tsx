@@ -4,34 +4,13 @@ import { FeatureProvider } from '@/contexts/feature-context';
 import { cn } from '@/lib/utils';
 import { Link, router } from '@inertiajs/react';
 import {
-    Activity,
-    AlertTriangle,
     ArrowLeft,
-    BarChart3,
-    Bell,
-    Building2,
-    ChevronRight,
-    Clock,
-    Compass,
-    DollarSign,
-    Globe,
-    Grid3X3,
     Boxes,
-    KeyRound,
     LayoutDashboard,
-    ListChecks,
-    Mail,
-    Megaphone,
     Menu,
-    MessageSquare,
-    Power,
     ScrollText,
     Search,
     Shield,
-    ShieldCheck,
-    Terminal,
-    Ticket,
-    ToggleLeft,
     TrendingUp,
     Users,
     X,
@@ -46,8 +25,8 @@ import {
 
 interface QuickStats {
     total_users: number;
-    total_workspaces: number;
-    mrr: number;
+    total_roles: number;
+    total_permissions: number;
 }
 
 function AdminQuickStatsWidget() {
@@ -70,8 +49,25 @@ function AdminQuickStatsWidget() {
     }, []);
 
     useEffect(() => {
-        fetchStats();
-    }, [fetchStats]);
+        let cancelled = false;
+        void (async () => {
+            try {
+                const res = await fetch('/admin/quick-stats', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (!cancelled && res.ok) {
+                    setStats(await res.json());
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     if (!stats) {
         return (
@@ -90,17 +86,14 @@ function AdminQuickStatsWidget() {
         {
             label: 'Users',
             value: stats.total_users.toLocaleString(),
-            trend: null,
         },
         {
-            label: 'Spaces',
-            value: stats.total_workspaces.toLocaleString(),
-            trend: null,
+            label: 'Roles',
+            value: stats.total_roles.toLocaleString(),
         },
         {
-            label: 'MRR',
-            value: `$${stats.mrr.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-            trend: null,
+            label: 'Permissions',
+            value: stats.total_permissions.toLocaleString(),
         },
     ];
 
@@ -148,195 +141,21 @@ const adminNavGroups = [
                 href: '/admin/dashboard',
                 icon: LayoutDashboard,
             },
-            {
-                title: 'System Health',
-                href: '/admin/system-health',
-                icon: Activity,
-            },
         ],
     },
     {
-        title: 'Analytics',
-        icon: BarChart3,
-        storageKey: 'analytics',
-        defaultExpanded: false,
-        items: [
-            {
-                title: 'User Analytics',
-                href: '/admin/user-analytics',
-                icon: Users,
-            },
-            {
-                title: 'Revenue',
-                href: '/admin/revenue-analytics',
-                icon: DollarSign,
-            },
-            {
-                title: 'Cohort Analysis',
-                href: '/admin/cohort-analysis',
-                icon: Grid3X3,
-            },
-            { title: 'Retention', href: '/admin/retention', icon: Compass },
-            {
-                title: 'Activity Heatmap',
-                href: '/admin/workspace-activity-heatmap',
-                icon: Activity,
-            },
-            {
-                title: 'Onboarding',
-                href: '/admin/onboarding-insights',
-                icon: Compass,
-            },
-            {
-                title: 'Notifications',
-                href: '/admin/notification-analytics',
-                icon: Bell,
-            },
-        ],
-    },
-    {
-        title: 'Users & Workspaces',
+        title: 'Manajemen User',
         icon: Users,
-        storageKey: 'users',
-        defaultExpanded: false,
+        storageKey: 'user-management',
+        defaultExpanded: true,
         items: [
-            { title: 'All Users', href: '/admin/users', icon: Users },
-            { title: 'Workspaces', href: '/admin/workspaces', icon: Building2 },
+            { title: 'Users', href: '/admin/users', icon: Users },
+            { title: 'Roles', href: '/admin/roles', icon: Shield },
+            { title: 'Modules', href: '/admin/modules', icon: Boxes },
             {
                 title: 'Impersonation Logs',
                 href: '/admin/impersonation-logs',
                 icon: ScrollText,
-                feature: 'admin.impersonation',
-            },
-        ],
-    },
-    {
-        title: 'Content & Comms',
-        icon: Megaphone,
-        storageKey: 'content',
-        defaultExpanded: false,
-        items: [
-            {
-                title: 'Announcements',
-                href: '/admin/announcements',
-                icon: Megaphone,
-                feature: 'admin.announcements',
-            },
-            {
-                title: 'Broadcasts',
-                href: '/admin/broadcasts',
-                icon: Megaphone,
-                feature: 'admin.broadcasts',
-            },
-            {
-                title: 'Changelog',
-                href: '/admin/changelog',
-                icon: ListChecks,
-                feature: 'admin.changelog',
-            },
-            {
-                title: 'Email Templates',
-                href: '/admin/mail-templates',
-                icon: Mail,
-                feature: 'admin.mail_templates',
-            },
-            {
-                title: 'Feedback',
-                href: '/admin/feedback',
-                icon: MessageSquare,
-                feature: 'admin.feedback',
-            },
-            {
-                title: 'SEO',
-                href: '/admin/seo',
-                icon: Globe,
-                feature: 'admin.seo',
-            },
-            {
-                title: 'Status Page',
-                href: '/admin/status',
-                icon: Activity,
-                feature: 'admin.status_page',
-            },
-            {
-                title: 'Support Tickets',
-                href: '/admin/tickets',
-                icon: Ticket,
-                feature: 'user.support_tickets',
-            },
-            {
-                title: 'Translations',
-                href: '/admin/translations',
-                icon: Globe,
-                feature: 'admin.translations',
-            },
-        ],
-    },
-    {
-        title: 'System & Security',
-        icon: ShieldCheck,
-        storageKey: 'system',
-        defaultExpanded: false,
-        items: [
-            {
-                title: 'Audit Logs',
-                href: '/admin/audit-logs',
-                icon: ScrollText,
-                feature: 'admin.audit_logs',
-            },
-            {
-                title: 'System Logs',
-                href: '/admin/logs',
-                icon: Terminal,
-                feature: 'admin.audit_logs',
-            },
-            {
-                title: 'Feature Flags',
-                href: '/admin/feature-flags',
-                icon: ToggleLeft,
-                feature: 'workspace.feature_flags',
-            },
-            {
-                title: 'Permission Presets',
-                href: '/admin/permission-presets',
-                icon: KeyRound,
-                feature: 'admin.permission_presets',
-            },
-            {
-                title: 'Roles',
-                href: '/admin/roles',
-                icon: Shield,
-                feature: 'admin.roles',
-            },
-            {
-                title: 'Modules',
-                href: '/admin/modules',
-                icon: Boxes,
-                feature: 'admin.modules',
-            },
-            {
-                title: 'Scheduled Tasks',
-                href: '/admin/scheduled-tasks',
-                icon: Clock,
-                feature: 'admin.scheduled_tasks',
-            },
-            {
-                title: 'Data Retention',
-                href: '/admin/retention',
-                icon: ShieldCheck,
-                feature: 'admin.retention',
-            },
-            {
-                title: 'System Alerts',
-                href: '/admin/system-notifications',
-                icon: AlertTriangle,
-                feature: 'admin.system_notifications',
-            },
-            {
-                title: 'Maintenance',
-                href: '/admin/maintenance',
-                icon: Power,
-                feature: 'admin.maintenance_mode',
             },
         ],
     },
@@ -346,21 +165,12 @@ interface SearchResult {
     id: number;
     name?: string;
     email?: string;
-    slug?: string;
-    workspace_name?: string;
-    stripe_status?: string;
     url: string;
-}
-
-interface SearchResults {
-    users: SearchResult[];
-    workspaces: SearchResult[];
-    subscriptions: SearchResult[];
 }
 
 function AdminSearchBar() {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<SearchResults | null>(null);
+    const [results, setResults] = useState<SearchResult[] | null>(null);
     const [open, setOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -373,7 +183,8 @@ function AdminSearchBar() {
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
         });
         if (res.ok) {
-            setResults(await res.json());
+            const data = await res.json();
+            setResults(data.users ?? []);
         }
     }, []);
 
@@ -395,11 +206,7 @@ function AdminSearchBar() {
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
 
-    const hasResults =
-        results &&
-        (results.users.length > 0 ||
-            results.workspaces.length > 0 ||
-            results.subscriptions.length > 0);
+    const hasResults = results && results.length > 0;
 
     const navigate = (url: string) => {
         setOpen(false);
@@ -414,7 +221,7 @@ function AdminSearchBar() {
                 <Search className="size-3.5 shrink-0 text-sidebar-foreground/50" />
                 <input
                     className="w-full bg-transparent text-xs text-sidebar-foreground outline-none placeholder:text-sidebar-foreground/50"
-                    placeholder="Search users, workspaces…"
+                    placeholder="Cari user…"
                     value={query}
                     onChange={(e) => {
                         setQuery(e.target.value);
@@ -428,73 +235,24 @@ function AdminSearchBar() {
                 <div className="absolute top-full right-3 left-3 z-50 mt-1 rounded-md border border-border bg-popover shadow-lg">
                     {!hasResults ? (
                         <p className="px-3 py-2 text-xs text-muted-foreground">
-                            No results found.
+                            Tidak ada hasil.
                         </p>
                     ) : (
                         <div className="max-h-80 overflow-y-auto">
-                            {results.users.length > 0 && (
-                                <div>
-                                    <p className="px-3 py-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
-                                        Users
-                                    </p>
-                                    {results.users.map((u) => (
-                                        <button
-                                            key={u.id}
-                                            onClick={() => navigate(u.url)}
-                                            className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-accent"
-                                        >
-                                            <span className="font-medium">
-                                                {u.name}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {u.email}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                            {results.workspaces.length > 0 && (
-                                <div>
-                                    <p className="px-3 py-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
-                                        Workspaces
-                                    </p>
-                                    {results.workspaces.map((w) => (
-                                        <button
-                                            key={w.id}
-                                            onClick={() => navigate(w.url)}
-                                            className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-accent"
-                                        >
-                                            <span className="font-medium">
-                                                {w.name}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {w.slug}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                            {results.subscriptions.length > 0 && (
-                                <div>
-                                    <p className="px-3 py-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
-                                        Subscriptions
-                                    </p>
-                                    {results.subscriptions.map((s) => (
-                                        <button
-                                            key={s.id}
-                                            onClick={() => navigate(s.url)}
-                                            className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-accent"
-                                        >
-                                            <span className="font-medium">
-                                                {s.workspace_name}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {s.stripe_status}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                            {results.map((u) => (
+                                <button
+                                    key={u.id}
+                                    onClick={() => navigate(u.url)}
+                                    className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-accent"
+                                >
+                                    <span className="font-medium">
+                                        {u.name}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                        {u.email}
+                                    </span>
+                                </button>
+                            ))}
                         </div>
                     )}
                 </div>
@@ -596,11 +354,11 @@ function AdminBreadcrumb({ currentPath }: { currentPath: string }) {
             >
                 Admin
             </Link>
-            <ChevronRight className="size-4" />
+            <span className="text-muted-foreground/50">/</span>
             <span className="text-foreground">{currentGroup}</span>
             {currentItem !== currentGroup && (
                 <>
-                    <ChevronRight className="size-4" />
+                    <span className="text-muted-foreground/50">/</span>
                     <span className="font-medium text-foreground">
                         {currentItem}
                     </span>

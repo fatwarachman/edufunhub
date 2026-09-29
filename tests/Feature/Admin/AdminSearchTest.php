@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use App\Models\Workspace;
 
 beforeEach(function () {
     $this->admin = User::factory()->create(['is_superadmin' => true]);
@@ -23,7 +22,7 @@ it('returns empty results for queries shorter than 2 characters', function () {
     $this->actingAs($this->admin)
         ->getJson('/admin/search?q=a')
         ->assertOk()
-        ->assertJson(['users' => [], 'workspaces' => [], 'subscriptions' => []]);
+        ->assertJson(['users' => []]);
 });
 
 it('returns matching users by name', function () {
@@ -49,36 +48,11 @@ it('returns matching users by email', function () {
     expect($response->json('users.0.email'))->toBe('john@acme.com');
 });
 
-it('returns matching workspaces by name', function () {
-    $owner = User::factory()->create();
-    Workspace::factory()->create(['owner_id' => $owner->id, 'name' => 'Acme Corp']);
-    Workspace::factory()->create(['owner_id' => $owner->id, 'name' => 'Other Company']);
-
-    $response = $this->actingAs($this->admin)
-        ->getJson('/admin/search?q=Acme')
-        ->assertOk();
-
-    expect($response->json('workspaces'))->toHaveCount(1);
-    expect($response->json('workspaces.0.name'))->toBe('Acme Corp');
-});
-
-it('returns matching workspaces by slug', function () {
-    $owner = User::factory()->create();
-    Workspace::factory()->create(['owner_id' => $owner->id, 'name' => 'My Company', 'slug' => 'my-acme-workspace']);
-
-    $response = $this->actingAs($this->admin)
-        ->getJson('/admin/search?q=acme-workspace')
-        ->assertOk();
-
-    expect($response->json('workspaces'))->toHaveCount(1);
-    expect($response->json('workspaces.0.slug'))->toBe('my-acme-workspace');
-});
-
 it('returns the correct response structure', function () {
     $this->actingAs($this->admin)
         ->getJson('/admin/search?q=test')
         ->assertOk()
-        ->assertJsonStructure(['users', 'workspaces', 'subscriptions']);
+        ->assertJsonStructure(['users']);
 });
 
 it('limits results to 5 per category', function () {
