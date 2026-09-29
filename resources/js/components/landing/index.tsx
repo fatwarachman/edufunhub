@@ -1,0 +1,11 @@
+export { LandingCta } from './landing-cta';
+export { LandingEconomy } from './landing-economy';
+export { LandingFaq } from './landing-faq';
+export { LandingFeatures } from './landing-features';
+export { LandingFooter } from './landing-footer';
+export { LandingHeader } from './landing-header';
+export { LandingHero } from './landing-hero';
+export { LandingLeaderboard } from './landing-leaderboard';
+export { LandingPricing } from './landing-pricing';
+export { LandingTeachers } from './landing-teachers';
+export { LandingTestimonials } from './landing-testimonials';

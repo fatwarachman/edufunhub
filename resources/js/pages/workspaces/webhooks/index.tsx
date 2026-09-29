@@ -1,0 +1,432 @@
+import InputError from '@/components/input-error';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+import { useTranslations } from '@/hooks/use-translations';
+import AppLayout from '@/layouts/app-layout';
+import WorkspaceLayout from '@/layouts/settings/workspace-layout';
+import { Workspace } from '@/types';
+import { Head, router, useForm } from '@inertiajs/react';
+import { formatDistanceToNow } from 'date-fns';
+import { Activity, Plus, Shield, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+
+interface WebhookEndpoint {
+    id: number;
+    url: string;
+    secret: string;
+    events: string[] | null;
+    is_active: boolean;
+    created_at: string;
+}
+
+interface WebhookLogsProps {
+    workspace: Workspace;
+    endpoints: WebhookEndpoint[];
+}
+
+export default function WorkspaceWebhooks({
+    workspace,
+    endpoints,
+}: WebhookLogsProps) {
+    const { t } = useTranslations();
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    const { data, setData, post, processing, errors, reset, clearErrors } =
+        useForm({
+            url: '',
+            events: [] as string[],
+            is_active: true,
+        });
+
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post(`/workspaces/${workspace.id}/webhooks`, {
+            onSuccess: () => {
+                reset();
+                setIsCreateModalOpen(false);
+            },
+        });
+    };
+
+    const deleteEndpoint = (endpointId: number) => {
+        if (confirm('Are you sure you want to delete this webhook endpoint?')) {
+            router.delete(`/workspaces/${workspace.id}/webhooks/${endpointId}`);
+        }
+    };
+
+    const pingEndpoint = (endpointId: number) => {
+        router.post(`/workspaces/${workspace.id}/webhooks/${endpointId}/ping`);
+    };
+
+    return (
+        <AppLayout
+            breadcrumbs={[
+                {
+                    title: t('workspace.settings.title', 'Workspace Settings'),
+                    href: `/workspaces/settings`,
+                },
+                { title: t('workspace.webhooks.title', 'Webhooks'), href: '' },
+            ]}
+        >
+            <Head
+                title={t(
+                    'workspace.webhooks.page_title',
+                    'Configuration & Webhooks',
+                )}
+            />
+
+            <WorkspaceLayout
+                title={t('workspace.webhooks.heading', 'Webhooks')}
+                description={t(
+                    'workspace.webhooks.description',
+                    'Manage external webhook endpoints triggered by workspace activity.',
+                )}
+                fullWidth
+            >
+                <div className="space-y-6">
+                    <div className="flex justify-end gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                router.visit(
+                                    `/workspaces/${workspace.id}/webhooks/verification-guide`,
+                                )
+                            }
+                        >
+                            <Shield className="mr-2 h-4 w-4" />
+                            {t(
+                                'workspace.webhooks.verification_guide',
+                                'Verification Guide',
+                            )}
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            onClick={() =>
+                                router.visit(
+                                    `/workspaces/${workspace.id}/webhooks/logs`,
+                                )
+                            }
+                        >
+                            <Activity className="mr-2 h-4 w-4" />
+                            {t('workspace.webhooks.view_logs', 'Delivery Logs')}
+                        </Button>
+                        <Dialog
+                            open={isCreateModalOpen}
+                            onOpenChange={(open) => {
+                                setIsCreateModalOpen(open);
+                                if (!open) {
+                                    reset();
+                                    clearErrors();
+                                }
+                            }}
+                        >
+                            <DialogTrigger asChild>
+                                <Button>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    {t(
+                                        'workspace.webhooks.create_button',
+                                        'Add Webhook',
+                                    )}
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        {t(
+                                            'workspace.webhooks.create_title',
+                                            'Configure New Webhook',
+                                        )}
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        {t(
+                                            'workspace.webhooks.create_description',
+                                            'Configure a secure HTTPS endpoint to capture external payloads.',
+                                        )}
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <form onSubmit={submit} className="space-y-4">
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="url">
+                                                Payload URL
+                                            </Label>
+                                            <Input
+                                                id="url"
+                                                type="url"
+                                                value={data.url}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'url',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder="https://example.com/webhooks"
+                                                required
+                                            />
+                                            <InputError message={errors.url} />
+                                        </div>
+
+                                        <div className="space-y-2 border-t pt-2">
+                                            <Label>Subscribed Events</Label>
+                                            <p className="pb-2 text-[0.8rem] text-muted-foreground">
+                                                Select which workspace events
+                                                should trigger a payload to this
+                                                endpoint. Let empty to subscribe
+                                                to all events.
+                                            </p>
+
+                                            <div className="space-y-3">
+                                                {[
+                                                    {
+                                                        id: 'WorkspaceUpdated',
+                                                        label: 'Workspace Updated',
+                                                        desc: 'When workspace settings are changed',
+                                                    },
+                                                    {
+                                                        id: 'WorkspaceMemberAdded',
+                                                        label: 'Member Added',
+                                                        desc: 'When a user accepts an invite',
+                                                    },
+                                                    {
+                                                        id: 'WorkspaceMemberRemoved',
+                                                        label: 'Member Removed',
+                                                        desc: 'When a user is removed or leaves',
+                                                    },
+                                                    {
+                                                        id: 'WorkspaceMemberRoleUpdated',
+                                                        label: 'Member Role Updated',
+                                                        desc: 'When a member receives a new role',
+                                                    },
+                                                    {
+                                                        id: 'SubscriptionUpdated',
+                                                        label: 'Subscription Updated',
+                                                        desc: 'When the billing plan changes',
+                                                    },
+                                                ].map((event) => (
+                                                    <div
+                                                        key={event.id}
+                                                        className="flex items-start gap-2"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            id={`event-${event.id}`}
+                                                            checked={data.events.includes(
+                                                                event.id,
+                                                            )}
+                                                            className="mt-1 h-4 w-4 shrink-0 rounded border-input bg-background ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                                                            onChange={(e) => {
+                                                                if (
+                                                                    e.target
+                                                                        .checked
+                                                                ) {
+                                                                    setData(
+                                                                        'events',
+                                                                        [
+                                                                            ...data.events,
+                                                                            event.id,
+                                                                        ],
+                                                                    );
+                                                                } else {
+                                                                    setData(
+                                                                        'events',
+                                                                        data.events.filter(
+                                                                            (
+                                                                                id,
+                                                                            ) =>
+                                                                                id !==
+                                                                                event.id,
+                                                                        ),
+                                                                    );
+                                                                }
+                                                            }}
+                                                        />
+                                                        <div className="space-y-1 leading-none">
+                                                            <Label
+                                                                htmlFor={`event-${event.id}`}
+                                                                className="cursor-pointer font-medium"
+                                                            >
+                                                                {event.label}
+                                                            </Label>
+                                                            <p className="text-[0.8rem] text-muted-foreground">
+                                                                {event.desc}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() =>
+                                                setIsCreateModalOpen(false)
+                                            }
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            disabled={processing}
+                                        >
+                                            {processing && (
+                                                <Spinner className="mr-2" />
+                                            )}
+                                            {t(
+                                                'workspace.webhooks.save',
+                                                'Save Webhook',
+                                            )}
+                                        </Button>
+                                    </DialogFooter>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>
+                                {t(
+                                    'workspace.webhooks.registered_endpoints',
+                                    'Registered Endpoints',
+                                )}
+                            </CardTitle>
+                            <CardDescription>
+                                {t(
+                                    'workspace.webhooks.endpoints_desc',
+                                    'Endpoints currently receiving payloads generated within your workspace.',
+                                )}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {endpoints.length === 0 ? (
+                                <div className="flex h-32 items-center justify-center rounded-md border border-dashed">
+                                    <p className="text-sm text-muted-foreground">
+                                        {t(
+                                            'workspace.webhooks.empty',
+                                            'No generic webhooks configured.',
+                                        )}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {endpoints.map((endpoint) => (
+                                        <div
+                                            key={endpoint.id}
+                                            className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
+                                        >
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-semibold">
+                                                        {endpoint.url}
+                                                    </span>
+                                                    {endpoint.is_active ? (
+                                                        <Badge
+                                                            variant="default"
+                                                            className="h-5 text-[10px]"
+                                                        >
+                                                            Active
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="h-5 text-[10px]"
+                                                        >
+                                                            Inactive
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                <div className="font-mono text-xs text-muted-foreground">
+                                                    Secret: {endpoint.secret}
+                                                </div>
+                                                <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                                                    Created{' '}
+                                                    {formatDistanceToNow(
+                                                        new Date(
+                                                            endpoint.created_at,
+                                                        ),
+                                                        { addSuffix: true },
+                                                    )}
+                                                </div>
+
+                                                <div className="mt-3 flex flex-wrap gap-1">
+                                                    {!endpoint.events ||
+                                                    endpoint.events.length ===
+                                                        0 ? (
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-[10px] text-muted-foreground"
+                                                        >
+                                                            All Events
+                                                        </Badge>
+                                                    ) : (
+                                                        endpoint.events.map(
+                                                            (event) => (
+                                                                <Badge
+                                                                    key={event}
+                                                                    variant="secondary"
+                                                                    className="text-[10px]"
+                                                                >
+                                                                    {event}
+                                                                </Badge>
+                                                            ),
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex shrink-0 items-center gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        pingEndpoint(
+                                                            endpoint.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <Activity className="mr-2 h-4 w-4" />
+                                                    Ping
+                                                </Button>
+                                                <Button
+                                                    size="icon"
+                                                    variant="destructive"
+                                                    onClick={() =>
+                                                        deleteEndpoint(
+                                                            endpoint.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </WorkspaceLayout>
+        </AppLayout>
+    );
+}

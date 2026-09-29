@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <title>EduFunHub</title>
+  <rect x="26" y="30" width="208" height="208" rx="56" fill="#1f2a44"/>
+  <rect x="14" y="16" width="208" height="208" rx="56" fill="#FF9E44" stroke="#1f2a44" stroke-width="12"/>
+  <g transform="translate(54 66) scale(5.5)" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 12h4m-2-2v4m7-1h.01M18 11h.01"/>
+    <path d="M17.32 5H6.68a4 4 0 0 0-3.98 3.59c-.006.052-.01.101-.017.152C2.604 9.402 2 14.442 2 16a3 3 0 0 0 5.12 2.12l1.76-1.76a3 3 0 0 1 2.12-.88h2a3 3 0 0 1 2.12.88l1.76 1.76A3 3 0 0 0 22 16c0-1.558-.604-6.598-.683-7.259-.006-.05-.01-.1-.017-.152A4 4 0 0 0 17.32 5Z"/>
+  </g>
+  <circle cx="214" cy="35" r="27" fill="#00C9A7" stroke="#1f2a44" stroke-width="10"/>
+</svg>

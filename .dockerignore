@@ -1,0 +1,15 @@
+vendor
+node_modules
+public/build
+.env
+.git
+.idea
+.actrc
+.github
+docs
+tests
+*.png
+*.md
+Dockerfile
+docker-compose.yml
+test-docker.sh

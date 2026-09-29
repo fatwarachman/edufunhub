@@ -1,0 +1,289 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+/* EduFunHub playful fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
+
+@theme {
+    --font-sans:
+        'Quicksand', 'Inter', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+
+    --font-display:
+        'Fredoka', 'Quicksand', ui-sans-serif, system-ui, sans-serif;
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    /* EduFunHub bubble palette */
+    --color-bubble-yellow: #fff176;
+    --color-bubble-orange: #ff9e44;
+    --color-bubble-pink: #ff6584;
+    --color-bubble-purple: #845ec2;
+    --color-bubble-blue: #4d8fac;
+    --color-bubble-green: #00c9a7;
+    --color-bubble-ink: #1f2a44;
+}
+
+:root {
+    --background: oklch(0.985 0.008 90);        /* warm cream */
+    --foreground: oklch(0.17 0.03 250);          /* playful deep blue */
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.17 0.03 250);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.17 0.03 250);
+    --primary: oklch(0.60 0.18 48);              /* bubble orange */
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(0.95 0.03 90);
+    --secondary-foreground: oklch(0.17 0.03 250);
+    --muted: oklch(0.95 0.02 90);
+    --muted-foreground: oklch(0.50 0.03 250);
+    --accent: oklch(0.92 0.12 88);               /* bubble yellow */
+    --accent-foreground: oklch(0.20 0.04 250);
+    --destructive: oklch(0.57 0.22 28);
+    --destructive-foreground: oklch(1 0 0);
+    --border: oklch(0.90 0.03 90);
+    --input: oklch(0.91 0.03 90);
+    --ring: oklch(0.60 0.18 48);
+    --radius: 0.75rem;
+    --chart-1: oklch(0.60 0.18 48);              /* orange */
+    --chart-2: oklch(0.52 0.23 305);             /* purple */
+    --chart-3: oklch(0.60 0.14 192);             /* teal */
+    --chart-4: oklch(0.55 0.15 142);             /* green */
+    --chart-5: oklch(0.55 0.27 255);             /* blue */
+    /* Dark sidebar even in light mode */
+    --sidebar: oklch(0.18 0.03 250);
+    --sidebar-foreground: oklch(0.93 0 0);
+    --sidebar-primary: oklch(0.92 0.12 88);      /* yellow highlight */
+    --sidebar-primary-foreground: oklch(0.20 0.04 250);
+    --sidebar-accent: oklch(0.25 0.04 250);
+    --sidebar-accent-foreground: oklch(0.93 0 0);
+    --sidebar-border: oklch(0.28 0.04 250);
+    --sidebar-ring: oklch(0.92 0.12 88);
+}
+
+.dark {
+    --background: oklch(0.16 0.03 250);
+    --foreground: oklch(0.95 0 0);
+    --card: oklch(0.20 0.03 250);
+    --card-foreground: oklch(0.95 0 0);
+    --popover: oklch(0.20 0.03 250);
+    --popover-foreground: oklch(0.95 0 0);
+    --primary: oklch(0.80 0.16 60);              /* warmer orange for dark */
+    --primary-foreground: oklch(0.18 0.03 250);
+    --secondary: oklch(0.26 0.04 250);
+    --secondary-foreground: oklch(0.92 0 0);
+    --muted: oklch(0.25 0.03 250);
+    --muted-foreground: oklch(0.68 0.02 250);
+    --accent: oklch(0.55 0.27 255);              /* blue accent in dark */
+    --accent-foreground: oklch(1 0 0);
+    --destructive: oklch(0.57 0.22 28);
+    --destructive-foreground: oklch(1 0 0);
+    --border: oklch(0.28 0.04 250);
+    --input: oklch(0.28 0.04 250);
+    --ring: oklch(0.80 0.16 60);
+    --chart-1: oklch(0.72 0.20 48);
+    --chart-2: oklch(0.68 0.20 305);
+    --chart-3: oklch(0.72 0.13 192);
+    --chart-4: oklch(0.63 0.15 142);
+    --chart-5: oklch(0.62 0.27 255);
+    --sidebar: oklch(0.12 0.03 250);
+    --sidebar-foreground: oklch(0.92 0 0);
+    --sidebar-primary: oklch(0.80 0.16 60);
+    --sidebar-primary-foreground: oklch(0.18 0.03 250);
+    --sidebar-accent: oklch(0.20 0.03 250);
+    --sidebar-accent-foreground: oklch(0.92 0 0);
+    --sidebar-border: oklch(0.22 0.03 250);
+    --sidebar-ring: oklch(0.80 0.16 60);
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+
+    /* Glassmorphism utility */
+    .glass {
+        background: rgba(var(--background-rgb, 255, 255, 255), 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(var(--border-rgb, 226, 232, 240), 0.3);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    }
+
+    .dark .glass {
+        background: rgba(var(--background-rgb, 15, 23, 42), 0.7);
+        border: 1px solid rgba(var(--border-rgb, 30, 41, 59), 0.3);
+    }
+
+    /* Pulsing animation for high-conversion buttons */
+    @keyframes pulse-premium {
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(var(--primary-rgb, 59, 130, 246), 0.4);
+            transform: scale(1);
+        }
+        50% {
+            box-shadow: 0 0 20px 10px rgba(var(--primary-rgb, 59, 130, 246), 0);
+            transform: scale(1.02);
+        }
+    }
+
+    .animate-pulse-premium {
+        animation: pulse-premium 3s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Entrance animations */
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fade-in-up 0.6s ease-out forwards;
+    }
+
+    /* Animation delays for staggered effect */
+    .delay-100 {
+        animation-delay: 100ms;
+    }
+    .delay-200 {
+        animation-delay: 200ms;
+    }
+    .delay-300 {
+        animation-delay: 300ms;
+    }
+    .delay-400 {
+        animation-delay: 400ms;
+    }
+    .delay-500 {
+        animation-delay: 500ms;
+    }
+}
+
+/* RTL Support - Tailwind v4 handles RTL automatically when dir="rtl" is set */
+[dir='rtl'] {
+    direction: rtl;
+}
+
+[dir='ltr'] {
+    direction: ltr;
+}
+
+/* Ensure body inherits direction */
+body {
+    direction: inherit;
+}
+
+/* RTL layout adjustments for sidebar positioning */
+[dir='rtl'] [data-side='right'] {
+    right: 0;
+    left: auto;
+}
+
+[dir='rtl'] [data-side='left'] {
+    left: auto;
+    right: 0;
+}
+
+/* RTL settings layout - force sidebar to right */
+[dir='rtl'] .settings-layout-container,
+.settings-layout-container[data-rtl='true'] {
+    flex-direction: row-reverse !important;
+}
+
+[dir='rtl'] .settings-layout-sidebar,
+.settings-layout-sidebar[data-rtl='true'] {
+    order: 2 !important;
+}
+
+[dir='rtl'] .settings-layout-content,
+.settings-layout-content[data-rtl='true'] {
+    order: 1 !important;
+}
+
+/* Additional RTL support for settings layout */
+@media (min-width: 1024px) {
+    [dir='rtl'] .settings-layout-container,
+    .settings-layout-container[data-rtl='true'] {
+        flex-direction: row-reverse !important;
+    }
+
+    [dir='rtl'] .settings-layout-sidebar,
+    .settings-layout-sidebar[data-rtl='true'] {
+        order: 2 !important;
+    }
+
+    [dir='rtl'] .settings-layout-content,
+    .settings-layout-content[data-rtl='true'] {
+        order: 1 !important;
+    }
+}
+
+/* Additional RTL support for settings layout */
+@media (min-width: 1024px) {
+    [dir='rtl'] .settings-layout-container {
+        flex-direction: row-reverse !important;
+    }
+}

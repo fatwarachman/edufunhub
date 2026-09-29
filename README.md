@@ -29,10 +29,18 @@ EduFunHub adalah platform pembelajaran masa depan yang menggabungkan materi akad
 
 ## 🛠️ Arsitektur & Tech Stack
 
+EduFunHub memakai pemisahan tanggung jawab berikut:
+
+- **Portal web & pengaturan admin:** Laravel + Inertia React. Semua autentikasi, akun, workspace, CMS, konfigurasi, dashboard admin, dan operasi platform berada di Laravel.
+- **Game & gameplay:** Go. Semua runtime permainan, aturan game, state permainan, sesi multiplayer, scoring, collision, animasi/game loop, dan komunikasi real-time gameplay wajib dibuat sebagai service atau module Go.
+- **Batas integrasi:** Laravel menangani portal dan administrasi; Laravel tidak menjadi engine gameplay. Frontend game berkomunikasi dengan backend Go melalui API atau WebSocket yang terdokumentasi.
 - **Web Server:** Nginx Alpine
 - **Containerization:** Docker & Docker Compose
 - **Network & Tunnel:** Cloudflare Zero Trust Tunnel
-- **Frontend Engine:** HTML5, Tailwind CSS, Google Fonts (Fredoka & Quicksand)
+- **Frontend Engine:** React, Inertia, Tailwind CSS, Google Fonts (Fredoka & Quicksand)
+
+Dokumen arsitektur: [`docs/architecture.md`](docs/architecture.md)
+
 
 ---
 

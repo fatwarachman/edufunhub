@@ -1,0 +1,122 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use App\Models\Announcement;
+use App\Models\SeoMetadata;
+use App\Services\FeatureService;
+use Illuminate\Foundation\Inspiring;
+use Illuminate\Http\Request;
+use Inertia\Middleware;
+use Laravel\Pennant\Feature;
+
+class HandleInertiaRequests extends Middleware
+{
+    /**
+     * The root template that's loaded on the first page visit.
+     *
+     * @see https://inertiajs.com/server-side-setup#root-template
+     *
+     * @var string
+     */
+    protected $rootView = 'app';
+
+    /**
+     * Determines the current asset version.
+     *
+     * @see https://inertiajs.com/asset-versioning
+     */
+    public function version(Request $request): ?string
+    {
+        return parent::version($request);
+    }
+
+    /**
+     * Define the props that are shared by default.
+     *
+     * @see https://inertiajs.com/shared-data
+     *
+     * @return array<string, mixed>
+     */
+    public function share(Request $request): array
+    {
+        [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
+
+        $user = $request->user();
+        $currentWorkspace = $user?->currentWorkspace;
+        $workspaces = [];
+
+        $showExperienceSurvey = (bool) $user?->qualifiesForExperienceSurvey();
+        // Locale is now handled by SetLocale middleware
+        $locale = app()->getLocale();
+
+        if ($user) {
+            $workspaces = $user->workspaces()
+                ->select('workspaces.id', 'workspaces.name', 'workspaces.slug', 'workspaces.logo', 'workspaces.personal_workspace')
+                ->get()
+                ->map(fn ($workspace) => [
+                    'id' => $workspace->id,
+                    'name' => $workspace->name,
+                    'slug' => $workspace->slug,
+                    'logo' => $workspace->logo,
+                    'logo_url' => $workspace->logo_url,
+                    'personal_workspace' => $workspace->personal_workspace,
+                    'role' => $workspace->pivot->role,
+                    'plan' => $workspace->plan_name,
+                    'is_current' => $currentWorkspace && $workspace->id === $currentWorkspace->id,
+                ]);
+        }
+
+        return [
+            ...parent::share($request),
+            'name' => config('app.name'),
+            'quote' => ['message' => trim($message), 'author' => trim($author)],
+            'auth' => [
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'email_verified_at' => $user->email_verified_at,
+                    'is_superadmin' => $user->is_superadmin,
+                    'locale' => $user->locale,
+                    'onboarded_at' => $user->onboarded_at,
+                    'avatar_url' => $user->avatar_url,
+                    'bio' => $user->bio,
+                    'timezone' => $user->timezone ?? 'UTC',
+                    'date_format' => $user->date_format ?? 'Y-m-d',
+                    'notification_preferences' => $user->normalizedNotificationPreferences(),
+                    'two_factor_confirmed_at' => $user->two_factor_confirmed_at,
+                    'tour_completed_at' => $user->tour_completed_at,
+                    'created_at' => $user->created_at,
+                    'profile_completeness' => $user->profileCompletenessScore(),
+                ] : null,
+                'is_impersonating' => $request->session()->has('impersonated_by'),
+            ],
+            'show_experience_survey' => $showExperienceSurvey,
+            'locale' => $locale,
+            'currentWorkspace' => $currentWorkspace ? [
+                'id' => $currentWorkspace->id,
+                'name' => $currentWorkspace->name,
+                'slug' => $currentWorkspace->slug,
+                'logo' => $currentWorkspace->logo,
+                'logo_url' => $currentWorkspace->logo_url,
+                'personal_workspace' => $currentWorkspace->personal_workspace,
+                'owner_id' => $currentWorkspace->owner_id,
+                'plan' => $currentWorkspace->plan_name,
+                'role' => $currentWorkspace->getUserRole($user),
+                'feature_flags' => Feature::for($currentWorkspace)->all(),
+            ] : null,
+            'workspaces' => $workspaces,
+            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+                'info' => $request->session()->get('info'),
+                'token' => $request->session()->get('token'),
+            ],
+            'announcement' => Announcement::currentlyActive()->latest()->first()?->only('id', 'title', 'body', 'type', 'link_text', 'link_url', 'is_dismissible'),
+            'seo' => fn () => SeoMetadata::forPath($request->path())?->only('title', 'description', 'keywords', 'og_title', 'og_description', 'og_image', 'og_type', 'twitter_card', 'twitter_site', 'twitter_creator', 'twitter_image'),
+            'features' => FeatureService::forFrontend(),
+        ];
+    }
+}
