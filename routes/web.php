@@ -79,9 +79,7 @@ use Inertia\Response;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
-    return Inertia::render('welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
+    return response()->file(public_path('new-landing/index.html'));
 })->name('home');
 
 // Magic Link Auth Routes
