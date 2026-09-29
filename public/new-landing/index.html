@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduFunHub — Belajar Jadi Game Seru</title>
+<meta name="description" content="Portal edukasi gamifikasi untuk TK hingga Universitas. Main board game, kuis kilat, dan quest 3D. 100% Gratis selamanya.">
+
+<!--
+  System: Magazine Editorial × Bauhaus Geometric (Indonesian Pop Energy)
+  Type: Space Grotesk? NO → Instrument Sans 700/800 (display), DM Sans 400/500/600 (body) — distinctive, uncommonly paired
+  Color: Ink #151b2e on Cream #faf7ef · Amber #F5A623 (primary CTA) · Coral #E85D75 (accent) · Teal #1AAB8A (success) · Violet #6C5CE7 (tier) · Yellow #FFD93D (highlight)
+  Grid: Asymmetric 2-col hero, diagonal section dividers, varied section layouts (no repeated card grids)
+  Rhythm: Oversized display type, numbered sections, offset blocks, generous whitespace, bold geometric shapes as composition elements
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ============= RESET & TOKENS ============= */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#151b2e;
+  --cream:#faf7ef;
+  --amber:#F5A623;
+  --coral:#E85D75;
+  --teal:#1AAB8A;
+  --violet:#6C5CE7;
+  --yellow:#FFD93D;
+  --body-font:'DM Sans',system-ui,sans-serif;
+  --display-font:'Instrument Sans','DM Sans',system-ui,sans-serif;
+  --r-sm:8px;--r-md:16px;--r-lg:24px;--r-xl:32px;
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--body-font);color:var(--ink);background:var(--cream);line-height:1.6;overflow-x:hidden}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font:inherit;border:0;background:0}
+
+/* ============= UTILITIES ============= */
+.container{max-width:100%;margin:0 auto;padding:0 24px}
+@media(min-width:768px){.container{padding:0 48px}}@media(min-width:1200px){.container{padding:0 80px}}@media(min-width:1600px){.container{padding:0 120px}}
+.section-num{font-family:var(--display-font);font-weight:700;font-size:clamp(80px,12vw,160px);line-height:1;color:var(--ink);opacity:.06;position:absolute;top:-24px;left:-8px;pointer-events:none;user-select:none}
+
+/* ============= HEADER ============= */
+.site-header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:3px solid var(--ink);backdrop-filter:blur(12px)}
+.site-header .container{display:flex;align-items:center;justify-content:space-between;height:72px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:44px;height:44px;background:var(--amber);border:3px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink);transition:transform .2s}
+.logo:hover .logo-mark{transform:translateY(-2px);box-shadow:5px 5px 0 var(--ink)}
+.logo-mark svg{width:24px;height:24px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.logo-text{font-family:var(--display-font);font-weight:700;font-size:22px;letter-spacing:-.02em}
+.logo-text span{color:var(--coral)}
+.logo-tag{font-size:11px;font-weight:600;color:var(--ink);opacity:.5;letter-spacing:.04em}
+.nav-desktop{display:none;gap:4px;align-items:center}
+@media(min-width:1024px){.nav-desktop{display:flex}}
+.nav-link{padding:8px 14px;font-weight:600;font-size:14px;border-radius:var(--r-sm);transition:all .15s}
+.nav-link:hover{background:var(--ink);color:var(--cream)}
+.nav-dropdown{position:relative}
+.nav-dropdown-trigger{display:flex;align-items:center;gap:4px;padding:8px 14px;font-weight:600;font-size:14px;border-radius:var(--r-sm);cursor:pointer;border:0;background:0;font-family:var(--body-font);color:var(--ink);transition:all .15s}
+.nav-dropdown-trigger:hover{background:var(--ink);color:var(--cream)}
+.nav-dropdown-trigger svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;transition:transform .2s}
+.nav-dropdown.open .nav-dropdown-trigger svg{transform:rotate(180deg)}
+.nav-dropdown-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:220px;background:white;border:3px solid var(--ink);border-radius:var(--r-md);box-shadow:5px 5px 0 var(--ink);padding:6px;display:none;z-index:110}
+.nav-dropdown.open .nav-dropdown-menu{display:block}
+.nav-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:13px;font-weight:600;color:var(--ink);transition:all .15s;text-decoration:none}
+.nav-dropdown-item:hover{background:var(--cream)}
+.nav-dropdown-icon{width:32px;height:32px;border:2px solid var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:1px 1px 0 var(--ink)}
+.nav-dropdown-icon svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.nav-dropdown-item .dd-label{font-family:var(--display-font);font-weight:700;font-size:13px}
+.nav-dropdown-item .dd-desc{font-size:11px;color:rgba(21,27,46,.5);font-weight:500}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:var(--r-md);font-family:var(--display-font);font-weight:700;font-size:15px;border:3px solid var(--ink);transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--amber);color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:6px 6px 0 var(--ink)}
+.btn-primary:active{transform:translateY(0);box-shadow:2px 2px 0 var(--ink)}
+.btn-outline{background:var(--cream);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.btn-outline:hover{background:var(--ink);color:var(--cream)}
+.btn-ghost{border:0;padding:10px 16px;font-weight:600}
+.btn-ghost:hover{background:rgba(21,27,46,.06)}
+.header-cta{display:none;gap:8px;align-items:center}
+@media(min-width:768px){.header-cta{display:flex}}
+.mobile-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:2px solid var(--ink);border-radius:var(--r-sm);background:white;box-shadow:2px 2px 0 var(--ink)}
+@media(min-width:1024px){.mobile-toggle{display:none}}
+.mobile-toggle svg{width:22px;height:22px;stroke:var(--ink);stroke-width:2.5;fill:none}
+
+/* ============= HERO ============= */
+.hero{padding:80px 0 60px;position:relative}
+@media(min-width:768px){.hero{padding:100px 0 80px}}
+.hero-grid{display:grid;gap:48px;align-items:center}
+@media(min-width:900px){.hero-grid{grid-template-columns:1fr 1fr;gap:64px}}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:2px solid var(--ink);border-radius:999px;background:var(--yellow);font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;box-shadow:2px 2px 0 var(--ink)}
+.hero-badge svg{width:14px;height:14px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.hero h1{font-family:var(--display-font);font-weight:700;font-size:clamp(36px,5.5vw,72px);line-height:1.05;letter-spacing:-.03em;margin-top:20px}
+.hero h1 em{font-style:normal;color:var(--amber);position:relative}
+.hero h1 em::after{content:'';position:absolute;bottom:2px;left:0;width:100%;height:6px;background:var(--coral);border-radius:3px;opacity:.5}
+.hero h1 .violet{color:var(--violet)}
+.hero-sub{margin-top:20px;font-size:18px;font-weight:500;line-height:1.7;max-width:640px;color:rgba(21,27,46,.7)}
+.hero-sub strong{color:var(--ink);font-weight:700}
+.hero-ctas{margin-top:32px;display:flex;flex-wrap:wrap;gap:12px}
+.hero-trust{margin-top:24px;display:flex;flex-wrap:wrap;gap:16px;font-size:13px;font-weight:600;color:rgba(21,27,46,.5)}
+.hero-trust span{display:flex;align-items:center;gap:6px}
+.hero-trust svg{width:16px;height:16px;stroke:var(--teal);stroke-width:2.5;fill:none}
+
+/* Hero visual: Asymmetric game preview */
+.hero-visual{position:relative}
+.game-preview{background:white;border:4px solid var(--ink);border-radius:var(--r-xl);box-shadow:8px 8px 0 var(--ink);overflow:hidden;transform:rotate(1deg)}
+@media(min-width:900px){.game-preview{transform:rotate(2deg)}}
+.game-preview-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--ink);color:var(--cream);font-size:12px;font-weight:700;letter-spacing:.02em}
+.game-preview-dots{display:flex;gap:6px}
+.game-preview-dots span{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.2)}
+.game-preview-dots span:nth-child(1){background:var(--coral)}
+.game-preview-dots span:nth-child(2){background:var(--yellow)}
+.game-preview-dots span:nth-child(3){background:var(--teal)}
+.game-preview-body{padding:24px}
+.quiz-q{text-align:center;padding:20px;border:2px solid var(--ink);border-radius:var(--r-md);background:var(--cream);margin-bottom:16px}
+.quiz-q .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--violet);margin-bottom:8px}
+.quiz-q .text{font-family:var(--display-font);font-weight:700;font-size:18px;line-height:1.4}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quiz-opt{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--ink);border-radius:var(--r-sm);font-weight:600;font-size:13px;transition:all .15s}
+.quiz-opt:hover{background:var(--cream)}
+.quiz-opt.correct{background:rgba(26,171,138,.15);border-color:var(--teal)}
+.quiz-opt .key{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:2px solid var(--ink);font-family:var(--display-font);font-weight:700;font-size:12px;background:var(--yellow);flex-shrink:0}
+.quiz-opt.correct .key{background:var(--teal);color:white;border-color:var(--teal)}
+
+/* Floating geometric accents */
+.geo{position:absolute;border:3px solid var(--ink);z-index:-1}
+.geo-circle{width:80px;height:80px;border-radius:50%;background:var(--yellow);top:-20px;right:40px;box-shadow:4px 4px 0 var(--ink);animation:float 6s ease-in-out infinite}
+.geo-square{width:60px;height:60px;border-radius:var(--r-sm);background:var(--coral);bottom:30px;left:-20px;box-shadow:3px 3px 0 var(--ink);transform:rotate(15deg);animation:float 5s ease-in-out 1s infinite}
+.geo-tri{width:0;height:0;border-left:35px solid transparent;border-right:35px solid transparent;border-bottom:60px solid var(--teal);top:60%;right:-10px;border:none;filter:drop-shadow(3px 3px 0 var(--ink));animation:float 7s ease-in-out .5s infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@media(max-width:899px){.geo{display:none}}
+
+/* ============= DIAGONAL DIVIDER ============= */
+.diagonal{height:60px;background:var(--ink);clip-path:polygon(0 0,100% 100%,100% 100%,0 100%);margin-top:-1px}
+.diagonal-up{clip-path:polygon(0 100%,100% 0,100% 100%,0 100%);margin-bottom:-1px}
+
+/* ============= SECTION: GAME MODES ============= */
+.modes{background:var(--ink);color:var(--cream);padding:80px 0}
+.modes-header{max-width:800px}
+.modes-header .overline{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow);margin-bottom:12px}
+.modes-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;letter-spacing:-.02em}
+.modes-header p{margin-top:12px;font-size:16px;color:rgba(250,247,239,.6);max-width:640px}
+.modes-list{margin-top:48px;display:grid;gap:2px}
+.mode-item{display:grid;align-items:center;padding:28px 0;border-top:1px solid rgba(250,247,239,.1);transition:all .3s;cursor:default}
+@media(min-width:768px){.mode-item{grid-template-columns:48px 1fr 1fr 120px;gap:24px}}
+.mode-num{font-family:var(--display-font);font-weight:700;font-size:32px;color:var(--amber);line-height:1}
+.mode-title{font-family:var(--display-font);font-weight:700;font-size:20px;letter-spacing:-.01em;margin-top:8px}
+@media(min-width:768px){.mode-title{margin-top:0}}
+.mode-desc{font-size:14px;color:rgba(250,247,239,.55);margin-top:6px;line-height:1.6}
+@media(min-width:768px){.mode-desc{margin-top:0}}
+.mode-tag{display:inline-flex;padding:4px 12px;border:2px solid rgba(250,247,239,.15);border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--yellow);margin-top:10px}
+@media(min-width:768px){.mode-tag{margin-top:0}}
+.mode-item:hover{background:rgba(250,247,239,.04)}
+.mode-item:hover .mode-num{color:var(--coral)}
+
+/* ============= SECTION: LEVELS (Magazine-style offset) ============= */
+.levels{padding:80px 0;position:relative}
+.levels-header{text-align:center;max-width:800px;margin:0 auto}
+.levels-header .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:white}
+.levels-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;margin-top:16px}
+.levels-header h2 .highlight{color:var(--violet)}
+.levels-track{margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+
+
+
+.level-card{border:3px solid var(--ink);border-radius:var(--r-lg);padding:28px 24px;background:white;box-shadow:5px 5px 0 var(--ink);transition:transform .2s;position:relative;overflow:hidden}
+.level-card:hover{transform:translateY(-4px)}
+.level-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:6px}
+.level-card:nth-child(1)::before{background:var(--yellow)}
+.level-card:nth-child(2)::before{background:var(--amber)}
+.level-card:nth-child(3)::before{background:var(--teal)}
+.level-card:nth-child(4)::before{background:var(--coral)}
+.level-card:nth-child(5)::before{background:var(--violet)}
+.level-icon{width:48px;height:48px;border:2px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
+.level-icon svg{width:24px;height:24px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.level-card h3{font-family:var(--display-font);font-weight:700;font-size:18px;margin-top:16px}
+.level-card p{font-size:13px;color:rgba(21,27,46,.6);margin-top:8px;line-height:1.6}
+
+/* ============= SECTION: SUBJECTS — offset asymmetric ============= */
+.subjects{background:white;border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);padding:80px 0}
+.subjects-layout{display:grid;gap:48px}
+@media(min-width:900px){.subjects-layout{grid-template-columns:380px 1fr;gap:64px}}
+.subjects-sticky{position:relative}
+@media(min-width:900px){.subjects-sticky{position:sticky;top:100px;align-self:start}}
+.subjects-sticky .overline{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--coral)}
+.subjects-sticky h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1.15;margin-top:12px}
+.subjects-sticky p{margin-top:16px;font-size:15px;color:rgba(21,27,46,.6);line-height:1.7}
+.subject-grid{display:grid;gap:12px}
+@media(min-width:500px){.subject-grid{grid-template-columns:1fr 1fr}}
+.subject-item{display:flex;gap:14px;padding:20px;border:2px solid var(--ink);border-radius:var(--r-md);background:var(--cream);transition:all .2s;box-shadow:3px 3px 0 var(--ink)}
+.subject-item:hover{transform:translateY(-2px);box-shadow:5px 5px 0 var(--ink)}
+.subject-icon{width:40px;height:40px;border:2px solid var(--ink);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:2px 2px 0 var(--ink)}
+.subject-icon svg{width:20px;height:20px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.subject-item h4{font-family:var(--display-font);font-weight:700;font-size:14px}
+.subject-item p{font-size:12px;color:rgba(21,27,46,.55);margin-top:4px;line-height:1.5}
+.subject-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.subject-tags span{font-size:10px;font-weight:700;padding:2px 8px;border:1px solid var(--ink);border-radius:4px;background:white}
+
+/* ============= SECTION: SOCIAL PROOF ============= */
+.proof{padding:80px 0;position:relative}
+.proof-header{text-align:center;max-width:720px;margin:0 auto}
+.proof-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1}
+.proof-stats{margin-top:48px;display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(min-width:768px){.proof-stats{grid-template-columns:repeat(4,1fr)}}
+.stat-card{text-align:center;padding:32px 16px;border:3px solid var(--ink);border-radius:var(--r-lg);box-shadow:4px 4px 0 var(--ink);background:white}
+.stat-card .num{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1}
+.stat-card:nth-child(1) .num{color:var(--amber)}
+.stat-card:nth-child(2) .num{color:var(--teal)}
+.stat-card:nth-child(3) .num{color:var(--violet)}
+.stat-card:nth-child(4) .num{color:var(--coral)}
+.stat-card .label{font-size:13px;font-weight:600;color:rgba(21,27,46,.55);margin-top:8px}
+
+/* Testimonials: horizontal scroll, editorial cards */
+.testimonials{margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+
+
+
+.testimonial{padding:28px;border:3px solid var(--ink);border-radius:var(--r-lg);background:white;box-shadow:4px 4px 0 var(--ink);position:relative}
+.testimonial::before{content:'\201C';font-family:Georgia,serif;font-size:56px;line-height:1;color:var(--amber);opacity:.3;position:absolute;top:12px;left:20px}
+.testimonial blockquote{font-size:14px;line-height:1.7;color:rgba(21,27,46,.75);margin-top:12px;font-style:italic}
+.testimonial-author{display:flex;align-items:center;gap:12px;margin-top:20px;padding-top:16px;border-top:2px solid rgba(21,27,46,.06)}
+.testimonial-avatar{width:40px;height:40px;border:2px solid var(--ink);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-weight:700;font-size:14px;color:white;box-shadow:2px 2px 0 var(--ink)}
+.testimonial:nth-child(1) .testimonial-avatar{background:var(--amber)}
+.testimonial:nth-child(2) .testimonial-avatar{background:var(--teal)}
+.testimonial:nth-child(3) .testimonial-avatar{background:var(--violet)}
+.testimonial:nth-child(4) .testimonial-avatar{background:var(--coral)}
+.testimonial-info .name{font-weight:700;font-size:14px}
+.testimonial-info .role{font-size:12px;color:rgba(21,27,46,.5)}
+
+/* ============= SECTION: FAQ ============= */
+.faq{background:var(--ink);color:var(--cream);padding:80px 0}
+.faq-layout{display:grid;gap:48px}
+@media(min-width:768px){.faq-layout{grid-template-columns:1fr 1fr;gap:64px}}
+.faq-left h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,44px);line-height:1.1}
+.faq-left p{margin-top:16px;font-size:15px;color:rgba(250,247,239,.5);line-height:1.7}
+.faq-list{display:flex;flex-direction:column}
+.faq-item{border-top:1px solid rgba(250,247,239,.1);transition:background .2s}
+.faq-item:last-child{border-bottom:1px solid rgba(250,247,239,.1)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0;font-weight:700;font-size:15px;cursor:pointer;width:100%;text-align:left;color:var(--cream);background:0;border:0;font-family:var(--body-font);line-height:1.5}
+.faq-q:hover{color:var(--yellow)}
+.faq-q svg{width:20px;height:20px;stroke:var(--cream);stroke-width:2.5;fill:none;flex-shrink:0;transition:transform .2s}
+.faq-q svg{transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.faq-item.open .faq-q svg{transform:rotate(180deg)}
+.faq-q-icon{width:28px;height:28px;border:2px solid rgba(250,247,239,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .35s cubic-bezier(.4,0,.2,1);background:rgba(250,247,239,.05)}
+.faq-item.open .faq-q-icon{background:var(--amber);border-color:var(--amber)}
+.faq-item.open .faq-q-icon svg{stroke:var(--ink)}
+.faq-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1),opacity .35s cubic-bezier(.4,0,.2,1);opacity:0}
+.faq-item.open .faq-a{grid-template-rows:1fr;opacity:1}
+.faq-a-inner{overflow:hidden;min-height:0}
+.faq-a p{padding:0 0 20px;font-size:14px;color:rgba(250,247,239,.5);line-height:1.7;padding-top:4px}
+
+/* ============= SECTION: CTA ============= */
+.cta-section{padding:80px 0;text-align:center;position:relative}
+.cta-card{max-width:900px;margin:0 auto;padding:48px 32px;border:4px solid var(--ink);border-radius:var(--r-xl);background:white;box-shadow:8px 8px 0 var(--ink);position:relative;overflow:hidden}
+.cta-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:8px;background:linear-gradient(90deg,var(--amber),var(--coral),var(--violet),var(--teal))}
+.cta-card h2{font-family:var(--display-font);font-weight:700;font-size:clamp(24px,3.5vw,36px);line-height:1.15}
+.cta-card p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6);max-width:600px;margin-left:auto;margin-right:auto}
+.cta-buttons{margin-top:28px;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+
+/* ============= FOOTER ============= */
+.site-footer{background:var(--ink);color:var(--cream);border-top:3px solid var(--cream);padding:48px 0 24px}
+.footer-top{display:grid;gap:32px}
+@media(min-width:768px){.footer-top{grid-template-columns:2fr 1fr 1fr;gap:48px}}
+.footer-brand .logo-text{font-size:20px}
+.footer-brand p{margin-top:8px;font-size:13px;color:rgba(250,247,239,.4);max-width:400px;line-height:1.6}
+.footer-col h4{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)}
+.footer-col a{display:block;font-size:14px;color:rgba(250,247,239,.6);padding:4px 0;transition:color .15s}
+.footer-col a:hover{color:var(--yellow)}
+.footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid rgba(250,247,239,.08);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:12px;color:rgba(250,247,239,.3)}
+
+/* ============= RESPONSIVE ============= */
+@media(max-width:767px){
+  .hero{padding:48px 0 40px}
+  .quiz-opts{grid-template-columns:1fr}
+  .game-preview{transform:none}
+  .proof-stats{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ============= PREFERS REDUCED MOTION ============= */
+@media(prefers-reduced-motion:reduce){
+  .geo-circle,.geo-square,.geo-tri{animation:none}
+  .level-card:hover,.subject-item:hover,.logo:hover .logo-mark,.btn-primary:hover{transform:none}
+}
+
+/* ============= SECTION: LEADERBOARD ============= */
+.leaderboard{padding:80px 0;position:relative}
+.leaderboard-header{text-align:center;max-width:800px;margin:0 auto}
+.leaderboard-header .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:white;padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:var(--amber)}
+.leaderboard-header .overline svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.leaderboard-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;margin-top:16px}
+.leaderboard-header h2 .highlight{color:var(--coral)}
+.leaderboard-header p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6);max-width:640px;margin-left:auto;margin-right:auto}
+.lb-list{margin-top:40px;display:flex;flex-direction:column;gap:12px;max-width:900px;margin-left:auto;margin-right:auto}
+.lb-item{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border:3px solid var(--ink);border-radius:var(--r-lg);box-shadow:4px 4px 0 var(--ink);background:white;transition:transform .2s}
+.lb-item:hover{transform:translateY(-2px)}
+.lb-item:nth-child(1){background:var(--yellow)}
+.lb-item:nth-child(2){background:#f1f5f9}
+.lb-item:nth-child(3){background:#fff3e8}
+.lb-left{display:flex;align-items:center;gap:16px}
+.lb-rank{width:48px;height:48px;border:2px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-weight:700;font-size:16px;box-shadow:2px 2px 0 var(--ink);flex-shrink:0}
+.lb-item:nth-child(1) .lb-rank{background:var(--amber);color:white}
+.lb-item:nth-child(2) .lb-rank{background:var(--teal);color:var(--ink)}
+.lb-item:nth-child(3) .lb-rank{background:var(--yellow);color:var(--ink)}
+.lb-item:nth-child(n+4) .lb-rank{background:white;color:var(--ink)}
+.lb-info h3{font-family:var(--display-font);font-weight:700;font-size:16px}
+.lb-info .meta{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px;font-size:12px;font-weight:600;color:rgba(21,27,46,.5)}
+.lb-info .meta svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none}
+.lb-points{text-align:right}
+.lb-points .val{font-family:var(--display-font);font-weight:700;font-size:18px}
+.lb-points .sub{font-size:11px;font-weight:600;color:var(--teal)}
+.lb-notice{margin-top:32px;text-align:center;padding:24px;border:3px solid var(--ink);border-radius:var(--r-xl);background:rgba(108,92,231,.1);max-width:700px;margin-left:auto;margin-right:auto}
+.lb-notice h4{font-family:var(--display-font);font-weight:700;font-size:18px}
+.lb-notice p{font-size:13px;color:rgba(21,27,46,.6);margin-top:6px}
+.lb-cards{margin-top:40px;display:grid;gap:20px;max-width:900px;margin-left:auto;margin-right:auto}
+@media(min-width:768px){.lb-cards{grid-template-columns:1fr 1fr}}
+.lb-card{padding:28px;border:3px solid var(--ink);border-radius:var(--r-xl);background:white;box-shadow:5px 5px 0 var(--ink)}
+.lb-card .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:white;box-shadow:2px 2px 0 var(--ink)}
+.lb-card h3{font-family:var(--display-font);font-weight:700;font-size:20px;margin-top:12px}
+.lb-card p{font-size:14px;color:rgba(21,27,46,.6);margin-top:8px;line-height:1.6}
+.lb-card ul{margin-top:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;color:rgba(21,27,46,.7)}
+.lb-card ul li{display:flex;align-items:center;gap:8px}
+.lb-card .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.lb-card .foot{margin-top:16px;padding-top:12px;border-top:2px solid rgba(21,27,46,.06);font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.lb-card .foot svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+
+/* ============= SECTION: ECONOMY ============= */
+.economy{background:white;border-top:3px solid var(--ink);padding:80px 0}
+.economy-header{text-align:center;max-width:800px;margin:0 auto}
+.economy-header .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:var(--yellow)}
+.economy-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;margin-top:16px}
+.economy-header h2 .highlight{color:var(--amber)}
+.economy-header p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6);max-width:640px;margin-left:auto;margin-right:auto}
+.econ-grid{margin-top:40px;display:grid;gap:16px}
+@media(min-width:640px){.econ-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:1024px){.econ-grid{grid-template-columns:repeat(4,1fr)}}
+.econ-card{border:3px solid var(--ink);border-radius:var(--r-xl);padding:20px;background:white;box-shadow:5px 5px 0 var(--ink);transition:transform .2s}
+.econ-card:hover{transform:translateY(-4px)}
+.econ-card .top{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:700;text-transform:uppercase}
+.econ-card .rarity{padding:2px 10px;border:1px solid var(--ink);border-radius:999px;color:white}
+.econ-card .type{color:rgba(21,27,46,.5)}
+.econ-card .visual{margin:16px 0;height:120px;border:2px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
+.econ-card h3{font-family:var(--display-font);font-weight:700;font-size:15px}
+.econ-card .desc{font-size:12px;color:rgba(21,27,46,.6);margin-top:4px;line-height:1.5}
+.econ-card .price{margin-top:12px;padding-top:12px;border-top:2px solid rgba(21,27,46,.06);display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700}
+.econ-card .price .coins{display:flex;align-items:center;gap:6px;color:var(--amber);font-family:var(--display-font)}
+.econ-card .price .coins svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.econ-card .price .buy{font-size:11px;padding:4px 12px;border:1px solid var(--ink);border-radius:var(--r-md);background:var(--cream)}
+.econ-highlights{margin-top:40px;display:grid;gap:16px}
+@media(min-width:640px){.econ-highlights{grid-template-columns:repeat(3,1fr)}}
+.econ-hl{display:flex;gap:14px;padding:20px;border:3px solid var(--ink);border-radius:var(--r-xl);background:white;box-shadow:4px 4px 0 var(--ink)}
+.econ-hl .icon{width:48px;height:48px;border:2px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:2px 2px 0 var(--ink)}
+.econ-hl .icon svg{width:24px;height:24px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.econ-hl h4{font-family:var(--display-font);font-weight:700;font-size:14px}
+.econ-hl p{font-size:12px;color:rgba(21,27,46,.55);margin-top:4px;line-height:1.5}
+.econ-notice{margin-top:40px;max-width:600px;margin-left:auto;margin-right:auto;text-align:center;padding:24px;border:3px solid var(--ink);border-radius:var(--r-xl);background:white;box-shadow:6px 6px 0 var(--ink)}
+.econ-notice h4{font-family:var(--display-font);font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;gap:8px}
+.econ-notice p{font-size:13px;color:rgba(21,27,46,.6);margin-top:8px}
+
+/* ============= SECTION: TEACHERS ============= */
+.teachers{padding:80px 0}
+.teachers-layout{display:grid;gap:48px}
+@media(min-width:900px){.teachers-layout{grid-template-columns:1fr 1fr;gap:64px}}
+.teachers-left .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:white;padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:var(--violet)}
+.teachers-left .overline svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.teachers-left h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,44px);line-height:1.15;margin-top:16px}
+.teachers-left h2 .highlight{color:var(--teal)}
+.teachers-left>p{margin-top:16px;font-size:15px;color:rgba(21,27,46,.6);line-height:1.7}
+.teachers-checks{margin-top:24px;display:flex;flex-direction:column;gap:12px}
+.teachers-checks .check{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:rgba(21,27,46,.7)}
+.teachers-checks .check-icon{width:24px;height:24px;border:2px solid var(--ink);border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:1.5px 1.5px 0 var(--ink)}
+.teachers-checks .check-icon svg{width:14px;height:14px;stroke:var(--ink);stroke-width:3;fill:none}
+.teachers-right{border:4px solid var(--ink);border-radius:var(--r-xl);background:var(--cream);padding:24px;box-shadow:8px 8px 0 var(--ink)}
+.teachers-right .tr-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:3px solid var(--ink)}
+.tr-head-left{display:flex;align-items:center;gap:12px}
+.tr-head-icon{width:48px;height:48px;border:2px solid var(--ink);border-radius:var(--r-md);background:var(--yellow);display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
+.tr-head-icon svg{width:24px;height:24px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.tr-perks{margin-top:20px;display:grid;gap:12px}
+@media(min-width:500px){.tr-perks{grid-template-columns:1fr 1fr}}
+.tr-perk{border:3px solid var(--ink);border-radius:var(--r-md);background:white;padding:16px;box-shadow:3px 3px 0 var(--ink)}
+.tr-perk .perk-icon{width:40px;height:40px;border:2px solid var(--ink);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
+.tr-perk .perk-icon svg{width:20px;height:20px;stroke:white;stroke-width:2.5;fill:none}
+.tr-perk h4{font-family:var(--display-font);font-weight:700;font-size:13px;margin-top:10px}
+.tr-perk p{font-size:11px;color:rgba(21,27,46,.6);margin-top:4px;line-height:1.5}
+.tr-sim{margin-top:16px;border:2px solid var(--ink);border-radius:var(--r-md);background:white;padding:14px;box-shadow:2px 2px 0 var(--ink);display:flex;align-items:center;gap:12px}
+.tr-sim-avatar{width:44px;height:44px;border:2px solid var(--ink);border-radius:var(--r-md);background:var(--amber);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-weight:700;font-size:12px;color:white;flex-shrink:0;box-shadow:1.5px 1.5px 0 var(--ink)}
+.tr-sim .income{padding:4px 10px;border:1px solid var(--ink);border-radius:var(--r-sm);font-size:11px;font-weight:700;color:#008f75;background:rgba(26,171,138,.1);white-space:nowrap}
+
+/* ============= SECTION: PRICING ============= */
+.pricing{background:white;border-top:3px solid var(--ink);padding:80px 0}
+.pricing-header{text-align:center;max-width:800px;margin:0 auto}
+.pricing-header .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:var(--teal)}
+.pricing-header .overline svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.pricing-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;margin-top:16px}
+.pricing-header h2 .highlight{color:var(--teal)}
+.pricing-header p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6)}
+.pricing-card{margin-top:40px;max-width:750px;margin-left:auto;margin-right:auto;border:4px solid var(--ink);border-radius:var(--r-xl);background:var(--cream);padding:32px;box-shadow:8px 8px 0 var(--ink)}
+.pricing-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;padding-bottom:24px;border-bottom:3px solid var(--ink)}
+.pricing-top .tier{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;background:var(--yellow);font-family:var(--display-font)}
+.pricing-top h3{font-family:var(--display-font);font-weight:700;font-size:clamp(24px,3vw,32px);margin-top:8px}
+.pricing-top .sub{font-size:13px;font-weight:600;color:rgba(21,27,46,.6)}
+.pricing-price{text-align:center;padding:16px 24px;border:3px solid var(--ink);border-radius:var(--r-lg);background:white;box-shadow:4px 4px 0 var(--ink)}
+.pricing-price .amount{font-family:var(--display-font);font-weight:700;font-size:clamp(36px,5vw,48px);color:var(--teal)}
+.pricing-price .forever{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.pricing-benefits{margin-top:24px}
+.pricing-benefits .label{font-family:var(--display-font);font-weight:700;font-size:15px}
+.pricing-benefits-grid{margin-top:12px;display:grid;gap:10px}
+@media(min-width:500px){.pricing-benefits-grid{grid-template-columns:1fr 1fr}}
+.pricing-benefit{display:flex;align-items:flex-start;gap:10px}
+.pricing-benefit .check{width:20px;height:20px;border:2px solid var(--ink);border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pricing-benefit .check svg{width:14px;height:14px;stroke:var(--ink);stroke-width:3;fill:none}
+.pricing-benefit span{font-size:13px;font-weight:600;color:rgba(21,27,46,.7)}
+.pricing-cta{margin-top:32px;text-align:center}
+
+/* ============= SECTION: TESTIMONIALS (updated) ============= */
+.testi-section{border-top:3px solid var(--ink);padding:80px 0}
+.testi-header{text-align:center;max-width:800px;margin:0 auto}
+.testi-header .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:white;padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:var(--coral)}
+.testi-header .overline svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.testi-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;margin-top:16px}
+.testi-header h2 .highlight{color:var(--violet)}
+.testi-header p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6)}
+.testi-grid{margin-top:40px;display:grid;gap:20px}
+@media(min-width:768px){.testi-grid{grid-template-columns:repeat(3,1fr)}}
+.testi-card{border:3px solid var(--ink);border-radius:var(--r-xl);padding:24px;background:white;box-shadow:5px 5px 0 var(--ink);transition:transform .2s;display:flex;flex-direction:column;justify-content:space-between}
+.testi-card:hover{transform:translateY(-3px)}
+.testi-card .stars{display:flex;gap:4px}
+.testi-card .stars svg{width:16px;height:16px;fill:var(--yellow);stroke:var(--amber);stroke-width:1.5}
+.testi-card .tag{font-size:10px;font-weight:700;padding:2px 10px;border:1px solid var(--ink);border-radius:999px;color:white}
+.testi-card blockquote{margin-top:16px;font-size:14px;line-height:1.7;color:rgba(21,27,46,.75);font-style:italic}
+.testi-card .author{display:flex;align-items:center;gap:12px;margin-top:20px;padding-top:16px;border-top:2px solid rgba(21,27,46,.06)}
+.testi-card .avatar{width:48px;height:48px;border:2px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-weight:700;font-size:14px;color:white;flex-shrink:0;box-shadow:2px 2px 0 var(--ink)}
+
+/* ============= FOOTER EXPANDED ============= */
+@media(min-width:768px){.footer-top{grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:32px}}
+.footer-badges{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;font-size:12px;font-weight:600;color:rgba(250,247,239,.8)}
+.footer-badges span{padding:4px 12px;border:1px solid rgba(250,247,239,.15);border-radius:var(--r-md);background:rgba(250,247,239,.06);display:flex;align-items:center;gap:6px}
+.footer-badges svg{width:16px;height:16px;stroke:var(--teal);stroke-width:2.5;fill:none}
+
+/* FOOTER RESPONSIVE */
+@media(min-width:768px){
+  .footer-top{grid-template-columns:2fr 1fr 1fr 1fr 1fr!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ====================== HEADER ====================== -->
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/><path d="M8 8V6a4 4 0 018 0v2"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">EduFun<span>Hub</span></div>
+        <div class="logo-tag">Bermain · Belajar · Berprestasi</div>
+      </div>
+    </a>
+
+    <nav class="nav-desktop">
+      <a href="#game-modes" class="nav-link">Mode Game</a>
+      <a href="#levels" class="nav-link">Jenjang</a>
+      <a href="#subjects" class="nav-link">Mata Pelajaran</a>
+      <a href="#leaderboard" class="nav-link">Leaderboard</a><a href="#economy" class="nav-link">Item Shop</a><a href="#teachers" class="nav-link">Guru</a><a href="#pricing" class="nav-link">Harga</a>
+      <div class="nav-dropdown" id="nav-dd">
+        <button class="nav-dropdown-trigger" onclick="toggleDropdown()">
+          Mainkan
+          <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a href="games.html" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:var(--yellow)">
+              <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5" fill="currentColor"/><circle cx="15" cy="12" r="1.5" fill="currentColor"/></svg>
+            </div>
+            <div><div class="dd-label">Semua Game</div><div class="dd-desc">Daftar lengkap game edukatif</div></div>
+          </a>
+          <a href="/games/snakes-and-ladders" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#d4f5ec">
+              <svg viewBox="0 0 24 24"><path d="M4 20 Q8 4 12 12 Q16 20 20 4" stroke-linecap="round"/></svg>
+            </div>
+            <div><div class="dd-label">Ular Tangga</div><div class="dd-desc">Board game kuis 2 pemain</div></div>
+          </a>
+          <a href="/games/sky-quiz" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#e3dbf9">
+              <svg viewBox="0 0 24 24"><path d="M3 12l7-7 11 7-11 7-7-7z"/><path d="M10 5v14"/></svg>
+            </div>
+            <div><div class="dd-label">Pesawat</div><div class="dd-desc">Game terbang & soal bonus</div></div>
+          </a>
+        </div>
+      </div>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </nav>
+
+    <div class="header-cta">
+      <a href="/login" class="btn btn-ghost">Masuk</a>
+      <a href="/register" class="btn btn-primary">Mulai Gratis</a>
+    </div>
+
+    <button class="mobile-toggle" onclick="document.getElementById('mobile-nav').classList.toggle('open')" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+
+  <!-- Mobile Nav -->
+  <div id="mobile-nav" style="display:none;padding:16px 24px 24px;border-top:2px solid var(--ink);background:var(--cream)">
+    <a href="#game-modes" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Mode Game</a>
+    <div style="height:1px;background:rgba(21,27,46,.08);margin:4px 0"></div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.35);padding:8px 0 4px">Mainkan</div>
+    <a href="games.html" style="display:block;padding:10px 0;font-weight:700;font-size:15px;color:var(--ink)">🎮 Semua Game</a>
+    <a href="/games/snakes-and-ladders" style="display:block;padding:10px 0;font-weight:700;font-size:15px;color:var(--ink)">🐍 Ular Tangga</a>
+    <a href="/games/sky-quiz" style="display:block;padding:10px 0;font-weight:700;font-size:15px;color:var(--ink)">✈️ Pesawat Pengetahuan</a>
+    <div style="height:1px;background:rgba(21,27,46,.08);margin:4px 0"></div>
+    <a href="#levels" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Jenjang</a>
+    <a href="#subjects" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Mata Pelajaran</a>
+    <a href="#proof" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Komunitas</a>
+    <a href="#faq" style="display:block;padding:12px 0;font-weight:700;font-size:16px">FAQ</a>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <a href="/login" class="btn btn-outline" style="flex:1;justify-content:center">Masuk</a>
+      <a href="/register" class="btn btn-primary" style="flex:1;justify-content:center">Daftar Gratis</a>
+    </div>
+  </div>
+</header>
+
+<!-- ====================== HERO ====================== -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          100% GRATIS SELAMANYA
+        </div>
+
+        <h1>Belajar Jadi<br><em>Game Seru</em>,<br>Paham Materi <span class="violet">Tanpa Bosan</span></h1>
+
+        <p class="hero-sub">
+          Dari <strong>TK & PAUD</strong> hingga <strong>Universitas</strong> — taklukkan kuis kilat, board game, dan quest edukasi. Kumpulkan poin, harumkan sekolahmu di leaderboard nasional.
+        </p>
+
+        <div class="hero-ctas">
+          <a href="/register" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg>
+            Mainkan Sekarang
+          </a>
+          <a href="#game-modes" class="btn btn-outline">Lihat Mode Game</a>
+        </div>
+
+        <div class="hero-trust">
+          <span><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Aman & Ramah Anak</span>
+          <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Tanpa Kartu Kredit</span>
+          <span><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Tanpa Langganan</span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="geo geo-circle"></div>
+        <div class="geo geo-square"></div>
+
+        <div class="game-preview">
+          <div class="game-preview-bar">
+            <div class="game-preview-dots"><span></span><span></span><span></span></div>
+            <span>EduFunHub Arena · Kuis Cepat</span>
+          </div>
+          <div class="game-preview-body">
+            <div class="quiz-q">
+              <div class="label">Fisika Terapan · Level SMA</div>
+              <div class="text">Jika sebuah satelit mengorbit Bumi pada ketinggian tetap, gaya apa yang menjadi gaya sentripetalnya?</div>
+            </div>
+            <div class="quiz-opts">
+              <div class="quiz-opt correct">
+                <span class="key">A</span>
+                <span>Gaya Gravitasi Bumi</span>
+              </div>
+              <div class="quiz-opt">
+                <span class="key">B</span>
+                <span>Gaya Magnetik Polar</span>
+              </div>
+              <div class="quiz-opt">
+                <span class="key">C</span>
+                <span>Gaya Dorong Roket</span>
+              </div>
+              <div class="quiz-opt">
+                <span class="key">D</span>
+                <span>Gaya Gesek Atmosfer</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Diagonal divider -->
+<div class="diagonal"></div>
+
+<!-- ====================== GAME MODES ====================== -->
+<section id="game-modes" class="modes">
+  <div class="container">
+    <div class="modes-header">
+      <div class="overline">Mode Permainan</div>
+      <h2>Bukan Cuma Kuis Biasa — Ini Game Sungguhan</h2>
+      <p>Enam mode permainan berbeda, masing-masing dirancang untuk gaya belajar yang unik.</p>
+    </div>
+
+    <div class="modes-list">
+      <div class="mode-item">
+        <div class="mode-num">01</div>
+        <div class="mode-title">Kuis Kilat</div>
+        <div class="mode-desc">Adu kecepatan jawab soal berdurasi detik dengan live leaderboard. Pemain tercepat dan paling akurat menang.</div>
+        <div class="mode-tag">Adrenalin</div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-num">02</div>
+        <div class="mode-title">Duel 1 vs 1</div>
+        <div class="mode-desc">Tantang teman atau pemain acak dalam duel otak langsung. Buktikan siapa penguasa mata pelajaran.</div>
+        <div class="mode-tag">PVP</div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-num">03</div>
+        <div class="mode-title">Misi Tim (Co-Op)</div>
+        <div class="mode-desc">Bentuk squad lintas wilayah, pecahkan teka-teki gabungan bersama. Kolaborasi lintas sekolah tanpa sekat.</div>
+        <div class="mode-tag">Kolaborasi</div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-num">04</div>
+        <div class="mode-title">Board Game Edukatif</div>
+        <div class="mode-desc">Model monopoli ilmu pengetahuan. Lempar dadu, kuasai petak pelajaran, jawab kuis untuk menang.</div>
+        <div class="mode-tag">Strategi</div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-num">05</div>
+        <div class="mode-title">Quest RPG 3D</div>
+        <div class="mode-desc">Eksplorasi dunia fantasi edukatif. Temui NPC profesor, buka dungeon pengetahuan, kumpulkan XP besar.</div>
+        <div class="mode-tag">Petualangan</div>
+      </div>
+      <div class="mode-item">
+        <div class="mode-num">06</div>
+        <div class="mode-title">Teka-Teki & Mini-Game</div>
+        <div class="mode-desc">Puzzle logika, teka-teki silang digital, simulasi kimia interaktif drag-and-drop. Asah otak tanpa tekanan.</div>
+        <div class="mode-tag">Logika</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Diagonal up -->
+<div class="diagonal-up" style="background:var(--ink)"></div>
+
+<!-- ====================== LEVELS ====================== -->
+<section id="levels" class="levels">
+  <div class="container">
+    <div class="levels-header">
+      <div class="overline">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        Semua Jenjang Pendidikan
+      </div>
+      <h2>Dari TK hingga <span class="highlight">Perguruan Tinggi</span></h2>
+    </div>
+
+    <div class="levels-track">
+      <div class="level-card">
+        <div class="level-icon" style="background:var(--yellow)">
+          <svg viewBox="0 0 24 24"><path d="M12 2a4.5 4.5 0 00-4.5 4.5c0 2.03 1.34 3.76 3.19 4.35C7.35 12.43 5 15.74 5 19.5v.5h14v-.5c0-3.76-2.35-7.07-5.69-8.65A4.5 4.5 0 0012 2z"/></svg>
+        </div>
+        <h3>TK & PAUD</h3>
+        <p>Mengenal huruf, angka, warna, dan hewan lewat animasi ceria dan game sederhana.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-icon" style="background:#ffe0c2">
+          <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+        </div>
+        <h3>SD / Madrasah</h3>
+        <p>Matematika dasar, IPA, IPS, Bahasa, dan cerita petualangan seru.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-icon" style="background:#d4f5ec">
+          <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>
+        </div>
+        <h3>SMP / MTs</h3>
+        <p>Aljabar, biologi sel, fisika gerak, sejarah dunia, dan pengenalan coding.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-icon" style="background:#ffd6dd">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h3>SMA / SMK / MA</h3>
+        <p>Kalkulus, kimia organik, sosiologi, persiapan UTBK-SNBT, dan kejuruan.</p>
+      </div>
+      <div class="level-card">
+        <div class="level-icon" style="background:#e3dbf9">
+          <svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <h3>Perguruan Tinggi</h3>
+        <p>Logika matematika lanjut, riset jurnal ilmiah, dan ekonomi makro.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== SUBJECTS ====================== -->
+<section id="subjects" class="subjects">
+  <div class="container">
+    <div class="subjects-layout">
+      <div class="subjects-sticky">
+        <div class="overline">Arena Materi</div>
+        <h2>Pilih Satu Pelajaran atau Mode Campuran Seru</h2>
+        <p>Duel khusus rumus Matematika? Bisa. Party game soal campuran IPA + IPS + Bahasa + Koding dalam satu ronde? Juga bisa. Fleksibel tanpa batas.</p>
+      </div>
+
+      <div class="subject-grid">
+        <div class="subject-item">
+          <div class="subject-icon" style="background:var(--yellow)">
+            <svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6z"/><path d="M4 14h6v6H4z"/><circle cx="17" cy="17" r="3"/></svg>
+          </div>
+          <div>
+            <h4>Matematika & Berhitung</h4>
+            <p>Dari aritmatika dasar hingga kalkulus diferensial.</p>
+            <div class="subject-tags"><span>Aritmatika</span><span>Aljabar</span><span>Geometri</span><span>Kalkulus</span></div>
+          </div>
+        </div>
+
+        <div class="subject-item">
+          <div class="subject-icon" style="background:#d4f5ec">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </div>
+          <div>
+            <h4>IPA (Sains)</h4>
+            <p>Fisika, Biologi, Kimia, dan Astronomi interaktif.</p>
+            <div class="subject-tags"><span>Fisika</span><span>Biologi</span><span>Kimia</span><span>Astronomi</span></div>
+          </div>
+        </div>
+
+        <div class="subject-item">
+          <div class="subject-icon" style="background:#e3dbf9">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z"/></svg>
+          </div>
+          <div>
+            <h4>IPS (Sosial)</h4>
+            <p>Sejarah, Geografi, Sosiologi, dan Ekonomi global.</p>
+            <div class="subject-tags"><span>Sejarah</span><span>Geografi</span><span>Sosiologi</span><span>Ekonomi</span></div>
+          </div>
+        </div>
+
+        <div class="subject-item">
+          <div class="subject-icon" style="background:#ffd6dd">
+            <svg viewBox="0 0 24 24"><path d="M4 21V7a2 2 0 012-2h12a2 2 0 012 2v14"/><path d="M9 5V3M15 5V3M9 14h.01M15 14h.01M9 18h.01M15 18h.01"/></svg>
+          </div>
+          <div>
+            <h4>Bahasa & Sastra</h4>
+            <p>Bahasa Indonesia, Inggris (TOEFL prep), dan literasi.</p>
+            <div class="subject-tags"><span>B. Indonesia</span><span>B. Inggris</span><span>Kosakata</span><span>Literasi</span></div>
+          </div>
+        </div>
+
+        <div class="subject-item">
+          <div class="subject-icon" style="background:#fff3c2">
+            <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>
+          </div>
+          <div>
+            <h4>Informatika & Koding</h4>
+            <p>Algoritma, logika koding, dan keamanan siber dasar.</p>
+            <div class="subject-tags"><span>Algoritma</span><span>Logika</span><span>Data</span><span>Siber</span></div>
+          </div>
+        </div>
+
+        <div class="subject-item">
+          <div class="subject-icon" style="background:var(--cream)">
+            <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+          </div>
+          <div>
+            <h4>Karakter & Umum</h4>
+            <p>Wawasan kebangsaan, etika, dan pengetahuan umum.</p>
+            <div class="subject-tags"><span>Pancasila</span><span>PKn</span><span>Umum</span><span>Wawasan</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== LEADERBOARD ====================== -->
+<section id="leaderboard" class="leaderboard" style="background:var(--cream)">
+  <div class="container">
+    <div class="leaderboard-header">
+      <span class="overline">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Arena Prestasi Lembaga
+      </span>
+      <h2>Harumkan Nama <span class="highlight">Sekolahmu!</span></h2>
+      <p>Daftarkan sekolah tempat kamu menuntut ilmu saat ini. Setiap poin yang kamu menangkan di arena game langsung mendongkrak posisi sekolahmu di papan peringkat nasional!</p>
+    </div>
+    <div class="lb-list">
+      <div class="lb-item">
+        <div class="lb-left">
+          <div class="lb-rank">#1</div>
+          <div class="lb-info">
+            <h3>Sekolah Menengah Bintang Prestasi</h3>
+            <div class="meta">
+              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Gugus Cendekia</span>
+              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>240 Siswa</span>
+            </div>
+          </div>
+        </div>
+        <div class="lb-points">
+          <div class="val">942.150</div>
+          <div class="sub">✦ POIN AKUMULASI</div>
+        </div>
+      </div>
+      <div class="lb-item">
+        <div class="lb-left">
+          <div class="lb-rank">#2</div>
+          <div class="lb-info">
+            <h3>Pusat Belajar Tunas Bangsa Mandiri</h3>
+            <div class="meta">
+              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Gugus Juara</span>
+              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>225 Siswa</span>
+            </div>
+          </div>
+        </div>
+        <div class="lb-points">
+          <div class="val">918.400</div>
+          <div class="sub">✦ POIN AKUMULASI</div>
+        </div>
+      </div>
+      <div class="lb-item">
+        <div class="lb-left">
+          <div class="lb-rank">#3</div>
+          <div class="lb-info">
+            <h3>Akademi Muda Generasi Maju</h3>
+            <div class="meta">
+              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Gugus Inovatif</span>
+              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>210 Siswa</span>
+            </div>
+          </div>
+        </div>
+        <div class="lb-points">
+          <div class="val">899.700</div>
+          <div class="sub">✦ POIN AKUMULASI</div>
+        </div>
+      </div>
+      <div class="lb-item">
+        <div class="lb-left">
+          <div class="lb-rank">#4</div>
+          <div class="lb-info">
+            <h3>Lembaga Pendidikan Surya Utama</h3>
+            <div class="meta">
+              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Gugus Pelopor</span>
+              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>190 Siswa</span>
+            </div>
+          </div>
+        </div>
+        <div class="lb-points">
+          <div class="val">782.300</div>
+          <div class="sub">✦ POIN AKUMULASI</div>
+        </div>
+      </div>
+      <div class="lb-item">
+        <div class="lb-left">
+          <div class="lb-rank">#5</div>
+          <div class="lb-info">
+            <h3>Sekolah Harapan Insan Madani</h3>
+            <div class="meta">
+              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Gugus Cemerlang</span>
+              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>175 Siswa</span>
+            </div>
+          </div>
+        </div>
+        <div class="lb-points">
+          <div class="val">745.900</div>
+          <div class="sub">✦ POIN AKUMULASI</div>
+        </div>
+      </div>
+    </div>
+    <div class="lb-notice">
+      <h4>🏫 Ingin Mendaftarkan Institusi atau Komunitas Belajarmu?</h4>
+      <p>Daftarkan sekolah atau komunitasmu dan bergabunglah dengan ribuan lembaga di seluruh Indonesia yang telah merasakan manfaat EduFunHub.</p>
+    </div>
+    <div class="lb-cards">
+      <div class="lb-card">
+        <span class="badge" style="background:var(--amber)">📅 Event</span>
+        <h3>Event Offline Maen Bareng &amp; Kopdar</h3>
+        <p>Peserta dari berbagai sekolah dan kampus yang menjadi komunitas EduFunHub berkesempatan bertemu langsung dalam event offline yang diselenggarakan secara berkala.</p>
+        <ul>
+          <li><span class="dot" style="background:var(--amber)"></span>Turnamen game edukatif offline</li>
+          <li><span class="dot" style="background:var(--amber)"></span>Diskusi antar komunitas belajar</li>
+          <li><span class="dot" style="background:var(--amber)"></span>Meet &amp; greet guru berprestasi</li>
+        </ul>
+        <div class="foot" style="color:var(--amber)">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Jadwal event diumumkan via platform
+        </div>
+      </div>
+      <div class="lb-card">
+        <span class="badge" style="background:var(--teal)">🎓 Beasiswa</span>
+        <h3>Raih Peluang Beasiswa</h3>
+        <p>Pelajar berprestasi di EduFunHub berpeluang mendapatkan rekomendasi beasiswa dari lembaga mitra yang mengapresiasi prestasi akademik berbasis game edukatif.</p>
+        <ul>
+          <li><span class="dot" style="background:var(--teal)"></span>Rekomendasi lembaga mitra</li>
+          <li><span class="dot" style="background:var(--teal)"></span>Apresiasi berbasis prestasi belajar</li>
+          <li><span class="dot" style="background:var(--teal)"></span>Portofolio digital via profil EduFunHub</li>
+        </ul>
+        <div class="foot" style="color:var(--teal)">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Tersedia untuk pelajar berprestasi
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== ECONOMY ====================== -->
+<section id="economy" class="economy">
+  <div class="container">
+    <div class="economy-header">
+      <span class="overline">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Ekonomi Poin, Kustomisasi Karakter &amp; Item Shop
+      </span>
+      <h2>Dandani Karaktermu dengan <span class="highlight">Poin Akumulasi Misi!</span></h2>
+      <p>Setiap poin yang kamu kumpulkan dari kuis, duel, dan game bisa ditukar dengan item eksklusif di toko virtual EduFunHub. Prestasi belajar = kekayaan digital!</p>
+    </div>
+    <div class="econ-grid">
+      <div class="econ-card">
+        <div class="top">
+          <span class="rarity" style="background:#c0392b">LEGENDARY</span>
+          <span class="type">Avatar Skin</span>
+        </div>
+        <div class="visual" style="background:linear-gradient(135deg,#1a1a2e,#16213e)">
+          <svg viewBox="0 0 80 80" width="64" height="64" stroke="#F5A623" stroke-width="2" fill="none">
+            <rect x="25" y="20" width="30" height="35" rx="4"/>
+            <rect x="30" y="28" width="20" height="15" rx="2" fill="#F5A623" fill-opacity=".2"/>
+            <circle cx="36" cy="34" r="3" fill="#F5A623"/>
+            <circle cx="44" cy="34" r="3" fill="#F5A623"/>
+            <path d="M25 35 L15 30 L15 45 L25 45"/>
+            <path d="M55 35 L65 30 L65 45 L55 45"/>
+            <path d="M30 55 L25 65"/>
+            <path d="M50 55 L55 65"/>
+            <path d="M35 55 L35 65"/>
+            <path d="M45 55 L45 65"/>
+            <path d="M22 20 L25 12 L30 20"/>
+            <path d="M52 20 L55 12 L58 20"/>
+            <path d="M38 12 L40 8 L42 12"/>
+          </svg>
+        </div>
+        <h3>Kostum Cyber Mecha</h3>
+        <p class="desc">Tampil futuristik dengan armor robot canggih eksklusif di arena!</p>
+        <div class="price">
+          <span class="coins">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            1.200 Poin
+          </span>
+          <span class="buy">Tukar</span>
+        </div>
+      </div>
+      <div class="econ-card">
+        <div class="top">
+          <span class="rarity" style="background:#6C5CE7">EPIC</span>
+          <span class="type">Aksesoris Efek</span>
+        </div>
+        <div class="visual" style="background:linear-gradient(135deg,#1a0533,#2d1b69)">
+          <svg viewBox="0 0 80 80" width="64" height="64" stroke="#FFD93D" stroke-width="2" fill="none">
+            <path d="M40 50 C20 50 10 30 20 20 C25 15 30 20 40 15 C50 20 55 15 60 20 C70 30 60 50 40 50Z"/>
+            <path d="M40 50 C30 55 20 65 15 75"/>
+            <path d="M40 50 C50 55 60 65 65 75"/>
+            <path d="M20 20 L10 10"/>
+            <path d="M60 20 L70 10"/>
+            <circle cx="40" cy="30" r="6" fill="#FFD93D" fill-opacity=".4"/>
+          </svg>
+        </div>
+        <h3>Sayap Phoenix Emas</h3>
+        <p class="desc">Efek sayap legendaris yang bersinar saat kamu tampil di arena!</p>
+        <div class="price">
+          <span class="coins">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            850 Poin
+          </span>
+          <span class="buy">Tukar</span>
+        </div>
+      </div>
+      <div class="econ-card">
+        <div class="top">
+          <span class="rarity" style="background:#1AAB8A">RARE</span>
+          <span class="type">Item Tempur</span>
+        </div>
+        <div class="visual" style="background:linear-gradient(135deg,#002211,#004422)">
+          <svg viewBox="0 0 80 80" width="64" height="64" stroke="#1AAB8A" stroke-width="2" fill="none">
+            <ellipse cx="40" cy="28" rx="12" ry="18"/>
+            <path d="M28 40 C22 48 25 62 40 65 C55 62 58 48 52 40"/>
+            <line x1="40" y1="10" x2="40" y2="8"/>
+            <path d="M35 15 C37 10 43 10 45 15" fill="#1AAB8A" fill-opacity=".3"/>
+            <path d="M30 42 C28 48 30 56 36 60"/>
+            <path d="M50 42 C52 48 50 56 44 60"/>
+            <circle cx="40" cy="35" r="4" fill="#1AAB8A" fill-opacity=".4"/>
+          </svg>
+        </div>
+        <h3>Potion 2x Poin Booster</h3>
+        <p class="desc">Gunakan saat duel untuk menggandakan setiap poin yang kamu menangkan!</p>
+        <div class="price">
+          <span class="coins">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            300 Poin
+          </span>
+          <span class="buy">Tukar</span>
+        </div>
+      </div>
+      <div class="econ-card">
+        <div class="top">
+          <span class="rarity" style="background:#E85D75">EXCLUSIVE</span>
+          <span class="type">Gelar Profil</span>
+        </div>
+        <div class="visual" style="background:linear-gradient(135deg,#2d0010,#5c0020)">
+          <svg viewBox="0 0 80 80" width="64" height="64" stroke="#E85D75" stroke-width="2" fill="none">
+            <circle cx="40" cy="35" r="18"/>
+            <path d="M25 50 L20 65 L40 55 L60 65 L55 50"/>
+            <path d="M32 30 L35 25 L40 30 L45 25 L48 30"/>
+            <path d="M32 38 C35 42 45 42 48 38"/>
+            <circle cx="40" cy="35" r="6" fill="#E85D75" fill-opacity=".3"/>
+          </svg>
+        </div>
+        <h3>Badge Cendekiawan Sejati</h3>
+        <p class="desc">Gelar eksklusif yang tampil di profil dan papan leaderboard nasional!</p>
+        <div class="price">
+          <span class="coins">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            500 Poin
+          </span>
+          <span class="buy">Tukar</span>
+        </div>
+      </div>
+    </div>
+    <div class="econ-highlights">
+      <div class="econ-hl">
+        <div class="icon" style="background:rgba(245,166,35,.12)">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div>
+          <h4>Kustomisasi Karakter Bebas</h4>
+          <p>Ubah skin, tambahkan aksesoris, dan tampilkan gaya belajarmu yang unik di arena.</p>
+        </div>
+      </div>
+      <div class="econ-hl">
+        <div class="icon" style="background:rgba(26,171,138,.12)">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        </div>
+        <div>
+          <h4>Akumulasi Semua Poin</h4>
+          <p>Poin dari semua mode game, kuis, dan duel terhitung dan disimpan di akun-mu.</p>
+        </div>
+      </div>
+      <div class="econ-hl">
+        <div class="icon" style="background:rgba(108,92,231,.12)">
+          <svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+        </div>
+        <div>
+          <h4>Murni Berbasis Prestasi Belajar</h4>
+          <p>Tidak ada microtransaction. Item hanya bisa didapat lewat prestasi belajar nyata.</p>
+        </div>
+      </div>
+    </div>
+    <div class="econ-notice">
+      <h4>
+        <svg width="20" height="20" viewBox="0 0 24 24" stroke="var(--amber)" stroke-width="2.5" fill="none"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Dapatkan Poin Sekarang, Dandani Avatar-mu!
+      </h4>
+      <p>Kumpulkan poin dari setiap sesi belajar dan tukar dengan item eksklusif di toko virtual EduFunHub. Semakin sering belajar, semakin kaya avatar-mu!</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== TEACHERS ====================== -->
+<section id="teachers" class="teachers" style="background:var(--cream)">
+  <div class="container">
+    <div class="teachers-layout">
+      <div class="teachers-left">
+        <span class="overline">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Pemberdayaan Guru &amp; Dosen
+        </span>
+        <h2>Ruang Kreatif &amp; <span class="highlight">Penghasilan Tambahan Guru</span></h2>
+        <p>EduFunHub bukan hanya arena bermain siswa, tapi juga ekosistem pengajaran masa depan yang menghargai karya intelektual pendidik.</p>
+        <div class="teachers-checks">
+          <div class="check">
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Penghasilan tambahan dari soal &amp; materi yang dibuat</span>
+          </div>
+          <div class="check">
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Ruang kelas privat dengan analitik perkembangan siswa</span>
+          </div>
+          <div class="check">
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Kuis interaktif kilat live di depan ratusan peserta</span>
+          </div>
+          <div class="check">
+            <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Analitik perkembangan dan potensi setiap peserta</span>
+          </div>
+        </div>
+        <a href="/register" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;margin-top:28px">
+          Daftar Sebagai Pengajar &amp; Mulai Buat Soal
+          <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+      <div class="teachers-right">
+        <div class="tr-head">
+          <div class="tr-head-left">
+            <div class="tr-head-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" stroke="var(--ink)" stroke-width="2.5" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </div>
+            <div>
+              <div style="font-family:var(--display-font);font-weight:700;font-size:15px">Studio Pengajar</div>
+              <div style="font-size:11px;color:rgba(21,27,46,.5);font-weight:600">Ruang Kreatif &amp; Penghasilan</div>
+            </div>
+          </div>
+          <span style="font-size:11px;font-weight:700;padding:4px 10px;border:1px solid var(--ink);border-radius:999px;background:rgba(26,171,138,.1);color:var(--teal)">● AKTIF</span>
+        </div>
+        <div class="tr-perks">
+          <div class="tr-perk">
+            <div class="perk-icon" style="background:var(--teal)">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <h4>Monetisasi Soal &amp; Penghasilan Tambahan</h4>
+            <p>Soal yang dibuat diakses ribuan peserta, menghasilkan poin royalti untuk ditukar hadiah.</p>
+          </div>
+          <div class="tr-perk">
+            <div class="perk-icon" style="background:var(--amber)">
+              <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <h4>Quiz Studio Kreatif &amp; Soal Cepat</h4>
+            <p>Buat kuis bergaya fast-paced dan soal bergambar dengan studio intuitif.</p>
+          </div>
+          <div class="tr-perk">
+            <div class="perk-icon" style="background:var(--violet)">
+              <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87V15.13a1 1 0 01-1.447.9L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            </div>
+            <h4>Ruang Kelas Live Interaktif</h4>
+            <p>Buka sesi live dan ajak ratusan peserta bermain &amp; belajar bersama secara real-time.</p>
+          </div>
+          <div class="tr-perk">
+            <div class="perk-icon" style="background:var(--coral)">
+              <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <h4>Apresiasi &amp; Reputasi Pengajar</h4>
+            <p>Raih rating bintang dari peserta dan bangun reputasi sebagai pengajar berprestasi.</p>
+          </div>
+        </div>
+        <div class="tr-sim">
+          <div class="tr-sim-avatar">BA</div>
+          <div style="flex:1">
+            <div style="font-family:var(--display-font);font-weight:700;font-size:13px">Bu Anita S.Pd</div>
+            <div style="font-size:11px;color:rgba(21,27,46,.5)">Guru Fisika · 128 soal aktif</div>
+          </div>
+          <span class="income">+ Rp 350.000</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== PRICING ====================== -->
+<section id="pricing" class="pricing">
+  <div class="container">
+    <div class="pricing-header">
+      <span class="overline">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Akses Pendidikan Terbuka
+      </span>
+      <h2>100% Gratis Untuk <span class="highlight">Semua Pengguna!</span></h2>
+      <p>Kami percaya pendidikan berkualitas adalah hak semua orang. Tidak ada paywall, tidak ada langganan premium, tidak ada keuntungan dari pembelian in-game.</p>
+    </div>
+    <div class="pricing-card">
+      <div class="pricing-top">
+        <div>
+          <div class="tier">EDUFUN FOREVER TIER</div>
+          <h3>Akses Penuh Pelajar &amp; Guru</h3>
+          <div class="sub">Semua fitur tersedia tanpa syarat</div>
+        </div>
+        <div class="pricing-price">
+          <div class="amount">Rp 0</div>
+          <div class="forever">Gratis Selamanya</div>
+        </div>
+      </div>
+      <div class="pricing-benefits">
+        <div class="label">Semua yang kamu dapatkan:</div>
+        <div class="pricing-benefits-grid">
+          <div class="pricing-benefit">
+            <span class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Semua mode game terbuka penuh sesuai point dan level peserta</span>
+          </div>
+          <div class="pricing-benefit">
+            <span class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Akses materi dari jenjang TK hingga Universitas</span>
+          </div>
+          <div class="pricing-benefit">
+            <span class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Fitur multiplayer arena &amp; live matchmaking</span>
+          </div>
+          <div class="pricing-benefit">
+            <span class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Akumulasi poin &amp; leaderboard sekolah/kampus</span>
+          </div>
+          <div class="pricing-benefit">
+            <span class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Kustomisasi avatar dengan koin hasil belajar</span>
+          </div>
+          <div class="pricing-benefit">
+            <span class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span>Ruang kelas dan studio pembuatan soal bagi guru</span>
+          </div>
+        </div>
+      </div>
+      <div class="pricing-cta">
+        <a href="/register" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px">
+          Buat Akun &amp; Mulai Main Gratis
+          <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== TESTIMONIALS ====================== -->
+<section id="testimonials" class="testi-section" style="background:var(--cream)">
+  <div class="container">
+    <div class="testi-header">
+      <span class="overline">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        Kisah Sukses Komunitas
+      </span>
+      <h2>Cerita Mereka yang Belajar Jadi <span class="highlight">Lebih Menyenangkan</span></h2>
+      <p>Lebih dari 500 pelajar dan guru telah merasakan manfaat EduFunHub dalam perjalanan belajar mereka.</p>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="stars">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span class="tag" style="background:var(--amber)">Orang Tua</span>
+        </div>
+        <blockquote>"Anak saya yang tadinya malas belajar IPA dan matematika, sekarang malah tiap pulang sekolah langsung login EduFunHub. Dia bangga banget bisa bawa nama kelompok belajarnya masuk peringkat atas!"</blockquote>
+        <div class="author">
+          <div class="avatar" style="background:var(--amber)">RD</div>
+          <div>
+            <div style="font-family:var(--display-font);font-weight:700;font-size:14px">Ibu Ratna Dewi</div>
+            <div style="font-size:12px;color:rgba(21,27,46,.5)">Orang Tua Siswa Tingkat Dasar</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="stars">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span class="tag" style="background:var(--violet)">Guru</span>
+        </div>
+        <blockquote>"Saya bisa membuat kuis kilat live dan langsung melihat respon siswa secara real-time. Yang paling saya suka, soal-soal saya juga bisa menghasilkan poin royalti yang bisa saya tukar dengan hadiah nyata."</blockquote>
+        <div class="author">
+          <div class="avatar" style="background:var(--violet)">HW</div>
+          <div>
+            <div style="font-family:var(--display-font);font-weight:700;font-size:14px">Bapak Hendra Wijaya, M.Pd</div>
+            <div style="font-size:12px;color:rgba(21,27,46,.5)">Guru Sains &amp; Fisika Menengah</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="stars">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <span class="tag" style="background:var(--teal)">Mahasiswa</span>
+        </div>
+        <blockquote>"Awalnya saya pikir ini platform biasa. Tapi fitur duel antar peserta dan item shop yang bisa diakses dengan poin belajar bikin saya ketagihan untuk terus belajar. Rasanya seperti main game, tapi ilmunya nyata!"</blockquote>
+        <div class="author">
+          <div class="avatar" style="background:var(--teal)">DW</div>
+          <div>
+            <div style="font-family:var(--display-font);font-weight:700;font-size:14px">Dimas Wicaksono</div>
+            <div style="font-size:12px;color:rgba(21,27,46,.5)">Mahasiswa Teknik Informatika</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== FAQ ====================== -->
+<section id="faq" class="faq">
+  <div class="container">
+    <div class="faq-layout">
+      <div class="faq-left">
+        <h2>Pertanyaan yang Sering <span style="color:var(--amber)">Diajukan</span></h2>
+        <p>Punya pertanyaan lain? Tim EduFunHub dan komunitas pengajar kami siap membantu kapan saja.</p>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item open">
+          <button class="faq-q">
+            <span>Apa itu EduFunHub dan bagaimana cara kerjanya?</span>
+            <span class="faq-q-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M6 9l6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner"><p>EduFunHub adalah portal pembelajaran online berbasis gamifikasi interaktif. Materi pelajaran disajikan dalam bentuk gameplay seperti Kuis Kilat Cepat, Duel 1 vs 1, Misi Tim Kolaboratif, Board Game, Arcade, dan Petualangan 3D. Setiap jawaban benar menghasilkan poin yang langsung terakumulasi ke akunmu.</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">
+            <span>Bagaimana fungsi poin akumulasi dan item shop?</span>
+            <span class="faq-q-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M6 9l6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner"><p>Setiap poin yang kamu peroleh dari seluruh tantangan, kuis kilat, dan duel otomatis terakumulasi. Poin ini digunakan di Item Shop untuk mendandani karakter avatar 3D-mu (kostum mecha, sayap aura, topi, aksesori) dan membeli booster tantangan.</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">
+            <span>Apakah peserta bisa saling berkenalan dan duel?</span>
+            <span class="faq-q-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M6 9l6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner"><p>Tentu saja! Kamu dapat menemukan teman baru sesama pelajar dari berbagai daerah, saling menambahkan daftar teman, mengirim pesan ramah, dan langsung menantang duel 1 vs 1 secara real-time untuk menguji penguasaan materi pelajaran.</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">
+            <span>Bisakah saya membentuk tim bersama peserta dari sekolah lain?</span>
+            <span class="faq-q-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M6 9l6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner"><p>Bisa banget! EduFunHub mendukung mode Co-Op Squad lintas sekolah. Kamu bebas mengundang sahabat dari sekolah atau kampus mana pun untuk membentuk satu regu dan bersama-sama menaklukkan quest atau turnamen akbar.</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">
+            <span>Apakah ada kuis interaktif cepat (fast-paced)?</span>
+            <span class="faq-q-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M6 9l6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner"><p>Ya! Tersedia mode Kuis Interaktif Kilat dengan durasi hitungan detik per soal, diiringi audio dinamis dan live scoreboard real-time. Mode ini sangat memacu adrenalin dan mengasah ketangkasan berpikir cepat.</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">
+            <span>Apakah EduFunHub benar-benar 100% gratis &amp; no pay-to-win?</span>
+            <span class="faq-q-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M6 9l6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner"><p>100% gratis tanpa biaya tersembunyi! Tidak ada sistem pay-to-win. Kemenangan dan peringkat di leaderboard nasional murni ditentukan oleh ketekunan belajar dan ketepatan menjawab soal.</p></div></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">
+            <span>Bagaimana cara guru mendapatkan penghasilan tambahan?</span>
+            <span class="faq-q-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M6 9l6 6 6-6"/></svg></span>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner"><p>Guru dan dosen dapat merancang paket soal kreatif dan berkualitas di Quiz Studio. Setiap kali paket soal dimainkan dan diapresiasi oleh ribuan pelajar, pembuat soal akan menerima royalti koin dan insentif finansial yang dapat dicairkan secara transparan.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== FINAL CTA ====================== -->
+<section class="cta-section" style="background:var(--ink);border-top:4px solid var(--amber);padding:80px 0;text-align:center">
+  <div class="container">
+    <span style="display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);padding:4px 14px;border:2px solid var(--amber);border-radius:999px;box-shadow:2px 2px 0 var(--amber);background:rgba(245,166,35,.12);margin-bottom:20px">
+      <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Mulai Sekarang
+    </span>
+    <h2 style="font-family:var(--display-font);font-weight:700;font-size:clamp(32px,5vw,60px);line-height:1.1;color:var(--cream);max-width:900px;margin:0 auto">
+      Siap Menjadi Juara di <span style="color:var(--amber)">EduFunHub?</span>
+    </h2>
+    <p style="margin-top:20px;font-size:17px;color:rgba(250,247,239,.6);max-width:600px;margin-left:auto;margin-right:auto">
+      Pilih avatarmu, ajak teman sekolah dan kampusmu, lalu taklukkan leaderboard nasional sekarang juga. 100% Gratis!
+    </p>
+    <div style="margin-top:36px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center">
+      <a href="/register" style="display:inline-flex;align-items:center;gap:10px;padding:16px 32px;font-family:var(--display-font);font-weight:700;font-size:15px;color:var(--ink);background:var(--amber);border:3px solid var(--cream);border-radius:var(--r-md);box-shadow:5px 5px 0 var(--cream);transition:transform .2s,box-shadow .2s;text-decoration:none">
+        Daftar &amp; Mainkan Sekarang
+        <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </a>
+      <a href="#leaderboard" style="display:inline-flex;align-items:center;gap:10px;padding:16px 32px;font-family:var(--display-font);font-weight:700;font-size:15px;color:var(--cream);border:3px solid rgba(250,247,239,.3);border-radius:var(--r-md);transition:border-color .2s;text-decoration:none">
+        Lihat Ranking Sekolah
+        <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== FOOTER ====================== -->
+<footer style="background:var(--ink);border-top:3px solid rgba(250,247,239,.08);padding:60px 0 0">
+  <div class="container">
+    <div class="footer-top" style="display:grid;gap:32px;grid-template-columns:1fr">
+      <div class="footer-brand">
+        <div style="font-family:var(--display-font);font-weight:700;font-size:22px;color:var(--cream);letter-spacing:-.5px">
+          Edu<span style="color:var(--amber)">Fun</span>Hub
+        </div>
+        <p style="margin-top:10px;font-size:13px;color:rgba(250,247,239,.45);line-height:1.6;max-width:280px">
+          Platform belajar via game edukatif berbasis poin, arena duel, dan leaderboard sekolah nasional.
+        </p>
+        <div class="footer-badges" style="margin-top:16px">
+          <span>🇮🇩 Karya Anak Bangsa</span>
+          <span>
+            <svg width="14" height="14" viewBox="0 0 24 24" stroke="var(--teal)" stroke-width="2.5" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Aman &amp; Ramah Anak
+          </span>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4 style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)">Mode Permainan</h4>
+        <a href="#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Ular Tangga Pengetahuan</a>
+        <a href="#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Pesawat Sky Quiz</a>
+        <a href="#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Duel Langsung</a>
+        <a href="#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Kuis Cepat Live</a>
+        <a href="#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Arena Multiplayer</a>
+        <a href="#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Misi Harian</a>
+      </div>
+      <div class="footer-col">
+        <h4 style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)">Mata Pelajaran</h4>
+        <a href="#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Matematika</a>
+        <a href="#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Ilmu Pengetahuan Alam</a>
+        <a href="#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Bahasa Indonesia</a>
+        <a href="#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Sejarah &amp; IPS</a>
+        <a href="#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Bahasa Inggris</a>
+        <a href="#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Teknologi &amp; Komputer</a>
+      </div>
+      <div class="footer-col">
+        <h4 style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)">Jenjang Pendidikan</h4>
+        <a href="#levels" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Taman Kanak-Kanak</a>
+        <a href="#levels" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Sekolah Dasar</a>
+        <a href="#levels" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Sekolah Menengah</a>
+        <a href="#levels" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Perguruan Tinggi</a>
+        <a href="#levels" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Pendidikan Umum</a>
+      </div>
+      <div class="footer-col">
+        <h4 style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)">Komunitas &amp; Sekolah</h4>
+        <a href="#leaderboard" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Leaderboard Sekolah</a>
+        <a href="#teachers" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Studio Pengajar</a>
+        <a href="#economy" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Item Shop &amp; Poin</a>
+        <a href="#faq" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">FAQ &amp; Bantuan</a>
+        <a href="/register" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Daftar Sekarang</a>
+      </div>
+    </div>
+    <div style="margin-top:48px;padding:20px 0;border-top:1px solid rgba(250,247,239,.06);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:12px;color:rgba(250,247,239,.25)">
+      <span>© 2026 EduFunHub Indonesia. Dikembangkan oleh fatwarachman.</span>
+      <span>Dibuat dengan ❤️ oleh fatwarachman untuk kemajuan pendidikan Indonesia</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ====================== SCRIPTS ====================== -->
+<script>
+// Mobile nav toggle
+document.querySelector('.mobile-toggle').addEventListener('click', function() {
+  const nav = document.getElementById('mobile-nav');
+  nav.style.display = nav.style.display === 'none' ? 'block' : 'none';
+});
+
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    const item = this.parentElement;
+    const wasOpen = item.classList.contains('open');
+    // close all
+    document.querySelectorAll('.faq-item').forEach(function(el) { el.classList.remove('open'); });
+    if (!wasOpen) item.classList.add('open');
+  });
+});
+
+// Dropdown toggle
+function toggleDropdown() {
+  var dd = document.getElementById('nav-dd');
+  dd.classList.toggle('open');
+}
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  var dd = document.getElementById('nav-dd');
+  if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+});
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // close mobile nav
+      document.getElementById('mobile-nav').style.display = 'none';
+    }
+  });
+});
+</script>
+
+</body>
+</html>

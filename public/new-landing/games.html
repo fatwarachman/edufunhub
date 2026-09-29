@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilih Game — EduFunHub</title>
+<meta name="description" content="Temukan mode permainan edukatif yang cocok dengan gaya belajarmu. Kuis kilat, duel PVP, co-op, board game, RPG, dan puzzle.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ============= RESET & TOKENS ============= */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#151b2e;
+  --cream:#faf7ef;
+  --amber:#F5A623;
+  --coral:#E85D75;
+  --teal:#1AAB8A;
+  --violet:#6C5CE7;
+  --yellow:#FFD93D;
+  --body-font:'DM Sans',system-ui,sans-serif;
+  --display-font:'Instrument Sans','DM Sans',system-ui,sans-serif;
+  --r-sm:8px;--r-md:16px;--r-lg:24px;--r-xl:32px;
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--body-font);color:var(--ink);background:var(--cream);line-height:1.6;overflow-x:hidden}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font:inherit;border:0;background:0}
+
+/* ============= UTILITIES ============= */
+.container{max-width:100%;margin:0 auto;padding:0 24px}
+@media(min-width:768px){.container{padding:0 48px}}@media(min-width:1200px){.container{padding:0 80px}}@media(min-width:1600px){.container{padding:0 120px}}
+
+/* ============= HEADER ============= */
+.site-header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:3px solid var(--ink);backdrop-filter:blur(12px)}
+.site-header .container{display:flex;align-items:center;justify-content:space-between;height:72px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:44px;height:44px;background:var(--amber);border:3px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink);transition:transform .2s}
+.logo:hover .logo-mark{transform:translateY(-2px);box-shadow:5px 5px 0 var(--ink)}
+.logo-mark svg{width:24px;height:24px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.logo-text{font-family:var(--display-font);font-weight:700;font-size:22px;letter-spacing:-.02em}
+.logo-text span{color:var(--coral)}
+.logo-tag{font-size:11px;font-weight:600;color:var(--ink);opacity:.5;letter-spacing:.04em}
+.nav-desktop{display:none;gap:4px;align-items:center}
+@media(min-width:1024px){.nav-desktop{display:flex}}
+.nav-link{padding:8px 14px;font-weight:600;font-size:14px;border-radius:var(--r-sm);transition:all .15s}
+.nav-link:hover{background:var(--ink);color:var(--cream)}
+.nav-link.active{background:var(--ink);color:var(--cream)}
+.nav-dropdown{position:relative}
+.nav-dropdown-trigger{display:flex;align-items:center;gap:4px;padding:8px 14px;font-weight:600;font-size:14px;border-radius:var(--r-sm);cursor:pointer;border:0;background:0;font-family:var(--display-font,'Instrument Sans',sans-serif);color:var(--ink);transition:all .15s}
+.nav-dropdown-trigger:hover{background:var(--ink);color:var(--cream)}
+.nav-dropdown-trigger svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;transition:transform .2s}
+.nav-dropdown.open .nav-dropdown-trigger svg{transform:rotate(180deg)}
+.nav-dropdown-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:220px;background:white;border:3px solid var(--ink);border-radius:12px;box-shadow:5px 5px 0 var(--ink);padding:6px;display:none;z-index:110}
+.nav-dropdown.open .nav-dropdown-menu{display:block}
+.nav-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink);transition:all .15s;text-decoration:none}
+.nav-dropdown-item:hover{background:var(--cream)}
+.nav-dropdown-icon{width:32px;height:32px;border:2px solid var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:1px 1px 0 var(--ink)}
+.nav-dropdown-icon svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.nav-dropdown-item .dd-label{font-weight:700;font-size:13px}
+.nav-dropdown-item .dd-desc{font-size:11px;color:rgba(21,27,46,.5)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:var(--r-md);font-family:var(--display-font);font-weight:700;font-size:15px;border:3px solid var(--ink);transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--amber);color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:6px 6px 0 var(--ink)}
+.btn-primary:active{transform:translateY(0);box-shadow:2px 2px 0 var(--ink)}
+.btn-outline{background:var(--cream);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.btn-outline:hover{background:var(--ink);color:var(--cream)}
+.btn-ghost{border:0;padding:10px 16px;font-weight:600}
+.btn-ghost:hover{background:rgba(21,27,46,.06)}
+.header-cta{display:none;gap:8px;align-items:center}
+@media(min-width:768px){.header-cta{display:flex}}
+.mobile-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:2px solid var(--ink);border-radius:var(--r-sm);background:white;box-shadow:2px 2px 0 var(--ink)}
+@media(min-width:1024px){.mobile-toggle{display:none}}
+.mobile-toggle svg{width:22px;height:22px;stroke:var(--ink);stroke-width:2.5;fill:none}
+
+/* ============= HERO (compact) ============= */
+.page-hero{padding:32px 0 40px}
+@media(min-width:768px){.page-hero{padding:40px 0 48px}}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:rgba(21,27,46,.5);margin-bottom:20px;flex-wrap:wrap}
+.breadcrumb a{color:var(--ink);font-weight:600;transition:color .15s}
+.breadcrumb a:hover{color:var(--amber)}
+.breadcrumb svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0}
+.page-hero h1{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4.5vw,48px);line-height:1.1;letter-spacing:-.03em}
+.page-hero .sub{margin-top:12px;font-size:17px;font-weight:500;color:rgba(21,27,46,.6);max-width:700px}
+
+/* ============= FILTER BUTTONS ============= */
+.filter-row{margin-top:28px;display:flex;flex-wrap:wrap;gap:8px}
+.filter-btn{padding:10px 20px;border:3px solid var(--ink);border-radius:var(--r-md);font-family:var(--display-font);font-weight:700;font-size:14px;background:white;color:var(--ink);box-shadow:3px 3px 0 var(--ink);transition:all .2s;min-height:44px}
+.filter-btn:hover{transform:translateY(-2px);box-shadow:5px 5px 0 var(--ink)}
+.filter-btn.active{background:var(--ink);color:var(--cream);box-shadow:3px 3px 0 var(--amber)}
+
+/* ============= GAME CARDS GRID ============= */
+.games-grid{display:grid;gap:24px;padding:48px 0 80px;grid-template-columns:1fr}
+@media(min-width:640px){.games-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1024px){.games-grid{grid-template-columns:repeat(3,1fr)}}
+.game-card{border:3px solid var(--ink);border-radius:var(--r-lg);background:white;box-shadow:5px 5px 0 var(--ink);overflow:hidden;display:flex;flex-direction:column;transition:transform .2s}
+.game-card:hover{transform:translateY(-4px)}
+.game-card[hidden]{display:none}
+.game-card-visual{height:200px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.game-card-visual svg{width:120px;height:120px}
+.game-card-body{padding:24px;flex:1;display:flex;flex-direction:column}
+.game-badge{display:inline-flex;align-items:center;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;width:fit-content}
+.game-card-body h3{font-family:var(--display-font);font-weight:700;font-size:20px;margin-top:12px;letter-spacing:-.01em}
+.game-card-body .desc{font-size:14px;color:rgba(21,27,46,.6);margin-top:8px;line-height:1.6;flex:1}
+.game-stats{display:flex;align-items:center;gap:16px;margin-top:16px;padding-top:16px;border-top:2px solid rgba(21,27,46,.06);font-size:12px;font-weight:600;color:rgba(21,27,46,.45)}
+.game-stats svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;flex-shrink:0}
+.game-stats span{display:flex;align-items:center;gap:4px}
+.game-card .btn{margin-top:16px;justify-content:center;width:100%}
+
+/* Card color accents */
+.game-card:nth-child(1) .game-card-visual{background:#fff8e8}
+.game-card:nth-child(2) .game-card-visual{background:#fde8ec}
+.game-card:nth-child(3) .game-card-visual{background:#e6f7f2}
+.game-card:nth-child(4) .game-card-visual{background:#f0edfc}
+.game-card:nth-child(5) .game-card-visual{background:#e8f4fd}
+.game-card:nth-child(6) .game-card-visual{background:#fff3e0}
+
+.game-card:nth-child(1) .game-badge{background:var(--yellow);color:var(--ink)}
+.game-card:nth-child(2) .game-badge{background:var(--coral);color:white}
+.game-card:nth-child(3) .game-badge{background:var(--teal);color:white}
+.game-card:nth-child(4) .game-badge{background:var(--violet);color:white}
+.game-card:nth-child(5) .game-badge{background:var(--amber);color:var(--ink)}
+.game-card:nth-child(6) .game-badge{background:var(--ink);color:var(--cream)}
+
+/* ============= HOW IT WORKS ============= */
+.how-it-works{background:var(--ink);color:var(--cream);padding:80px 0;border-top:3px solid var(--cream)}
+.how-header{text-align:center;margin-bottom:48px}
+.how-header .overline{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow);margin-bottom:12px}
+.how-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,44px);line-height:1.1}
+.steps-row{display:grid;gap:32px;position:relative}
+@media(min-width:768px){.steps-row{grid-template-columns:repeat(3,1fr);gap:0}}
+.step{text-align:center;position:relative;padding:0 24px}
+.step-icon{width:72px;height:72px;border:3px solid var(--cream);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;margin:0 auto;position:relative;z-index:2}
+.step:nth-child(1) .step-icon{background:var(--amber)}
+.step:nth-child(2) .step-icon{background:var(--teal)}
+.step:nth-child(3) .step-icon{background:var(--coral)}
+.step-icon svg{width:32px;height:32px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.step-num{font-family:var(--display-font);font-weight:700;font-size:13px;margin-top:16px;color:rgba(250,247,239,.3);text-transform:uppercase;letter-spacing:.08em}
+.step h3{font-family:var(--display-font);font-weight:700;font-size:20px;margin-top:6px}
+.step p{font-size:14px;color:rgba(250,247,239,.5);margin-top:8px;line-height:1.6;max-width:260px;margin-left:auto;margin-right:auto}
+/* Connecting line between steps on desktop */
+.step-connector{display:none}
+@media(min-width:768px){
+  .step-connector{display:block;position:absolute;top:36px;width:calc(100% - 72px);height:3px;border-top:3px dashed rgba(250,247,239,.15);z-index:1}
+  .step:nth-child(1) .step-connector{left:calc(50% + 36px)}
+  .step:nth-child(2) .step-connector{left:calc(50% + 36px)}
+}
+
+/* ============= BOTTOM CTA ============= */
+.cta-section{padding:80px 0;text-align:center;position:relative}
+.cta-card{max-width:900px;margin:0 auto;padding:48px 32px;border:4px solid var(--ink);border-radius:var(--r-xl);background:white;box-shadow:8px 8px 0 var(--ink);position:relative;overflow:hidden}
+.cta-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:8px;background:linear-gradient(90deg,var(--amber),var(--coral),var(--violet),var(--teal))}
+.cta-card h2{font-family:var(--display-font);font-weight:700;font-size:clamp(24px,3.5vw,36px);line-height:1.15}
+.cta-card p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6);max-width:480px;margin-left:auto;margin-right:auto}
+.cta-buttons{margin-top:28px;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+
+/* ============= FOOTER ============= */
+.site-footer{background:var(--ink);color:var(--cream);border-top:3px solid var(--cream);padding:48px 0 24px}
+.footer-top{display:grid;gap:32px}
+@media(min-width:768px){.footer-top{grid-template-columns:2fr 1fr 1fr;gap:48px}}
+.footer-brand .logo-text{font-size:20px}
+.footer-brand p{margin-top:8px;font-size:13px;color:rgba(250,247,239,.4);max-width:400px;line-height:1.6}
+.footer-col h4{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)}
+.footer-col a{display:block;font-size:14px;color:rgba(250,247,239,.6);padding:4px 0;transition:color .15s}
+.footer-col a:hover{color:var(--yellow)}
+.footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid rgba(250,247,239,.08);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:12px;color:rgba(250,247,239,.3)}
+
+/* ============= RESPONSIVE ============= */
+@media(max-width:767px){
+  .page-hero{padding:24px 0 32px}
+}
+
+/* ============= NO RESULTS ============= */
+.no-results{display:none;text-align:center;padding:80px 24px;grid-column:1/-1}
+.no-results.visible{display:block}
+.no-results h3{font-family:var(--display-font);font-weight:700;font-size:24px}
+.no-results p{margin-top:8px;color:rgba(21,27,46,.5);font-size:15px}
+
+/* ============= PREFERS REDUCED MOTION ============= */
+@media(prefers-reduced-motion:reduce){
+  .game-card:hover,.logo:hover .logo-mark,.btn-primary:hover,.filter-btn:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ====================== HEADER ====================== -->
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/><path d="M8 8V6a4 4 0 018 0v2"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">EduFun<span>Hub</span></div>
+        <div class="logo-tag">Bermain · Belajar · Berprestasi</div>
+      </div>
+    </a>
+
+    <nav class="nav-desktop">
+      <a href="index.html" class="nav-link">Beranda</a>
+      <a href="games.html" class="nav-link active">Daftar Game</a>
+      <a href="index.html#levels" class="nav-link">Jenjang</a>
+      <a href="index.html#subjects" class="nav-link">Mata Pelajaran</a>
+      <div class="nav-dropdown" id="nav-dd">
+        <button class="nav-dropdown-trigger" onclick="toggleDropdown()">
+          Mainkan Langsung
+          <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a href="/games/snakes-and-ladders" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#d4f5ec">
+              <svg viewBox="0 0 24 24"><path d="M4 20 Q8 4 12 12 Q16 20 20 4" stroke-linecap="round"/></svg>
+            </div>
+            <div><div class="dd-label">Ular Tangga</div><div class="dd-desc">Board game kuis 2 pemain</div></div>
+          </a>
+          <a href="/games/sky-quiz" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#e3dbf9">
+              <svg viewBox="0 0 24 24"><path d="M3 12l7-7 11 7-11 7-7-7z"/><path d="M10 5v14"/></svg>
+            </div>
+            <div><div class="dd-label">Pesawat Pengetahuan</div><div class="dd-desc">Game terbang & soal bonus</div></div>
+          </a>
+        </div>
+      </div>
+      <a href="index.html#faq" class="nav-link">FAQ</a>
+    </nav>
+
+    <div class="header-cta">
+      <a href="/login" class="btn btn-ghost">Masuk</a>
+      <a href="/register" class="btn btn-primary">Mulai Gratis</a>
+    </div>
+
+    <button class="mobile-toggle" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+
+  <!-- Mobile Nav -->
+  <div id="mobile-nav" style="display:none;padding:16px 24px 24px;border-top:2px solid var(--ink);background:var(--cream)">
+    <a href="index.html" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Beranda</a>
+    <a href="games.html" style="display:block;padding:12px 0;font-weight:700;font-size:16px;color:var(--amber)">Daftar Game</a>
+    <a href="index.html#levels" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Jenjang</a>
+    <a href="index.html#subjects" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Mata Pelajaran</a>
+    <a href="index.html#faq" style="display:block;padding:12px 0;font-weight:700;font-size:16px">FAQ</a>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <a href="/login" class="btn btn-outline" style="flex:1;justify-content:center">Masuk</a>
+      <a href="/register" class="btn btn-primary" style="flex:1;justify-content:center">Daftar Gratis</a>
+    </div>
+  </div>
+</header>
+
+<!-- ====================== HERO (compact) ====================== -->
+<section class="page-hero">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="index.html">Beranda</a>
+      <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      <span>Daftar Game</span>
+    </nav>
+    <h1>Pilih Game Seru Favoritmu</h1>
+    <p class="sub">Temukan mode permainan yang cocok dengan gaya belajarmu.</p>
+
+    <div class="filter-row" role="toolbar" aria-label="Filter game berdasarkan kategori">
+      <button class="filter-btn active" data-filter="semua">Semua</button>
+      <button class="filter-btn" data-filter="kuis">Kuis</button>
+      <button class="filter-btn" data-filter="pvp">PVP</button>
+      <button class="filter-btn" data-filter="coop">Co-Op</button>
+      <button class="filter-btn" data-filter="board">Board</button>
+      <button class="filter-btn" data-filter="rpg">RPG</button>
+      <button class="filter-btn" data-filter="puzzle">Puzzle</button>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== GAME CARDS ====================== -->
+<section class="container">
+  <div class="games-grid" id="games-grid">
+
+    <!-- 1. Kuis Kilat -->
+    <article class="game-card" data-category="kuis">
+      <div class="game-card-visual">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Stopwatch / Timer -->
+          <circle cx="60" cy="66" r="38" stroke="#151b2e" stroke-width="4" fill="#FFD93D"/>
+          <circle cx="60" cy="66" r="30" stroke="#151b2e" stroke-width="3" fill="#faf7ef"/>
+          <line x1="60" y1="66" x2="60" y2="44" stroke="#E85D75" stroke-width="4" stroke-linecap="round"/>
+          <line x1="60" y1="66" x2="74" y2="66" stroke="#151b2e" stroke-width="3" stroke-linecap="round"/>
+          <rect x="56" y="20" width="8" height="12" rx="3" stroke="#151b2e" stroke-width="3" fill="#F5A623"/>
+          <line x1="72" y1="30" x2="78" y2="24" stroke="#151b2e" stroke-width="3" stroke-linecap="round"/>
+          <!-- Tick marks -->
+          <line x1="60" y1="40" x2="60" y2="44" stroke="#151b2e" stroke-width="2"/>
+          <line x1="60" y1="88" x2="60" y2="92" stroke="#151b2e" stroke-width="2"/>
+          <line x1="32" y1="66" x2="36" y2="66" stroke="#151b2e" stroke-width="2"/>
+          <line x1="84" y1="66" x2="88" y2="66" stroke="#151b2e" stroke-width="2"/>
+          <!-- Sparks -->
+          <circle cx="96" cy="44" r="4" fill="#E85D75"/>
+          <circle cx="24" cy="88" r="3" fill="#6C5CE7"/>
+          <rect x="16" y="40" width="8" height="8" rx="2" fill="#1AAB8A" transform="rotate(15 20 44)"/>
+        </svg>
+      </div>
+      <div class="game-card-body">
+        <div class="game-badge">Adrenalin Tinggi</div>
+        <h3>Kuis Kilat</h3>
+        <p class="desc">Adu kecepatan dan ketepatan menjawab soal dalam hitungan detik! Live leaderboard dan timer menegangkan.</p>
+        <div class="game-stats">
+          <span>
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            50.000+ Pemain
+          </span>
+          <span>Solo & Multiplayer</span>
+        </div>
+        <a href="/games/sky-quiz" class="btn btn-primary">Mainkan Sekarang</a>
+      </div>
+    </article>
+
+    <!-- 2. Duel 1 vs 1 -->
+    <article class="game-card" data-category="pvp">
+      <div class="game-card-visual">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Crossed swords -->
+          <line x1="28" y1="92" x2="82" y2="28" stroke="#151b2e" stroke-width="5" stroke-linecap="round"/>
+          <line x1="92" y1="92" x2="38" y2="28" stroke="#151b2e" stroke-width="5" stroke-linecap="round"/>
+          <!-- Sword hilts -->
+          <rect x="20" y="84" width="20" height="8" rx="3" fill="#E85D75" stroke="#151b2e" stroke-width="3" transform="rotate(-45 30 88)"/>
+          <rect x="80" y="84" width="20" height="8" rx="3" fill="#F5A623" stroke="#151b2e" stroke-width="3" transform="rotate(45 90 88)"/>
+          <!-- Blade tips -->
+          <polygon points="82,28 86,20 78,20" fill="#FFD93D" stroke="#151b2e" stroke-width="2"/>
+          <polygon points="38,28 42,20 34,20" fill="#FFD93D" stroke="#151b2e" stroke-width="2"/>
+          <!-- Shield center -->
+          <circle cx="60" cy="62" r="16" fill="#faf7ef" stroke="#151b2e" stroke-width="3"/>
+          <text x="60" y="68" text-anchor="middle" font-family="'Instrument Sans',sans-serif" font-weight="700" font-size="16" fill="#151b2e">VS</text>
+          <!-- Sparks -->
+          <circle cx="60" cy="26" r="5" fill="#E85D75"/>
+          <rect x="14" y="50" width="8" height="8" rx="2" fill="#6C5CE7"/>
+          <circle cx="104" cy="56" r="4" fill="#1AAB8A"/>
+        </svg>
+      </div>
+      <div class="game-card-body">
+        <div class="game-badge">Duel & Pertemanan</div>
+        <h3>Duel 1 vs 1</h3>
+        <p class="desc">Tantang teman atau pemain acak. Buktikan siapa penguasa mata pelajaran!</p>
+        <div class="game-stats">
+          <span>
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            25.000+ Duel
+          </span>
+          <span>Real-time PVP</span>
+        </div>
+        <a href="/register" class="btn btn-primary">Mainkan Sekarang</a>
+      </div>
+    </article>
+
+    <!-- 3. Misi Tim Co-Op -->
+    <article class="game-card" data-category="coop">
+      <div class="game-card-visual">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Connected people / team -->
+          <circle cx="60" cy="36" r="12" fill="#1AAB8A" stroke="#151b2e" stroke-width="3"/>
+          <circle cx="30" cy="68" r="12" fill="#F5A623" stroke="#151b2e" stroke-width="3"/>
+          <circle cx="90" cy="68" r="12" fill="#6C5CE7" stroke="#151b2e" stroke-width="3"/>
+          <!-- Connection lines -->
+          <line x1="48" y1="42" x2="36" y2="60" stroke="#151b2e" stroke-width="3" stroke-dasharray="4 4"/>
+          <line x1="72" y1="42" x2="84" y2="60" stroke="#151b2e" stroke-width="3" stroke-dasharray="4 4"/>
+          <line x1="42" y1="72" x2="78" y2="72" stroke="#151b2e" stroke-width="3" stroke-dasharray="4 4"/>
+          <!-- People icons inside circles -->
+          <circle cx="60" cy="33" r="4" fill="#faf7ef"/>
+          <path d="M53 44a7 7 0 0114 0" stroke="#faf7ef" stroke-width="2.5" fill="none"/>
+          <circle cx="30" cy="65" r="4" fill="#faf7ef"/>
+          <path d="M23 76a7 7 0 0114 0" stroke="#faf7ef" stroke-width="2.5" fill="none"/>
+          <circle cx="90" cy="65" r="4" fill="#faf7ef"/>
+          <path d="M83 76a7 7 0 0114 0" stroke="#faf7ef" stroke-width="2.5" fill="none"/>
+          <!-- Bottom platform -->
+          <rect x="20" y="92" width="80" height="8" rx="4" fill="#FFD93D" stroke="#151b2e" stroke-width="3"/>
+          <!-- Sparks -->
+          <rect x="96" y="28" width="10" height="10" rx="3" fill="#E85D75" transform="rotate(15 101 33)"/>
+          <circle cx="14" cy="44" r="4" fill="#FFD93D"/>
+        </svg>
+      </div>
+      <div class="game-card-body">
+        <div class="game-badge">Kolaborasi</div>
+        <h3>Misi Tim Co-Op</h3>
+        <p class="desc">Bentuk squad lintas wilayah, pecahkan teka-teki gabungan bersama.</p>
+        <div class="game-stats">
+          <span>
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            10.000+ Tim
+          </span>
+          <span>Lintas Sekolah</span>
+        </div>
+        <a href="/register" class="btn btn-primary">Mainkan Sekarang</a>
+      </div>
+    </article>
+
+    <!-- 4. Board Game Edukatif -->
+    <article class="game-card" data-category="board">
+      <div class="game-card-visual">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Dice -->
+          <rect x="22" y="40" width="36" height="36" rx="6" fill="#6C5CE7" stroke="#151b2e" stroke-width="3" transform="rotate(-8 40 58)"/>
+          <circle cx="32" cy="50" r="3" fill="#faf7ef"/>
+          <circle cx="48" cy="50" r="3" fill="#faf7ef"/>
+          <circle cx="32" cy="66" r="3" fill="#faf7ef"/>
+          <circle cx="48" cy="66" r="3" fill="#faf7ef"/>
+          <circle cx="40" cy="58" r="3" fill="#faf7ef"/>
+          <!-- Board path -->
+          <rect x="66" y="30" width="16" height="16" rx="3" fill="#FFD93D" stroke="#151b2e" stroke-width="2.5"/>
+          <rect x="84" y="30" width="16" height="16" rx="3" fill="#faf7ef" stroke="#151b2e" stroke-width="2.5"/>
+          <rect x="84" y="48" width="16" height="16" rx="3" fill="#E85D75" stroke="#151b2e" stroke-width="2.5"/>
+          <rect x="84" y="66" width="16" height="16" rx="3" fill="#faf7ef" stroke="#151b2e" stroke-width="2.5"/>
+          <rect x="66" y="66" width="16" height="16" rx="3" fill="#1AAB8A" stroke="#151b2e" stroke-width="2.5"/>
+          <rect x="66" y="48" width="16" height="16" rx="3" fill="#faf7ef" stroke="#151b2e" stroke-width="2.5"/>
+          <!-- Token on board -->
+          <circle cx="74" cy="38" r="5" fill="#F5A623" stroke="#151b2e" stroke-width="2"/>
+          <!-- Arrow path indicator -->
+          <path d="M82 38h4M96 46v4M96 64v4M82 74h-4M74 64v-4" stroke="#151b2e" stroke-width="2" stroke-linecap="round" marker-end="url(#arrowhead)"/>
+          <!-- Sparks -->
+          <circle cx="16" cy="88" r="4" fill="#F5A623"/>
+          <rect x="50" y="90" width="8" height="8" rx="2" fill="#E85D75" transform="rotate(10 54 94)"/>
+        </svg>
+      </div>
+      <div class="game-card-body">
+        <div class="game-badge">Strategi Santai</div>
+        <h3>Ular Tangga Pengetahuan</h3>
+        <p class="desc">Board game ular tangga interaktif! Jawab soal untuk naik tangga, hindari ular. Seru untuk 2 pemain!</p>
+        <div class="game-stats">
+          <span>
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            15.000+ Match
+          </span>
+          <span>2-6 Pemain</span>
+        </div>
+        <a href="/games/snakes-and-ladders" class="btn btn-primary">Mainkan Sekarang</a>
+      </div>
+    </article>
+
+    <!-- 5. Quest RPG 3D -->
+    <article class="game-card" data-category="rpg">
+      <div class="game-card-visual">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Compass / Map -->
+          <circle cx="60" cy="58" r="36" fill="#faf7ef" stroke="#151b2e" stroke-width="4"/>
+          <circle cx="60" cy="58" r="28" fill="white" stroke="#151b2e" stroke-width="2"/>
+          <!-- Compass needle -->
+          <polygon points="60,32 54,58 60,52 66,58" fill="#E85D75" stroke="#151b2e" stroke-width="1.5"/>
+          <polygon points="60,84 54,58 60,64 66,58" fill="#151b2e" stroke="#151b2e" stroke-width="1.5"/>
+          <!-- Cardinal points -->
+          <text x="60" y="40" text-anchor="middle" font-family="'Instrument Sans',sans-serif" font-weight="700" font-size="8" fill="#E85D75">N</text>
+          <text x="60" y="82" text-anchor="middle" font-family="'Instrument Sans',sans-serif" font-weight="700" font-size="8" fill="#151b2e">S</text>
+          <text x="36" y="62" text-anchor="middle" font-family="'Instrument Sans',sans-serif" font-weight="700" font-size="8" fill="#151b2e">W</text>
+          <text x="84" y="62" text-anchor="middle" font-family="'Instrument Sans',sans-serif" font-weight="700" font-size="8" fill="#151b2e">E</text>
+          <!-- Center dot -->
+          <circle cx="60" cy="58" r="4" fill="#F5A623" stroke="#151b2e" stroke-width="2"/>
+          <!-- Map decoration outside compass -->
+          <rect x="10" y="20" width="24" height="18" rx="4" fill="#FFD93D" stroke="#151b2e" stroke-width="2.5"/>
+          <line x1="14" y1="28" x2="30" y2="28" stroke="#151b2e" stroke-width="1.5"/>
+          <line x1="14" y1="32" x2="24" y2="32" stroke="#151b2e" stroke-width="1.5"/>
+          <!-- Flag -->
+          <line x1="100" y1="24" x2="100" y2="48" stroke="#151b2e" stroke-width="3" stroke-linecap="round"/>
+          <polygon points="100,24 116,30 100,36" fill="#1AAB8A" stroke="#151b2e" stroke-width="2"/>
+          <!-- Sparks -->
+          <circle cx="20" cy="94" r="5" fill="#6C5CE7"/>
+          <rect x="94" y="86" width="8" height="8" rx="2" fill="#FFD93D" transform="rotate(20 98 90)"/>
+        </svg>
+      </div>
+      <div class="game-card-body">
+        <div class="game-badge">Petualangan Luas</div>
+        <h3>Quest RPG 3D</h3>
+        <p class="desc">Eksplorasi dunia fantasi edukatif. Temui NPC profesor, buka dungeon pengetahuan.</p>
+        <div class="game-stats">
+          <span>
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            30.000+ Quest
+          </span>
+          <span>Open World</span>
+        </div>
+        <a href="/register" class="btn btn-primary">Mainkan Sekarang</a>
+      </div>
+    </article>
+
+    <!-- 6. Teka-Teki & Mini-Game -->
+    <article class="game-card" data-category="puzzle">
+      <div class="game-card-visual">
+        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Puzzle pieces -->
+          <!-- Piece 1 (top-left) -->
+          <path d="M24 28h20c0-6 10-6 10 0h20v20c6 0 6 10 0 10v20H54c0 6-10 6-10 0H24V58c-6 0-6-10 0-10V28z" fill="#F5A623" stroke="#151b2e" stroke-width="3"/>
+          <!-- Piece 2 (top-right, offset) -->
+          <path d="M68 38h18c0-5 8-5 8 0h12v16c5 0 5 8 0 8v16H90c0 5-8 5-8 0H68V62c-5 0-5-8 0-8V38z" fill="#E85D75" stroke="#151b2e" stroke-width="3"/>
+          <!-- Piece 3 (bottom) -->
+          <path d="M36 72h16c0-5 8-5 8 0h16v14c5 0 5 8 0 8v14H60c0 5-8 5-8 0H36V92c-5 0-5-8 0-8V72z" fill="#1AAB8A" stroke="#151b2e" stroke-width="3"/>
+          <!-- Inner details on pieces -->
+          <circle cx="47" cy="50" r="5" fill="#faf7ef" stroke="#151b2e" stroke-width="1.5"/>
+          <rect x="78" y="52" width="10" height="10" rx="2" fill="#faf7ef" stroke="#151b2e" stroke-width="1.5"/>
+          <polygon points="56,88 60,82 64,88" fill="#faf7ef" stroke="#151b2e" stroke-width="1.5"/>
+          <!-- Sparks -->
+          <circle cx="12" cy="70" r="4" fill="#6C5CE7"/>
+          <circle cx="108" cy="80" r="3" fill="#FFD93D"/>
+          <rect x="96" y="22" width="8" height="8" rx="2" fill="#FFD93D" transform="rotate(12 100 26)"/>
+        </svg>
+      </div>
+      <div class="game-card-body">
+        <div class="game-badge">Asah Otak</div>
+        <h3>Teka-Teki & Mini-Game</h3>
+        <p class="desc">Puzzle logika, teka-teki silang digital, simulasi drag-and-drop interaktif.</p>
+        <div class="game-stats">
+          <span>
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            20.000+ Puzzle
+          </span>
+          <span>Solo Mode</span>
+        </div>
+        <a href="/register" class="btn btn-primary">Mainkan Sekarang</a>
+      </div>
+    </article>
+
+    <div class="no-results" id="no-results">
+      <h3>Tidak ada game ditemukan</h3>
+      <p>Coba pilih kategori lain.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== HOW IT WORKS ====================== -->
+<section class="how-it-works">
+  <div class="container">
+    <div class="how-header">
+      <div class="overline">Cara Bermain</div>
+      <h2>Tiga Langkah Mudah</h2>
+    </div>
+    <div class="steps-row">
+      <div class="step">
+        <div class="step-connector"></div>
+        <div class="step-icon">
+          <!-- Gamepad -->
+          <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg>
+        </div>
+        <div class="step-num">Langkah 1</div>
+        <h3>Pilih Game</h3>
+        <p>Temukan mode permainan yang sesuai dari 6 pilihan seru.</p>
+      </div>
+      <div class="step">
+        <div class="step-connector"></div>
+        <div class="step-icon">
+          <!-- Checkmark -->
+          <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="step-num">Langkah 2</div>
+        <h3>Jawab Soal</h3>
+        <p>Kerjakan soal-soal menantang sesuai jenjang dan mata pelajaran.</p>
+      </div>
+      <div class="step">
+        <div class="step-icon">
+          <!-- Trophy -->
+          <svg viewBox="0 0 24 24"><path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2"/><path d="M18 9h2a2 2 0 002-2V5a2 2 0 00-2-2h-2"/><path d="M4 22h16"/><path d="M10 22V14.5a2 2 0 01.67-1.5L12 12l1.33 1a2 2 0 01.67 1.5V22"/><rect x="6" y="3" width="12" height="10" rx="2"/></svg>
+        </div>
+        <div class="step-num">Langkah 3</div>
+        <h3>Raih Poin</h3>
+        <p>Kumpulkan poin, naik level, dan dominasi leaderboard nasional.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== BOTTOM CTA ====================== -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card">
+      <h2>Belum punya akun? Daftar gratis dan mainkan semua game!</h2>
+      <p>Tanpa biaya, tanpa syarat, tanpa batas. Langsung bermain dan belajar.</p>
+      <div class="cta-buttons">
+        <a href="/register" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg>
+          Daftar Gratis
+        </a>
+        <a href="index.html" class="btn btn-outline">Kembali ke Beranda</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== FOOTER ====================== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo-text" style="color:var(--cream)">EduFun<span style="color:var(--coral)">Hub</span></div>
+        <p>Portal edukasi gamifikasi untuk semua jenjang. Bermain, belajar, dan berprestasi bersama — 100% gratis selamanya.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <a href="games.html">Daftar Game</a>
+        <a href="index.html#levels">Jenjang</a>
+        <a href="index.html#subjects">Mata Pelajaran</a>
+        <a href="index.html#proof">Komunitas</a>
+      </div>
+      <div class="footer-col">
+        <h4>Bantuan</h4>
+        <a href="index.html#faq">FAQ</a>
+        <a href="/login">Masuk</a>
+        <a href="/register">Daftar</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 EduFunHub. Seluruh hak dilindungi.</span>
+      <span>Bermain · Belajar · Berprestasi</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ====================== SCRIPTS ====================== -->
+<script>
+// Dropdown toggle
+function toggleDropdown() {
+  var dd = document.getElementById('nav-dd');
+  dd.classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  var dd = document.getElementById('nav-dd');
+  if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+});
+
+// Mobile nav toggle
+document.querySelector('.mobile-toggle').addEventListener('click', function() {
+  var nav = document.getElementById('mobile-nav');
+  nav.style.display = nav.style.display === 'none' ? 'block' : 'none';
+});
+
+// Category filter
+(function() {
+  var buttons = document.querySelectorAll('.filter-btn');
+  var cards = document.querySelectorAll('.game-card');
+  var noResults = document.getElementById('no-results');
+
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var filter = this.getAttribute('data-filter');
+
+      // Update active button
+      buttons.forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+
+      // Filter cards
+      var visibleCount = 0;
+      cards.forEach(function(card) {
+        if (filter === 'semua' || card.getAttribute('data-category') === filter) {
+          card.removeAttribute('hidden');
+          visibleCount++;
+        } else {
+          card.setAttribute('hidden', '');
+        }
+      });
+
+      // Show/hide no results
+      if (visibleCount === 0) {
+        noResults.classList.add('visible');
+      } else {
+        noResults.classList.remove('visible');
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
