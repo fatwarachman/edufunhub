@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,4 +38,12 @@ Route::middleware(['web', 'auth', 'verified', \App\Http\Middleware\EnsureAdmin::
 
         // Activity Log
         Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
+
+        // Settings
+        Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+        Route::put('/settings/general', [SettingsController::class, 'updateGeneral'])->name('settings.general');
+        Route::put('/settings/mail', [SettingsController::class, 'updateMail'])->name('settings.mail');
+        Route::put('/settings/security', [SettingsController::class, 'updateSecurity'])->name('settings.security');
+        Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile');
+        Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
     });
