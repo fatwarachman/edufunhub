@@ -104,7 +104,7 @@ class GoogleAuthController extends Controller
             $request->session()->forget('state');
         }
 
-        if ($user === null || $user->trashed() || ! $user->hasVerifiedEmail()) {
+        if ($user === null || $user->trashed() || $user->disabled_at !== null || ! $user->hasVerifiedEmail()) {
             return $this->failure('This account cannot use Google sign-in. Please sign in with email and password or contact support.');
         }
 
@@ -116,7 +116,7 @@ class GoogleAuthController extends Controller
         $request->session()->regenerate();
         $request->session()->forget('url.intended');
 
-        return redirect()->route($user->is_superadmin ? 'admin.dashboard' : 'gamelist');
+        return redirect()->route($user->is_superadmin ? 'admin.dashboard' : 'dashboard');
     }
 
     private function failure(string $message): RedirectResponse

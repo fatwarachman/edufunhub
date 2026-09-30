@@ -3,6 +3,9 @@
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\CharacterController;
+use App\Http\Controllers\UserDashboardController;
+use App\Http\Middleware\EnsurePlayerIsActive;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,10 +15,11 @@ Route::get('/', function () {
     return response()->file(public_path('new-landing/index.html'));
 })->name('home');
 
-// 2. Redirect /dashboard & /home ke /gamelist
-Route::get('/dashboard', function () {
-    return redirect()->route('gamelist');
-})->name('dashboard');
+Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): void {
+    Route::get('/dashboard', UserDashboardController::class)->name('dashboard');
+    Route::get('/character', [CharacterController::class, 'show'])->name('character.show');
+    Route::patch('/character', [CharacterController::class, 'update'])->name('character.update');
+});
 
 // 3. Games Arena & EduFun Games
 Route::get('/gamelist', function () {

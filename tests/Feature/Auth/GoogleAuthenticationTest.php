@@ -105,7 +105,7 @@ test('new google user is verified unprivileged tokenless and session is regenera
     mockGoogleIdentity(googleIdentity());
     $this->withSession(['state' => 'test-state', 'url.intended' => 'https://evil.example']);
     $oldSession = session()->getId();
-    $this->get(googleCallbackUrl())->assertRedirect(route('gamelist'))->assertSessionMissing('url.intended');
+    $this->get(googleCallbackUrl())->assertRedirect(route('dashboard'))->assertSessionMissing('url.intended');
     $user = User::query()->sole();
     $this->assertAuthenticatedAs($user);
     expect($user->is_superadmin)->toBeFalse()
@@ -138,7 +138,7 @@ test('linked users use provider identity and fixed role destination', function (
     $user->connectedAccounts()->create(['provider' => 'google', 'provider_id' => 'google-123']);
     mockGoogleIdentity(googleIdentity());
     $this->withSession(['state' => 'test-state', 'url.intended' => 'https://evil.example'])
-        ->get(googleCallbackUrl())->assertRedirect(route($admin ? 'admin.dashboard' : 'gamelist'));
+        ->get(googleCallbackUrl())->assertRedirect(route($admin ? 'admin.dashboard' : 'dashboard'));
     $this->assertAuthenticatedAs($user);
     $this->assertDatabaseCount('users', 1);
     $this->assertDatabaseCount('connected_accounts', 1);
@@ -148,7 +148,8 @@ test('disabled deleted and two factor linked users cannot sign in', function (st
     $user = User::factory()->withoutTwoFactor()->create();
     $user->connectedAccounts()->create(['provider' => 'google', 'provider_id' => 'google-123']);
     match ($status) {
-        'disabled' => $user->forceFill(['email_verified_at' => null])->save(),
+        'disabled' => $user->forceFill(['disabled_at' => now()])->save(),
+        'unverified' => $user->forceFill(['email_verified_at' => null])->save(),
         'deleted' => $user->delete(),
         'two-factor' => $user->forceFill(['two_factor_secret' => encrypt('secret'), 'two_factor_confirmed_at' => now()])->save(),
         'pending-two-factor' => $user->forceFill(['two_factor_secret' => encrypt('secret')])->save(),
@@ -158,7 +159,7 @@ test('disabled deleted and two factor linked users cannot sign in', function (st
         ->assertRedirect(route('login'))->assertSessionHasErrors('google');
     $this->assertGuest();
     expect($user->fresh()->email_verified_at?->toDateTimeString())->toBe($user->email_verified_at?->toDateTimeString());
-})->with(['disabled', 'deleted', 'two-factor', 'pending-two-factor']);
+})->with(['disabled', 'unverified', 'deleted', 'two-factor', 'pending-two-factor']);
 
 test('account creation failure rolls back newly created user', function () {
     mockGoogleIdentity(googleIdentity());

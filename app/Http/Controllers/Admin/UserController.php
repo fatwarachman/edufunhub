@@ -25,7 +25,7 @@ class UserController extends Controller
             ->when($request->search, function ($q, string $search): void {
                 $q->where(function ($q) use ($search): void {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%");
                 });
             })
             ->when($request->role, function ($q, string $roleSlug): void {
@@ -33,7 +33,7 @@ class UserController extends Controller
             })
             ->when($request->sort, function ($q, string $sort) use ($request): void {
                 $direction = $request->direction === 'desc' ? 'desc' : 'asc';
-                $allowed   = ['name', 'email', 'created_at', 'last_seen_at'];
+                $allowed = ['name', 'email', 'created_at', 'last_seen_at'];
                 if (in_array($sort, $allowed, true)) {
                     $q->orderBy($sort, $direction);
                 }
@@ -42,8 +42,8 @@ class UserController extends Controller
             });
 
         return Inertia::render('admin/users/index', [
-            'users'   => $query->paginate(20)->withQueryString(),
-            'roles'   => Role::query()->select('id', 'name', 'slug')->get(),
+            'users' => $query->paginate(20)->withQueryString(),
+            'roles' => Role::query()->select('id', 'name', 'slug')->get(),
             'filters' => $request->only(['search', 'role', 'sort', 'direction']),
         ]);
     }
@@ -64,9 +64,9 @@ class UserController extends Controller
     public function store(StoreUserRequest $request): RedirectResponse
     {
         $user = User::create([
-            'name'              => $request->name,
-            'email'             => $request->email,
-            'password'          => $request->password,
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => $request->password,
             'email_verified_at' => now(),
         ]);
 
@@ -98,7 +98,7 @@ class UserController extends Controller
             ->get();
 
         return Inertia::render('admin/users/show', [
-            'user'     => $user,
+            'user' => $user,
             'activity' => $activityLog,
         ]);
     }
@@ -111,7 +111,7 @@ class UserController extends Controller
         $user->load('roles');
 
         return Inertia::render('admin/users/edit', [
-            'user'  => $user,
+            'user' => $user,
             'roles' => Role::query()->select('id', 'name', 'slug')->get(),
         ]);
     }
@@ -122,7 +122,7 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
         $data = [
-            'name'  => $request->name,
+            'name' => $request->name,
             'email' => $request->email,
         ];
 
@@ -170,10 +170,7 @@ class UserController extends Controller
     }
 
     /**
-     * Toggle user active status by nullifying or setting email_verified_at.
-     *
-     * Uses the presence of email_verified_at as the "active" signal; a more
-     * explicit `is_active` column can be added later via migration if needed.
+     * Toggle access independently of email verification.
      */
     public function toggleStatus(Request $request, User $user): RedirectResponse
     {
@@ -181,10 +178,10 @@ class UserController extends Controller
             abort(403, 'Superadmin status cannot be changed.');
         }
 
-        $isCurrentlyActive = $user->email_verified_at !== null;
+        $isCurrentlyActive = $user->disabled_at === null;
 
         $user->forceFill([
-            'email_verified_at' => $isCurrentlyActive ? null : now(),
+            'disabled_at' => $isCurrentlyActive ? now() : null,
         ])->save();
 
         $action = $isCurrentlyActive ? 'Deactivated user' : 'Activated user';
