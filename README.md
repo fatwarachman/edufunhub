@@ -39,7 +39,9 @@ EduFunHub memakai pemisahan tanggung jawab berikut:
 - **Network & Tunnel:** Cloudflare Zero Trust Tunnel
 - **Frontend Engine:** React, Inertia, Tailwind CSS, Google Fonts (Fredoka & Quicksand)
 
-Dokumen arsitektur: [`docs/architecture.md`](docs/architecture.md)
+**Aturan wajib:** runtime game menggunakan Golang (Go) dalam container Docker terpisah dari Laravel. React hanya menangani rendering dan input; aturan serta state gameplay authoritative berada di Go.
+
+Dokumen arsitektur: [`docs/architecture.md`](docs/architecture.md). Panduan agent: [`DEVELOPER.md`](DEVELOPER.md).
 
 
 ---

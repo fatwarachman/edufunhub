@@ -16,6 +16,7 @@ interface LanguageSwitcherProps {
 }
 
 const languages = [
+    { code: 'id', label: 'Bahasa Indonesia' },
     { code: 'en', label: 'English' },
     { code: 'fr', label: 'Français' },
     { code: 'es', label: 'Español' },
@@ -23,7 +24,7 @@ const languages = [
 ];
 
 export function LanguageSwitcher({
-    currentLocale = 'en',
+    currentLocale = 'id',
 }: LanguageSwitcherProps) {
     const { t, i18n } = useTranslations();
     const [localeValue, setLocaleValue] = useState(currentLocale);

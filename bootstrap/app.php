@@ -31,6 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
+        then: function (): void {
+            require __DIR__.'/../routes/admin.php';
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->replace(
@@ -62,15 +65,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'superadmin' => EnsureSuperadmin::class,
-            'workspace' => EnsureWorkspaceAccess::class,
-            'workspace.ip' => EnforceWorkspaceIpAllowlist::class,
-            'workspace.owner' => EnsureWorkspaceOwner::class,
-            'workspace.admin' => EnsureWorkspaceAdmin::class,
+            'superadmin'         => EnsureSuperadmin::class,
+            'admin'              => \App\Http\Middleware\EnsureAdmin::class,
+            'workspace'          => EnsureWorkspaceAccess::class,
+            'workspace.ip'       => EnforceWorkspaceIpAllowlist::class,
+            'workspace.owner'    => EnsureWorkspaceOwner::class,
+            'workspace.admin'    => EnsureWorkspaceAdmin::class,
             'workspace.suspended' => EnsureWorkspaceNotSuspended::class,
-            'onboarded' => EnsureUserIsOnboarded::class,
-            'require2fa' => RequireTwoFactor::class,
-            'api-key' => AuthenticateApiKey::class,
+            'onboarded'          => EnsureUserIsOnboarded::class,
+            'require2fa'         => RequireTwoFactor::class,
+            'api-key'            => AuthenticateApiKey::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

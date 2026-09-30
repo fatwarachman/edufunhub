@@ -17,6 +17,8 @@ Laravel menjadi source of truth untuk seluruh area portal dan pengaturan admin:
 
 ### Game dan gameplay
 
+Runtime game wajib menggunakan Golang (Go) dan berjalan dalam container Docker terpisah dari aplikasi Laravel. Pemisahan ini menjaga lifecycle, dependency, dan scaling game independen dari portal.
+
 Go menjadi runtime utama untuk game dan gameplay:
 
 - aturan permainan dan state machine;
@@ -48,7 +50,7 @@ Laravel boleh menerbitkan konfigurasi awal game atau entitlement pemain. Laravel
 2. Buat engine, room, tick loop, scoring, collision, dan sinkronisasi game di Go.
 3. Jangan menaruh aturan kemenangan, validasi skor, atau hasil multiplayer hanya di React.
 4. Gunakan API/WebSocket untuk komunikasi Laravel–Go; dokumentasikan kontrak request, response, event, dan error.
-5. Pisahkan deployment dan observability portal Laravel dari game service Go bila skala gameplay meningkat.
+5. Jalankan game service Go dalam container Docker terpisah dari Laravel sejak awal; pisahkan lifecycle deployment dan observability keduanya.
 6. Tambahkan test Laravel untuk portal/API contract dan test Go untuk aturan gameplay.
 
 ## Kondisi saat ini

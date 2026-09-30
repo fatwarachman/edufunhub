@@ -79,7 +79,7 @@ createInertiaApp({
 
         // Set locale from Inertia shared data if available
         const locale =
-            (props.initialPage.props as { locale?: string })?.locale || 'en';
+            (props.initialPage.props as { locale?: string })?.locale || 'id';
         if (i18n.language !== locale) {
             i18n.changeLanguage(locale);
         }
