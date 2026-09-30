@@ -3,25 +3,33 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Module;
+use App\Models\Permission;
+use App\Models\Role;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PermissionController extends Controller
 {
     /**
-     * Read-only list of all permissions grouped by module.
+     * Read-only list of all permissions with module name + roles for badges.
      */
     public function index(): Response
     {
-        $modules = Module::query()
-            ->with('permissions:id,name,slug,module_id,description')
-            ->where('is_active', true)
-            ->orderBy('name')
+        $permissions = Permission::query()
+            ->join('modules', 'permissions.module_id', '=', 'modules.id')
+            ->select('permissions.*', 'modules.name as module')
+            ->orderBy('modules.name')
+            ->orderBy('permissions.name')
+            ->get();
+
+        $roles = Role::query()
+            ->with('permissions:id')
+            ->select('id', 'name', 'slug')
             ->get();
 
         return Inertia::render('admin/permissions/index', [
-            'modules' => $modules,
+            'permissions' => $permissions,
+            'roles'       => $roles,
         ]);
     }
 }

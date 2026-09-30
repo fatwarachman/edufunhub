@@ -3,34 +3,76 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\Activitylog\Models\Activity;
 
 class ActivityLogController extends Controller
 {
     /**
-     * Paginated activity log with search and optional filter by log_name.
+     * Paginated activity log — props aligned to frontend `activity-log.tsx`.
+     *
+     * Frontend expects:
+     *   logs: PaginatedData<ActivityLog>
+     *   users: User[]
+     *   filters: { search, user_id, event, date_from, date_to }
+     *   eventTypes: string[]
      */
     public function index(Request $request): Response
     {
-        $query = Activity::query()
-            ->with('causer', 'subject')
-            ->when($request->search, function ($q, string $search): void {
-                $q->where('description', 'like', "%{$search}%");
-            })
-            ->when($request->log_name, function ($q, string $logName): void {
-                $q->where('log_name', $logName);
-            })
-            ->when($request->causer_id, function ($q, int $causerId): void {
-                $q->where('causer_id', $causerId);
-            })
+        $filters = $request->only(['search', 'user_id', 'event', 'date_from', 'date_to']);
+
+        $query = DB::table('activity_log')
+            ->when($filters['search'] ?? null, fn ($q, $v) => $q->where('description', 'like', "%{$v}%"))
+            ->when($filters['user_id'] ?? null, fn ($q, $v) => $q->where('causer_id', $v))
+            ->when($filters['event'] ?? null, fn ($q, $v) => $q->where('log_name', $v))
+            ->when($filters['date_from'] ?? null, fn ($q, $v) => $q->where('created_at', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn ($q, $v) => $q->where('created_at', '<=', $v . ' 23:59:59'))
             ->orderByDesc('created_at');
 
-        return Inertia::render('admin/activity-log/index', [
-            'activities' => $query->paginate(25)->withQueryString(),
-            'filters'    => $request->only(['search', 'log_name', 'causer_id']),
+        $logs = $query->paginate(25)->withQueryString();
+
+        // Map to ActivityLog shape expected by the frontend
+        $logs->getCollection()->transform(function (object $row): array {
+            return [
+                'id'           => $row->id,
+                'log_name'     => $row->log_name ?? 'default',
+                'description'  => $row->description,
+                'subject_type' => $row->subject_type,
+                'subject_id'   => $row->subject_id,
+                'causer_type'  => $row->causer_type,
+                'causer_id'    => $row->causer_id,
+                'causer_name'  => null,
+                'properties'   => json_decode($row->properties ?? '{}', true),
+                'created_at'   => $row->created_at,
+            ];
+        });
+
+        // Enrich causer names
+        $causerIds = $logs->getCollection()
+            ->pluck('causer_id')
+            ->unique()
+            ->filter()
+            ->values();
+
+        if ($causerIds->isNotEmpty()) {
+            $names = User::query()->whereIn('id', $causerIds)->pluck('name', 'id');
+            $logs->getCollection()->transform(function (array $row) use ($names): array {
+                $row['causer_name'] = $names[$row['causer_id']] ?? null;
+                return $row;
+            });
+        }
+
+        $users = User::query()->select('id', 'name', 'email')->orderBy('name')->get();
+        $eventTypes = DB::table('activity_log')->distinct()->pluck('log_name')->filter()->values();
+
+        return Inertia::render('admin/activity-log', [
+            'logs'       => $logs,
+            'users'      => $users,
+            'filters'    => $filters,
+            'eventTypes' => $eventTypes,
         ]);
     }
 }

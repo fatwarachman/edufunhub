@@ -98,8 +98,8 @@ class UserController extends Controller
             ->get();
 
         return Inertia::render('admin/users/show', [
-            'user'        => $user,
-            'activityLog' => $activityLog,
+            'user'     => $user,
+            'activity' => $activityLog,
         ]);
     }
 

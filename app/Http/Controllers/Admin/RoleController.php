@@ -22,7 +22,7 @@ class RoleController extends Controller
         $roles = Role::query()
             ->withCount(['permissions', 'users'])
             ->orderBy('name')
-            ->get();
+            ->paginate(20);
 
         return Inertia::render('admin/roles/index', [
             'roles' => $roles,
