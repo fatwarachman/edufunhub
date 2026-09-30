@@ -16,11 +16,13 @@ class LoginController extends Controller
     public function showLoginForm(Request $request): Response
     {
         return Inertia::render('auth/login', [
+            'googleEnabled' => GoogleAuthController::enabled(),
+            'googleRedirectUrl' => GoogleAuthController::enabled() ? route('google.redirect') : null,
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
-            'canRegister'      => Features::enabled(Features::registration()),
-            'status'           => $request->session()->get('status'),
-            'email'            => $request->query('email'),
-            'redirect'         => $request->query('redirect'),
+            'canRegister' => Features::enabled(Features::registration()),
+            'status' => $request->session()->get('status'),
+            'email' => $request->query('email'),
+            'redirect' => $request->query('redirect'),
         ]);
     }
 }

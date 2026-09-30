@@ -1,27 +1,45 @@
-import AppLogoIcon from '@/components/app-logo-icon';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { type SharedData } from '@/types';
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { Eye, EyeOff, Loader2, Lock, Mail, User } from 'lucide-react';
+import { useTranslations } from '@/hooks/use-translations';
+import { Head, useForm } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    Eye,
+    EyeOff,
+    Gamepad2,
+    Loader2,
+    Lock,
+    Mail,
+    User,
+} from 'lucide-react';
 import { type FormEventHandler, useState } from 'react';
+import '../../../css/auth-landing.css';
 
 function PasswordStrength({ password }: { password: string }) {
+    const { t } = useTranslations();
     const checks = [
-        { label: 'At least 8 characters', pass: password.length >= 8 },
-        { label: 'Uppercase letter', pass: /[A-Z]/.test(password) },
-        { label: 'Lowercase letter', pass: /[a-z]/.test(password) },
-        { label: 'Number', pass: /[0-9]/.test(password) },
-        { label: 'Special character', pass: /[^A-Za-z0-9]/.test(password) },
+        { label: t('register.length'), pass: password.length >= 8 },
+        { label: t('register.uppercase'), pass: /[A-Z]/.test(password) },
+        { label: t('register.lowercase'), pass: /[a-z]/.test(password) },
+        { label: t('register.number'), pass: /[0-9]/.test(password) },
+        { label: t('register.symbol'), pass: /[^A-Za-z0-9]/.test(password) },
     ];
 
     const score = checks.filter((c) => c.pass).length;
 
     const strengthLabel =
-        score === 0 ? '' : score <= 2 ? 'Weak' : score <= 3 ? 'Fair' : score === 4 ? 'Good' : 'Strong';
+        score === 0
+            ? ''
+            : score <= 2
+              ? t('register.weak')
+              : score <= 3
+                ? t('register.fair')
+                : score === 4
+                  ? t('register.good')
+                  : t('register.strong');
 
     const strengthColor =
         score === 0
@@ -50,7 +68,9 @@ function PasswordStrength({ password }: { password: string }) {
                     ))}
                 </div>
                 {strengthLabel && (
-                    <span className="text-xs text-muted-foreground">{strengthLabel}</span>
+                    <span className="text-xs text-muted-foreground">
+                        {strengthLabel}
+                    </span>
                 )}
             </div>
             <ul className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -58,7 +78,9 @@ function PasswordStrength({ password }: { password: string }) {
                     <li
                         key={check.label}
                         className={`flex items-center gap-1.5 text-xs ${
-                            check.pass ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'
+                            check.pass
+                                ? 'text-green-600 dark:text-green-400'
+                                : 'text-muted-foreground'
                         }`}
                     >
                         <span
@@ -73,7 +95,7 @@ function PasswordStrength({ password }: { password: string }) {
 }
 
 export default function Register() {
-    const { name } = usePage<SharedData>().props;
+    const { t } = useTranslations();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
@@ -93,194 +115,296 @@ export default function Register() {
 
     return (
         <>
-            <Head title="Create account" />
-
-            <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12">
-                {/* Background decoration */}
-                <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
-                    <div className="absolute -left-20 top-10 size-72 rounded-full bg-bubble-green opacity-20 blur-3xl" />
-                    <div className="absolute -right-20 bottom-10 size-72 rounded-full bg-bubble-pink opacity-20 blur-3xl" />
-                    <div className="absolute left-1/2 top-1/3 size-96 -translate-x-1/2 rounded-full bg-bubble-blue opacity-10 blur-3xl" />
-                </div>
-
-                <div className="relative w-full max-w-sm">
-                    {/* Logo */}
-                    <div className="mb-8 flex flex-col items-center gap-3">
-                        <div className="flex size-14 items-center justify-center rounded-2xl bg-primary shadow-lg">
-                            <AppLogoIcon className="size-8 fill-white" />
+            <Head title={t('register.title')}>
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap"
+                    rel="stylesheet"
+                />
+            </Head>
+            <div className="auth-landing">
+                <header className="auth-header">
+                    <a href="/" className="auth-brand" aria-label="EduFunHub">
+                        <span className="auth-brand-mark">
+                            <Gamepad2 className="size-6" />
+                        </span>
+                        <span>
+                            EduFun<span>Hub</span>
+                        </span>
+                    </a>
+                    <a
+                        href="/"
+                        className="inline-flex items-center gap-2 text-sm font-semibold"
+                    >
+                        <ArrowLeft className="size-4" />
+                        {t('login.back')}
+                    </a>
+                </header>
+                <main className="auth-main">
+                    <section className="auth-intro">
+                        <span className="auth-badge">{t('login.badge')}</span>
+                        <h1>
+                            {t('register.hero')}{' '}
+                            <span>{t('register.heroAccent')}</span>
+                        </h1>
+                        <p>{t('register.description')}</p>
+                        <div className="auth-shapes" aria-hidden="true">
+                            <span />
+                            <span />
+                            <span />
                         </div>
-                        <div className="text-center">
-                            <h1 className="font-display text-2xl font-bold text-foreground">
-                                Join {name || 'EduFunHub'}
-                            </h1>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Create your free account
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Card */}
-                    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                        <form onSubmit={submit} noValidate>
-                            <div className="flex flex-col gap-5">
-                                {/* Name */}
-                                <div className="flex flex-col gap-1.5">
-                                    <Label htmlFor="name">Full name</Label>
-                                    <div className="relative">
-                                        <User className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Input
-                                            id="name"
-                                            type="text"
-                                            name="name"
-                                            value={data.name}
-                                            onChange={(e) => setData('name', e.target.value)}
-                                            className="pl-9"
-                                            placeholder="Jane Smith"
-                                            autoComplete="name"
-                                            autoFocus
-                                            required
-                                        />
-                                    </div>
-                                    <InputError message={errors.name} />
-                                </div>
-
-                                {/* Email */}
-                                <div className="flex flex-col gap-1.5">
-                                    <Label htmlFor="email">Email address</Label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            name="email"
-                                            value={data.email}
-                                            onChange={(e) => setData('email', e.target.value)}
-                                            className="pl-9"
-                                            placeholder="you@example.com"
-                                            autoComplete="email"
-                                            required
-                                        />
-                                    </div>
-                                    <InputError message={errors.email} />
-                                </div>
-
-                                {/* Password */}
-                                <div className="flex flex-col gap-1.5">
-                                    <Label htmlFor="password">Password</Label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Input
-                                            id="password"
-                                            type={showPassword ? 'text' : 'password'}
-                                            name="password"
-                                            value={data.password}
-                                            onChange={(e) => setData('password', e.target.value)}
-                                            className="pl-9 pr-10"
-                                            placeholder="••••••••"
-                                            autoComplete="new-password"
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword((s) => !s)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
-                                            aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                        >
-                                            {showPassword ? (
-                                                <EyeOff className="size-4" />
-                                            ) : (
-                                                <Eye className="size-4" />
-                                            )}
-                                        </button>
-                                    </div>
-                                    <InputError message={errors.password} />
-                                    <PasswordStrength password={data.password} />
-                                </div>
-
-                                {/* Password confirmation */}
-                                <div className="flex flex-col gap-1.5">
-                                    <Label htmlFor="password_confirmation">Confirm password</Label>
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Input
-                                            id="password_confirmation"
-                                            type={showConfirm ? 'text' : 'password'}
-                                            name="password_confirmation"
-                                            value={data.password_confirmation}
-                                            onChange={(e) =>
-                                                setData('password_confirmation', e.target.value)
-                                            }
-                                            className="pl-9 pr-10"
-                                            placeholder="••••••••"
-                                            autoComplete="new-password"
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowConfirm((s) => !s)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
-                                            aria-label={showConfirm ? 'Hide confirm password' : 'Show confirm password'}
-                                        >
-                                            {showConfirm ? (
-                                                <EyeOff className="size-4" />
-                                            ) : (
-                                                <Eye className="size-4" />
-                                            )}
-                                        </button>
-                                    </div>
-                                    <InputError message={errors.password_confirmation} />
-                                    {data.password && data.password_confirmation && (
-                                        <p
-                                            className={`text-xs ${
-                                                data.password === data.password_confirmation
-                                                    ? 'text-green-600 dark:text-green-400'
-                                                    : 'text-red-500'
-                                            }`}
-                                        >
-                                            {data.password === data.password_confirmation
-                                                ? '✓ Passwords match'
-                                                : '✗ Passwords do not match'}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Submit */}
-                                <Button
-                                    type="submit"
-                                    className="w-full font-semibold"
-                                    disabled={processing}
+                    </section>
+                    <section
+                        className="min-w-0"
+                        aria-labelledby="register-heading"
+                    >
+                        <div className="auth-card">
+                            <div className="mb-6 flex flex-col gap-2">
+                                <h2
+                                    id="register-heading"
+                                    className="text-3xl font-bold tracking-tight"
                                 >
-                                    {processing ? (
-                                        <>
-                                            <Loader2 className="mr-2 size-4 animate-spin" />
-                                            Creating account…
-                                        </>
-                                    ) : (
-                                        'Create account'
-                                    )}
-                                </Button>
-
-                                <p className="text-center text-xs text-muted-foreground">
-                                    By signing up, you agree to our{' '}
-                                    <TextLink href="/terms" className="text-xs">
-                                        Terms of Service
-                                    </TextLink>{' '}
-                                    and{' '}
-                                    <TextLink href="/privacy" className="text-xs">
-                                        Privacy Policy
-                                    </TextLink>
-                                    .
+                                    {t('register.title')}
+                                </h2>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('register.subtitle')}
                                 </p>
                             </div>
-                        </form>
-                    </div>
+                            <form onSubmit={submit} noValidate>
+                                <div className="flex flex-col gap-5">
+                                    {/* Name */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <Label htmlFor="name">
+                                            {t('register.name')}
+                                        </Label>
+                                        <div className="relative">
+                                            <User className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="name"
+                                                type="text"
+                                                name="name"
+                                                value={data.name}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder={t(
+                                                    'register.namePlaceholder',
+                                                )}
+                                                autoComplete="name"
+                                                autoFocus
+                                                required
+                                            />
+                                        </div>
+                                        <InputError message={errors.name} />
+                                    </div>
 
-                    {/* Login link */}
-                    <p className="mt-6 text-center text-sm text-muted-foreground">
-                        Already have an account?{' '}
-                        <TextLink href="/login">Sign in</TextLink>
-                    </p>
-                </div>
+                                    {/* Email */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <Label htmlFor="email">
+                                            {t('login.email')}
+                                        </Label>
+                                        <div className="relative">
+                                            <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="email"
+                                                type="email"
+                                                name="email"
+                                                value={data.email}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'email',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder={t(
+                                                    'login.emailPlaceholder',
+                                                )}
+                                                autoComplete="email"
+                                                required
+                                            />
+                                        </div>
+                                        <InputError message={errors.email} />
+                                    </div>
+
+                                    {/* Password */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <Label htmlFor="password">
+                                            {t('login.password')}
+                                        </Label>
+                                        <div className="relative">
+                                            <Lock className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="password"
+                                                type={
+                                                    showPassword
+                                                        ? 'text'
+                                                        : 'password'
+                                                }
+                                                name="password"
+                                                value={data.password}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'password',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pr-10 pl-9"
+                                                placeholder="••••••••"
+                                                autoComplete="new-password"
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setShowPassword((s) => !s)
+                                                }
+                                                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
+                                                aria-label={
+                                                    showPassword
+                                                        ? t('register.hide')
+                                                        : t('register.show')
+                                                }
+                                            >
+                                                {showPassword ? (
+                                                    <EyeOff className="size-4" />
+                                                ) : (
+                                                    <Eye className="size-4" />
+                                                )}
+                                            </button>
+                                        </div>
+                                        <InputError message={errors.password} />
+                                        <PasswordStrength
+                                            password={data.password}
+                                        />
+                                    </div>
+
+                                    {/* Password confirmation */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <Label htmlFor="password_confirmation">
+                                            {t('register.confirm')}
+                                        </Label>
+                                        <div className="relative">
+                                            <Lock className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="password_confirmation"
+                                                type={
+                                                    showConfirm
+                                                        ? 'text'
+                                                        : 'password'
+                                                }
+                                                name="password_confirmation"
+                                                value={
+                                                    data.password_confirmation
+                                                }
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'password_confirmation',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pr-10 pl-9"
+                                                placeholder="••••••••"
+                                                autoComplete="new-password"
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setShowConfirm((s) => !s)
+                                                }
+                                                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
+                                                aria-label={
+                                                    showConfirm
+                                                        ? t(
+                                                              'register.hideConfirm',
+                                                          )
+                                                        : t(
+                                                              'register.showConfirm',
+                                                          )
+                                                }
+                                            >
+                                                {showConfirm ? (
+                                                    <EyeOff className="size-4" />
+                                                ) : (
+                                                    <Eye className="size-4" />
+                                                )}
+                                            </button>
+                                        </div>
+                                        <InputError
+                                            message={
+                                                errors.password_confirmation
+                                            }
+                                        />
+                                        {data.password &&
+                                            data.password_confirmation && (
+                                                <p
+                                                    className={`text-xs ${
+                                                        data.password ===
+                                                        data.password_confirmation
+                                                            ? 'text-green-600 dark:text-green-400'
+                                                            : 'text-red-500'
+                                                    }`}
+                                                >
+                                                    {data.password ===
+                                                    data.password_confirmation
+                                                        ? t('register.match')
+                                                        : t(
+                                                              'register.mismatch',
+                                                          )}
+                                                </p>
+                                            )}
+                                    </div>
+
+                                    {/* Submit */}
+                                    <Button
+                                        type="submit"
+                                        className="w-full font-semibold"
+                                        disabled={processing}
+                                    >
+                                        {processing ? (
+                                            <>
+                                                <Loader2 className="mr-2 size-4 animate-spin" />
+                                                {t('register.pending')}
+                                            </>
+                                        ) : (
+                                            t('register.title')
+                                        )}
+                                    </Button>
+
+                                    <p className="text-center text-xs text-muted-foreground">
+                                        {t('register.agreement')}{' '}
+                                        <TextLink
+                                            href="/terms"
+                                            className="text-xs"
+                                        >
+                                            {t('register.terms')}
+                                        </TextLink>{' '}
+                                        {t('register.and')}{' '}
+                                        <TextLink
+                                            href="/privacy"
+                                            className="text-xs"
+                                        >
+                                            {t('register.privacy')}
+                                        </TextLink>
+                                        .
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* Login link */}
+                        <p className="mt-6 text-center text-sm text-muted-foreground">
+                            {t('register.existing')}{' '}
+                            <TextLink href="/login">
+                                {t('login.submit')}
+                            </TextLink>
+                        </p>
+                    </section>
+                </main>
             </div>
         </>
     );

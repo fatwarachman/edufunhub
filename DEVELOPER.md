@@ -21,6 +21,14 @@
 
 ---
 
+## Language policy
+
+- Default UI language: Indonesian (`id`). Required secondary language: English (`en`).
+- Use English identifiers, comments, translation keys, routes, and schema names.
+- Keep all user-facing text in locale catalogs. New features must include matching Indonesian and English keys, including accessibility labels and validation messages.
+- Frontend uses `useTranslations()` and i18next; backend uses Laravel translation helpers. Respect saved locale preferences.
+- Current migration scope: login UI has paired catalogs in `resources/js/locales/id-auth.json` and `resources/js/locales/en-auth.json`. Existing admin, registration, game UI, and backend messages still require localization; do not claim full translation coverage.
+
 ## 1. Gambaran Umum
 
 EduFunHub adalah platform edukasi berbasis game. Dua domain runtime yang **terpisah dan tidak boleh dicampur**:
@@ -28,7 +36,7 @@ EduFunHub adalah platform edukasi berbasis game. Dua domain runtime yang **terpi
 | Domain | Teknologi | Tanggung Jawab |
 |---|---|---|
 | **Portal / Admin** | Laravel 13 + Inertia React | Auth, user management, admin dashboard, settings, CMS, workspace |
-| **Game Runtime** | Go (belum diimplementasi) | Authoritative game state, scoring, collision, WebSocket, matchmaking |
+| **Game Runtime** | Golang (Go), wajib dalam container Docker terpisah dari Laravel (belum diimplementasi) | Authoritative game state, scoring, collision, WebSocket, matchmaking |
 
 Go berkomunikasi ke Laravel via internal API — **bukan** berbagi database secara langsung.
 
