@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['web', 'auth', 'verified', \App\Http\Middleware\EnsureAdmin::class])
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnsureAdmin::class, 'verified'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function (): void {

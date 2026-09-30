@@ -83,7 +83,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->respond(function (mixed $response, Throwable $e, Request $request) {
             $status = $response->getStatusCode();
 
-            if (in_array($status, [403, 404, 429, 500, 503], true) && $request->header('X-Inertia')) {
+            $isWebPage = $request->isMethod('GET') && ! $request->expectsJson() && ! $request->is('api/*', 'stripe/*');
+
+            if (in_array($status, [403, 404, 429, 500, 503], true) && ($request->header('X-Inertia') || $isWebPage)) {
                 $response = Inertia::render('error', ['status' => $status])
                     ->toResponse($request)
                     ->setStatusCode($status);

@@ -116,7 +116,7 @@ class GoogleAuthController extends Controller
         $request->session()->regenerate();
         $request->session()->forget('url.intended');
 
-        return redirect()->route($user->is_superadmin ? 'admin.dashboard' : 'dashboard');
+        return redirect()->route($user->is_superadmin || $user->hasRole('admin') ? 'admin.dashboard' : 'dashboard');
     }
 
     private function failure(string $message): RedirectResponse
