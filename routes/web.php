@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,3 +28,16 @@ Route::get('/games/snakes-and-ladders', function () {
 Route::get('/games/sky-quiz', function (): Response {
     return Inertia::render('games/sky-quiz');
 })->name('games.sky-quiz');
+
+// ── Auth Routes ──────────────────────────────────────────────
+Route::middleware('guest')->group(function (): void {
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
+});
+
+// POST /logout is handled by Fortify automatically.
+
+// ── Admin Redirect ───────────────────────────────────────────
+Route::get('/admin', function () {
+    return redirect()->route('admin.dashboard');
+})->middleware(['auth', 'verified'])->name('admin');
