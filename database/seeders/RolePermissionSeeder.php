@@ -106,7 +106,7 @@ class RolePermissionSeeder extends Seeder
             ['email' => 'admin@edufunhub.com'],
             [
                 'name'              => 'Admin',
-                'password'          => Hash::make('password'),
+                'password'          => Hash::make('Admin@123456'),
                 'email_verified_at' => now(),
                 'is_superadmin'     => true,
                 'onboarded_at'      => now(),

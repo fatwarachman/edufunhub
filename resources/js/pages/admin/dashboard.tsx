@@ -16,7 +16,7 @@ import { type ReactNode } from 'react';
 
 interface DashboardProps {
     stats: DashboardStats;
-    recentActivity: ActivityLog[];
+    recentActivity?: ActivityLog[];
 }
 
 function StatCard({
@@ -102,7 +102,7 @@ function ActivityItem({ log }: { log: ActivityLog }) {
     );
 }
 
-export default function Dashboard({ stats, recentActivity }: DashboardProps) {
+export default function Dashboard({ stats, recentActivity = [] }: DashboardProps) {
     const statCards = [
         {
             label: 'Total Users',
