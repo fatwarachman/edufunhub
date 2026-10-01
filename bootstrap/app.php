@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuthenticateApiKey;
 use App\Http\Middleware\EnforceWorkspaceIpAllowlist;
+use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsurePasswordNotExpired;
 use App\Http\Middleware\EnsureSuperadmin;
 use App\Http\Middleware\EnsureUserIsOnboarded;
@@ -36,6 +37,12 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Behind Cloudflare Tunnel + nginx gateway: honour X-Forwarded-* from private networks.
+        $middleware->trustProxies(
+            at: ['127.0.0.1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'],
+            headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO,
+        );
+
         $middleware->replace(
             Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
             PreventRequestsDuringMaintenance::class
@@ -65,16 +72,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'superadmin'         => EnsureSuperadmin::class,
-            'admin'              => \App\Http\Middleware\EnsureAdmin::class,
-            'workspace'          => EnsureWorkspaceAccess::class,
-            'workspace.ip'       => EnforceWorkspaceIpAllowlist::class,
-            'workspace.owner'    => EnsureWorkspaceOwner::class,
-            'workspace.admin'    => EnsureWorkspaceAdmin::class,
+            'superadmin' => EnsureSuperadmin::class,
+            'admin' => EnsureAdmin::class,
+            'workspace' => EnsureWorkspaceAccess::class,
+            'workspace.ip' => EnforceWorkspaceIpAllowlist::class,
+            'workspace.owner' => EnsureWorkspaceOwner::class,
+            'workspace.admin' => EnsureWorkspaceAdmin::class,
             'workspace.suspended' => EnsureWorkspaceNotSuspended::class,
-            'onboarded'          => EnsureUserIsOnboarded::class,
-            'require2fa'         => RequireTwoFactor::class,
-            'api-key'            => AuthenticateApiKey::class,
+            'onboarded' => EnsureUserIsOnboarded::class,
+            'require2fa' => RequireTwoFactor::class,
+            'api-key' => AuthenticateApiKey::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
