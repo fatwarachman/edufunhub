@@ -8,7 +8,7 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-test('players are redirected to the player dashboard after login', function () {
+test('players are redirected to the player portal after login', function () {
     $user = User::factory()->withoutTwoFactor()->create();
 
     $response = $this->post(route('login.store'), [
@@ -17,7 +17,7 @@ test('players are redirected to the player dashboard after login', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('portal', absolute: false));
 });
 
 test('superadmins are redirected to the admin dashboard after login', function () {

@@ -2,9 +2,10 @@ import InputError from '@/components/input-error';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
+import { BackButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
-import { Link, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 
 export default function Character({ character }: { character: CharacterData }) {
     const { t } = useTranslations();
@@ -15,9 +16,12 @@ export default function Character({ character }: { character: CharacterData }) {
     });
     return (
         <PlayerLayout title={t('player.customize')}>
-            <Link href="/dashboard" className="text-sm font-semibold underline">
-                {t('player.back')}
-            </Link>
+            <div>
+                <BackButton
+                    href="/dashboard"
+                    label={t('nav.backToDashboard')}
+                />
+            </div>
             <h1 className="text-3xl font-bold md:text-5xl">
                 {t('player.customize')}
             </h1>

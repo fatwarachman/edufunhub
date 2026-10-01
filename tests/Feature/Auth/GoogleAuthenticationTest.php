@@ -105,7 +105,7 @@ test('new google user is verified unprivileged tokenless and session is regenera
     mockGoogleIdentity(googleIdentity());
     $this->withSession(['state' => 'test-state', 'url.intended' => 'https://evil.example']);
     $oldSession = session()->getId();
-    $this->get(googleCallbackUrl())->assertRedirect(route('dashboard'))->assertSessionMissing('url.intended');
+    $this->get(googleCallbackUrl())->assertRedirect(route('portal'))->assertSessionMissing('url.intended');
     $user = User::query()->sole();
     $this->assertAuthenticatedAs($user);
     expect($user->is_superadmin)->toBeFalse()
@@ -138,8 +138,13 @@ test('linked users use provider identity and fixed role destination', function (
     $user->connectedAccounts()->create(['provider' => 'google', 'provider_id' => 'google-123']);
     mockGoogleIdentity(googleIdentity());
     $this->withSession(['state' => 'test-state', 'url.intended' => 'https://evil.example'])
-        ->get(googleCallbackUrl())->assertRedirect(route($admin ? 'admin.dashboard' : 'dashboard'));
-    $this->assertAuthenticatedAs($user);
+        ->get(googleCallbackUrl())->assertRedirect(route($admin ? 'login' : 'portal'));
+    if ($admin) {
+        $this->assertGuest();
+        expect(session('errors')->has('google'))->toBeTrue();
+    } else {
+        $this->assertAuthenticatedAs($user);
+    }
     $this->assertDatabaseCount('users', 1);
     $this->assertDatabaseCount('connected_accounts', 1);
 })->with([false, true]);

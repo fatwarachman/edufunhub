@@ -21,10 +21,12 @@ test('unverified new player gets real empty dashboard without writes', function 
         ->where('points', 0)
         ->where('character', ['color' => 'amber', 'accessory' => 'none', 'nickname' => null])
         ->has('history', 0)
-        ->has('categories', 2)
-        ->where('categories.0.titleKey', 'player.board')
-        ->where('categories.0.games.0.url', '/games/snakes-and-ladders')
-        ->where('categories.1.games.0.url', '/games/sky-quiz'));
+        ->where('grade', null)
+        ->has('categories', 3)
+        ->where('categories.0.titleKey', 'player.adventure')
+        ->where('categories.0.games.0.url', '/games/flag-quest')
+        ->where('categories.1.games.0.url', '/games/snakes-and-ladders')
+        ->where('categories.2.games.0.url', '/games/sky-quiz'));
     $this->assertDatabaseCount('player_profiles', 0);
     $this->assertDatabaseCount('point_ledgers', 0);
     $this->assertDatabaseCount('game_histories', 0);
@@ -71,7 +73,8 @@ test('browser cannot award points or record history', function (string $path): v
     $this->assertDatabaseCount('game_histories', 0);
 })->with(['/dashboard', '/character']);
 
-test('catalog only lists actual public game routes', function (): void {
+test('catalog only lists actual game routes', function (): void {
+    $this->actingAs(User::factory()->create());
     foreach (config('game-catalog.categories') as $category) {
         foreach ($category['games'] as $game) {
             $this->get(route($game['route']))->assertOk();
@@ -92,9 +95,9 @@ test('admin disable blocks existing session without changing verification', func
     $this->actingAs($user)->get('/dashboard')->assertOk();
 });
 
-test('normal password login defaults to player dashboard', function (): void {
+test('normal password login defaults to player portal', function (): void {
     $user = User::factory()->withoutTwoFactor()->create();
     $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password'])
-        ->assertRedirect('/dashboard');
+        ->assertRedirect('/portal');
     $this->assertAuthenticatedAs($user);
 });

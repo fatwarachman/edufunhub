@@ -13,11 +13,15 @@ class PlayerProfile extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['color', 'accessory', 'nickname'];
+    protected $fillable = ['color', 'accessory', 'nickname', 'grade'];
 
     public const COLORS = ['amber', 'coral', 'teal', 'violet'];
 
     public const ACCESSORIES = ['none', 'cap', 'glasses'];
+
+    public const MIN_GRADE = 1;
+
+    public const MAX_GRADE = 12;
 
     /** @var array<string, mixed> */
     protected $attributes = ['color' => 'amber', 'accessory' => 'none'];
@@ -26,6 +30,12 @@ class PlayerProfile extends Model
     public function character(): array
     {
         return ['color' => $this->color, 'accessory' => $this->accessory, 'nickname' => $this->nickname];
+    }
+
+    /** @return array<string, string> */
+    protected function casts(): array
+    {
+        return ['grade' => 'integer'];
     }
 
     /** @return BelongsTo<User, $this> */

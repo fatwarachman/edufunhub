@@ -31,6 +31,7 @@
         "mismatch": "Kata sandi tidak cocok"
     },
     "login": {
+        "adminTitle": "Masuk Admin",
         "back": "Beranda",
         "badge": "BELAJAR SAMBIL BERMAIN",
         "hero": "Petualangan belajar",

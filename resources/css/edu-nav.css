@@ -1,0 +1,132 @@
+/*
+ * Shared navigation buttons for every player-facing page (portal, dashboard,
+ * character, game list, games, auth). One look, one interaction model.
+ */
+.edu-nav-btn {
+    --edu-ink: #151b2e;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 2.5px solid var(--edu-ink);
+    border-radius: 12px;
+    background: #fffaf0;
+    box-shadow: 2px 2px 0 var(--edu-ink);
+    color: var(--edu-ink);
+    font-family: 'Instrument Sans', 'DM Sans', system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        transform 120ms ease,
+        box-shadow 120ms ease,
+        background-color 120ms ease;
+}
+.edu-nav-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+.edu-nav-btn:hover {
+    background: #ffe9a6;
+}
+.edu-nav-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+.edu-nav-btn:focus-visible {
+    outline: 3px solid #6c5ce7;
+    outline-offset: 3px;
+}
+.edu-nav-btn[aria-current='page'] {
+    background: #ffd93d;
+}
+.edu-nav-btn--primary {
+    background: var(--edu-ink);
+    color: #fff;
+    box-shadow: 2px 2px 0 #f5a623;
+}
+.edu-nav-btn--primary:hover {
+    background: #2a3352;
+}
+.edu-nav-btn--icon {
+    padding: 0;
+    width: 44px;
+}
+.edu-nav-btn--block {
+    width: 100%;
+}
+.edu-nav-bar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+}
+/* Compact (icon-only) labels on small screens; the label stays for screen readers. */
+@media (max-width: 767px) {
+    .edu-nav-bar .edu-nav-btn {
+        padding: 0;
+        width: 44px;
+    }
+    .edu-nav-bar .edu-nav-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+}
+@media (max-width: 1023px) {
+    .edu-nav-bar--compact .edu-nav-btn {
+        padding: 0;
+        width: 44px;
+    }
+    .edu-nav-bar--compact .edu-nav-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+}
+@media (max-width: 479px) {
+    .edu-nav-bar .edu-nav-optional {
+        display: none;
+    }
+    .edu-brand-text {
+        display: none;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .edu-nav-btn {
+        transition: none;
+    }
+}
+
+/* Sky Quiz congrats pop. */
+.sky-congrats {
+    animation: sky-pop 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes sky-pop {
+    0% {
+        transform: scale(0.4) rotate(-6deg);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sky-congrats {
+        animation: none;
+    }
+}

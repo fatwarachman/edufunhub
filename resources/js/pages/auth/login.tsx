@@ -1,5 +1,6 @@
 import { Google } from '@/components/brand-icons';
 import InputError from '@/components/input-error';
+import { BackButton, NavButton } from '@/components/site-nav';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,19 +9,12 @@ import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
-import {
-    ArrowLeft,
-    Eye,
-    EyeOff,
-    Gamepad2,
-    Loader2,
-    Lock,
-    Mail,
-} from 'lucide-react';
+import { Eye, EyeOff, Gamepad2, Loader2, Lock, Mail } from 'lucide-react';
 import { type FormEventHandler, useState } from 'react';
 import '../../../css/auth-landing.css';
 
 interface LoginProps {
+    adminLogin?: boolean;
     canResetPassword: boolean;
     status?: string;
     googleEnabled: boolean;
@@ -28,6 +22,7 @@ interface LoginProps {
 }
 
 export default function Login({
+    adminLogin = false,
     canResetPassword,
     status,
     googleEnabled,
@@ -45,14 +40,14 @@ export default function Login({
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post('/login', {
+        post(adminLogin ? '/admin/login' : '/login', {
             onFinish: () => reset('password'),
         });
     };
 
     return (
         <>
-            <Head title={t('login.title')}>
+            <Head title={t(adminLogin ? 'login.adminTitle' : 'login.title')}>
                 <link
                     href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap"
                     rel="stylesheet"
@@ -68,13 +63,14 @@ export default function Login({
                             EduFun<span>Hub</span>
                         </span>
                     </a>
-                    <a
-                        href="/"
-                        className="inline-flex items-center gap-2 text-sm font-semibold"
-                    >
-                        <ArrowLeft className="size-4" />
-                        {t('login.back')}
-                    </a>
+                    <div className="edu-nav-bar">
+                        <BackButton href="/" label={t('login.back')} external />
+                        <NavButton
+                            href="/gamelist"
+                            icon={Gamepad2}
+                            label={t('nav.games')}
+                        />
+                    </div>
                 </header>
                 <main className="auth-main">
                     <section className="auth-intro">
@@ -108,56 +104,62 @@ export default function Login({
                                     id="login-heading"
                                     className="text-3xl font-bold tracking-tight"
                                 >
-                                    {t('login.title')}
+                                    {t(
+                                        adminLogin
+                                            ? 'login.adminTitle'
+                                            : 'login.title',
+                                    )}
                                 </h2>
                                 <p className="text-sm text-muted-foreground">
                                     {t('login.subtitle')}
                                 </p>
                             </div>
-                            <div className="mb-6 flex flex-col gap-3">
-                                {googleEnabled ? (
-                                    <Button
-                                        variant="outline"
-                                        asChild
-                                        className="auth-google h-auto min-h-11 w-full py-2.5 text-center whitespace-normal"
-                                    >
-                                        <a href={googleRedirectUrl}>
-                                            <Google className="size-4 shrink-0" />
-                                            {t('login.google')}
-                                        </a>
-                                    </Button>
-                                ) : (
-                                    <>
+                            {!adminLogin && (
+                                <div className="mb-6 flex flex-col gap-3">
+                                    {googleEnabled ? (
                                         <Button
                                             variant="outline"
-                                            disabled
+                                            asChild
                                             className="auth-google h-auto min-h-11 w-full py-2.5 text-center whitespace-normal"
-                                            aria-describedby="google-unavailable"
                                         >
-                                            <Google className="size-4 shrink-0" />
-                                            {t('login.google')}
+                                            <a href={googleRedirectUrl}>
+                                                <Google className="size-4 shrink-0" />
+                                                {t('login.google')}
+                                            </a>
                                         </Button>
-                                        <p
-                                            id="google-unavailable"
-                                            className="text-center text-xs text-muted-foreground"
-                                        >
-                                            {t('login.unavailable')}
-                                        </p>
-                                    </>
-                                )}
-                                {pageErrors.google && (
-                                    <div role="alert">
-                                        <InputError
-                                            message={pageErrors.google}
-                                        />
+                                    ) : (
+                                        <>
+                                            <Button
+                                                variant="outline"
+                                                disabled
+                                                className="auth-google h-auto min-h-11 w-full py-2.5 text-center whitespace-normal"
+                                                aria-describedby="google-unavailable"
+                                            >
+                                                <Google className="size-4 shrink-0" />
+                                                {t('login.google')}
+                                            </Button>
+                                            <p
+                                                id="google-unavailable"
+                                                className="text-center text-xs text-muted-foreground"
+                                            >
+                                                {t('login.unavailable')}
+                                            </p>
+                                        </>
+                                    )}
+                                    {pageErrors.google && (
+                                        <div role="alert">
+                                            <InputError
+                                                message={pageErrors.google}
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                        <span className="h-px flex-1 bg-border" />
+                                        <span>{t('login.alternative')}</span>
+                                        <span className="h-px flex-1 bg-border" />
                                     </div>
-                                )}
-                                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                    <span className="h-px flex-1 bg-border" />
-                                    <span>{t('login.alternative')}</span>
-                                    <span className="h-px flex-1 bg-border" />
                                 </div>
-                            </div>
+                            )}
                             <form onSubmit={submit} noValidate>
                                 <div className="flex flex-col gap-5">
                                     {/* Email */}
@@ -289,12 +291,14 @@ export default function Login({
                         </div>
 
                         {/* Register link */}
-                        <p className="mt-6 text-center text-sm text-muted-foreground">
-                            {t('login.newAccount')}{' '}
-                            <TextLink href="/register">
-                                {t('login.register')}
-                            </TextLink>
-                        </p>
+                        {!adminLogin && (
+                            <p className="mt-6 text-center text-sm text-muted-foreground">
+                                {t('login.newAccount')}{' '}
+                                <TextLink href="/register">
+                                    {t('login.register')}
+                                </TextLink>
+                            </p>
+                        )}
                     </section>
                 </main>
             </div>

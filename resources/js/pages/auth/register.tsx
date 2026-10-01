@@ -1,20 +1,12 @@
 import InputError from '@/components/input-error';
+import { BackButton, NavButton } from '@/components/site-nav';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/hooks/use-translations';
 import { Head, useForm } from '@inertiajs/react';
-import {
-    ArrowLeft,
-    Eye,
-    EyeOff,
-    Gamepad2,
-    Loader2,
-    Lock,
-    Mail,
-    User,
-} from 'lucide-react';
+import { Eye, EyeOff, Gamepad2, Loader2, Lock, Mail, User } from 'lucide-react';
 import { type FormEventHandler, useState } from 'react';
 import '../../../css/auth-landing.css';
 
@@ -131,13 +123,14 @@ export default function Register() {
                             EduFun<span>Hub</span>
                         </span>
                     </a>
-                    <a
-                        href="/"
-                        className="inline-flex items-center gap-2 text-sm font-semibold"
-                    >
-                        <ArrowLeft className="size-4" />
-                        {t('login.back')}
-                    </a>
+                    <div className="edu-nav-bar">
+                        <BackButton href="/" label={t('login.back')} external />
+                        <NavButton
+                            href="/gamelist"
+                            icon={Gamepad2}
+                            label={t('nav.games')}
+                        />
+                    </div>
                 </header>
                 <main className="auth-main">
                     <section className="auth-intro">

@@ -57,6 +57,39 @@ Laravel boleh menerbitkan konfigurasi awal game atau entitlement pemain. Laravel
 
 Game demo yang sudah ada masih berupa frontend React/Inertia untuk prototyping visual dan interaksi lokal. Migrasi gameplay produksi ke Go dilakukan sebelum fitur multiplayer online, scoring persisten, matchmaking, atau state game authoritative dirilis.
 
+## Game service: Flag Quest (`services/game`)
+
+Service Go pertama berjalan di container `edufunhub-game` (`docker compose build game`).
+Paket: `internal/world` (peta, collision), `internal/challenge` (mini game), `internal/questions`
+(bank soal per jenjang), `internal/session` (state authoritative), `internal/server` (HTTP/WebSocket).
+
+### Kontrak (protocol v1)
+
+| Arah | Endpoint | Auth |
+|---|---|---|
+| Browser → Laravel | `POST /games/flag-quest/token` | sesi web + CSRF; butuh `player_profiles.grade` |
+| Browser → Go | `GET /game-ws/ws?token=…&locale=id\|en` (WebSocket, via gateway) | token HMAC-SHA256 dari Laravel, TTL `GAME_SERVICE_TOKEN_TTL` |
+| Go → Laravel | `POST /api/internal/game-results` (jaringan docker internal; diblokir 404 di gateway publik) | header `X-Game-Timestamp` + `X-Game-Signature = hex(HMAC(ts + "." + body))`, toleransi 300 dtk |
+
+Token: `base64url(json{sub,name,grade,color,accessory,game,exp,nonce}) "." base64url(HMAC)`.
+Nama karakter = `nickname` dashboard, fallback `users.name`. Kelas 1–12 diatur di dashboard.
+
+Pesan client → Go: `move{x,y}`, `interact`, `raise`, `answer{value}`, `roll`, `leave`, `mission{mission}`, `locale{locale}`, `ping`.
+
+Ular Tangga Flag Quest (`snakes_ladders`): papan 5×5 (25 kotak, boustrophedon), alur mengikuti `/games/snakes-and-ladders`. Urutannya `roll`, lalu Go menyimpan `pending_roll` dan mengirim soal. Jawaban benar menjalankan langkah; jawaban salah atau waktu habis menghabiskan giliran tanpa bergerak. Dadu 6 memberi giliran bonus, dan mencapai atau melewati kotak 25 berarti menang. Payload `board` berisi `size, cols, jumps, position, turns, max_turns, last_roll, last_jump, pending_roll, move_from, move_landing`. Client hanya menganimasikan `move_from → move_landing` per langkah, lalu tangga/ular ke `position`.
+
+Sukhoi Sky Quiz (`sky-quiz`): jalur WebSocket `/game-ws/sky` ke `GET /ws/sky` di Go (paket `internal/sky`). Token dari `POST /games/sky-quiz/token` memakai `game=sky-quiz` dan kelas dari profil pemain. Client hanya merender dan mengirim kejadian (`start`, `touch{option}`, `shoot{option}`, `miss`, `crash`, `drone`, `pause`, `resume`). Go menentukan:
+- soal sesuai kelas, berupa 10 ronde dengan 3 opsi;
+- benar/salah, perisai (5), dan skor;
+- batas waktu minimum tiap aksi untuk menolak laporan instan;
+- poin akhir (10 per jawaban benar, +20 selesai, +20 sempurna, maksimal 150).
+
+State `sky_state` juga memuat `history` (benar/salah per soal, untuk progress bar). Ketika selesai, `result` memuat `percent`, `passed` (benar > 70% dari total soal), dan `reason` (`finished` atau `shields`). Hasil dikirim ke `POST /api/internal/game-results` dengan `event_id` `sq-{user}-sky-{nanos}` dan `mission=sky`. Setelah selesai, client melakukan partial reload `points` sampai total akun sudah memuat award. Tamu memainkan mode demo lokal (kelas 1–4) tanpa poin.
+Pesan Go → client: `welcome`, `correct{x,y}`, `challenge`, `gates`, `raise`, `complete`, `error{code}`, `pong`.
+
+Aturan server-side: kecepatan gerak dibatasi, collision air/gerbang/props, jawaban tidak pernah dikirim ke client
+sebelum dijawab, poin dihitung di Go (maks 250), hasil idempotent via `event_id` unik.
+
 ## Open questions
 
 - Lokasi service Go: repository/package terpisah atau monorepo `services/game`.

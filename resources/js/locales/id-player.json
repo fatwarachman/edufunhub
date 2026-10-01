@@ -33,6 +33,311 @@
         "board": "Permainan papan",
         "quiz": "Kuis edukasi",
         "snakes": "Ular Tangga Edukasi",
-        "sky": "Sukhoi Sky Quiz"
+        "sky": "Sukhoi Sky Quiz",
+        "adventure": "Petualangan",
+        "flagQuest": "Misi Bendera",
+        "grade": "Kelas sekolah",
+        "gradeNote": "Soal di dalam game menyesuaikan kelasmu.",
+        "gradePlaceholder": "Pilih kelas",
+        "gradeOption": "Kelas {{grade}}",
+        "gradeSave": "Simpan kelas",
+        "gradeSaved": "Kelas tersimpan.",
+        "gradeMissing": "Kelas belum diatur",
+        "gradeBands": {
+            "sd": "SD",
+            "smp": "SMP",
+            "sma": "SMA/SMK"
+        },
+        "portal": "Portal",
+        "openPortal": "Buka portal permainan"
+    },
+    "flagQuest": {
+        "title": "Misi Bendera",
+        "canvasLabel": "Peta permainan Misi Bendera",
+        "gradeShort": "K{{grade}}",
+        "grade": "Kelas {{grade}}",
+        "noGrade": "Kelas ?",
+        "difficulty": "Tingkat kesulitan {{level}} dari 3",
+        "missionsNote": "Pilih misi. Berganti misi akan memulai ulang progres misi saat ini.",
+        "connection": {
+            "connecting": "Menghubungkan",
+            "online": "Terhubung",
+            "reconnecting": "Menyambung ulang",
+            "offline": "Terputus",
+            "unavailable": "Tidak tersedia",
+            "grade_required": "Butuh kelas"
+        },
+        "hud": {
+            "back": "Kembali ke portal",
+            "mute": "Matikan suara",
+            "unmute": "Nyalakan suara",
+            "map": "Peta",
+            "missions": "Pilih misi",
+            "points": "Poin kamu",
+            "correct": "Jawaban benar",
+            "gates": "Gerbang terbuka",
+            "collapse": "Ringkas",
+            "expand": "Tampilkan langkah",
+            "progress": "Progres misi"
+        },
+        "keys": {
+            "label": "Kontrol keyboard",
+            "move": "jalan",
+            "run": "lari",
+            "interact": "interaksi",
+            "rotate": "putar",
+            "map": "peta",
+            "zoom": "zoom"
+        },
+        "touch": {
+            "joystick": "Joystick gerak. Seret untuk berjalan."
+        },
+        "toast": {
+            "welcome": "Selamat datang di {{mission}}!",
+            "gateOpen": "Gerbang {{count}} terbuka!",
+            "allGates": "Semua gerbang terbuka! Pergi ke tiang bendera."
+        },
+        "notice": {
+            "cooldown": "Tunggu {{seconds}} detik sebelum mencoba lagi.",
+            "nothing_nearby": "Tidak ada yang bisa diajak berinteraksi di sini.",
+            "too_far": "Mendekatlah ke tiang bendera.",
+            "locked": "Buka semua gerbang dulu sebelum menaikkan bendera.",
+            "generic": "Aksi tidak dapat dilakukan saat ini.",
+            "bad_answer": "Jawaban tidak valid.",
+            "wrong_phase": "Tunggu sebentar…",
+            "unknown_mission": "Misi tidak ditemukan.",
+            "no_challenge": "Tidak ada tantangan aktif."
+        },
+        "objective": {
+            "label": "Tujuan",
+            "gate": "Buka gerbang {{number}}: selesaikan {{game}}",
+            "flag": "Menuju tiang bendera dan naikkan bendera!",
+            "done": "Misi selesai! Bendera berkibar.",
+            "raiseStep": "Naikkan bendera"
+        },
+        "prompt": {
+            "station": "Mulai {{game}}",
+            "raise": "Naikkan bendera",
+            "locked": "Bendera terkunci",
+            "raising": "Menaikkan bendera…"
+        },
+        "state": {
+            "connecting": "Menghubungkan ke server permainan…",
+            "reconnecting": "Koneksi terputus, menyambung ulang…",
+            "offline": "Server permainan tidak dapat dihubungi.",
+            "retry": "Coba lagi",
+            "unavailable": "Server permainan belum dikonfigurasi. Hubungi admin.",
+            "gradeRequired": "Atur kelas sekolahmu di beranda agar soal sesuai tingkatanmu.",
+            "setGrade": "Atur kelas"
+        },
+        "kinds": {
+            "quick_quiz": {
+                "title": "Kuis Cepat",
+                "rule": "Jawab benar minimal {{needed}} soal pilihan ganda."
+            },
+            "true_false": {
+                "title": "Benar atau Salah",
+                "rule": "Tentukan benar/salah, minimal {{needed}} benar."
+            },
+            "math_sprint": {
+                "title": "Sprint Hitung",
+                "rule": "Jawab {{needed}} soal hitung sebelum waktu habis."
+            },
+            "snakes_ladders": {
+                "title": "Ular Tangga Mini",
+                "rule": "Kocok dadu, lalu jawab benar untuk maju. Dadu 6 dapat giliran lagi. Capai kotak 25 sebelum giliran habis!"
+            }
+        },
+        "subjects": {
+            "math": "Matematika",
+            "science": "IPA",
+            "social": "IPS",
+            "language": "Bahasa Indonesia",
+            "english": "Bahasa Inggris",
+            "civics": "PPKn"
+        },
+        "challenge": {
+            "station": "Pos {{number}}",
+            "progress": "Soal {{step}}/{{total}} · target {{needed}}",
+            "progressTarget": "{{correct}}/{{needed}} benar",
+            "seconds": "{{count}} dtk",
+            "correct": "Benar! Hebat!",
+            "wrong": "Kurang tepat. Jawaban: {{answer}}",
+            "timeout": "Waktu habis. Jawaban: {{answer}}",
+            "true": "Benar",
+            "false": "Salah",
+            "yourAnswer": "Jawabanmu",
+            "submit": "Kirim",
+            "roll": "Lempar dadu",
+            "rolled": "Dadu: {{roll}}.",
+            "jumped": "Pindah ke {{to}}!",
+            "turnsLeft": "Sisa giliran: {{count}}",
+            "boardLabel": "Papan ular tangga, bidak di kotak {{position}}",
+            "passed": "Tantangan berhasil!",
+            "failed": "Belum berhasil",
+            "passedNote": "Gerbang terbuka. Lanjutkan perjalananmu!",
+            "failedNote": "Istirahat sebentar lalu coba lagi.",
+            "continue": "Lanjutkan",
+            "back": "Kembali",
+            "close": "Tutup",
+            "leave": "Tinggalkan tantangan",
+            "boardTitle": "ULAR & TANGGA",
+            "start": "MULAI",
+            "finish": "FINIS",
+            "shaking": "Mengocok dadu…",
+            "spinning": "Memutar angka…",
+            "diceResult": "Dadu: {{roll}}!",
+            "getReady": "Bersiaplah menjawab tantangan soal!",
+            "openingQuestion": "Membuka pertanyaan…",
+            "answerToMove": "Dadu {{roll}}. Jawab benar untuk maju {{roll}} petak!",
+            "climbed": "Naik tangga dari {{from}} ke {{to}}!",
+            "slid": "Turun ular dari {{from}} ke {{to}}."
+        },
+        "complete": {
+            "title": "Bendera berkibar!",
+            "body": "Kamu menyelesaikan misi {{mission}}.",
+            "points": "Poin",
+            "correct": "Benar",
+            "time": "Waktu",
+            "flawless": "Tanpa gagal! Bonus +30",
+            "saved": "Poin tersimpan otomatis ke akunmu.",
+            "next": "Pilih misi lain"
+        },
+        "missions": {
+            "lakeside": {
+                "name": "Perkemahan Danau",
+                "description": "Petualangan pertama di tepi danau. Tiga pos tantangan menunggu."
+            },
+            "forest": {
+                "name": "Hutan Pinus",
+                "description": "Jalur hutan yang lebih panjang dengan tantangan lebih sulit."
+            },
+            "summit": {
+                "name": "Puncak Bukit",
+                "description": "Misi terberat: sprint hitung dan kuis kilat."
+            }
+        }
+    },
+    "portal": {
+        "title": "Portal Permainan",
+        "badge": "PORTAL EDUFUNHUB",
+        "greeting": "Siap bermain, {{name}}?",
+        "level": "Level {{level}}",
+        "rank": "Peringkat #{{rank}}",
+        "levelProgress": "Progres level",
+        "nextLevel": "{{points}} poin lagi menuju level {{level}}",
+        "pointsNote": "Poin yang kamu kumpulkan dari permainan berlabel \"Dapat poin\".",
+        "filterLabel": "Filter kategori permainan",
+        "all": "Semua",
+        "recommended": "Cocok untuk kelasmu",
+        "earnsPoints": "Dapat poin",
+        "practice": "Latihan",
+        "gradeRange": "Kelas {{min}}–{{max}}",
+        "play": "Main sekarang",
+        "setGradeFirst": "Atur kelas dulu",
+        "pointsRule": "Hanya permainan berlabel \"Dapat poin\" yang hasilnya diverifikasi server dan menambah poin. Permainan latihan tidak menambah poin.",
+        "leaderboard": "Papan peringkat",
+        "leaderboardEmpty": "Belum ada pemain dengan poin. Jadilah yang pertama!",
+        "you": "kamu",
+        "recent": "Hasil terakhir",
+        "allHistory": "Lihat semua riwayat",
+        "games": {
+            "title": "Permainan edukasi",
+            "flagQuest": "Jelajahi peta, selesaikan kuis, ular tangga, dan sprint hitung di tiap pos, lalu kibarkan bendera.",
+            "snakes": "Ular tangga 100 petak untuk 2–4 pemain bergiliran dengan soal berbagai mata pelajaran.",
+            "sky": "Terbangkan jet, ambil jawaban benar, dan tembak jawaban salah. Soal mengikuti kelasmu dan hasilnya menambah poin."
+        }
+    },
+    "nav": {
+        "label": "Navigasi utama",
+        "portal": "Portal",
+        "games": "Daftar Game",
+        "dashboard": "Beranda",
+        "character": "Karakter",
+        "logout": "Keluar",
+        "home": "Beranda",
+        "login": "Masuk",
+        "register": "Daftar Akun",
+        "back": "Kembali",
+        "backToPortal": "Kembali ke portal",
+        "backToGames": "Kembali ke daftar game",
+        "backToDashboard": "Kembali ke beranda",
+        "backToLogin": "Kembali masuk"
+    },
+    "sky": {
+        "title": "Sukhoi Sky Quiz",
+        "pilot": "Pilot cilik",
+        "mission": "Misi pengetahuan",
+        "grade": "Kelas {{grade}}",
+        "noGrade": "Kelas belum diatur",
+        "gradeLabel": "Jenjang",
+        "points": "{{count}} poin",
+        "score": "Skor {{score}}",
+        "shields": "Perisai {{shields}}/{{max}}",
+        "round": "Soal {{round}}/{{total}}",
+        "intro": "Tekan Mulai terbang untuk mengambil soal pertama.",
+        "hint": "Sentuh jawaban BENAR dengan jet. Tembak jawaban SALAH dan drone.",
+        "pause": "Jeda",
+        "resume": "Lanjutkan",
+        "start": "Mulai terbang",
+        "playAgain": "Main lagi",
+        "connecting": "Menghubungkan…",
+        "fire": "Tembak",
+        "mute": "Matikan suara",
+        "unmute": "Aktifkan suara",
+        "setGrade": "Atur kelas",
+        "loginForPoints": "Masuk untuk dapat poin",
+        "noCanvas": "Gunakan browser yang mendukung Canvas untuk bermain.",
+        "canvasLabel": "Arena Sukhoi. Panah atau WASD untuk terbang, spasi untuk menembak, P untuk jeda. Pada layar sentuh, geser pesawat dan tahan tombol tembak.",
+        "connection": {
+            "connecting": "Menghubungkan",
+            "online": "Terhubung",
+            "reconnecting": "Menyambung ulang",
+            "offline": "Server tidak tersedia",
+            "grade_required": "Perlu kelas"
+        },
+        "overlay": {
+            "readyTitle": "{{name}}, siap terbang?",
+            "pausedTitle": "Penerbangan dijeda",
+            "doneTitle": "Misi selesai!",
+            "crashedTitle": "Perisai habis — penerbangan berhenti",
+            "needGrade": "Atur kelasmu di beranda dulu supaya soal sesuai tingkatanmu.",
+            "onlineRules": "{{rounds}} soal untuk kelas {{grade}}. Ambil jawaban benar, tembak jawaban salah dan drone. Hasilnya diverifikasi server dan menambah poin.",
+            "guestRules": "Mode demo: pilih kelas 1–4. Masuk akun supaya soal mengikuti kelasmu dan hasilnya menambah poin.",
+            "unavailable": "Server permainan belum tersedia. Coba lagi nanti.",
+            "congratsTitle": "Selamat, {{name}}!"
+        },
+        "result": {
+            "summary": "Skor {{score}} • {{correct}}/{{total}} jawaban benar",
+            "earned": "+{{points}} poin masuk ke akunmu",
+            "demo": "Mode demo tidak menambah poin.",
+            "congrats": "Luar biasa!",
+            "percent": "Nilai {{percent}}%",
+            "shieldsExplained": "Perisai adalah nyawa pesawat ({{max}} buah). Perisai berkurang 1 setiap kali menyentuh jawaban salah, menembak jawaban benar, membiarkan jawaban lewat, atau menabrak meteor. Karena perisai habis, penerbangan berhenti di soal {{done}} dari {{total}}.",
+            "passHint": "Jawab benar lebih dari {{percent}}% soal untuk mendapat ucapan selamat.",
+            "noPoints": "Belum ada poin tambahan kali ini — poin akunmu tetap.",
+            "accountTotal": "Total poin akunmu sekarang: {{points}}",
+            "syncing": "Menyimpan poin ke akun…"
+        },
+        "feedback": {
+            "correct": "Tepat! +{{score}} skor.",
+            "wrong_touch": "Belum tepat. Jawaban: {{answer}}",
+            "removed": "Jawaban salah disingkirkan! +{{score}} skor",
+            "shot_correct": "Itu jawaban benar: {{answer}}. Jangan ditembak!",
+            "missed": "Jawaban terlewat: {{answer}}",
+            "crash": "Menabrak meteor! Perisai berkurang 1."
+        },
+        "errors": {
+            "generic": "Aksi ditolak server. Lanjutkan terbang.",
+            "offline": "Koneksi terputus. Menyambung ulang…"
+        },
+        "footer": {
+            "online": "Panah/WASD atau geser jari untuk terbang. Spasi atau tahan Tembak. P untuk jeda. Soal mengikuti kelas di profilmu; poin dihitung server.",
+            "guest": "Panah/WASD atau geser jari untuk terbang. Spasi atau tahan Tembak. Mode demo tidak menambah poin."
+        },
+        "progress": "Progres: {{done}} dari {{total}} soal",
+        "progressCorrect": "{{correct}} benar",
+        "finished": "Penerbangan selesai. Lihat hasilmu di bawah.",
+        "finishedPassed": "Hebat! Kamu menjawab lebih dari 70% soal dengan benar."
     }
 }

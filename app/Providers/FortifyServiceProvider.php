@@ -34,6 +34,16 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Fortify::authenticateUsing(function (Request $request): ?\App\Models\User {
+            $user = \App\Models\User::query()->where('email', $request->input('email'))->first();
+            if (! $user || ! \Illuminate\Support\Facades\Hash::check($request->input('password'), $user->password) || $user->disabled_at !== null) {
+                return null;
+            }
+            if ($request->routeIs('admin.login.store') && ! ($user->is_superadmin || $user->hasRole('admin'))) {
+                return null;
+            }
+            return $user;
+        });
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();

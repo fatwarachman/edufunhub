@@ -1,7 +1,8 @@
+import { BackButton, NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import { ArrowLeft, Gamepad2 } from 'lucide-react';
+import { Gamepad2 } from 'lucide-react';
 import { type ReactNode, useEffect } from 'react';
 import '../../css/auth-landing.css';
 
@@ -43,13 +44,18 @@ export default function AuthShell({
                             EduFun<span>Hub</span>
                         </span>
                     </a>
-                    <a
-                        href={backHref}
-                        className="inline-flex items-center gap-2 text-sm font-semibold"
-                    >
-                        <ArrowLeft className="size-4" />
-                        {t(`${namespace}.back`)}
-                    </a>
+                    <div className="edu-nav-bar">
+                        <BackButton
+                            href={backHref}
+                            label={t(`${namespace}.back`)}
+                            external={backHref === '/'}
+                        />
+                        <NavButton
+                            href="/gamelist"
+                            icon={Gamepad2}
+                            label={t('nav.games')}
+                        />
+                    </div>
                 </header>
                 <main className="auth-main">
                     <section className="auth-intro">

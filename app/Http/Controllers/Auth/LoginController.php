@@ -16,6 +16,7 @@ class LoginController extends Controller
     public function showLoginForm(Request $request): Response
     {
         return Inertia::render('auth/login', [
+            'adminLogin' => $request->routeIs('admin.login'),
             'googleEnabled' => GoogleAuthController::enabled(),
             'googleRedirectUrl' => GoogleAuthController::enabled() ? route('google.redirect') : null,
             'canResetPassword' => Features::enabled(Features::resetPasswords()),

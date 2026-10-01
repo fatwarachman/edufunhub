@@ -108,6 +108,10 @@ class GoogleAuthController extends Controller
             return $this->failure('This account cannot use Google sign-in. Please sign in with email and password or contact support.');
         }
 
+        if ($user->is_superadmin || $user->hasRole('admin')) {
+            return $this->failure(__('Admin accounts must sign in with email and password.'));
+        }
+
         if ($user->two_factor_secret !== null || $user->two_factor_confirmed_at !== null) {
             return $this->failure('Two-factor authentication is enabled. Please sign in with email and password.');
         }
@@ -116,7 +120,7 @@ class GoogleAuthController extends Controller
         $request->session()->regenerate();
         $request->session()->forget('url.intended');
 
-        return redirect()->route($user->is_superadmin || $user->hasRole('admin') ? 'admin.dashboard' : 'dashboard');
+        return redirect()->route('portal');
     }
 
     private function failure(string $message): RedirectResponse

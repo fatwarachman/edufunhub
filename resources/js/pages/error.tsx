@@ -1,5 +1,7 @@
+import { NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
-import { Head, Link } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { Head, usePage } from '@inertiajs/react';
 import { Gamepad2, Home } from 'lucide-react';
 import '../../css/auth-landing.css';
 
@@ -32,6 +34,7 @@ const MESSAGES: Record<number, { id: string; en: string }> = {
 
 export default function ErrorPage({ status }: ErrorPageProps) {
     const { t, i18n } = useTranslations();
+    const signedIn = Boolean(usePage<SharedData>().props.auth?.user);
     const message = MESSAGES[status] ?? MESSAGES[500];
     const fallback =
         i18n.language === 'id' ? MESSAGES[500].id : MESSAGES[500].en;
@@ -78,13 +81,20 @@ export default function ErrorPage({ status }: ErrorPageProps) {
                         <p className="text-6xl font-bold tabular-nums">
                             {status}
                         </p>
-                        <Link
-                            href="/"
-                            className="inline-flex min-h-11 items-center gap-2 font-semibold underline"
-                        >
-                            <Home className="size-4" />
-                            {t('login.back')}
-                        </Link>
+                        <div className="flex flex-wrap gap-2">
+                            <NavButton
+                                href={signedIn ? '/portal' : '/'}
+                                icon={Home}
+                                label={t(signedIn ? 'nav.portal' : 'nav.home')}
+                                variant="primary"
+                                external={!signedIn}
+                            />
+                            <NavButton
+                                href="/gamelist"
+                                icon={Gamepad2}
+                                label={t('nav.games')}
+                            />
+                        </div>
                     </div>
                 </section>
             </main>

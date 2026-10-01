@@ -1,14 +1,25 @@
+import InputError from '@/components/input-error';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
+import { NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import { ArrowUpRight, Coins, Gamepad2, History } from 'lucide-react';
+import { useForm, usePage } from '@inertiajs/react';
+import {
+    Coins,
+    Gamepad2,
+    GraduationCap,
+    History,
+    Play,
+    Trophy,
+    UserRound,
+} from 'lucide-react';
 
 interface DashboardProps {
     points: number;
+    grade: number | null;
     character: CharacterData;
     categories: {
         key: string;
@@ -25,6 +36,7 @@ interface DashboardProps {
 
 export default function Dashboard({
     points,
+    grade,
     character,
     categories,
     history,
@@ -39,6 +51,19 @@ export default function Dashboard({
                     {t('player.welcome', { name: auth.user.name })}
                 </h1>
                 <p className="text-muted-foreground">{t('player.intro')}</p>
+                <div className="flex flex-wrap gap-2">
+                    <NavButton
+                        href="/portal"
+                        icon={Trophy}
+                        label={t('player.openPortal')}
+                        variant="primary"
+                    />
+                    <NavButton
+                        href="/gamelist"
+                        icon={Gamepad2}
+                        label={t('nav.games')}
+                    />
+                </div>
             </div>
             <div className="grid gap-7 lg:grid-cols-[320px_minmax(0,1fr)]">
                 <aside className="flex min-w-0 flex-col gap-7">
@@ -50,14 +75,14 @@ export default function Dashboard({
                         <p className="font-bold break-words">
                             {character.nickname || auth.user.name}
                         </p>
-                        <Link
+                        <NavButton
                             href="/character"
-                            className="auth-google inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2 font-bold"
-                        >
-                            {t('player.customize')}
-                            <ArrowUpRight className="size-4" />
-                        </Link>
+                            icon={UserRound}
+                            label={t('player.customize')}
+                            block
+                        />
                     </section>
+                    <GradeCard grade={grade} />
                     <section className="auth-card flex flex-col gap-3 !bg-[#ffd93d]">
                         <div className="flex items-center gap-2 font-bold">
                             <Coins className="size-5" />
@@ -90,14 +115,14 @@ export default function Dashboard({
                                         {t(category.titleKey)}
                                     </h3>
                                     {category.games.map((game) => (
-                                        <Link
+                                        <NavButton
                                             key={game.key}
                                             href={game.url}
-                                            className="flex items-center justify-between gap-3 rounded-xl border-2 border-[#151b2e] bg-[#faf7ef] px-4 py-3 font-semibold hover:bg-[#ffd93d]"
-                                        >
-                                            {t(game.titleKey)}
-                                            <ArrowUpRight className="size-5 shrink-0" />
-                                        </Link>
+                                            icon={Play}
+                                            label={t(game.titleKey)}
+                                            block
+                                            className="!justify-start text-left !whitespace-normal"
+                                        />
                                     ))}
                                 </article>
                             ))}
@@ -159,5 +184,84 @@ export default function Dashboard({
                 </div>
             </div>
         </PlayerLayout>
+    );
+}
+
+const GRADE_BANDS: { key: string; grades: number[] }[] = [
+    { key: 'sd', grades: [1, 2, 3, 4, 5, 6] },
+    { key: 'smp', grades: [7, 8, 9] },
+    { key: 'sma', grades: [10, 11, 12] },
+];
+
+function GradeCard({ grade }: { grade: number | null }) {
+    const { t } = useTranslations();
+    const form = useForm<{ grade: string }>({
+        grade: grade ? String(grade) : '',
+    });
+    return (
+        <section
+            id="grade"
+            className="auth-card flex scroll-mt-6 flex-col gap-3"
+        >
+            <h2 className="flex items-center gap-2 text-xl font-bold">
+                <GraduationCap className="size-5" />
+                {t('player.grade')}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+                {t('player.gradeNote')}
+            </p>
+            <form
+                className="flex flex-col gap-3"
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    form.patch('/grade', { preserveScroll: true });
+                }}
+            >
+                <label htmlFor="grade-select" className="sr-only">
+                    {t('player.grade')}
+                </label>
+                <select
+                    id="grade-select"
+                    name="grade"
+                    value={form.data.grade}
+                    onChange={(event) =>
+                        form.setData('grade', event.target.value)
+                    }
+                    className="min-h-11 w-full rounded-xl border-2 border-[#151b2e] bg-white px-3.5 font-semibold"
+                >
+                    <option value="" disabled>
+                        {t('player.gradePlaceholder')}
+                    </option>
+                    {GRADE_BANDS.map((band) => (
+                        <optgroup
+                            key={band.key}
+                            label={t(`player.gradeBands.${band.key}`)}
+                        >
+                            {band.grades.map((value) => (
+                                <option key={value} value={value}>
+                                    {t('player.gradeOption', { grade: value })}
+                                </option>
+                            ))}
+                        </optgroup>
+                    ))}
+                </select>
+                <InputError message={form.errors.grade} />
+                {form.recentlySuccessful && (
+                    <p
+                        role="status"
+                        className="text-sm font-semibold text-[#116a56]"
+                    >
+                        {t('player.gradeSaved')}
+                    </p>
+                )}
+                <button
+                    type="submit"
+                    disabled={form.processing || form.data.grade === ''}
+                    className="px-5 py-2.5 font-bold disabled:opacity-50"
+                >
+                    {t('player.gradeSave')}
+                </button>
+            </form>
+        </section>
     );
 }

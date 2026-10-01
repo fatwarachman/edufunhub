@@ -31,6 +31,7 @@
         "mismatch": "Passwords do not match"
     },
     "login": {
+        "adminTitle": "Admin Sign In",
         "back": "Home",
         "badge": "LEARN THROUGH PLAY",
         "hero": "Your learning adventure",

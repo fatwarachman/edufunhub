@@ -1,14 +1,16 @@
 import { IllustratedSnakesBoard } from '@/components/illustrated-snakes-board';
 import { BLOCK_SKINS, MiniBlockAvatar } from '@/components/mini-block-avatar';
+import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import { useGameAudio } from '@/hooks/use-game-audio';
+import { useTranslations } from '@/hooks/use-translations';
 import {
     BOARD_LADDERS as LADDERS,
     BOARD_SNAKES as SNAKES,
 } from '@/lib/snakes-board';
-import { Head, Link } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { Head, usePage } from '@inertiajs/react';
 import {
-    ArrowLeft,
     CheckCircle2,
     Dice1,
     Dice2,
@@ -22,6 +24,8 @@ import {
     Sparkles,
     Trophy,
     Users,
+    Volume2,
+    VolumeX,
     XCircle,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -374,6 +378,9 @@ interface Player {
 }
 
 export default function SnakesAndLaddersGame() {
+    const { t } = useTranslations();
+    const signedIn = Boolean(usePage<SharedData>().props.auth?.user);
+    const backHref = useGameBackHref();
     const { play, muted, toggleMuted } = useGameAudio();
     const generation = useRef(0);
     const timers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
@@ -620,46 +627,54 @@ export default function SnakesAndLaddersGame() {
 
             {/* Top Bar Header */}
             <header className="sticky top-0 z-30 border-b-4 border-[#1f2a44] bg-[#FFF9E6]/95 backdrop-blur-md">
-                <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-3">
-                        <Link
-                            href="/"
-                            className="flex h-11 w-11 items-center justify-center rounded-2xl border-3 border-[#1f2a44] bg-white shadow-[3px_3px_0px_#1f2a44] transition-all hover:-translate-y-0.5"
-                        >
-                            <ArrowLeft className="h-5 w-5 text-[#1f2a44]" />
-                        </Link>
-                        <div className="flex flex-col">
-                            <span className="font-display text-xl font-black text-[#1f2a44] sm:text-2xl">
+                <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-4 py-2 sm:px-6 lg:px-8">
+                    <div className="flex min-w-0 items-center gap-3">
+                        <BackButton
+                            href={backHref}
+                            label={t(
+                                signedIn
+                                    ? 'nav.backToPortal'
+                                    : 'nav.backToGames',
+                            )}
+                            iconOnly
+                        />
+                        <div className="flex min-w-0 flex-col">
+                            <span className="truncate font-display text-xl font-black text-[#1f2a44] sm:text-2xl">
                                 Ular Tangga{' '}
                                 <span className="text-[#FF9E44]">Karakter</span>
                             </span>
-                            <span className="text-xs font-bold text-slate-600">
+                            <span className="hidden text-xs font-bold text-slate-600 sm:block">
                                 100% Gratis • 2–4 pemain bergiliran di satu
                                 perangkat
                             </span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="hidden rounded-xl border-2 border-[#1f2a44] bg-[#00C9A7] px-3 py-1 text-xs font-black text-[#1f2a44] shadow-[2px_2px_0px_#1f2a44] sm:block">
-                            edufunhub.com/games/snakes-and-ladders
-                        </div>
-                        <Button
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            type="button"
                             onClick={toggleMuted}
-                            variant="outline"
                             aria-pressed={!muted}
-                            className="border-[#1f2a44] bg-white text-[#1f2a44] dark:bg-white dark:hover:bg-slate-100"
+                            aria-label={muted ? 'Suara mati' : 'Suara aktif'}
+                            title={muted ? 'Suara mati' : 'Suara aktif'}
+                            className="edu-nav-btn edu-nav-btn--icon"
                         >
-                            {muted ? 'Suara mati' : 'Suara aktif'}
-                        </Button>
-                        <Button
+                            {muted ? (
+                                <VolumeX aria-hidden="true" />
+                            ) : (
+                                <Volume2 aria-hidden="true" />
+                            )}
+                        </button>
+                        <button
+                            type="button"
                             onClick={resetGame}
-                            variant="outline"
-                            className="rounded-xl border-2 border-[#1f2a44] bg-white text-xs font-black text-[#1f2a44] shadow-[2px_2px_0px_#1f2a44] hover:bg-slate-100 dark:bg-white dark:hover:bg-slate-100"
+                            aria-label="Ulang Permainan"
+                            title="Ulang Permainan"
+                            className="edu-nav-btn edu-nav-btn--icon"
                         >
-                            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-                            Ulang Permainan
-                        </Button>
+                            <RotateCcw aria-hidden="true" />
+                        </button>
+                        <SiteNav compact />
                     </div>
                 </div>
             </header>

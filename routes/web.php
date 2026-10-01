@@ -4,11 +4,14 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CharacterController;
+use App\Http\Controllers\FlagQuestController;
+use App\Http\Controllers\GradeController;
+use App\Http\Controllers\PortalController;
+use App\Http\Controllers\SkyQuizController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Middleware\EnsurePlayerIsActive;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Inertia\Response;
 
 // 1. Landing Page (Bauhaus Geometric)
 Route::get('/', function () {
@@ -17,8 +20,12 @@ Route::get('/', function () {
 
 Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): void {
     Route::get('/dashboard', UserDashboardController::class)->name('dashboard');
+    Route::get('/portal', PortalController::class)->name('portal');
     Route::get('/character', [CharacterController::class, 'show'])->name('character.show');
     Route::patch('/character', [CharacterController::class, 'update'])->name('character.update');
+    Route::patch('/grade', [GradeController::class, 'update'])->name('grade.update');
+    Route::get('/games/flag-quest', [FlagQuestController::class, 'show'])->name('games.flag-quest');
+    Route::post('/games/flag-quest/token', [FlagQuestController::class, 'token'])->middleware('throttle:30,1')->name('games.flag-quest.token');
 });
 
 // 3. Games Arena & EduFun Games
@@ -30,12 +37,15 @@ Route::get('/games/snakes-and-ladders', function () {
     return Inertia::render('games/snakes-and-ladders');
 })->name('games.snakes-and-ladders');
 
-Route::get('/games/sky-quiz', function (): Response {
-    return Inertia::render('games/sky-quiz');
-})->name('games.sky-quiz');
+Route::get('/games/sky-quiz', [SkyQuizController::class, 'show'])->name('games.sky-quiz');
+Route::post('/games/sky-quiz/token', [SkyQuizController::class, 'token'])
+    ->middleware(['auth', EnsurePlayerIsActive::class, 'throttle:30,1'])
+    ->name('games.sky-quiz.token');
 
 // ── Auth Routes ──────────────────────────────────────────────
 Route::middleware('guest')->group(function (): void {
+    Route::get('/admin/login', [LoginController::class, 'showLoginForm'])->name('admin.login');
+    Route::post('/admin/login', [\Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('admin.login.store');
     Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->middleware('throttle:10,1')->name('google.redirect');
     Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:10,1')->name('google.callback');
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
