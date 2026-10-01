@@ -3,256 +3,194 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ImpersonationLog;
+use App\Http\Requests\Admin\StoreUserRequest;
+use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class UserController extends Controller
 {
     /**
-     * Display a paginated, searchable list of all users.
+     * Paginated user list with search, role filter, and sort.
      */
     public function index(Request $request): Response
     {
-        $search = $request->input('search', '');
+        $query = User::query()
+            ->with('roles')
+            ->when($request->search, function ($q, string $search): void {
+                $q->where(function ($q) use ($search): void {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->role, function ($q, string $roleSlug): void {
+                $q->whereHas('roles', fn ($r) => $r->where('slug', $roleSlug));
+            })
+            ->when($request->sort, function ($q, string $sort) use ($request): void {
+                $direction = $request->direction === 'desc' ? 'desc' : 'asc';
+                $allowed = ['name', 'email', 'created_at', 'last_seen_at'];
+                if (in_array($sort, $allowed, true)) {
+                    $q->orderBy($sort, $direction);
+                }
+            }, function ($q): void {
+                $q->orderByDesc('created_at');
+            });
 
-        $users = User::withTrashed()
-            ->when($search, fn ($query) => $query
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
-            )
-            ->latest()
-            ->paginate(15)
-            ->through(fn ($user) => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'is_superadmin' => $user->is_superadmin,
-                'created_at' => $user->created_at,
-                'last_seen_at' => $user->last_seen_at,
-                'deleted_at' => $user->deleted_at,
-            ])
-            ->withQueryString();
-
-        return Inertia::render('admin/users', [
-            'users' => $users,
-            'filters' => [
-                'search' => $search,
-            ],
+        return Inertia::render('admin/users/index', [
+            'users' => $query->paginate(20)->withQueryString(),
+            'roles' => Role::query()->select('id', 'name', 'slug')->get(),
+            'filters' => $request->only(['search', 'role', 'sort', 'direction']),
         ]);
     }
 
     /**
-     * Show admin detail view for a user, including impersonation audit log.
+     * Show form to create a new user.
      */
-    public function show(int $id): Response
+    public function create(): Response
     {
-        $user = User::withTrashed()->findOrFail($id);
-
-        $impersonationLogs = ImpersonationLog::with('impersonator:id,name,email')
-            ->where('impersonated_id', $user->id)
-            ->latest('started_at')
-            ->limit(20)
-            ->get()
-            ->map(fn ($log) => [
-                'id' => $log->id,
-                'impersonator_name' => $log->impersonator?->name ?? 'Unknown',
-                'impersonator_email' => $log->impersonator?->email ?? '',
-                'ip_address' => $log->ip_address,
-                'started_at' => $log->started_at?->toISOString(),
-                'ended_at' => $log->ended_at?->toISOString(),
-            ]);
-
-        $activityLog = Activity::where('subject_type', User::class)
-            ->where('subject_id', $user->id)
-            ->orWhere(fn ($q) => $q->where('event', 'impersonated')->where('subject_id', $user->id))
-            ->latest()
-            ->limit(10)
-            ->get()
-            ->map(fn (Activity $a) => [
-                'id' => $a->id,
-                'event' => $a->event,
-                'description' => $a->description,
-                'causer_name' => $a->causer?->name ?? 'System',
-                'created_at' => $a->created_at?->toISOString(),
-            ]);
-
-        return Inertia::render('admin/users/show', [
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'is_superadmin' => $user->is_superadmin,
-                'created_at' => $user->created_at->toISOString(),
-                'deleted_at' => $user->deleted_at?->toISOString(),
-                'email_verified_at' => $user->email_verified_at?->toISOString(),
-            ],
-            'impersonationLogs' => $impersonationLogs,
-            'activityLog' => $activityLog,
+        return Inertia::render('admin/users/create', [
+            'roles' => Role::query()->select('id', 'name', 'slug')->get(),
         ]);
     }
 
     /**
-     * Toggle superadmin status for a user.
+     * Validate and persist a new user, then assign roles.
      */
-    public function update(Request $request, int $id): RedirectResponse
+    public function store(StoreUserRequest $request): RedirectResponse
     {
-        $user = User::withTrashed()->findOrFail($id);
-
-        $validated = $request->validate([
-            'is_superadmin' => ['required', 'boolean'],
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => $request->password,
+            'email_verified_at' => now(),
         ]);
 
-        // Prevent self-demotion
-        if ($user->id === $request->user()->id) {
-            return back()->withErrors(['user' => 'You cannot modify your own superadmin status.']);
+        if ($request->filled('roles')) {
+            $user->roles()->sync($request->roles);
         }
 
-        $user->update($validated);
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($user)
+            ->log('Created user');
 
-        return back()->with('success', $user->name.($validated['is_superadmin'] ? ' promoted to superadmin.' : ' demoted from superadmin.'));
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User created successfully.');
     }
 
     /**
-     * Soft-delete a user from the platform.
+     * Show user detail with roles and recent activity log.
      */
-    public function destroy(Request $request, int $id): RedirectResponse
+    public function show(User $user): Response
     {
-        $user = User::withTrashed()->findOrFail($id);
+        $user->load('roles');
 
-        // Prevent self-deletion
+        $activityLog = Activity::query()
+            ->where('subject_type', User::class)
+            ->where('subject_id', $user->id)
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        return Inertia::render('admin/users/show', [
+            'user' => $user,
+            'activity' => $activityLog,
+        ]);
+    }
+
+    /**
+     * Show form to edit an existing user.
+     */
+    public function edit(User $user): Response
+    {
+        $user->load('roles');
+
+        return Inertia::render('admin/users/edit', [
+            'user' => $user,
+            'roles' => Role::query()->select('id', 'name', 'slug')->get(),
+        ]);
+    }
+
+    /**
+     * Validate and update an existing user, syncing roles.
+     */
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse
+    {
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = $request->password;
+        }
+
+        $user->update($data);
+
+        if ($request->has('roles')) {
+            $user->roles()->sync($request->roles ?? []);
+        }
+
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($user)
+            ->log('Updated user');
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User updated successfully.');
+    }
+
+    /**
+     * Soft-delete a user. Superadmins and self cannot be deleted.
+     */
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        if ($user->is_superadmin) {
+            abort(403, 'Superadmin users cannot be deleted.');
+        }
+
         if ($user->id === $request->user()->id) {
-            return back()->withErrors(['user' => 'You cannot delete your own account from here.']);
+            abort(403, 'You cannot delete your own account.');
         }
 
         $user->delete();
 
-        return back()->with('success', 'User deleted successfully.');
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($user)
+            ->log('Deleted user');
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User deleted successfully.');
     }
 
     /**
-     * Restore a soft-deleted user.
+     * Toggle access independently of email verification.
      */
-    public function restore(Request $request, int $id): RedirectResponse
+    public function toggleStatus(Request $request, User $user): RedirectResponse
     {
-        $user = User::onlyTrashed()->findOrFail($id);
+        if ($user->is_superadmin) {
+            abort(403, 'Superadmin status cannot be changed.');
+        }
 
-        $user->restore();
+        $isCurrentlyActive = $user->disabled_at === null;
 
-        return back()->with('success', "{$user->name} has been restored.");
-    }
+        $user->forceFill([
+            'disabled_at' => $isCurrentlyActive ? now() : null,
+        ])->save();
 
-    /**
-     * Bulk verify email for selected users.
-     */
-    public function bulkVerifyEmail(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'user_ids' => ['required', 'array', 'min:1'],
-            'user_ids.*' => ['integer', 'exists:users,id'],
-        ]);
+        $action = $isCurrentlyActive ? 'Deactivated user' : 'Activated user';
 
-        $count = User::whereIn('id', $validated['user_ids'])
-            ->whereNull('email_verified_at')
-            ->update(['email_verified_at' => now()]);
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($user)
+            ->log($action);
 
-        return back()->with('success', "{$count} user(s) email verified.");
-    }
-
-    /**
-     * Bulk suspend (soft-delete) selected users.
-     */
-    public function bulkSuspend(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'user_ids' => ['required', 'array', 'min:1'],
-            'user_ids.*' => ['integer', 'exists:users,id'],
-        ]);
-
-        // Exclude the current admin from being suspended
-        $userIds = collect($validated['user_ids'])
-            ->reject(fn ($id) => $id === $request->user()->id)
-            ->values()
-            ->all();
-
-        $count = User::whereIn('id', $userIds)
-            ->whereNull('deleted_at')
-            ->count();
-
-        User::whereIn('id', $userIds)->each(fn (User $user) => $user->delete());
-
-        return back()->with('success', "{$count} user(s) suspended.");
-    }
-
-    /**
-     * Export all users as CSV.
-     */
-    public function export(): StreamedResponse
-    {
-        $users = User::withTrashed()
-            ->withCount('workspaces')
-            ->latest()
-            ->get(['id', 'name', 'email', 'is_superadmin', 'email_verified_at', 'created_at', 'deleted_at']);
-
-        return response()->streamDownload(function () use ($users): void {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Name', 'Email', 'Superadmin', 'Workspaces', 'Email Verified', 'Created At', 'Deleted At']);
-
-            foreach ($users as $user) {
-                fputcsv($handle, [
-                    $user->id,
-                    $user->name,
-                    $user->email,
-                    $user->is_superadmin ? 'Yes' : 'No',
-                    $user->workspaces_count,
-                    $user->email_verified_at?->toDateTimeString() ?? 'Not verified',
-                    $user->created_at->toDateTimeString(),
-                    $user->deleted_at?->toDateTimeString() ?? '',
-                ]);
-            }
-
-            fclose($handle);
-        }, 'users-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv']);
-    }
-
-    /**
-     * Export selected users as CSV.
-     */
-    public function bulkExport(Request $request): StreamedResponse
-    {
-        $validated = $request->validate([
-            'user_ids' => ['required', 'array', 'min:1'],
-            'user_ids.*' => ['integer'],
-        ]);
-
-        $users = User::withTrashed()
-            ->whereIn('id', $validated['user_ids'])
-            ->get(['id', 'name', 'email', 'is_superadmin', 'email_verified_at', 'created_at', 'deleted_at']);
-
-        return response()->streamDownload(function () use ($users) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Name', 'Email', 'Superadmin', 'Email Verified', 'Created At', 'Deleted At']);
-
-            foreach ($users as $user) {
-                fputcsv($handle, [
-                    $user->id,
-                    $user->name,
-                    $user->email,
-                    $user->is_superadmin ? 'Yes' : 'No',
-                    $user->email_verified_at?->toDateTimeString() ?? 'Not verified',
-                    $user->created_at->toDateTimeString(),
-                    $user->deleted_at?->toDateTimeString() ?? '',
-                ]);
-            }
-
-            fclose($handle);
-        }, 'users-export-'.now()->format('Y-m-d').'.csv', [
-            'Content-Type' => 'text/csv',
-        ]);
+        return back()->with('success', "User {$action} successfully.");
     }
 }

@@ -1,69 +1,82 @@
+import AuthShell from '@/components/auth-shell';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { useTranslations } from '@/hooks/use-translations';
-import AuthLayout from '@/layouts/auth-layout';
-import { store } from '@/routes/password/confirm';
-import { Form, Head } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
+import { Loader2, Lock } from 'lucide-react';
+import { type FormEventHandler } from 'react';
 
 export default function ConfirmPassword() {
     const { t } = useTranslations();
+    const { data, setData, post, processing, errors, reset } = useForm({
+        password: '',
+    });
+
+    const submit: FormEventHandler = (event) => {
+        event.preventDefault();
+        post('/user/confirm-password', {
+            onFinish: () => reset('password'),
+        });
+    };
 
     return (
-        <AuthLayout
-            title={t(
-                'auth.confirm_password_page.title',
-                'Confirm your password',
-            )}
-            description={t(
-                'auth.confirm_password_page.description',
-                'This is a secure area of the application. Please confirm your password before continuing.',
-            )}
-        >
-            <Head
-                title={t(
-                    'auth.confirm_password_page.page_title',
-                    'Confirm password',
-                )}
-            />
-
-            <Form {...store.form()} resetOnSuccess={['password']}>
-                {({ processing, errors }) => (
-                    <div className="space-y-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">
-                                {t('auth.password', 'Password')}
-                            </Label>
+        <AuthShell namespace="confirm">
+            <div className="mb-6 flex flex-col gap-2">
+                <h2 className="text-3xl font-bold tracking-tight">
+                    {t('confirm.title')}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                    {t('confirm.description')}
+                </p>
+            </div>
+            <form onSubmit={submit} noValidate>
+                <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="password">
+                            {t('confirm.password')}
+                        </Label>
+                        <div className="relative">
+                            <Lock className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 id="password"
                                 type="password"
                                 name="password"
-                                placeholder={t('auth.password', 'Password')}
+                                value={data.password}
+                                onChange={(event) =>
+                                    setData('password', event.target.value)
+                                }
+                                className="pl-9"
                                 autoComplete="current-password"
                                 autoFocus
+                                required
                             />
-
-                            <InputError message={errors.password} />
                         </div>
-
-                        <div className="flex items-center">
-                            <Button
-                                className="w-full"
-                                disabled={processing}
-                                data-test="confirm-password-button"
-                            >
-                                {processing && <Spinner />}
-                                {t(
-                                    'auth.confirm_password_page.button',
-                                    'Confirm password',
-                                )}
-                            </Button>
-                        </div>
+                        <InputError message={errors.password} />
                     </div>
-                )}
-            </Form>
-        </AuthLayout>
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="h-auto min-h-11 w-full py-2.5"
+                    >
+                        {processing ? (
+                            <>
+                                <Loader2 className="size-4 animate-spin" />
+                                {t('confirm.confirming')}
+                            </>
+                        ) : (
+                            t('confirm.submit')
+                        )}
+                    </Button>
+                    <Link
+                        href="/"
+                        className="text-center text-sm font-semibold underline"
+                    >
+                        {t('confirm.back')}
+                    </Link>
+                </div>
+            </form>
+        </AuthShell>
     );
 }

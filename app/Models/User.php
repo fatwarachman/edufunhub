@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -93,6 +94,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'disabled_at' => 'datetime',
             'password' => 'hashed',
             'is_superadmin' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
@@ -121,9 +123,24 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->created_at->lte(now()->subDays($afterDays));
     }
 
-    /**
-     * Get all workspaces the user belongs to.
-     */
+    /** @return HasOne<PlayerProfile, $this> */
+    public function playerProfile(): HasOne
+    {
+        return $this->hasOne(PlayerProfile::class);
+    }
+
+    /** @return HasMany<PointLedger, $this> */
+    public function pointLedgers(): HasMany
+    {
+        return $this->hasMany(PointLedger::class);
+    }
+
+    /** @return HasMany<GameHistory, $this> */
+    public function gameHistories(): HasMany
+    {
+        return $this->hasMany(GameHistory::class);
+    }
+
     public function workspaces(): BelongsToMany
     {
         return $this->belongsToMany(Workspace::class, 'workspace_user')

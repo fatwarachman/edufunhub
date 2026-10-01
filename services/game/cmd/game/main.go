@@ -1,0 +1,66 @@
+package main
+
+import (
+	"context"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
+	"time"
+
+	"edufunhub/game/internal/server"
+)
+
+func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	secret := os.Getenv("GAME_SERVICE_SECRET")
+	if len(secret) < 32 {
+		logger.Error("GAME_SERVICE_SECRET must be at least 32 characters")
+		os.Exit(1)
+	}
+	origins := []string{}
+	for _, o := range strings.Split(os.Getenv("GAME_ALLOWED_ORIGINS"), ",") {
+		if o = strings.TrimSpace(o); o != "" {
+			origins = append(origins, o)
+		}
+	}
+	srv := server.New(server.Config{
+		Secret:         []byte(secret),
+		ResultURL:      os.Getenv("GAME_RESULT_URL"),
+		AllowedOrigins: origins,
+		Logger:         logger,
+	})
+	addr := os.Getenv("GAME_ADDR")
+	if addr == "" {
+		addr = ":8090"
+	}
+	httpServer := &http.Server{Addr: addr, Handler: srv.Handler(), ReadHeaderTimeout: 5 * time.Second}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	go func() {
+		t := time.NewTicker(5 * time.Minute)
+		defer t.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-t.C:
+				srv.Prune(30 * time.Minute)
+			}
+		}
+	}()
+	go func() {
+		logger.Info("game service listening", "addr", addr)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("listen failed", "err", err)
+			os.Exit(1)
+		}
+	}()
+	<-ctx.Done()
+	shutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	_ = httpServer.Shutdown(shutdown)
+}

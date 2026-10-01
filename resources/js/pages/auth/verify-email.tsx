@@ -1,62 +1,71 @@
-// Components
-import TextLink from '@/components/text-link';
+import AuthShell from '@/components/auth-shell';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { useTranslations } from '@/hooks/use-translations';
-import AuthLayout from '@/layouts/auth-layout';
-import { logout } from '@/routes';
-import { send } from '@/routes/verification';
-import { Form, Head } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { Loader2, MailCheck } from 'lucide-react';
+import { useState } from 'react';
 
-export default function VerifyEmail({ status }: { status?: string }) {
+interface VerifyEmailProps {
+    status?: string;
+}
+
+export default function VerifyEmail({ status }: VerifyEmailProps) {
     const { t } = useTranslations();
+    const [sending, setSending] = useState(false);
+
+    const resend = () => {
+        setSending(true);
+        router.post(
+            '/email/verification-notification',
+            {},
+            { onFinish: () => setSending(false) },
+        );
+    };
 
     return (
-        <AuthLayout
-            title={t('auth.verify_email.title', 'Verify Your Email Address')}
-            description={t(
-                'auth.verify_email.description',
-                "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.",
-            )}
-        >
-            <Head
-                title={t('auth.verify_email.page_title', 'Email verification')}
-            />
-
-            {status === 'verification-link-sent' && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {t(
-                        'auth.verify_email.link_sent',
-                        'A new verification link has been sent to the email address you provided during registration.',
-                    )}
-                </div>
-            )}
-
-            <Form {...send.form()} className="space-y-6 text-center">
-                {({ processing }) => (
-                    <>
-                        <Button
-                            disabled={processing}
-                            variant="default"
-                            size="lg"
-                            className="w-full"
-                        >
-                            {processing && <Spinner />}
-                            {t(
-                                'auth.verify_email.button',
-                                'Resend Verification Email',
-                            )}
-                        </Button>
-
-                        <TextLink
-                            href={logout()}
-                            className="mx-auto block text-sm font-semibold"
-                        >
-                            {t('auth.sign_out', 'Sign Out')}
-                        </TextLink>
-                    </>
+        <AuthShell namespace="verify">
+            <div className="mb-6 flex flex-col gap-3">
+                <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-[#151b2e] bg-[#ffd93d]">
+                    <MailCheck className="size-6" />
+                </span>
+                <h2
+                    id="verify-heading"
+                    className="text-3xl font-bold tracking-tight"
+                >
+                    {t('verify.title')}
+                </h2>
+                {(status ?? t('verify.notice')) && (
+                    <p className="text-sm text-muted-foreground">
+                        {status ?? t('verify.notice')}
+                    </p>
                 )}
-            </Form>
-        </AuthLayout>
+            </div>
+            <div className="flex flex-col gap-3">
+                <Button
+                    type="button"
+                    onClick={resend}
+                    disabled={sending}
+                    className="h-auto min-h-11 w-full py-2.5"
+                >
+                    {sending ? (
+                        <>
+                            <Loader2 className="size-4 animate-spin" />
+                            {t('verify.sending')}
+                        </>
+                    ) : (
+                        t('verify.resend')
+                    )}
+                </Button>
+                <Link
+                    href="/logout"
+                    method="post"
+                    as="button"
+                    type="button"
+                    className="text-sm font-semibold underline"
+                >
+                    {t('verify.logout')}
+                </Link>
+            </div>
+        </AuthShell>
     );
 }

@@ -1,90 +1,91 @@
-// Components
-import { login } from '@/routes';
-import { email } from '@/routes/password';
-import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-
+import AuthShell from '@/components/auth-shell';
 import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/hooks/use-translations';
-import AuthLayout from '@/layouts/auth-layout';
+import { Link, useForm } from '@inertiajs/react';
+import { Loader2, Mail } from 'lucide-react';
+import { type FormEventHandler } from 'react';
 
-export default function ForgotPassword({ status }: { status?: string }) {
+interface ForgotPasswordProps {
+    status?: string;
+}
+
+export default function ForgotPassword({ status }: ForgotPasswordProps) {
     const { t } = useTranslations();
+    const { data, setData, post, processing, errors } = useForm({
+        email: '',
+    });
+
+    const submit: FormEventHandler = (event) => {
+        event.preventDefault();
+        post('/forgot-password');
+    };
 
     return (
-        <AuthLayout
-            title={t('auth.forgot_password.title', 'Forgot your password?')}
-            description={t(
-                'auth.forgot_password.description',
-                'No problem. Just let us know your email address and we will email you a password reset link.',
-            )}
-        >
-            <Head
-                title={t('auth.forgot_password.page_title', 'Forgot Password')}
-            />
-
+        <AuthShell namespace="forgot" backHref="/login">
+            <div className="mb-6 flex flex-col gap-2">
+                <h2 className="text-3xl font-bold tracking-tight">
+                    {t('forgot.title')}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                    {t('forgot.description')}
+                </p>
+            </div>
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                <div
+                    role="status"
+                    className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400"
+                >
                     {status}
                 </div>
             )}
-
-            <div className="space-y-6">
-                <Form {...email.form()}>
-                    {({ processing, errors }) => (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">
-                                    {t('auth.email', 'Email address')}
-                                </Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    autoComplete="off"
-                                    autoFocus
-                                    placeholder={t(
-                                        'auth.email',
-                                        'Email address',
-                                    )}
-                                />
-
-                                <InputError message={errors.email} />
-                            </div>
-
-                            <div className="my-6 flex items-center justify-start">
-                                <Button
-                                    className="w-full"
-                                    size="lg"
-                                    disabled={processing}
-                                    data-test="email-password-reset-link-button"
-                                >
-                                    {processing && (
-                                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                                    )}
-                                    {t(
-                                        'auth.forgot_password.button',
-                                        'Send Reset Link',
-                                    )}
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </Form>
-
-                <div className="space-x-1 text-center text-sm text-muted-foreground">
-                    <span>
-                        {t('auth.reset_password.or_return', 'Or, return to')}
-                    </span>
-                    <TextLink href={login()} className="font-semibold">
-                        {t('auth.log_in', 'Sign in')}
-                    </TextLink>
+            <form onSubmit={submit} noValidate>
+                <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="email">{t('forgot.email')}</Label>
+                        <div className="relative">
+                            <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                id="email"
+                                type="email"
+                                name="email"
+                                value={data.email}
+                                onChange={(event) =>
+                                    setData('email', event.target.value)
+                                }
+                                className="pl-9"
+                                placeholder={t('forgot.emailPlaceholder')}
+                                autoComplete="email"
+                                autoFocus
+                                required
+                            />
+                        </div>
+                        <InputError message={errors.email} />
+                    </div>
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="h-auto min-h-11 w-full py-2.5"
+                    >
+                        {processing ? (
+                            <>
+                                <Loader2 className="size-4 animate-spin" />
+                                {t('forgot.sending')}
+                            </>
+                        ) : (
+                            t('forgot.submit')
+                        )}
+                    </Button>
+                    <Link
+                        href="/login"
+                        className="text-center text-sm font-semibold underline"
+                    >
+                        {t('forgot.back')}
+                    </Link>
                 </div>
-            </div>
-        </AuthLayout>
+            </form>
+        </AuthShell>
     );
 }

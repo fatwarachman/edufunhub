@@ -1,0 +1,343 @@
+{
+    "player": {
+        "navigation": "User navigation",
+        "dashboard": "Dashboard",
+        "character": "Character",
+        "logout": "Log out",
+        "badge": "YOUR PLAY SPACE",
+        "welcome": "Hello, {{name}}!",
+        "intro": "Ready for your next learning adventure?",
+        "customize": "Customize character",
+        "points": "Your points",
+        "pointsNote": "Points from verified game results.",
+        "categories": "Game categories",
+        "demoNote": "Current games are demos; demo results do not award points or history.",
+        "history": "Game history",
+        "emptyHistory": "No games recorded yet",
+        "historyNote": "Verified game results will appear here.",
+        "pointsValue": "{{count}} points",
+        "back": "Back to dashboard",
+        "nickname": "Character name",
+        "color": "Outfit color",
+        "accessory": "Accessory",
+        "amber": "Amber",
+        "coral": "Coral",
+        "teal": "Teal",
+        "violet": "Violet",
+        "none": "No accessory",
+        "cap": "Cap",
+        "glasses": "Glasses",
+        "saved": "Character saved.",
+        "saving": "Saving…",
+        "save": "Save character",
+        "board": "Board games",
+        "quiz": "Educational quizzes",
+        "snakes": "Educational Snakes and Ladders",
+        "sky": "Sukhoi Sky Quiz",
+        "adventure": "Adventure",
+        "flagQuest": "Flag Quest",
+        "grade": "School grade",
+        "gradeNote": "In-game questions follow your grade.",
+        "gradePlaceholder": "Choose grade",
+        "gradeOption": "Grade {{grade}}",
+        "gradeSave": "Save grade",
+        "gradeSaved": "Grade saved.",
+        "gradeMissing": "Grade not set",
+        "gradeBands": {
+            "sd": "Primary",
+            "smp": "Junior high",
+            "sma": "Senior high"
+        },
+        "portal": "Portal",
+        "openPortal": "Open game portal"
+    },
+    "flagQuest": {
+        "title": "Flag Quest",
+        "canvasLabel": "Flag Quest game map",
+        "gradeShort": "G{{grade}}",
+        "grade": "Grade {{grade}}",
+        "noGrade": "Grade ?",
+        "difficulty": "Difficulty {{level}} of 3",
+        "missionsNote": "Choose a mission. Switching restarts the current mission progress.",
+        "connection": {
+            "connecting": "Connecting",
+            "online": "Connected",
+            "reconnecting": "Reconnecting",
+            "offline": "Disconnected",
+            "unavailable": "Unavailable",
+            "grade_required": "Grade needed"
+        },
+        "hud": {
+            "back": "Back to portal",
+            "mute": "Mute sound",
+            "unmute": "Unmute sound",
+            "map": "Map",
+            "missions": "Choose mission",
+            "points": "Your points",
+            "correct": "Correct answers",
+            "gates": "Gates opened",
+            "collapse": "Collapse",
+            "expand": "Show steps",
+            "progress": "Mission progress"
+        },
+        "keys": {
+            "label": "Keyboard controls",
+            "move": "move",
+            "run": "run",
+            "interact": "interact",
+            "rotate": "rotate",
+            "map": "map",
+            "zoom": "zoom"
+        },
+        "touch": {
+            "joystick": "Movement joystick. Drag to walk."
+        },
+        "toast": {
+            "welcome": "Welcome to {{mission}}!",
+            "gateOpen": "Gate {{count}} opened!",
+            "allGates": "All gates open! Head to the flagpole."
+        },
+        "notice": {
+            "cooldown": "Wait {{seconds}} seconds before retrying.",
+            "nothing_nearby": "Nothing to interact with here.",
+            "too_far": "Move closer to the flagpole.",
+            "locked": "Open every gate before raising the flag.",
+            "generic": "That action is not available right now.",
+            "bad_answer": "Invalid answer.",
+            "wrong_phase": "Hold on…",
+            "unknown_mission": "Mission not found.",
+            "no_challenge": "No active challenge."
+        },
+        "objective": {
+            "label": "Objective",
+            "gate": "Open gate {{number}}: finish {{game}}",
+            "flag": "Go to the flagpole and raise the flag!",
+            "done": "Mission complete! The flag is flying.",
+            "raiseStep": "Raise the flag"
+        },
+        "prompt": {
+            "station": "Start {{game}}",
+            "raise": "Raise the flag",
+            "locked": "Flag locked",
+            "raising": "Raising the flag…"
+        },
+        "state": {
+            "connecting": "Connecting to the game server…",
+            "reconnecting": "Connection lost, reconnecting…",
+            "offline": "The game server cannot be reached.",
+            "retry": "Try again",
+            "unavailable": "The game server is not configured yet. Contact an admin.",
+            "gradeRequired": "Set your school grade on the dashboard so questions match your level.",
+            "setGrade": "Set grade"
+        },
+        "kinds": {
+            "quick_quiz": {
+                "title": "Quick Quiz",
+                "rule": "Answer at least {{needed}} multiple-choice questions correctly."
+            },
+            "true_false": {
+                "title": "True or False",
+                "rule": "Decide true or false, at least {{needed}} correct."
+            },
+            "math_sprint": {
+                "title": "Math Sprint",
+                "rule": "Solve {{needed}} sums before time runs out."
+            },
+            "snakes_ladders": {
+                "title": "Mini Snakes & Ladders",
+                "rule": "Roll the dice, then answer correctly to move. A 6 earns another roll. Reach square 25 before your turns run out!"
+            }
+        },
+        "subjects": {
+            "math": "Mathematics",
+            "science": "Science",
+            "social": "Social studies",
+            "language": "Indonesian",
+            "english": "English",
+            "civics": "Civics"
+        },
+        "challenge": {
+            "station": "Station {{number}}",
+            "progress": "Question {{step}}/{{total}} · target {{needed}}",
+            "progressTarget": "{{correct}}/{{needed}} correct",
+            "seconds": "{{count}}s",
+            "correct": "Correct! Great job!",
+            "wrong": "Not quite. Answer: {{answer}}",
+            "timeout": "Time's up. Answer: {{answer}}",
+            "true": "True",
+            "false": "False",
+            "yourAnswer": "Your answer",
+            "submit": "Submit",
+            "roll": "Roll the dice",
+            "rolled": "Rolled {{roll}}.",
+            "jumped": "Moved to {{to}}!",
+            "turnsLeft": "Turns left: {{count}}",
+            "boardLabel": "Snakes and ladders board, pawn on square {{position}}",
+            "passed": "Challenge cleared!",
+            "failed": "Not yet",
+            "passedNote": "The gate is open. Keep going!",
+            "failedNote": "Take a short break and try again.",
+            "continue": "Continue",
+            "back": "Back",
+            "close": "Close",
+            "leave": "Leave challenge",
+            "boardTitle": "SNAKES & LADDERS",
+            "start": "START",
+            "finish": "FINISH",
+            "shaking": "Shaking the dice…",
+            "spinning": "Spinning…",
+            "diceResult": "Dice: {{roll}}!",
+            "getReady": "Get ready to answer!",
+            "openingQuestion": "Opening the question…",
+            "answerToMove": "You rolled {{roll}}. Answer correctly to move {{roll}} squares!",
+            "climbed": "Climbed a ladder from {{from}} to {{to}}!",
+            "slid": "Slid down a snake from {{from}} to {{to}}."
+        },
+        "complete": {
+            "title": "Flag raised!",
+            "body": "You completed the {{mission}} mission.",
+            "points": "Points",
+            "correct": "Correct",
+            "time": "Time",
+            "flawless": "Flawless! +30 bonus",
+            "saved": "Points are saved to your account automatically.",
+            "next": "Choose another mission"
+        },
+        "missions": {
+            "lakeside": {
+                "name": "Lakeside Camp",
+                "description": "Your first adventure by the lake. Three challenge stations await."
+            },
+            "forest": {
+                "name": "Pine Forest",
+                "description": "A longer forest trail with tougher challenges."
+            },
+            "summit": {
+                "name": "Hill Summit",
+                "description": "The hardest mission: math sprints and rapid quizzes."
+            }
+        }
+    },
+    "portal": {
+        "title": "Game Portal",
+        "badge": "EDUFUNHUB PORTAL",
+        "greeting": "Ready to play, {{name}}?",
+        "level": "Level {{level}}",
+        "rank": "Rank #{{rank}}",
+        "levelProgress": "Level progress",
+        "nextLevel": "{{points}} more points to level {{level}}",
+        "pointsNote": "Points you earned from games labelled \"Earns points\".",
+        "filterLabel": "Filter game categories",
+        "all": "All",
+        "recommended": "Fits your grade",
+        "earnsPoints": "Earns points",
+        "practice": "Practice",
+        "gradeRange": "Grades {{min}}–{{max}}",
+        "play": "Play now",
+        "setGradeFirst": "Set your grade first",
+        "pointsRule": "Only games labelled \"Earns points\" are verified by the server and add points. Practice games do not add points.",
+        "leaderboard": "Leaderboard",
+        "leaderboardEmpty": "No players with points yet. Be the first!",
+        "you": "you",
+        "recent": "Recent results",
+        "allHistory": "See full history",
+        "games": {
+            "title": "Educational games",
+            "flagQuest": "Explore the map, beat quizzes, snakes & ladders and math sprints at each station, then raise the flag.",
+            "snakes": "100-square snakes & ladders for 2–4 players taking turns, with questions from many subjects.",
+            "sky": "Fly the jet, collect correct answers, and shoot wrong ones. Questions follow your grade and results earn points."
+        }
+    },
+    "nav": {
+        "label": "Main navigation",
+        "portal": "Portal",
+        "games": "Games",
+        "dashboard": "Home",
+        "character": "Character",
+        "logout": "Log out",
+        "home": "Home",
+        "login": "Log in",
+        "register": "Sign up",
+        "back": "Back",
+        "backToPortal": "Back to portal",
+        "backToGames": "Back to games",
+        "backToDashboard": "Back to home",
+        "backToLogin": "Back to login"
+    },
+    "sky": {
+        "title": "Sukhoi Sky Quiz",
+        "pilot": "Young pilot",
+        "mission": "Knowledge mission",
+        "grade": "Grade {{grade}}",
+        "noGrade": "Grade not set",
+        "gradeLabel": "Grade",
+        "points": "{{count}} points",
+        "score": "Score {{score}}",
+        "shields": "Shields {{shields}}/{{max}}",
+        "round": "Question {{round}}/{{total}}",
+        "intro": "Press Start flying to get the first question.",
+        "hint": "Fly into the CORRECT answer. Shoot WRONG answers and drones.",
+        "pause": "Pause",
+        "resume": "Resume",
+        "start": "Start flying",
+        "playAgain": "Play again",
+        "connecting": "Connecting…",
+        "fire": "Fire",
+        "mute": "Mute sound",
+        "unmute": "Unmute sound",
+        "setGrade": "Set grade",
+        "loginForPoints": "Log in to earn points",
+        "noCanvas": "Use a browser that supports Canvas to play.",
+        "canvasLabel": "Sukhoi arena. Arrows or WASD to fly, space to shoot, P to pause. On touch screens, drag the jet and hold the fire button.",
+        "connection": {
+            "connecting": "Connecting",
+            "online": "Connected",
+            "reconnecting": "Reconnecting",
+            "offline": "Server unavailable",
+            "grade_required": "Grade needed"
+        },
+        "overlay": {
+            "readyTitle": "{{name}}, ready to fly?",
+            "pausedTitle": "Flight paused",
+            "doneTitle": "Mission complete!",
+            "crashedTitle": "Shields depleted — flight over",
+            "needGrade": "Set your grade on the home page first so questions match your level.",
+            "onlineRules": "{{rounds}} questions for grade {{grade}}. Collect the correct answer, shoot wrong answers and drones. Results are verified by the server and earn points.",
+            "guestRules": "Demo mode: pick grade 1–4. Log in so questions follow your grade and results earn points.",
+            "unavailable": "The game server is not available yet. Please try again later.",
+            "congratsTitle": "Congratulations, {{name}}!"
+        },
+        "result": {
+            "summary": "Score {{score}} • {{correct}}/{{total}} correct",
+            "earned": "+{{points}} points added to your account",
+            "demo": "Demo mode does not award points.",
+            "congrats": "Amazing!",
+            "percent": "Score {{percent}}%",
+            "shieldsExplained": "Shields are the jet's lives ({{max}} in total). You lose one each time you touch a wrong answer, shoot the correct answer, let the answers pass, or crash into a meteor. With no shields left the flight stopped at question {{done}} of {{total}}.",
+            "passHint": "Answer more than {{percent}}% correctly to earn the congratulations.",
+            "noPoints": "No extra points this time — your account points stay the same.",
+            "accountTotal": "Your account total is now: {{points}}",
+            "syncing": "Saving points to your account…"
+        },
+        "feedback": {
+            "correct": "Correct! +{{score}} score.",
+            "wrong_touch": "Not quite. Answer: {{answer}}",
+            "removed": "Wrong answer removed! +{{score}} score",
+            "shot_correct": "That was the correct answer: {{answer}}. Don't shoot it!",
+            "missed": "Answer missed: {{answer}}",
+            "crash": "Hit a meteor! Lost 1 shield."
+        },
+        "errors": {
+            "generic": "The server rejected that action. Keep flying.",
+            "offline": "Connection lost. Reconnecting…"
+        },
+        "footer": {
+            "online": "Arrows/WASD or drag to fly. Space or hold Fire. P to pause. Questions follow your profile grade; points are counted by the server.",
+            "guest": "Arrows/WASD or drag to fly. Space or hold Fire. Demo mode does not award points."
+        },
+        "progress": "Progress: {{done}} of {{total}} questions",
+        "progressCorrect": "{{correct}} correct",
+        "finished": "Flight finished. See your results below.",
+        "finishedPassed": "Great job! You answered more than 70% correctly."
+    }
+}

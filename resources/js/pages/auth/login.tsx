@@ -1,214 +1,307 @@
+import { Google } from '@/components/brand-icons';
 import InputError from '@/components/input-error';
-import SocialLoginButtons from '@/components/social-login-buttons';
+import { BackButton, NavButton } from '@/components/site-nav';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { useTranslations } from '@/hooks/use-translations';
-import AuthLayout from '@/layouts/auth-layout';
-import { register } from '@/routes';
-import { store } from '@/routes/login';
-import { request } from '@/routes/password';
-import { Form, Head, Link } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { Eye, EyeOff, Gamepad2, Loader2, Lock, Mail } from 'lucide-react';
+import { type FormEventHandler, useState } from 'react';
+import '../../../css/auth-landing.css';
 
 interface LoginProps {
-    status?: string;
+    adminLogin?: boolean;
     canResetPassword: boolean;
-    canRegister: boolean;
-    email?: string;
-    redirect?: string;
+    status?: string;
+    googleEnabled: boolean;
+    googleRedirectUrl: string;
 }
 
 export default function Login({
-    status,
+    adminLogin = false,
     canResetPassword,
-    canRegister,
-    email,
-    redirect,
+    status,
+    googleEnabled,
+    googleRedirectUrl,
 }: LoginProps) {
     const { t } = useTranslations();
+    const { errors: pageErrors } = usePage<SharedData>().props;
+    const [showPassword, setShowPassword] = useState(false);
 
-    // Build register URL with email and redirect params if present
-    const registerUrl = () => {
-        const baseUrl = register();
-        const params = new URLSearchParams();
-        if (email) params.set('email', email);
-        if (redirect) params.set('redirect', redirect);
-        return params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+    const { data, setData, post, processing, errors, reset } = useForm({
+        email: '',
+        password: '',
+        remember: false as boolean,
+    });
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        post(adminLogin ? '/admin/login' : '/login', {
+            onFinish: () => reset('password'),
+        });
     };
 
     return (
-        <AuthLayout
-            title={t('auth.login.title', 'Welcome back, Pejuang Ilmu! 🎮')}
-            description={t(
-                'auth.login.description',
-                'Masuk untuk lanjutkan petualangan belajarmu',
-            )}
-        >
-            <Head title={t('auth.login.page_title', 'Log in')} />
-
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
-            >
-                {({ processing, errors }) => (
-                    <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">
-                                    {t('auth.email', 'Email address')}
-                                </Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    name="email"
-                                    required
-                                    autoFocus={!email}
-                                    tabIndex={1}
-                                    autoComplete="email"
-                                    placeholder={t(
-                                        'auth.email_placeholder',
-                                        'email@example.com',
-                                    )}
-                                    defaultValue={email}
-                                />
-                                <InputError message={errors.email} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">
-                                        {t('auth.password', 'Password')}
-                                    </Label>
-                                    {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm font-semibold"
-                                            tabIndex={5}
-                                        >
-                                            {t(
-                                                'auth.forgot_password',
-                                                'Forgot password?',
-                                            )}
-                                        </TextLink>
-                                    )}
-                                </div>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    name="password"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="current-password"
-                                    placeholder={t('auth.password', 'Password')}
-                                    autoFocus={!!email}
-                                />
-                                <InputError message={errors.password} />
-                            </div>
-
-                            <div className="flex items-center space-x-3">
-                                <Checkbox
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                />
-                                <Label
-                                    htmlFor="remember"
-                                    className="cursor-pointer text-sm font-normal"
-                                >
-                                    {t('auth.remember_me', 'Remember me')}
-                                </Label>
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="w-full"
-                                size="lg"
-                                tabIndex={4}
-                                disabled={processing}
-                                data-test="login-button"
-                            >
-                                {processing && <Spinner />}
-                                {t('auth.login.button', 'Sign in')}
-                            </Button>
-
-                            <div className="relative">
-                                <div className="absolute inset-0 flex items-center">
-                                    <span className="w-full border-t" />
-                                </div>
-                                <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-background px-2 text-muted-foreground">
-                                        Or
-                                    </span>
-                                </div>
-                            </div>
-
-                            <Link href="/magic-login" className="w-full">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="w-full"
-                                    size="lg"
-                                >
-                                    Sign in with Magic Link
-                                </Button>
-                            </Link>
+        <>
+            <Head title={t(adminLogin ? 'login.adminTitle' : 'login.title')}>
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap"
+                    rel="stylesheet"
+                />
+            </Head>
+            <div className="auth-landing">
+                <header className="auth-header">
+                    <a href="/" className="auth-brand" aria-label="EduFunHub">
+                        <span className="auth-brand-mark">
+                            <Gamepad2 className="size-6" />
+                        </span>
+                        <span>
+                            EduFun<span>Hub</span>
+                        </span>
+                    </a>
+                    <div className="edu-nav-bar">
+                        <BackButton href="/" label={t('login.back')} external />
+                        <NavButton
+                            href="/gamelist"
+                            icon={Gamepad2}
+                            label={t('nav.games')}
+                        />
+                    </div>
+                </header>
+                <main className="auth-main">
+                    <section className="auth-intro">
+                        <span className="auth-badge">{t('login.badge')}</span>
+                        <h1>
+                            {t('login.hero')}{' '}
+                            <span>{t('login.heroAccent')}</span>
+                        </h1>
+                        <p>{t('login.description')}</p>
+                        <div className="auth-shapes" aria-hidden="true">
+                            <span />
+                            <span />
+                            <span />
                         </div>
-
-                        {canRegister && (
-                            <div className="text-center text-sm text-muted-foreground">
-                                {t('auth.no_account', "Don't have an account?")}{' '}
-                                <TextLink
-                                    href={registerUrl()}
-                                    tabIndex={5}
-                                    className="font-semibold"
-                                >
-                                    {t('auth.sign_up', 'Sign up')}
-                                </TextLink>
+                    </section>
+                    <section
+                        className="min-w-0"
+                        aria-labelledby="login-heading"
+                    >
+                        {/* Status message */}
+                        {status && (
+                            <div className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                                {status}
                             </div>
                         )}
-                        <div className="mt-2 space-y-3 border-t pt-4">
-                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                Developer Quick Login
-                            </span>
-                            <div className="grid grid-cols-1 gap-2">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    className="h-9 bg-bubble-orange/15 px-2 text-xs text-bubble-orange hover:bg-bubble-orange/25 dark:bg-bubble-orange/20 dark:text-orange-300 dark:hover:bg-bubble-orange/30"
-                                    onClick={() => {
-                                        const e = document.getElementById(
-                                            'email',
-                                        ) as HTMLInputElement;
-                                        const p = document.getElementById(
-                                            'password',
-                                        ) as HTMLInputElement;
-                                        if (e && p) {
-                                            e.value = 'superadmin@example.com';
-                                            p.value = 'password';
-                                            e.form?.requestSubmit();
-                                        }
-                                    }}
+
+                        {/* Card */}
+                        <div className="auth-card">
+                            <div className="mb-6 flex flex-col gap-2">
+                                <h2
+                                    id="login-heading"
+                                    className="text-3xl font-bold tracking-tight"
                                 >
-                                    Super Admin
-                                </Button>
+                                    {t(
+                                        adminLogin
+                                            ? 'login.adminTitle'
+                                            : 'login.title',
+                                    )}
+                                </h2>
+                                <p className="text-sm text-muted-foreground">
+                                    {t('login.subtitle')}
+                                </p>
                             </div>
+                            {!adminLogin && (
+                                <div className="mb-6 flex flex-col gap-3">
+                                    {googleEnabled ? (
+                                        <Button
+                                            variant="outline"
+                                            asChild
+                                            className="auth-google h-auto min-h-11 w-full py-2.5 text-center whitespace-normal"
+                                        >
+                                            <a href={googleRedirectUrl}>
+                                                <Google className="size-4 shrink-0" />
+                                                {t('login.google')}
+                                            </a>
+                                        </Button>
+                                    ) : (
+                                        <>
+                                            <Button
+                                                variant="outline"
+                                                disabled
+                                                className="auth-google h-auto min-h-11 w-full py-2.5 text-center whitespace-normal"
+                                                aria-describedby="google-unavailable"
+                                            >
+                                                <Google className="size-4 shrink-0" />
+                                                {t('login.google')}
+                                            </Button>
+                                            <p
+                                                id="google-unavailable"
+                                                className="text-center text-xs text-muted-foreground"
+                                            >
+                                                {t('login.unavailable')}
+                                            </p>
+                                        </>
+                                    )}
+                                    {pageErrors.google && (
+                                        <div role="alert">
+                                            <InputError
+                                                message={pageErrors.google}
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                        <span className="h-px flex-1 bg-border" />
+                                        <span>{t('login.alternative')}</span>
+                                        <span className="h-px flex-1 bg-border" />
+                                    </div>
+                                </div>
+                            )}
+                            <form onSubmit={submit} noValidate>
+                                <div className="flex flex-col gap-5">
+                                    {/* Email */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <Label htmlFor="email">
+                                            {t('login.email')}
+                                        </Label>
+                                        <div className="relative">
+                                            <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="email"
+                                                type="email"
+                                                name="email"
+                                                value={data.email}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'email',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder={t(
+                                                    'login.emailPlaceholder',
+                                                )}
+                                                autoComplete="email"
+                                                autoFocus
+                                                required
+                                            />
+                                        </div>
+                                        <InputError message={errors.email} />
+                                    </div>
+
+                                    {/* Password */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="flex items-center justify-between">
+                                            <Label htmlFor="password">
+                                                {t('login.password')}
+                                            </Label>
+                                            {canResetPassword && (
+                                                <TextLink
+                                                    href="/forgot-password"
+                                                    className="text-xs"
+                                                >
+                                                    {t('login.forgot')}
+                                                </TextLink>
+                                            )}
+                                        </div>
+                                        <div className="relative">
+                                            <Lock className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="password"
+                                                type={
+                                                    showPassword
+                                                        ? 'text'
+                                                        : 'password'
+                                                }
+                                                name="password"
+                                                value={data.password}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'password',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pr-10 pl-9"
+                                                placeholder="••••••••"
+                                                autoComplete="current-password"
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setShowPassword((s) => !s)
+                                                }
+                                                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
+                                                aria-label={
+                                                    showPassword
+                                                        ? t('login.hide')
+                                                        : t('login.show')
+                                                }
+                                            >
+                                                {showPassword ? (
+                                                    <EyeOff className="size-4" />
+                                                ) : (
+                                                    <Eye className="size-4" />
+                                                )}
+                                            </button>
+                                        </div>
+                                        <InputError message={errors.password} />
+                                    </div>
+
+                                    {/* Remember me */}
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="remember"
+                                            checked={data.remember}
+                                            onCheckedChange={(checked) =>
+                                                setData(
+                                                    'remember',
+                                                    Boolean(checked),
+                                                )
+                                            }
+                                        />
+                                        <Label
+                                            htmlFor="remember"
+                                            className="cursor-pointer text-sm font-normal"
+                                        >
+                                            {t('login.remember')}
+                                        </Label>
+                                    </div>
+
+                                    {/* Submit */}
+                                    <Button
+                                        type="submit"
+                                        className="w-full font-semibold"
+                                        disabled={processing}
+                                    >
+                                        {processing ? (
+                                            <>
+                                                <Loader2 className="mr-2 size-4 animate-spin" />
+                                                {t('login.pending')}
+                                            </>
+                                        ) : (
+                                            t('login.submit')
+                                        )}
+                                    </Button>
+                                </div>
+                            </form>
                         </div>
 
-                        <SocialLoginButtons />
-                    </>
-                )}
-            </Form>
-
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
-        </AuthLayout>
+                        {/* Register link */}
+                        {!adminLogin && (
+                            <p className="mt-6 text-center text-sm text-muted-foreground">
+                                {t('login.newAccount')}{' '}
+                                <TextLink href="/register">
+                                    {t('login.register')}
+                                </TextLink>
+                            </p>
+                        )}
+                    </section>
+                </main>
+            </div>
+        </>
     );
 }

@@ -6,6 +6,7 @@ use App\Models\Module;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\WorkspaceService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -151,5 +152,11 @@ class DatabaseSeeder extends Seeder
 
         $superadmin->roles()->syncWithoutDetaching($roleModels['super-admin']->id);
         $superadmin->createToken('Integration Agent')->plainTextToken;
+
+        // 5. Ensure the superadmin always has a personal workspace so the
+        //    workspace middleware does not abort with 403 on first login.
+        if ($superadmin->workspaces()->count() === 0) {
+            app(WorkspaceService::class)->createPersonalWorkspace($superadmin);
+        }
     }
 }

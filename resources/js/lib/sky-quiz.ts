@@ -267,6 +267,208 @@ export function hitBox(
 ): boolean {
     return Math.abs(ax - bx) < width / 2 && Math.abs(ay - by) < height / 2;
 }
+/** Rules shared with the Go referee (services/game/internal/sky). */
+export const SKY_RULES = {
+    rounds: 10,
+    shields: 5,
+    roundGapMs: 2200,
+    scoreCorrect: 100,
+    scoreRemoved: 20,
+    scoreDrone: 10,
+    maxDronesPerRound: 6,
+    passPercent: 70,
+} as const;
+
+/** True when more than passPercent of all questions were answered correctly. */
+export function hasPassed(correct: number, total: number): boolean {
+    return total > 0 && correct * 100 > SKY_RULES.passPercent * total;
+}
+
+export type SkyFeedbackKind =
+    'correct' | 'wrong_touch' | 'removed' | 'shot_correct' | 'missed' | 'crash';
+
+export interface SkyRoundState {
+    phase: 'ready' | 'question' | 'done';
+    round: number;
+    total: number;
+    shields: number;
+    max: number;
+    score: number;
+    correct: number;
+    wrong: number;
+    speed: number;
+    history?: boolean[];
+    question?: {
+        id: string;
+        subject: string;
+        text: string;
+        options: string[];
+        removed: number[];
+        delay: number;
+    };
+    feedback?: {
+        kind: SkyFeedbackKind;
+        score?: number;
+        damage?: number;
+        option?: number;
+        answer?: string;
+    };
+    result?: {
+        points: number;
+        correct: number;
+        wrong: number;
+        seconds: number;
+    };
+}
+
+/**
+ * Offline referee for guests (demo). Mirrors the Go referee rules but awards
+ * no account points; its result is shown locally only.
+ */
+export function createLocalReferee(grade: number) {
+    let questions: SkyQuestion[] = [];
+    let state: SkyRoundState = {
+        phase: 'ready',
+        round: 0,
+        total: SKY_RULES.rounds,
+        shields: SKY_RULES.shields,
+        max: SKY_RULES.shields,
+        score: 0,
+        correct: 0,
+        wrong: 0,
+        speed: 32,
+    };
+    let removed: number[] = [];
+    let history: boolean[] = [];
+    let drones = 0;
+    let started = 0;
+    let flight = 0;
+
+    const snapshot = (
+        feedback?: SkyRoundState['feedback'],
+        delay = 0,
+    ): SkyRoundState => {
+        const q = questions[state.round];
+        return {
+            ...state,
+            history: [...history],
+            question:
+                state.phase === 'question' && q
+                    ? {
+                          id: `${flight}-${state.round}`,
+                          subject: q.subject,
+                          text: q.text,
+                          options: q.options,
+                          removed: [...removed],
+                          delay,
+                      }
+                    : undefined,
+            feedback,
+        };
+    };
+    const finish = () => {
+        state.phase = 'done';
+        state.result = {
+            points: 0,
+            correct: state.correct,
+            wrong: state.wrong,
+            seconds: Math.round((performance.now() - started) / 1000),
+            percent: Math.floor((state.correct * 100) / state.total),
+            passed: hasPassed(state.correct, state.total),
+            reason: state.shields === 0 ? 'shields' : 'finished',
+        };
+    };
+    const resolve = (
+        kind: SkyFeedbackKind,
+        score: number,
+        damage: number,
+    ): SkyRoundState => {
+        const q = questions[state.round];
+        const feedback = { kind, score, damage, answer: q.options[q.answer] };
+        state.shields = Math.max(0, state.shields - damage);
+        history.push(kind === 'correct');
+        state.round += 1;
+        removed = [];
+        drones = 0;
+        if (state.shields === 0 || state.round >= state.total) {
+            finish();
+        }
+        return snapshot(feedback, SKY_RULES.roundGapMs);
+    };
+
+    return {
+        start(): SkyRoundState {
+            flight += 1;
+            questions = shuffledQuestions(grade);
+            state = {
+                phase: 'question',
+                round: 0,
+                total: Math.min(SKY_RULES.rounds, questions.length),
+                shields: SKY_RULES.shields,
+                max: SKY_RULES.shields,
+                score: 0,
+                correct: 0,
+                wrong: 0,
+                speed: 32,
+            };
+            removed = [];
+            history = [];
+            drones = 0;
+            started = performance.now();
+            return snapshot();
+        },
+        touch(option: number): SkyRoundState | null {
+            const q = questions[state.round];
+            if (state.phase !== 'question' || !q || removed.includes(option))
+                return null;
+            if (option === q.answer) {
+                state.correct += 1;
+                state.score += SKY_RULES.scoreCorrect;
+                return resolve('correct', SKY_RULES.scoreCorrect, 0);
+            }
+            state.wrong += 1;
+            return resolve('wrong_touch', 0, 1);
+        },
+        shoot(option: number): SkyRoundState | null {
+            const q = questions[state.round];
+            if (state.phase !== 'question' || !q || removed.includes(option))
+                return null;
+            if (option === q.answer) {
+                state.wrong += 1;
+                return resolve('shot_correct', 0, 1);
+            }
+            removed.push(option);
+            state.score += SKY_RULES.scoreRemoved;
+            return snapshot({
+                kind: 'removed',
+                option,
+                score: SKY_RULES.scoreRemoved,
+            });
+        },
+        miss(): SkyRoundState | null {
+            if (state.phase !== 'question') return null;
+            state.wrong += 1;
+            return resolve('missed', 0, 1);
+        },
+        crash(): SkyRoundState | null {
+            if (state.phase !== 'question') return null;
+            state.shields = Math.max(0, state.shields - 1);
+            if (state.shields === 0) finish();
+            return snapshot({ kind: 'crash', damage: 1 });
+        },
+        drone(): number | null {
+            if (
+                state.phase !== 'question' ||
+                drones >= SKY_RULES.maxDronesPerRound
+            )
+                return null;
+            drones += 1;
+            state.score += SKY_RULES.scoreDrone;
+            return state.score;
+        },
+    };
+}
+
 export function answerOutcome(
     correct: boolean,
     shot: boolean,

@@ -1,165 +1,109 @@
+import AuthShell from '@/components/auth-shell';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSlot,
-} from '@/components/ui/input-otp';
+import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/hooks/use-translations';
-import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
-import AuthLayout from '@/layouts/auth-layout';
-import { store } from '@/routes/two-factor/login';
-import { Form, Head } from '@inertiajs/react';
-import { REGEXP_ONLY_DIGITS } from 'input-otp';
-import { useMemo, useState } from 'react';
+import { Link, useForm } from '@inertiajs/react';
+import { Loader2, ShieldCheck } from 'lucide-react';
+import { type FormEventHandler, useState } from 'react';
 
 export default function TwoFactorChallenge() {
     const { t } = useTranslations();
-    const [showRecoveryInput, setShowRecoveryInput] = useState<boolean>(false);
-    const [code, setCode] = useState<string>('');
+    const [recovery, setRecovery] = useState(false);
+    const { data, setData, post, processing, errors, reset } = useForm({
+        code: '',
+        recovery_code: '',
+    });
 
-    const authConfigContent = useMemo<{
-        title: string;
-        description: string;
-        toggleText: string;
-    }>(() => {
-        if (showRecoveryInput) {
-            return {
-                title: t(
-                    'auth.two_factor_challenge.recovery_code.title',
-                    'Recovery Code',
-                ),
-                description: t(
-                    'auth.two_factor_challenge.recovery_code.description',
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
-                ),
-                toggleText: t(
-                    'auth.two_factor_challenge.recovery_code.toggle_text',
-                    'login using an authentication code',
-                ),
-            };
-        }
-
-        return {
-            title: t(
-                'auth.two_factor_challenge.authentication_code.title',
-                'Authentication Code',
-            ),
-            description: t(
-                'auth.two_factor_challenge.authentication_code.description',
-                'Enter the authentication code provided by your authenticator application.',
-            ),
-            toggleText: t(
-                'auth.two_factor_challenge.authentication_code.toggle_text',
-                'login using a recovery code',
-            ),
-        };
-    }, [showRecoveryInput, t]);
-
-    const toggleRecoveryMode = (clearErrors: () => void): void => {
-        setShowRecoveryInput(!showRecoveryInput);
-        clearErrors();
-        setCode('');
+    const submit: FormEventHandler = (event) => {
+        event.preventDefault();
+        post('/two-factor-challenge', {
+            onFinish: () => reset('code', 'recovery_code'),
+        });
     };
 
     return (
-        <AuthLayout
-            title={authConfigContent.title}
-            description={authConfigContent.description}
-        >
-            <Head
-                title={t(
-                    'auth.two_factor_challenge.page_title',
-                    'Two-Factor Authentication',
-                )}
-            />
-
-            <div className="space-y-6">
-                <Form
-                    {...store.form()}
-                    className="space-y-4"
-                    resetOnError
-                    resetOnSuccess={!showRecoveryInput}
-                >
-                    {({ errors, processing, clearErrors }) => (
-                        <>
-                            {showRecoveryInput ? (
-                                <>
-                                    <Input
-                                        name="recovery_code"
-                                        type="text"
-                                        placeholder={t(
-                                            'auth.two_factor_challenge.recovery_code.placeholder',
-                                            'Enter recovery code',
-                                        )}
-                                        autoFocus={showRecoveryInput}
-                                        required
-                                    />
-                                    <InputError
-                                        message={errors.recovery_code}
-                                    />
-                                </>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center space-y-3 text-center">
-                                    <div className="flex w-full items-center justify-center">
-                                        <InputOTP
-                                            name="code"
-                                            maxLength={OTP_MAX_LENGTH}
-                                            value={code}
-                                            onChange={(value) => setCode(value)}
-                                            disabled={processing}
-                                            pattern={REGEXP_ONLY_DIGITS}
-                                        >
-                                            <InputOTPGroup>
-                                                {Array.from(
-                                                    { length: OTP_MAX_LENGTH },
-                                                    (_, index) => (
-                                                        <InputOTPSlot
-                                                            key={index}
-                                                            index={index}
-                                                        />
-                                                    ),
-                                                )}
-                                            </InputOTPGroup>
-                                        </InputOTP>
-                                    </div>
-                                    <InputError message={errors.code} />
-                                </div>
-                            )}
-
-                            <Button
-                                type="submit"
-                                className="w-full"
-                                disabled={processing}
-                            >
-                                {t(
-                                    'auth.two_factor_challenge.continue',
-                                    'Continue',
-                                )}
-                            </Button>
-
-                            <div className="text-center text-sm text-muted-foreground">
-                                <span>
-                                    {t(
-                                        'auth.two_factor_challenge.or_you_can',
-                                        'or you can',
-                                    )}{' '}
-                                </span>
-                                <button
-                                    type="button"
-                                    className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                    onClick={() =>
-                                        toggleRecoveryMode(clearErrors)
-                                    }
-                                >
-                                    {authConfigContent.toggleText}
-                                </button>
-                            </div>
-                        </>
-                    )}
-                </Form>
+        <AuthShell namespace="twoFactor" backHref="/login">
+            <div className="mb-6 flex flex-col gap-3">
+                <span className="inline-flex size-12 items-center justify-center rounded-full border-2 border-[#151b2e] bg-[#ffd93d]">
+                    <ShieldCheck className="size-6" />
+                </span>
+                <h2 className="text-3xl font-bold tracking-tight">
+                    {t('twoFactor.title')}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                    {t('twoFactor.description')}
+                </p>
             </div>
-        </AuthLayout>
+            <form onSubmit={submit} noValidate>
+                <div className="flex flex-col gap-5">
+                    {recovery ? (
+                        <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="recovery_code">
+                                {t('twoFactor.recovery')}
+                            </Label>
+                            <Input
+                                id="recovery_code"
+                                name="recovery_code"
+                                value={data.recovery_code}
+                                onChange={(event) =>
+                                    setData('recovery_code', event.target.value)
+                                }
+                                placeholder={t('twoFactor.recoveryPlaceholder')}
+                                autoFocus
+                            />
+                            <InputError message={errors.recovery_code} />
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="code">{t('twoFactor.code')}</Label>
+                            <Input
+                                id="code"
+                                name="code"
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                value={data.code}
+                                onChange={(event) =>
+                                    setData('code', event.target.value)
+                                }
+                                placeholder={t('twoFactor.codePlaceholder')}
+                                autoFocus
+                            />
+                            <InputError message={errors.code} />
+                        </div>
+                    )}
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="h-auto min-h-11 w-full py-2.5"
+                    >
+                        {processing ? (
+                            <>
+                                <Loader2 className="size-4 animate-spin" />
+                                {t('twoFactor.verifying')}
+                            </>
+                        ) : (
+                            t('twoFactor.submit')
+                        )}
+                    </Button>
+                    <button
+                        type="button"
+                        onClick={() => setRecovery((value) => !value)}
+                        className="text-sm font-semibold underline"
+                    >
+                        {recovery
+                            ? t('twoFactor.useCode')
+                            : t('twoFactor.useRecovery')}
+                    </button>
+                    <Link
+                        href="/login"
+                        className="text-center text-sm font-semibold underline"
+                    >
+                        {t('twoFactor.back')}
+                    </Link>
+                </div>
+            </form>
+        </AuthShell>
     );
 }

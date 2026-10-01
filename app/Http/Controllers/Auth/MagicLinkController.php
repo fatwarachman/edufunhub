@@ -64,6 +64,6 @@ class MagicLinkController extends Controller
         // Optional: Ensure session is regenerated to prevent fixation
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('portal'));
     }
 }

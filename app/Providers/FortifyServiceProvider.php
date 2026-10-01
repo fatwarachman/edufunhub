@@ -4,12 +4,17 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Responses\LoginResponse;
+use App\Http\Responses\TwoFactorLoginResponse;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
+use Laravel\Fortify\Contracts\TwoFactorLoginResponse as TwoFactorLoginResponseContract;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 
@@ -20,7 +25,8 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
+        $this->app->singleton(TwoFactorLoginResponseContract::class, TwoFactorLoginResponse::class);
     }
 
     /**
@@ -28,6 +34,16 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Fortify::authenticateUsing(function (Request $request): ?\App\Models\User {
+            $user = \App\Models\User::query()->where('email', $request->input('email'))->first();
+            if (! $user || ! \Illuminate\Support\Facades\Hash::check($request->input('password'), $user->password) || $user->disabled_at !== null) {
+                return null;
+            }
+            if ($request->routeIs('admin.login.store') && ! ($user->is_superadmin || $user->hasRole('admin'))) {
+                return null;
+            }
+            return $user;
+        });
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
@@ -48,6 +64,8 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureViews(): void
     {
         Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
+            'googleEnabled' => GoogleAuthController::enabled(),
+            'googleRedirectUrl' => GoogleAuthController::enabled() ? route('google.redirect') : null,
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
             'canRegister' => Features::enabled(Features::registration()),
             'status' => $request->session()->get('status'),

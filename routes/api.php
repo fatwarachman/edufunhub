@@ -1,10 +1,15 @@
 <?php
 
+use App\Http\Controllers\Api\GameResultController;
 use App\Http\Controllers\Api\HealthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', HealthController::class);
+
+Route::post('/internal/game-results', [GameResultController::class, 'store'])
+    ->middleware('throttle:120,1')
+    ->name('api.internal.game-results.store');
 
 Route::get('/user', function (Request $request) {
     return $request->user();

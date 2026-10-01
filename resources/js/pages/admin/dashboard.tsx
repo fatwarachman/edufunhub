@@ -1,527 +1,251 @@
-import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import AdminLayout from '@/layouts/admin-layout';
-import { Head, Link, router } from '@inertiajs/react';
+import { type DashboardStats, type ActivityLog } from '@/types/admin';
+import { Head, Link } from '@inertiajs/react';
 import {
-    ArrowDownRight,
+    Activity,
     ArrowUpRight,
-    Boxes,
-    Gamepad2,
-    Shield,
-    Sparkles,
-    Trophy,
+    KeyRound,
+    Lock,
+    Plus,
+    ShieldCheck,
+    TrendingUp,
+    UserCheck,
     Users,
 } from 'lucide-react';
-import {
-    Area,
-    AreaChart,
-    CartesianGrid,
-    Cell,
-    Legend,
-    Pie,
-    PieChart,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
-} from 'recharts';
+import { type ReactNode } from 'react';
 
-interface Metrics {
-    total_users: number;
-    total_roles: number;
-    total_permissions: number;
-    total_superadmins: number;
-    new_users_30d: number;
-    user_growth_percent: number;
+interface DashboardProps {
+    stats: DashboardStats;
+    recentActivity?: ActivityLog[];
 }
 
-interface DailyStat {
-    date: string;
-    count: number;
-}
-
-interface RoleDistItem {
-    role: string;
-    count: number;
-}
-
-interface Sparklines {
-    new_users: number[];
-}
-
-interface AdminDashboardProps {
-    metrics: Metrics;
-    sparklines: Sparklines;
-    dailySignups: DailyStat[];
-    roleDistribution: RoleDistItem[];
-    recent_users: {
-        id: number;
-        name: string;
-        email: string;
-        created_at: string;
-    }[];
-}
-
-function Sparkline({
-    data,
-    color = '#ff9e44',
+function StatCard({
+    label,
+    value,
+    icon: Icon,
+    trend,
+    color,
+    href,
 }: {
-    data: number[];
-    color?: string;
+    label: string;
+    value: number;
+    icon: React.ElementType;
+    trend?: number;
+    color: string;
+    href: string;
 }) {
-    if (data.length < 2) return null;
-
-    const width = 80;
-    const height = 24;
-    const max = Math.max(...data, 1);
-    const points = data
-        .map((v, i) => {
-            const x = (i / (data.length - 1)) * width;
-            const y = height - (v / max) * height;
-            return `${x},${y}`;
-        })
-        .join(' ');
-
     return (
-        <svg width={width} height={height} className="opacity-70">
-            <polyline
-                points={points}
-                fill="none"
-                stroke={color}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-        </svg>
-    );
-}
-
-function GrowthBadge({ value }: { value: number }) {
-    const isPositive = value >= 0;
-
-    const healthyClass = 'text-emerald-600 dark:text-emerald-400';
-    const unhealthyClass = 'text-red-600 dark:text-red-400';
-
-    const colorClass = isPositive ? healthyClass : unhealthyClass;
-
-    return (
-        <span
-            className={`inline-flex items-center gap-0.5 text-xs font-medium ${colorClass}`}
+        <Link
+            href={href}
+            className="group flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-            {isPositive ? (
-                <ArrowUpRight className="h-3 w-3" />
-            ) : (
-                <ArrowDownRight className="h-3 w-3" />
+            <div className="flex items-start justify-between">
+                <div
+                    className={`flex size-10 items-center justify-center rounded-xl ${color} text-white shadow-sm`}
+                >
+                    <Icon className="size-5" />
+                </div>
+                <ArrowUpRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+            </div>
+            <div>
+                <p className="text-3xl font-bold text-foreground tabular-nums">
+                    {value.toLocaleString()}
+                </p>
+                <p className="mt-0.5 text-sm text-muted-foreground">{label}</p>
+            </div>
+            {trend !== undefined && (
+                <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                    <TrendingUp className="size-3" />
+                    <span>+{trend}% this month</span>
+                </div>
             )}
-            {Math.abs(value)}%
-        </span>
+        </Link>
     );
 }
 
-const COLORS = ['#ff9e44', '#845ec2', '#00c9a7', '#4d8fac', '#ff6584'];
+function timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+}
 
-const tooltipStyle = {
-    backgroundColor: 'var(--popover)',
-    border: '1px solid var(--border)',
-    borderRadius: '10px',
-    color: 'var(--popover-foreground)',
-} as const;
+function getInitialsFromName(name: string): string {
+    return name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
+}
 
-export default function AdminDashboard({
-    metrics,
-    sparklines,
-    dailySignups,
-    roleDistribution,
-    recent_users,
-}: AdminDashboardProps) {
-    const avatarColor = (name: string) => {
-        const colors = [
-            'bg-bubble-orange/20 text-bubble-orange',
-            'bg-bubble-purple/20 text-bubble-purple',
-            'bg-bubble-green/20 text-bubble-green',
-            'bg-bubble-blue/20 text-bubble-blue',
-            'bg-bubble-pink/20 text-bubble-pink',
-        ];
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) {
-            hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
-        }
-        return colors[hash % colors.length];
-    };
-
-    const initials = (name: string) =>
-        name
-            .split(' ')
-            .map((n) => n[0])
-            .slice(0, 2)
-            .join('')
-            .toUpperCase();
-
-    const metricCardClass =
-        'rounded-2xl border-0 shadow-sm transition-shadow hover:shadow-md';
+function ActivityItem({ log }: { log: ActivityLog }) {
+    const causerName = log.causer?.name ?? 'System';
+    const initials = getInitialsFromName(causerName);
 
     return (
-        <AdminLayout>
+        <li className="flex items-start gap-3 py-3">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                {initials}
+            </div>
+            <div className="min-w-0 flex-1">
+                <p className="text-sm text-foreground">
+                    <span className="font-medium">{causerName}</span>{' '}
+                    <span className="text-muted-foreground">{log.description}</span>
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{timeAgo(log.created_at)}</p>
+            </div>
+        </li>
+    );
+}
+
+export default function Dashboard({ stats, recentActivity = [] }: DashboardProps) {
+    const statCards = [
+        {
+            label: 'Total Users',
+            value: stats.total_users,
+            icon: Users,
+            trend: stats.users_trend,
+            color: 'bg-bubble-blue',
+            href: '/admin/users',
+        },
+        {
+            label: 'Active Users (30d)',
+            value: stats.active_users,
+            icon: UserCheck,
+            trend: stats.active_trend,
+            color: 'bg-bubble-green',
+            href: '/admin/users',
+        },
+        {
+            label: 'Total Roles',
+            value: stats.total_roles,
+            icon: ShieldCheck,
+            color: 'bg-bubble-purple',
+            href: '/admin/roles',
+        },
+        {
+            label: 'Total Permissions',
+            value: stats.total_permissions,
+            icon: Lock,
+            color: 'bg-bubble-orange',
+            href: '/admin/permissions',
+        },
+    ];
+
+    return (
+        <>
             <Head title="Admin Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
-                {/* Header */}
-                <div className="flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                        <div className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-bubble-yellow/40 px-2.5 py-0.5 text-[11px] font-semibold text-foreground/70">
-                            <Sparkles className="h-3 w-3 text-bubble-orange" />
-                            EduFunHub Admin
-                        </div>
-                        <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
-                            Pusat Kendali Pulau Ilmu 🎮
-                        </h2>
-                        <p className="text-sm text-muted-foreground">
-                            Kelola pemain, role, dan permission platform.
-                        </p>
-                    </div>
-                    <Button variant="outline" size="sm" asChild>
-                        <Link href="/admin/users">
-                            <Users className="mr-1.5 h-3.5 w-3.5" />
-                            Kelola User
-                        </Link>
-                    </Button>
-                </div>
 
-                {/* Top Metric Cards */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    {/* Total Users */}
-                    <Card className={metricCardClass}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Total Pemain
-                            </CardTitle>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-blue/15">
-                                <Users className="h-4 w-4 text-bubble-blue" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="font-display text-2xl font-bold text-foreground">
-                                {metrics.total_users}
-                            </div>
-                            <div className="mt-2 flex items-center justify-between">
-                                <p className="text-xs text-muted-foreground">
-                                    <GrowthBadge
-                                        value={metrics.user_growth_percent}
-                                    />{' '}
-                                    dari 30 hari lalu
-                                </p>
-                                <Sparkline
-                                    data={sparklines.new_users}
-                                    color="#4d8fac"
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Superadmins */}
-                    <Card className={metricCardClass}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Superadmin
-                            </CardTitle>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-pink/15">
-                                <Shield className="h-4 w-4 text-bubble-pink" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="font-display text-2xl font-bold text-foreground">
-                                {metrics.total_superadmins}
-                            </div>
-                            <div className="mt-2">
-                                <p className="text-xs text-muted-foreground">
-                                    Akses penuh ke admin panel
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Roles */}
-                    <Card className={metricCardClass}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Role Aktif
-                            </CardTitle>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-green/15">
-                                <Gamepad2 className="h-4 w-4 text-bubble-green" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="font-display text-2xl font-bold text-foreground">
-                                {metrics.total_roles}
-                            </div>
-                            <div className="mt-2">
-                                <p className="text-xs text-muted-foreground">
-                                    Kelompok permission untuk user
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Permissions */}
-                    <Card className={metricCardClass}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
-                                Permission
-                            </CardTitle>
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-bubble-orange/15">
-                                <Boxes className="h-4 w-4 text-bubble-orange" />
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="font-display text-2xl font-bold text-foreground">
-                                {metrics.total_permissions}
-                            </div>
-                            <div className="mt-2">
-                                <p className="text-xs text-muted-foreground">
-                                    Dari {metrics.new_users_30d} pemain baru 30
-                                    hari
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Charts Row */}
-                <div className="grid gap-4 md:grid-cols-7">
-                    {/* Growth Chart */}
-                    <Card className="rounded-2xl border-0 shadow-sm md:col-span-4">
-                        <CardHeader>
-                            <CardTitle className="font-display text-lg">
-                                Pemain Baru
-                            </CardTitle>
-                            <CardDescription>
-                                Registrasi per hari (14 hari terakhir)
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="pl-0">
-                            <div className="h-[300px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart
-                                        data={dailySignups.map((d) => ({
-                                            ...d,
-                                            users: d.count,
-                                        }))}
-                                        margin={{
-                                            top: 10,
-                                            right: 30,
-                                            left: 0,
-                                            bottom: 0,
-                                        }}
-                                    >
-                                        <defs>
-                                            <linearGradient
-                                                id="colorUsers"
-                                                x1="0"
-                                                y1="0"
-                                                x2="0"
-                                                y2="1"
-                                            >
-                                                <stop
-                                                    offset="5%"
-                                                    stopColor="#ff9e44"
-                                                    stopOpacity={0.3}
-                                                />
-                                                <stop
-                                                    offset="95%"
-                                                    stopColor="#ff9e44"
-                                                    stopOpacity={0}
-                                                />
-                                            </linearGradient>
-                                        </defs>
-                                        <XAxis
-                                            dataKey="date"
-                                            stroke="var(--muted-foreground)"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            dy={10}
-                                        />
-                                        <YAxis
-                                            stroke="var(--muted-foreground)"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            allowDecimals={false}
-                                        />
-                                        <CartesianGrid
-                                            strokeDasharray="3 3"
-                                            vertical={false}
-                                            stroke="var(--border)"
-                                            strokeOpacity={0.6}
-                                        />
-                                        <Tooltip contentStyle={tooltipStyle} />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="users"
-                                            name="Pemain Baru"
-                                            stroke="#ff9e44"
-                                            strokeWidth={2}
-                                            fillOpacity={1}
-                                            fill="url(#colorUsers)"
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Role Distribution */}
-                    <Card className="rounded-2xl border-0 shadow-sm md:col-span-3">
-                        <CardHeader>
-                            <CardTitle className="font-display text-lg">
-                                Distribusi Role
-                            </CardTitle>
-                            <CardDescription>
-                                Jumlah user per role
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex h-[300px] items-center justify-center">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={roleDistribution}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={100}
-                                            paddingAngle={2}
-                                            dataKey="count"
-                                            nameKey="role"
-                                        >
-                                            {roleDistribution.map(
-                                                (entry, index) => (
-                                                    <Cell
-                                                        key={`cell-${index}`}
-                                                        fill={
-                                                            COLORS[
-                                                                index %
-                                                                    COLORS.length
-                                                            ]
-                                                        }
-                                                    />
-                                                ),
-                                            )}
-                                        </Pie>
-                                        <Tooltip
-                                            contentStyle={tooltipStyle}
-                                            formatter={
-                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                (value: any) => [
-                                                    `${value} Users`,
-                                                ]
-                                            }
-                                        />
-                                        <Legend
-                                            layout="horizontal"
-                                            verticalAlign="bottom"
-                                            align="center"
-                                        />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Recent Users */}
+            <div className="space-y-6">
+                {/* Page header */}
                 <div>
-                    <div className="mb-4 flex items-center justify-between">
-                        <h3 className="flex items-center gap-2 font-display text-lg font-semibold tracking-tight">
-                            <Trophy className="h-4 w-4 text-bubble-orange" />
-                            Pemain Terbaru
-                        </h3>
-                        <Button variant="outline" size="sm" asChild>
-                            <Link href="/admin/users">Lihat Semua →</Link>
-                        </Button>
-                    </div>
-                    <div className="overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-sm">
-                        <table className="w-full text-left text-sm">
-                            <thead className="bg-muted/50 text-xs text-muted-foreground uppercase">
-                                <tr>
-                                    <th className="px-6 py-3 font-medium">
-                                        Pemain
-                                    </th>
-                                    <th className="px-6 py-3 font-medium">
-                                        Email
-                                    </th>
-                                    <th className="px-6 py-3 font-medium">
-                                        Bergabung
-                                    </th>
-                                    <th className="px-6 py-3 text-right font-medium">
-                                        Aksi
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {recent_users.length === 0 ? (
-                                    <tr>
-                                        <td
-                                            colSpan={4}
-                                            className="px-6 py-8 text-center text-muted-foreground"
-                                        >
-                                            Belum ada pemain.
-                                        </td>
-                                    </tr>
+                    <h2 className="font-display text-2xl font-bold text-foreground">Dashboard</h2>
+                    <p className="text-sm text-muted-foreground">
+                        System overview and quick actions
+                    </p>
+                </div>
+
+                {/* Stats grid */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {statCards.map((card) => (
+                        <StatCard key={card.label} {...card} />
+                    ))}
+                </div>
+
+                {/* Lower section */}
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                    {/* Recent activity */}
+                    <div className="lg:col-span-2">
+                        <div className="rounded-2xl border border-border bg-card shadow-sm">
+                            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                                <div className="flex items-center gap-2">
+                                    <Activity className="size-4 text-muted-foreground" />
+                                    <h3 className="font-semibold text-foreground">
+                                        Recent Activity
+                                    </h3>
+                                </div>
+                                <Link
+                                    href="/admin/activity-log"
+                                    className="text-xs text-primary hover:underline"
+                                >
+                                    View all
+                                </Link>
+                            </div>
+
+                            <div className="px-5">
+                                {recentActivity.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                                        <Activity className="mb-2 size-8 text-muted-foreground/40" />
+                                        <p className="text-sm text-muted-foreground">
+                                            No recent activity
+                                        </p>
+                                    </div>
                                 ) : (
-                                    recent_users.map((user) => (
-                                        <tr
-                                            key={user.id}
-                                            className="transition-colors hover:bg-muted/50"
-                                        >
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div
-                                                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${avatarColor(
-                                                            user.name,
-                                                        )}`}
-                                                    >
-                                                        {initials(user.name)}
-                                                    </div>
-                                                    <span className="font-medium">
-                                                        {user.name}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-muted-foreground">
-                                                {user.email}
-                                            </td>
-                                            <td className="px-6 py-4 text-muted-foreground">
-                                                {new Date(
-                                                    user.created_at,
-                                                ).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <Button
-                                                    size="sm"
-                                                    variant="secondary"
-                                                    onClick={() =>
-                                                        router.post(
-                                                            `/admin/impersonate/${user.id}`,
-                                                        )
-                                                    }
-                                                >
-                                                    Impersonate
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))
+                                    <ul className="divide-y divide-border">
+                                        {recentActivity.map((log) => (
+                                            <ActivityItem key={log.id} log={log} />
+                                        ))}
+                                    </ul>
                                 )}
-                            </tbody>
-                        </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Quick actions */}
+                    <div>
+                        <div className="rounded-2xl border border-border bg-card shadow-sm">
+                            <div className="border-b border-border px-5 py-4">
+                                <h3 className="font-semibold text-foreground">Quick Actions</h3>
+                            </div>
+                            <div className="flex flex-col gap-2 p-5">
+                                {[
+                                    {
+                                        label: 'Add new user',
+                                        href: '/admin/users/create',
+                                        icon: Users,
+                                        color: 'bg-bubble-blue/10 text-bubble-blue hover:bg-bubble-blue/20',
+                                    },
+                                    {
+                                        label: 'Create role',
+                                        href: '/admin/roles/create',
+                                        icon: ShieldCheck,
+                                        color: 'bg-bubble-purple/10 text-bubble-purple hover:bg-bubble-purple/20',
+                                    },
+                                    {
+                                        label: 'View permissions',
+                                        href: '/admin/permissions',
+                                        icon: KeyRound,
+                                        color: 'bg-bubble-orange/10 text-bubble-orange hover:bg-bubble-orange/20',
+                                    },
+                                    {
+                                        label: 'Activity log',
+                                        href: '/admin/activity-log',
+                                        icon: Activity,
+                                        color: 'bg-bubble-green/10 text-bubble-green hover:bg-bubble-green/20',
+                                    },
+                                ].map((action) => (
+                                    <Link
+                                        key={action.href}
+                                        href={action.href}
+                                        className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${action.color}`}
+                                    >
+                                        <Plus className="size-4 shrink-0" />
+                                        {action.label}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </AdminLayout>
+        </>
     );
 }
+
+Dashboard.layout = (page: ReactNode) => (
+    <AdminLayout title="Dashboard">{page}</AdminLayout>
+);

@@ -55,7 +55,7 @@ it('authenticates a user with a valid signed magic link', function () {
     $response = $this->get($url);
 
     $this->assertAuthenticatedAs($user);
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('portal'));
 });
 
 it('rejects an invalid or modified signed magic link', function () {

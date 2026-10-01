@@ -1,3 +1,19 @@
+## Language policy
+
+- Indonesian (`id`) is the default UI language; English (`en`) is the required translation target.
+- Use English for identifiers, translation keys, comments, classes, functions, routes, and database schema.
+- Keep user-visible text in locale catalogs, including labels, validation, notifications, accessibility labels, and empty states. Do not hardcode Indonesian or English UI copy in components.
+- Add matching Indonesian and English translations for every new feature. Preserve existing locale preferences.
+
+## Aturan wajib EduFunHub: game Go dalam container
+
+- Runtime game wajib menggunakan Golang (Go) dan berjalan dalam container Docker terpisah dari aplikasi Laravel.
+- Laravel + Inertia React tetap menangani portal, autentikasi, akun, admin, dan konfigurasi; jangan pindahkan engine gameplay ke Laravel.
+- Go menangani aturan permainan, authoritative state, scoring, timer, multiplayer, matchmaking, dan WebSocket gameplay. React menangani rendering dan input pemain.
+- Integrasi melalui API/WebSocket terdokumentasi. Perubahan arsitektur ini memerlukan persetujuan pemilik aplikasi.
+- Ini aturan pengembangan; bukan pernyataan bahwa service Go sudah tersedia. Jangan membuat atau deploy container tanpa permintaan.
+- Rujukan: `docs/architecture.md` dan `DEVELOPER.md`.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

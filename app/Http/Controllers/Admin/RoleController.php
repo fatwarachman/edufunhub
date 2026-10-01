@@ -3,101 +3,133 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreRoleRequest;
+use App\Http\Requests\Admin\UpdateRoleRequest;
 use App\Models\Module;
 use App\Models\Role;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RoleController extends Controller
 {
     /**
-     * Display the roles management page.
+     * All roles with permission count and user count.
      */
     public function index(): Response
     {
         $roles = Role::query()
-            ->withCount('users')
-            ->with('permissions:id,slug,name,module_id')
-            ->orderBy('is_system', 'desc')
+            ->withCount(['permissions', 'users'])
             ->orderBy('name')
-            ->get();
+            ->paginate(20);
 
-        $modules = Module::query()
-            ->with('permissions:id,slug,name,module_id')
-            ->orderBy('name')
-            ->get();
-
-        return Inertia::render('admin/roles', [
+        return Inertia::render('admin/roles/index', [
             'roles' => $roles,
-            'modules' => $modules,
         ]);
     }
 
     /**
-     * Store a new role.
+     * Show form to create a new role with available permissions grouped by module.
      */
-    public function store(Request $request): RedirectResponse
+    public function create(): Response
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100', 'unique:roles,name'],
-            'description' => ['nullable', 'string', 'max:255'],
-            'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['integer', 'exists:permissions,id'],
+        return Inertia::render('admin/roles/create', [
+            'modules' => Module::query()->with('permissions:id,name,slug,module_id')->where('is_active', true)->get(),
         ]);
+    }
 
+    /**
+     * Persist a new role and attach selected permissions.
+     */
+    public function store(StoreRoleRequest $request): RedirectResponse
+    {
         $role = Role::create([
-            'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
-            'description' => $validated['description'] ?? null,
-            'is_system' => false,
+            'name'        => $request->name,
+            'slug'        => $request->slug,
+            'description' => $request->description,
         ]);
 
-        $role->permissions()->sync($validated['permissions'] ?? []);
-
-        return redirect()->back()->with('success', "Role \"{$validated['name']}\" dibuat.");
-    }
-
-    /**
-     * Update an existing role.
-     */
-    public function update(Request $request, Role $role): RedirectResponse
-    {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100', Rule::unique('roles', 'name')->ignore($role->id)],
-            'description' => ['nullable', 'string', 'max:255'],
-            'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['integer', 'exists:permissions,id'],
-        ]);
-
-        $role->update([
-            'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
-            'description' => $validated['description'] ?? null,
-        ]);
-
-        if (! $role->is_system || $request->input('permissions') !== null) {
-            $role->permissions()->sync($validated['permissions'] ?? []);
+        if ($request->filled('permissions')) {
+            $role->permissions()->sync($request->permissions);
         }
 
-        return redirect()->back()->with('success', "Role \"{$validated['name']}\" diperbarui.");
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($role)
+            ->log('Created role');
+
+        return redirect()->route('admin.roles.index')
+            ->with('success', 'Role created successfully.');
     }
 
     /**
-     * Delete a role.
+     * Show form to edit an existing role.
      */
-    public function destroy(Role $role): RedirectResponse
+    public function edit(Role $role): Response
     {
         if ($role->is_system) {
-            return redirect()->back()->with('error', 'Role sistem tidak dapat dihapus.');
+            abort(403, 'System roles cannot be edited.');
         }
 
-        $name = $role->name;
+        $role->load('permissions:id');
+
+        return Inertia::render('admin/roles/edit', [
+            'role'    => $role,
+            'modules' => Module::query()->with('permissions:id,name,slug,module_id')->where('is_active', true)->get(),
+        ]);
+    }
+
+    /**
+     * Validate and update a role, syncing permissions.
+     */
+    public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
+    {
+        if ($role->is_system) {
+            abort(403, 'System roles cannot be edited.');
+        }
+
+        $role->update([
+            'name'        => $request->name,
+            'slug'        => $request->slug,
+            'description' => $request->description,
+        ]);
+
+        if ($request->has('permissions')) {
+            $role->permissions()->sync($request->permissions ?? []);
+        }
+
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($role)
+            ->log('Updated role');
+
+        return redirect()->route('admin.roles.index')
+            ->with('success', 'Role updated successfully.');
+    }
+
+    /**
+     * Delete a role. System roles and roles with assigned users cannot be deleted.
+     */
+    public function destroy(Request $request, Role $role): RedirectResponse
+    {
+        if ($role->is_system) {
+            abort(403, 'System roles cannot be deleted.');
+        }
+
+        if ($role->users()->count() > 0) {
+            abort(403, 'Cannot delete a role that has users assigned.');
+        }
+
+        $role->permissions()->detach();
         $role->delete();
 
-        return redirect()->back()->with('success', "Role \"{$name}\" dihapus.");
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($role)
+            ->log('Deleted role');
+
+        return redirect()->route('admin.roles.index')
+            ->with('success', 'Role deleted successfully.');
     }
 }

@@ -1,9 +1,11 @@
-import { Button } from '@/components/ui/button';
-import { Head, Link } from '@inertiajs/react';
+import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
+import { useTranslations } from '@/hooks/use-translations';
+import { type SharedData } from '@/types';
+import { Head, usePage } from '@inertiajs/react';
 import {
-    ArrowLeft,
     Compass,
     Dice6,
+    Flag,
     Gamepad2,
     Plane,
     Play,
@@ -14,7 +16,22 @@ import {
 } from 'lucide-react';
 
 export default function GameList() {
+    const { t } = useTranslations();
+    const signedIn = Boolean(usePage<SharedData>().props.auth?.user);
+    const backHref = signedIn ? '/portal' : '/';
     const games = [
+        {
+            id: 'flag-quest',
+            title: 'Misi Bendera (Flag Quest)',
+            badge: 'Petualangan Peta & Poin',
+            desc: 'Jelajahi peta, selesaikan kuis, ular tangga, dan sprint hitung di tiap pos, lalu kibarkan bendera. Soal sesuai kelasmu dan hasilnya menambah poin.',
+            icon: Flag,
+            color: 'bg-[#ffd93d]',
+            tag: signedIn ? 'Dapat poin' : 'Perlu masuk',
+            route: '/games/flag-quest',
+            status: 'Siap dimainkan',
+            playable: true,
+        },
         {
             id: 'sky-quiz',
             title: 'Sukhoi Sky Quiz',
@@ -112,37 +129,31 @@ export default function GameList() {
 
             {/* Header */}
             <header className="sticky top-0 z-40 border-b-4 border-[#1f2a44] bg-[#FFF9E6]/95 backdrop-blur-md">
-                <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-3">
-                        <Link
-                            href="/"
-                            className="flex h-11 w-11 items-center justify-center rounded-2xl border-3 border-[#1f2a44] bg-white shadow-[3px_3px_0px_#1f2a44] transition-all hover:-translate-y-0.5"
-                        >
-                            <ArrowLeft className="h-5 w-5 text-[#1f2a44]" />
-                        </Link>
-                        <div className="flex flex-col">
-                            <span className="font-display text-xl font-black text-[#1f2a44] sm:text-2xl">
+                <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+                    <div className="flex min-w-0 items-center gap-3">
+                        <BackButton
+                            href={backHref}
+                            label={t(
+                                signedIn ? 'nav.backToPortal' : 'nav.home',
+                            )}
+                            iconOnly
+                            external={!signedIn}
+                        />
+                        <div className="flex min-w-0 flex-col">
+                            <span className="truncate font-display text-xl font-black text-[#1f2a44] sm:text-2xl">
                                 Arena Game{' '}
                                 <span className="text-[#FF9E44]">
                                     EduFunHub
                                 </span>
                             </span>
-                            <span className="text-xs font-bold text-slate-600">
+                            <span className="hidden text-xs font-bold text-slate-600 sm:block">
                                 edufunhub.com/gamelist • Pilih & Mainkan Game
                                 Edukatif
                             </span>
                         </div>
                     </div>
 
-                    <Button
-                        asChild
-                        className="rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-5 py-2 font-display text-sm font-black text-white shadow-[3px_3px_0px_#1f2a44] hover:bg-[#ff8f29]"
-                    >
-                        <Link href="/games/snakes-and-ladders">
-                            <Dice6 className="mr-2 h-4 w-4" />
-                            Main Ular Tangga
-                        </Link>
-                    </Button>
+                    <SiteNav compact />
                 </div>
             </header>
 
@@ -194,15 +205,13 @@ export default function GameList() {
                                 </div>
 
                                 <div className="mt-6 border-t-2 border-[#1f2a44]/10 pt-4">
-                                    <Button
-                                        asChild
-                                        className="w-full rounded-2xl border-3 border-[#1f2a44] bg-[#00C9A7] py-5 font-display text-base font-black text-[#1f2a44] shadow-[3px_3px_0px_#1f2a44] hover:bg-[#00C9A7]/90 hover:shadow-[5px_5px_0px_#1f2a44]"
-                                    >
-                                        <Link href={g.route}>
-                                            <Play className="mr-2 h-4 w-4 fill-[#1f2a44]" />
-                                            Mainkan Sekarang
-                                        </Link>
-                                    </Button>
+                                    <NavButton
+                                        href={g.route}
+                                        icon={Play}
+                                        label="Mainkan Sekarang"
+                                        variant="primary"
+                                        block
+                                    />
                                 </div>
                             </div>
                         );

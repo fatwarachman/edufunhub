@@ -31,6 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
+        then: function (): void {
+            require __DIR__.'/../routes/admin.php';
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->replace(
@@ -62,15 +65,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'superadmin' => EnsureSuperadmin::class,
-            'workspace' => EnsureWorkspaceAccess::class,
-            'workspace.ip' => EnforceWorkspaceIpAllowlist::class,
-            'workspace.owner' => EnsureWorkspaceOwner::class,
-            'workspace.admin' => EnsureWorkspaceAdmin::class,
+            'superadmin'         => EnsureSuperadmin::class,
+            'admin'              => \App\Http\Middleware\EnsureAdmin::class,
+            'workspace'          => EnsureWorkspaceAccess::class,
+            'workspace.ip'       => EnforceWorkspaceIpAllowlist::class,
+            'workspace.owner'    => EnsureWorkspaceOwner::class,
+            'workspace.admin'    => EnsureWorkspaceAdmin::class,
             'workspace.suspended' => EnsureWorkspaceNotSuspended::class,
-            'onboarded' => EnsureUserIsOnboarded::class,
-            'require2fa' => RequireTwoFactor::class,
-            'api-key' => AuthenticateApiKey::class,
+            'onboarded'          => EnsureUserIsOnboarded::class,
+            'require2fa'         => RequireTwoFactor::class,
+            'api-key'            => AuthenticateApiKey::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -79,7 +83,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->respond(function (mixed $response, Throwable $e, Request $request) {
             $status = $response->getStatusCode();
 
-            if (in_array($status, [403, 404, 429, 500, 503], true) && $request->header('X-Inertia')) {
+            $isWebPage = $request->isMethod('GET') && ! $request->expectsJson() && ! $request->is('api/*', 'stripe/*');
+
+            if (in_array($status, [403, 404, 429, 500, 503], true) && ($request->header('X-Inertia') || $isWebPage)) {
                 $response = Inertia::render('error', ['status' => $status])
                     ->toResponse($request)
                     ->setStatusCode($status);
