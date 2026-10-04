@@ -13,4 +13,7 @@ return [
     'school_name_required' => 'Enter your last school.',
     'school_name_invalid' => 'School name must be 3 to 120 characters.',
     'player_details_required' => 'Complete your date of birth and last school before playing.',
+    'gender_invalid' => 'Choose boy or girl.',
+    'skin_invalid' => 'Choose an available skin tone.',
+    'hair_invalid' => 'Choose an available hair colour.',
 ];

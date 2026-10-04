@@ -61,7 +61,12 @@
         "detailsSaved": "Data tersimpan.",
         "detailsMissing": "Data peserta belum lengkap",
         "kindergarten": "TK",
-        "kindergartenShort": "TK"
+        "kindergartenShort": "TK",
+        "duel": "Duel Kuis Kelas",
+        "train": "Kereta Pengetahuan",
+        "arcade": "Arkade edukasi",
+        "puzzle": "Asah otak",
+        "crossword": "Teka-Teki Silang"
     },
     "flagQuest": {
         "title": "Misi Bendera",
@@ -256,8 +261,11 @@
         "games": {
             "title": "Permainan edukasi",
             "flagQuest": "Jelajahi peta, selesaikan kuis, ular tangga, dan sprint hitung di tiap pos, lalu kibarkan bendera.",
-            "snakes": "Ular tangga 100 petak untuk 2–4 pemain bergiliran dengan soal berbagai mata pelajaran.",
-            "sky": "Terbangkan jet, ambil jawaban benar, dan tembak jawaban salah. Soal mengikuti kelasmu dan hasilnya menambah poin."
+            "snakes": "Ular tangga 100 petak dengan kuis: main sendiri, 2–4 pemain di satu perangkat, atau online bersama teman lewat PIN dan link.",
+            "sky": "Terbangkan jet, ambil jawaban benar, dan tembak jawaban salah. Soal mengikuti kelasmu dan hasilnya menambah poin.",
+            "duel": "Adu cepat menjawab soal yang sama dengan teman sekelas secara langsung. Hasil diverifikasi server dan menambah poin.",
+            "train": "Kemudikan kereta ke rel yang membawa jawaban benar. Tiap jawaban benar menambah gerbong dan poin.",
+            "crossword": "Teka-teki silang 4 level untuk semua kelas. Main sendiri atau berlomba bersama teman lewat PIN dan link."
         },
         "detailsFirst": "Isi data peserta dulu",
         "detailsNoticeTitle": "Lengkapi data peserta dulu, ya!",
@@ -279,7 +287,11 @@
         "backToGames": "Kembali ke daftar game",
         "backToDashboard": "Kembali ke beranda",
         "backToLogin": "Kembali masuk",
-        "teacher": "Ruang Guru"
+        "teacher": "Ruang Guru",
+        "allGames": "Lihat semua game",
+        "gradeRange": "Kelas {{range}}",
+        "loginToPlay": "Masuk untuk main",
+        "menu": "Menu"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -355,7 +367,9 @@
         "progress": "Progres: {{done}} dari {{total}} soal",
         "progressCorrect": "{{correct}} benar",
         "finished": "Penerbangan selesai. Lihat hasilmu di bawah.",
-        "finishedPassed": "Hebat! Kamu menjawab lebih dari 70% soal dengan benar."
+        "finishedPassed": "Hebat! Kamu menjawab lebih dari 70% soal dengan benar.",
+        "joystick": "Joystick: geser untuk mengemudikan pesawat",
+        "joystickHint": "Geser joystick untuk terbang, tekan Tembak untuk menembak."
     },
     "teacher": {
         "title": "Ruang Guru",
@@ -422,7 +436,7 @@
             "choice": "Pilihan ganda",
             "trueFalse": "Benar / salah",
             "games": "Tampilkan di permainan",
-            "skyChoiceOnly": "Sky Quiz hanya memakai soal pilihan ganda.",
+            "skyChoiceOnly": "{{games}} hanya memakai soal pilihan ganda.",
             "question": "Pertanyaan",
             "questionNote": "Bahasa Indonesia wajib; bahasa Inggris dipakai saat peserta memilih bahasa Inggris.",
             "promptId": "Pertanyaan (Indonesia)",
@@ -488,7 +502,10 @@
         },
         "games": {
             "flag-quest": "Misi Bendera",
-            "sky-quiz": "Sukhoi Sky Quiz"
+            "sky-quiz": "Sukhoi Sky Quiz",
+            "quiz-duel": "Duel Kuis Kelas",
+            "knowledge-train": "Kereta Pengetahuan",
+            "snakes-and-ladders": "Ular Tangga Edukasi"
         },
         "levels": {
             "tk": "TK",
@@ -496,5 +513,464 @@
             "smp": "SMP",
             "sma": "SMA/SMK"
         }
+    },
+    "duel": {
+        "title": "Duel Kuis Kelas",
+        "grade": "Kelas {{grade}}",
+        "noGrade": "Kelas belum diatur",
+        "points": "{{count}} poin",
+        "you": "Kamu",
+        "vs": "VS",
+        "bot": "Robot",
+        "score": "{{score}} skor",
+        "round": "Soal {{round}}/{{total}}",
+        "connection": {
+            "connecting": "Menghubungkan",
+            "online": "Terhubung",
+            "reconnecting": "Menyambung ulang",
+            "offline": "Server tidak tersedia",
+            "grade_required": "Perlu kelas"
+        },
+        "idle": {
+            "title": "Siap berduel, {{name}}?",
+            "rules": "Kamu dan lawan sekelas menjawab {{rounds}} soal yang sama secara bersamaan. Jawab benar lebih cepat untuk skor lebih tinggi. Hasilnya diverifikasi server dan menambah poin.",
+            "start": "Cari lawan",
+            "needGrade": "Atur kelasmu di beranda dulu supaya lawan dan soal sesuai tingkatanmu.",
+            "setGrade": "Atur kelas",
+            "unavailable": "Server permainan belum tersedia. Coba lagi nanti."
+        },
+        "queue": {
+            "title": "Mencari lawan…",
+            "hint": "Menunggu pemain sejenjang. Jika belum ada, Robo Edu akan menemanimu dalam {{seconds}} detik.",
+            "cancel": "Batal"
+        },
+        "countdown": {
+            "title": "Lawanmu: {{name}}",
+            "ready": "Bersiap…"
+        },
+        "question": {
+            "timeLeft": "Sisa waktu {{seconds}} detik",
+            "waiting": "Jawabanmu terkunci. Menunggu lawan…",
+            "opponentAnswered": "Lawan sudah menjawab!",
+            "opponentThinking": "Lawan sedang berpikir…",
+            "opponentOffline": "Koneksi lawan terputus"
+        },
+        "reveal": {
+            "correct": "Benar! +{{score}} skor",
+            "wrong": "Belum tepat.",
+            "timeout": "Waktu habis.",
+            "answer": "Jawaban: {{answer}}",
+            "opponentCorrect": "Lawan benar (+{{score}})",
+            "opponentWrong": "Lawan salah"
+        },
+        "result": {
+            "win": "Kamu menang!",
+            "lose": "Lawan menang kali ini",
+            "draw": "Seri!",
+            "summary": "{{correct}}/{{total}} benar • skor {{score}} vs {{opponent}}",
+            "earned": "+{{points}} poin masuk ke akunmu",
+            "noPoints": "Belum ada poin tambahan kali ini — terus berlatih!",
+            "again": "Duel lagi",
+            "back": "Kembali ke portal"
+        },
+        "errors": {
+            "generic": "Aksi ditolak server.",
+            "offline": "Koneksi terputus. Menyambung ulang…"
+        },
+        "answerLabel": "Pilihan {{letter}}: {{text}}",
+        "inviteTitle": "Ajak teman berduel",
+        "inviteIntro": "Buat ruang duel lalu bagikan PIN atau link ke satu teman. Kelas boleh berbeda, soal mengikuti kelas yang lebih rendah.",
+        "randomTitle": "Lawan acak",
+        "invite": "Ajak teman"
+    },
+    "train": {
+        "title": "Kereta Pengetahuan",
+        "grade": "Kelas {{grade}}",
+        "noGrade": "Kelas belum diatur",
+        "points": "{{count}} poin",
+        "score": "Skor {{score}}",
+        "lives": "Nyawa {{lives}}/{{max}}",
+        "round": "Soal {{round}}/{{total}}",
+        "wagons": "{{count}} gerbong",
+        "streak": "Beruntun ×{{count}}",
+        "start": "Berangkat!",
+        "playAgain": "Jalan lagi",
+        "pause": "Jeda",
+        "resume": "Lanjutkan",
+        "laneLabel": "Rel {{lane}}: {{text}}",
+        "left": "Pindah ke rel kiri",
+        "right": "Pindah ke rel kanan",
+        "hint": "Geser kereta ke rel yang membawa jawaban BENAR sebelum papan sampai.",
+        "canvasLabel": "Arena Kereta Pengetahuan. Panah kiri dan kanan atau A dan D untuk pindah rel, P untuk jeda. Di layar sentuh, ketuk rel atau geser.",
+        "connection": {
+            "connecting": "Menghubungkan",
+            "online": "Terhubung",
+            "reconnecting": "Menyambung ulang",
+            "offline": "Server tidak tersedia",
+            "grade_required": "Perlu kelas"
+        },
+        "overlay": {
+            "readyTitle": "{{name}}, siap berangkat?",
+            "rules": "{{rounds}} soal. Setiap soal datang dengan 3 papan jawaban di 3 rel. Pindahkan kereta ke rel yang benar. Jawaban benar menambah gerbong dan kereta makin cepat; salah mengurangi nyawa.",
+            "pausedTitle": "Perjalanan dijeda",
+            "needGrade": "Atur kelasmu di beranda dulu supaya soal sesuai tingkatanmu.",
+            "setGrade": "Atur kelas",
+            "unavailable": "Server permainan belum tersedia. Coba lagi nanti.",
+            "doneTitle": "Sampai di stasiun!",
+            "crashedTitle": "Nyawa habis — kereta berhenti",
+            "congratsTitle": "Hebat, {{name}}!"
+        },
+        "feedback": {
+            "correct": "Benar! +{{score}} skor, gerbong bertambah.",
+            "wrong": "Rel salah. Jawaban: {{answer}}",
+            "missed": "Waktu habis. Jawaban: {{answer}}"
+        },
+        "result": {
+            "summary": "{{correct}}/{{total}} benar • {{wagons}} gerbong • skor {{score}}",
+            "earned": "+{{points}} poin masuk ke akunmu",
+            "noPoints": "Belum ada poin tambahan kali ini — terus berlatih!",
+            "percent": "Nilai {{percent}}%"
+        },
+        "errors": {
+            "generic": "Aksi ditolak server.",
+            "offline": "Koneksi terputus. Menyambung ulang…"
+        }
+    },
+    "gameList": {
+        "title": "Daftar Permainan Edukasi",
+        "meta": "Koleksi permainan edukasi interaktif EduFunHub: petualangan, kuis, duel kelas, arkade, dan permainan papan untuk TK hingga SMA.",
+        "arena": "Arena Game",
+        "tagline": "edufunhub.com/gamelist • Pilih & mainkan game edukatif",
+        "badge": "{{count}} permainan siap dimainkan",
+        "heading": "Daftar Permainan",
+        "headingAccent": "Edukatif",
+        "intro": "Permainan dikelompokkan per jenis. Game berlabel \"Dapat poin\" diverifikasi server dan menambah poin akunmu.",
+        "play": "Mainkan sekarang",
+        "upcoming": {
+            "title": "Segera hadir",
+            "market": {
+                "title": "Pasar Hitung",
+                "desc": "Jadi pedagang: hitung belanja, kembalian, diskon, dan persen."
+            },
+            "garden": {
+                "title": "Kebun Angka & Huruf",
+                "desc": "Mengenal angka, huruf, warna, dan bentuk untuk TK–kelas 2."
+            },
+            "archipelago": {
+                "title": "Jelajah Nusantara",
+                "desc": "Peta Indonesia: provinsi, ibu kota, budaya, dan pahlawan."
+            },
+            "lab": {
+                "title": "Lab Mini",
+                "desc": "Percobaan sains sederhana: listrik, warna, dan siklus air."
+            }
+        }
+    },
+    "snakes": {
+        "title": "Ular Tangga Edukasi",
+        "titleAccent": "Karakter",
+        "meta": "Ular tangga edukatif dengan kuis: main sendiri, bergiliran di satu perangkat, atau online bersama teman lewat PIN dan link.",
+        "tagline": "Sendiri, satu perangkat, atau online lewat PIN",
+        "sound": {
+            "on": "Suara aktif",
+            "off": "Suara mati"
+        },
+        "restart": "Ulang permainan",
+        "mode": {
+            "label": "Cara bermain",
+            "local": "Latihan (tanpa akun)",
+            "online": "Main & dapat poin",
+            "loginForOnline": "Masuk untuk main online",
+            "onlineUnavailable": "Server permainan online belum tersedia.",
+            "guestNote": "Mode latihan tidak menyimpan poin. Masuk untuk main dan mengumpulkan poin."
+        },
+        "players": {
+            "label": "Jumlah pemain",
+            "count_one": "{{count}} pemain",
+            "count_other": "{{count}} pemain",
+            "default": "Pemain {{number}}",
+            "you": "Kamu",
+            "host": "Host",
+            "offline": "Terputus",
+            "left": "Keluar",
+            "inArena": "Pemain di arena",
+            "square": "Petak {{square}}",
+            "points": "{{points}} skor"
+        },
+        "turn": {
+            "label": "Giliran",
+            "yours": "Giliranmu!",
+            "of": "Giliran {{name}}",
+            "extra": "{{name}} dapat giliran ekstra karena dadu 6."
+        },
+        "dice": {
+            "title": "Pelontar dadu",
+            "roll": "Kocok dadu",
+            "rolling": "Dadu berputar…",
+            "moving": "Karakter melangkah…",
+            "waiting": "Menunggu {{name}}…",
+            "result": "Dadu: {{value}}!",
+            "rollingTitle": "{{name}} mengocok dadu…",
+            "rollingHint": "Bersiaplah menjawab soal!",
+            "openingQuestion": "Membuka soal…",
+            "autoRoll": "Dadu otomatis dikocok dalam {{seconds}} detik",
+            "rollFor": "Kocok dadu untuk {{name}}"
+        },
+        "question": {
+            "turnOf": "Giliran {{name}}",
+            "advance": "Maju {{count}} petak",
+            "target": "Menuju petak {{square}}",
+            "level": "Level: {{level}}",
+            "timeLeft": "Sisa waktu {{seconds}} detik",
+            "spectating": "{{name}} sedang menjawab…",
+            "correct": "Benar! Melangkah {{count}} petak menuju petak {{square}}.",
+            "wrong": "Kurang tepat. Langkah dibatalkan untuk giliran ini.",
+            "timeout": "Waktu habis. Langkah dibatalkan.",
+            "answer": "Jawaban: {{answer}}",
+            "otherCorrect": "{{name}} menjawab benar!",
+            "otherWrong": "{{name}} belum tepat."
+        },
+        "legend": {
+            "ladder": "Tangga (naik)",
+            "snake": "Ular (turun)",
+            "finish": "Petak 100 (finish)"
+        },
+        "log": {
+            "title": "Catatan langkah",
+            "welcome": "Selamat datang di Ular Tangga Edukasi!",
+            "welcomeHint": "Kocok dadu, jawab soal, lalu karaktermu melangkah.",
+            "newGame": "Permainan baru dimulai.",
+            "rolled": "{{name}} mendapat dadu {{value}}.",
+            "correct": "{{name}} benar, +100 skor!",
+            "wrong": "{{name}} belum tepat, giliran berikutnya.",
+            "ladder": "{{name}} naik tangga dari {{from}} ke {{to}}.",
+            "snake": "{{name}} turun ular dari {{from}} ke {{to}}."
+        },
+        "winner": {
+            "title": "{{name}} juara!",
+            "summary": "Mencapai petak 100 dengan total {{score}} skor.",
+            "you": "Kamu juara!",
+            "again": "Main lagi",
+            "waitingHost": "Menunggu host memulai lagi…",
+            "forfeit": "Pemain lain keluar dari ruang. Skor akhir {{score}}."
+        },
+        "online": {
+            "intro": "Main sendiri, tambah pemain di perangkat ini, atau buat ruang lalu bagikan PIN dan link ke teman (maksimal {{max}} pemain). Setiap permainan yang selesai menambah poin akunmu.",
+            "needGrade": "Atur kelasmu dulu supaya soal sesuai tingkatanmu.",
+            "setGrade": "Atur kelas",
+            "soloHint": "Kamu bisa langsung main sendiri, menambah pemain di perangkat ini, atau menunggu teman bergabung."
+        }
+    },
+    "room": {
+        "connection": {
+            "connecting": "Menghubungkan",
+            "online": "Terhubung",
+            "reconnecting": "Menyambung ulang",
+            "offline": "Server tidak tersedia",
+            "grade_required": "Perlu kelas"
+        },
+        "create": "Buat ruang",
+        "or": "atau",
+        "pinLabel": "PIN ruang",
+        "pinPlaceholder": "6 digit PIN",
+        "join": "Gabung",
+        "lobbyTitle": "Ruang menunggu",
+        "shareTitle": "Ajak teman bermain",
+        "shareHint": "Bagikan PIN atau link ini. Teman perlu masuk ke akun EduFunHub.",
+        "copyPin": "Salin PIN",
+        "copyLink": "Salin link",
+        "share": "Bagikan",
+        "copied": "Tersalin!",
+        "shareText": "Ayo main {{game}} bersamaku di EduFunHub! PIN: {{pin}}",
+        "seats": "{{count}}/{{max}} pemain",
+        "emptySeat": "Kursi kosong",
+        "you": "Kamu",
+        "host": "Host",
+        "offline": "Terputus",
+        "left": "Keluar",
+        "local": "Satu perangkat",
+        "localHint": "Bermain bergiliran di perangkat host",
+        "localPlaceholder": "Nama pemain di perangkat ini",
+        "localDefault": "Pemain {{number}}",
+        "addLocal": "Tambah pemain di perangkat ini",
+        "removeLocal": "Hapus {{name}}",
+        "start": "Mulai permainan",
+        "startSolo": "Main sendiri",
+        "needMore": "Tunggu minimal {{min}} pemain",
+        "waitingHost": "Menunggu host memulai permainan…",
+        "leave": "Keluar ruang",
+        "points": "+{{points}} poin masuk ke akunmu",
+        "errors": {
+            "room_not_found": "Ruang dengan PIN itu tidak ditemukan.",
+            "room_full": "Ruang sudah penuh.",
+            "room_started": "Permainan di ruang ini sudah dimulai.",
+            "not_enough_players": "Pemain belum cukup untuk mulai.",
+            "not_host": "Hanya host yang bisa melakukan ini.",
+            "not_your_turn": "Belum giliranmu.",
+            "wrong_phase": "Aksi tidak bisa dilakukan sekarang.",
+            "too_early": "Baca soalnya dulu, ya.",
+            "too_fast": "Pelan-pelan, coba lagi sebentar.",
+            "invalid_option": "Pilihan tidak valid.",
+            "invalid_level": "Level tidak valid.",
+            "invalid_word": "Kata tidak ditemukan.",
+            "already_solved": "Kata ini sudah terjawab.",
+            "wrong_length": "Jumlah huruf belum pas.",
+            "no_hints": "Bantuan sudah habis.",
+            "not_in_room": "Kamu belum masuk ruang.",
+            "local_limit": "Game ini tidak mendukung pemain di satu perangkat.",
+            "not_local": "Pemain ini bukan pemain di perangkat ini.",
+            "copy_failed": "Gagal menyalin. Salin manual, ya.",
+            "unknown": "Terjadi kesalahan. Coba lagi.",
+            "time_up": "Waktu sudah habis."
+        }
+    },
+    "crossword": {
+        "title": "Teka-Teki Silang",
+        "meta": "Teka-teki silang edukatif dengan 4 level. Main sendiri atau berlomba bersama teman lewat PIN dan link.",
+        "tagline": "Isi kotak, tebak kata, raih poin",
+        "intro": "Hai {{name}}! Pilih level, lalu main sendiri atau ajak teman lewat PIN dan link. Siapa yang pertama menjawab sebuah kata, dia yang mendapat skornya.",
+        "level": {
+            "label": "Level",
+            "name": "Level {{level}}",
+            "detail": "{{words}} kata • grid {{size}}×{{size}} • {{minutes}} menit",
+            "1": "Pemula",
+            "2": "Penjelajah",
+            "3": "Cendekia",
+            "4": "Juara"
+        },
+        "levelHint": "Semakin tinggi level, semakin banyak kotak dan semakin sulit pertanyaannya. Semua kelas boleh mencoba level mana pun.",
+        "soloHint": "Kamu bisa langsung main sendiri, atau tunggu teman bergabung.",
+        "across": "Mendatar",
+        "down": "Menurun",
+        "clues": "Petunjuk",
+        "answerLabel": "Jawaban untuk {{number}} {{dir}}",
+        "answerPlaceholder": "{{length}} huruf",
+        "submit": "Jawab",
+        "hint": "Bantuan ({{count}})",
+        "hintCost": "Membuka satu huruf, −30 skor",
+        "pickWord": "Pilih kotak atau petunjuk untuk menjawab.",
+        "correct": "Benar!",
+        "wrong": "Belum tepat, coba lagi.",
+        "solvedBy": "Dijawab {{name}}",
+        "timeLeft": "Sisa waktu",
+        "score": "{{score}} skor",
+        "words": "{{solved}}/{{total}} kata",
+        "result": {
+            "solved": "Semua kata terpecahkan!",
+            "time": "Waktu habis!",
+            "win": "Kamu juara!",
+            "winner": "{{name}} juara!",
+            "summary": "{{solved}} kata terjawab • skor {{score}}",
+            "answers": "Kunci jawaban",
+            "again": "Main lagi",
+            "waitingHost": "Menunggu host memulai lagi…",
+            "leave": "Keluar ruang",
+            "timeUp": "Waktu habis! {{count}} kata belum terjawab, kunci jawaban dibuka.",
+            "draw": "Seri! Tidak ada bonus menang."
+        },
+        "playing": "Pemain",
+        "grade": "Kelas {{grade}}",
+        "points": "{{count}} poin",
+        "timeLimit": "Selesaikan sebelum waktu habis: {{minutes}} menit"
+    },
+    "shop": {
+        "title": "Karakter & Toko",
+        "intro": "Pilih gaya karaktermu, lalu tukar poin dengan topi, baju, senjata, dan lainnya.",
+        "balance": "Poin bisa dibelanjakan",
+        "balanceNote": "Belanja tidak mengurangi level dan peringkat.",
+        "look": "Penampilan",
+        "gender": "Karakter",
+        "boy": "Laki-laki",
+        "girl": "Perempuan",
+        "skin": "Warna kulit",
+        "hair": "Warna rambut",
+        "shirt": "Warna kaos",
+        "skins": {
+            "light": "Cerah",
+            "tan": "Sawo",
+            "brown": "Cokelat",
+            "dark": "Gelap"
+        },
+        "hairs": {
+            "brown": "Cokelat",
+            "black": "Hitam",
+            "blonde": "Pirang",
+            "red": "Merah",
+            "blue": "Biru",
+            "pink": "Merah muda",
+            "teal": "Toska"
+        },
+        "slots": {
+            "hat": "Topi",
+            "face": "Wajah",
+            "outfit": "Baju",
+            "back": "Punggung",
+            "weapon": "Senjata",
+            "offhand": "Perisai"
+        },
+        "free": "Gratis",
+        "owned": "Dimiliki",
+        "wearing": "Dipakai",
+        "wear": "Pakai",
+        "takeOff": "Lepas",
+        "buy": "Beli",
+        "buyFor": "Beli {{price}} poin",
+        "needMore": "Kurang {{count}} poin",
+        "confirmTitle": "Beli {{item}}?",
+        "confirmText": "{{price}} poin akan dipakai. Sisa poinmu {{left}}.",
+        "confirm": "Ya, beli",
+        "cancel": "Batal",
+        "buying": "Membeli…",
+        "empty": "Belum ada item di bagian ini.",
+        "none": "Tanpa",
+        "unsaved": "Ada perubahan yang belum disimpan.",
+        "reset": "Batalkan perubahan",
+        "try": "Coba",
+        "preview": "Pratinjau: belum dibeli"
+    },
+    "subjects": {
+        "label": "Mata pelajaran",
+        "mix": "Campuran (semua)",
+        "math": "Matematika",
+        "science": "IPA",
+        "language": "Bahasa Indonesia",
+        "social": "IPS",
+        "english": "Bahasa Inggris",
+        "civics": "PPKn",
+        "hostPicks": "Host yang memilih mata pelajaran.",
+        "playing": "Soal: {{subject}}",
+        "fallback": "Soal {{subject}} untuk kelasmu belum tersedia, jadi dipakai soal campuran."
+    },
+    "notifications": {
+        "label": "Notifikasi",
+        "labelUnread": "Notifikasi, {{count}} belum dibaca",
+        "title": "Notifikasi",
+        "readAll": "Tandai dibaca",
+        "empty": "Belum ada notifikasi.",
+        "loading": "Memuat…",
+        "new": "Baru",
+        "close": "Tutup notifikasi",
+        "justNow": "baru saja"
+    },
+    "vault": {
+        "title": "Brankas Item",
+        "intro": "Semua item yang sudah kamu beli tersimpan di sini. Pakai lagi kapan saja.",
+        "empty": "Brankas masih kosong. Kumpulkan poin dan beli item di toko!",
+        "shop": "Ke toko",
+        "wear": "Pakai",
+        "takeOff": "Lepas",
+        "retired": "Tidak dijual lagi"
+    },
+    "pwa": {
+        "title": "Pasang Aplikasi",
+        "intro": "Pasang EduFunHub di HP atau laptop. Buka langsung dari layar utama, tampil penuh tanpa bilah browser.",
+        "install": "Pasang aplikasi",
+        "installed": "EduFunHub sudah terpasang di perangkat ini.",
+        "share": "Bagikan",
+        "iosStep1": "Ketuk tombol Bagikan di Safari",
+        "iosStep2": "Pilih \"Tambahkan ke Layar Utama\"",
+        "iosStep3": "Ketuk \"Tambah\"",
+        "otherStep1": "Buka menu browser (⋮ atau ⋯)",
+        "otherStep2": "Pilih \"Instal aplikasi\" atau \"Tambahkan ke layar utama\""
     }
 }

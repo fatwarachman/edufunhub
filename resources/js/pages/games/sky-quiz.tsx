@@ -1,3 +1,10 @@
+import { Joystick, type StickVector } from '@/components/games/joystick';
+import {
+    type GameSubject,
+    rememberedSubject,
+    SubjectFallbackNote,
+    SubjectPicker,
+} from '@/components/multiplayer/subject-picker';
 import {
     BackButton,
     NavButton,
@@ -299,6 +306,9 @@ export default function SkyQuiz({
     wsUrl,
 }: SkyQuizProps) {
     const { t, i18n } = useTranslations();
+    const [subjectChoice, setSubjectChoice] = useState<GameSubject>(() =>
+        typeof window === 'undefined' ? 'mix' : rememberedSubject(),
+    );
     const { locale } = usePage<SharedData>().props;
     const signedIn = player !== null;
     const backHref = useGameBackHref();
@@ -307,6 +317,7 @@ export default function SkyQuiz({
     const arena = useRef<Arena>(newArena());
     const keys = useRef(new Set<string>());
     const firing = useRef(false);
+    const stick = useRef<StickVector>({ x: 0, y: 0 });
     const screenRef = useRef<Screen>('ready');
     const audio = useGameAudio();
     const playSound = useRef(audio.play);
@@ -316,6 +327,7 @@ export default function SkyQuiz({
     const [screen, setScreenState] = useState<Screen>('ready');
     const [round, setRound] = useState<SkyRoundState | null>(null);
     const [message, setMessage] = useState('');
+    const [subjectFallback, setSubjectFallback] = useState<string | null>(null);
     /** Question shown in the card; switches only when the next round becomes playable. */
     const [shown, setShown] = useState<SkyRoundState['question'] | null>(null);
     const shownTimer = useRef<number | undefined>(undefined);
@@ -444,6 +456,9 @@ export default function SkyQuiz({
 
     const connection = useSkyConnection(online ? wsUrl : null, locale ?? 'id', {
         onState: (state: SkyServerState) => {
+            setSubjectFallback(
+                state.subject_fallback ? (state.subject ?? null) : null,
+            );
             if (state.phase === 'question' && screenRef.current === 'ready') {
                 // Resumed flight after a reload: keep it paused until the player resumes.
                 setScreen('paused');
@@ -477,7 +492,7 @@ export default function SkyQuiz({
     const referee = useMemo(
         () => ({
             start: () => {
-                if (online) sendOnline({ t: 'start' });
+                if (online) sendOnline({ t: 'start', subject: subjectChoice });
                 else apply(local.start());
             },
             touch: (option: number) => {
@@ -520,7 +535,7 @@ export default function SkyQuiz({
                 if (online) sendOnline({ t: paused ? 'pause' : 'resume' });
             },
         }),
-        [online, sendOnline, local, apply],
+        [online, sendOnline, local, apply, subjectChoice],
     );
     const refereeRef = useRef(referee);
     useEffect(() => {
@@ -631,6 +646,7 @@ export default function SkyQuiz({
         const blur = () => {
             keys.current.clear();
             firing.current = false;
+            stick.current = { x: 0, y: 0 };
             if (screenRef.current === 'playing') {
                 refereeRef.current.pause(true);
                 screenRef.current = 'paused';
@@ -689,7 +705,14 @@ export default function SkyQuiz({
                 if (keys.current.has('ArrowUp') || keys.current.has('w')) dy--;
                 if (keys.current.has('ArrowDown') || keys.current.has('s'))
                     dy++;
-                if (dx || dy) {
+                const pad = stick.current;
+                if (pad.x || pad.y) {
+                    // Analog: speed follows how far the stick is pushed.
+                    a.x += pad.x * 400 * dt;
+                    a.y += pad.y * 400 * dt;
+                    a.targetX = a.x;
+                    a.targetY = a.y;
+                } else if (dx || dy) {
                     const length = Math.hypot(dx, dy);
                     a.x += (dx / length) * 380 * dt;
                     a.y += (dy / length) * 380 * dt;
@@ -1049,8 +1072,8 @@ export default function SkyQuiz({
     return (
         <div className="min-h-dvh bg-[#eef5f7] text-[#20364a]">
             <Head title={`${t('sky.title')} — EduFunHub`} />
-            <header className="flex items-center justify-between gap-3 border-b-2 border-[#20364a] bg-white px-4 py-3">
-                <div className="flex min-w-0 items-center gap-3">
+            <header className="flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
+                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <BackButton
                         href={backHref}
                         label={t(
@@ -1058,12 +1081,12 @@ export default function SkyQuiz({
                         )}
                         iconOnly
                     />
-                    <h1 className="flex min-w-0 items-center gap-2 font-display text-xl font-bold">
+                    <h1 className="flex min-w-0 items-center gap-2 font-display text-lg font-bold sm:text-xl">
                         <Plane className="size-6 shrink-0" />
                         <span className="truncate">{t('sky.title')}</span>
                     </h1>
                 </div>
-                <SiteNav compact />
+                <SiteNav compact className="shrink-0" />
             </header>
             <main className="mx-auto flex max-w-6xl flex-col gap-3 p-3 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1255,6 +1278,12 @@ export default function SkyQuiz({
                             ? ` • ${grade === KINDERGARTEN ? t('player.kindergarten') : t('sky.grade', { grade })}`
                             : ''}
                     </span>
+                    {subjectFallback && screen !== 'ended' && (
+                        <SubjectFallbackNote
+                            subject={subjectFallback}
+                            className="my-1"
+                        />
+                    )}
                     <p
                         className="font-display text-lg font-bold sm:text-xl"
                         data-testid="sky-question"
@@ -1299,9 +1328,9 @@ export default function SkyQuiz({
                         {t('sky.noCanvas')}
                     </canvas>
                     {screen !== 'playing' && screen !== 'ended' && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-[#12283e]/70 p-2 backdrop-blur-sm sm:p-4">
+                        <div className="fixed inset-x-0 top-[70px] bottom-0 z-40 flex items-center justify-center bg-[#12283e]/70 p-3 backdrop-blur-sm sm:absolute sm:inset-0 sm:z-auto sm:p-4">
                             <div
-                                className="flex max-h-full max-w-sm flex-col gap-2 overflow-y-auto rounded-2xl border-2 border-[#20364a] bg-white p-3 text-center shadow-lg sm:gap-3 sm:p-5"
+                                className="flex max-h-full max-w-md flex-col gap-2 overflow-y-auto rounded-2xl border-2 border-[#20364a] bg-white p-3 text-center shadow-lg sm:gap-3 sm:p-5"
                                 data-testid="sky-intro"
                             >
                                 <Plane className="mx-auto hidden size-9 text-[#287899] sm:block" />
@@ -1324,6 +1353,14 @@ export default function SkyQuiz({
                                               : t('sky.overlay.guestRules')}
                                     </p>
                                 )}
+                                {online &&
+                                    !needsGrade &&
+                                    screen === 'ready' && (
+                                        <SubjectPicker
+                                            value={subjectChoice}
+                                            onChange={setSubjectChoice}
+                                        />
+                                    )}
                                 {needsGrade ? (
                                     <NavButton
                                         href="/dashboard#grade"
@@ -1482,8 +1519,22 @@ export default function SkyQuiz({
                     </section>
                 )}
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="max-w-xl text-xs font-semibold [@media(pointer:coarse)]:hidden">
-                        {t(online ? 'sky.footer.online' : 'sky.footer.guest')}
+                    <Joystick
+                        vector={stick}
+                        disabled={screen !== 'playing'}
+                        label={t('sky.joystick')}
+                    />
+                    <p className="max-w-xl flex-1 text-xs font-semibold">
+                        <span className="[@media(pointer:coarse)]:hidden">
+                            {t(
+                                online
+                                    ? 'sky.footer.online'
+                                    : 'sky.footer.guest',
+                            )}
+                        </span>
+                        <span className="hidden [@media(pointer:coarse)]:inline">
+                            {t('sky.joystickHint')}
+                        </span>
                     </p>
                     <button
                         type="button"
@@ -1508,10 +1559,11 @@ export default function SkyQuiz({
                         onBlur={() => {
                             firing.current = false;
                         }}
-                        className="ml-auto flex min-h-12 touch-none items-center gap-2 rounded-xl border-2 border-[#20364a] bg-[#ff9e44] px-6 py-3 font-black disabled:opacity-50"
+                        className="ml-auto flex size-[132px] shrink-0 touch-none flex-col items-center justify-center gap-1 rounded-full border-[3px] border-[#20364a] bg-[#ff9e44] font-black shadow-[3px_3px_0px_#20364a] select-none active:translate-y-0.5 active:shadow-[1px_1px_0px_#20364a] disabled:opacity-50"
                         data-testid="sky-fire"
                     >
-                        <Crosshair className="size-5" /> {t('sky.fire')}
+                        <Crosshair className="size-8" />
+                        <span>{t('sky.fire')}</span>
                     </button>
                 </div>
             </main>

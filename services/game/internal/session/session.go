@@ -9,9 +9,14 @@ import (
 
 	"edufunhub/game/internal/auth"
 	"edufunhub/game/internal/challenge"
+	"edufunhub/game/internal/points"
 	"edufunhub/game/internal/questions"
 	"edufunhub/game/internal/world"
 )
+
+// MaxPoints caps a Flag Quest mission award: mission bonus, flawless bonus
+// and up to 30 answered questions (participation included).
+var MaxPoints = 3*40 + 30 + points.Cap(30)
 
 const (
 	WalkSpeed     = 4.2
@@ -53,8 +58,10 @@ type Session struct {
 	settled  bool
 	cooldown map[int]time.Time
 	correct  int
+	earned   int
 	wrong    int
 	failures int
+	subject  string
 	answers  []questions.Answer
 	// loggedFromActive counts answers already copied from the running challenge.
 	loggedFromActive int
@@ -91,7 +98,7 @@ func (s *Session) startMission(id string, now time.Time) error {
 	s.lastMove = now
 	s.active = nil
 	s.cooldown = map[int]time.Time{}
-	s.correct, s.wrong, s.failures = 0, 0, 0
+	s.correct, s.earned, s.wrong, s.failures = 0, 0, 0, 0
 	s.answers = nil
 	s.started = now
 	s.raising = time.Time{}
@@ -187,7 +194,7 @@ func (s *Session) Interact(now time.Time) Message {
 			return Message{"t": "error", "code": "cooldown", "retry_ms": until.Sub(now).Milliseconds()}
 		}
 		s.seed++
-		gen := questions.NewFor(GameKey, s.Claims.Grade, s.seed)
+		gen := questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject)
 		s.active = challenge.Start(cp.Kind, cp.ID, s.mission.Difficulty, gen, now)
 		s.loggedFromActive = 0
 		s.settled = false
@@ -273,10 +280,18 @@ func (s *Session) Leave(now time.Time) Message {
 }
 
 // StartMission switches mission (restarting progress).
-func (s *Session) StartMission(id string, now time.Time) error {
+func (s *Session) StartMission(id, subject string, now time.Time) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.subject = questions.NormSubject(subject)
 	return s.startMission(id, now)
+}
+
+// Subject returns the chosen question subject ("" = mix).
+func (s *Session) Subject() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.subject
 }
 
 // Tick advances timers. It may return an event and a result to report.
@@ -293,15 +308,15 @@ func (s *Session) Tick(now time.Time) (Message, *Result) {
 	if !s.raising.IsZero() && !s.completed && now.Sub(s.raising) >= RaiseDuration {
 		s.completed = true
 		elapsed := int(now.Sub(s.started).Seconds())
-		points := s.mission.Difficulty*40 + s.correct*5
+		achieved := s.mission.Difficulty*40 + s.earned
 		if s.failures == 0 {
-			points += 30
+			achieved += 30
 		}
-		points = min(points, 250)
+		award := points.Finished(achieved, MaxPoints)
 		s.result = &Result{
 			EventID: fmt.Sprintf("fq-%d-%s-%d", s.Claims.Subject, s.mission.ID, s.started.UnixNano()),
 			UserID:  s.Claims.Subject, GameKey: GameKey, Mission: s.mission.ID, Grade: s.Claims.Grade,
-			Points: points, Correct: s.correct, Wrong: s.wrong, Seconds: elapsed,
+			Points: award, Correct: s.correct, Wrong: s.wrong, Seconds: elapsed,
 			CompletedAt: now.UTC().Format(time.RFC3339),
 			Answers:     append([]questions.Answer{}, s.answers...),
 		}
@@ -317,6 +332,9 @@ func (s *Session) completeLocked() Message {
 func (s *Session) count(fb challenge.Feedback, now time.Time) {
 	if fb.Correct {
 		s.correct++
+		if c := s.active; c != nil {
+			s.earned += c.LastWorth
+		}
 	} else if fb.Answer != "" {
 		s.wrong++
 	}

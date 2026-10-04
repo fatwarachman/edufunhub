@@ -1,4 +1,7 @@
-import { drawCharacter } from '@/lib/character/draw-character';
+import {
+    type CharacterLook,
+    drawCharacter,
+} from '@/lib/character/draw-character';
 import {
     type ChallengeKind,
     type Checkpoint,
@@ -12,11 +15,9 @@ export const TILE_W = 64;
 export const TILE_H = 32;
 const LAND_LIFT = 10;
 
-export interface PlayerLook {
+export interface PlayerLook extends CharacterLook {
     name: string;
     grade: number;
-    color: string;
-    accessory: string;
 }
 
 export interface FrameState {

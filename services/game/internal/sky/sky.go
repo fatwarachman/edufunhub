@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"edufunhub/game/internal/auth"
+	"edufunhub/game/internal/points"
 	"edufunhub/game/internal/questions"
 )
 
@@ -48,11 +49,12 @@ const (
 	// PassPercent: a flight with more than this share of correct answers earns the congrats screen.
 	PassPercent = 70
 
-	PointsPerCorrect = 10
-	PointsFinish     = 20
-	PointsFlawless   = 20
-	MaxPoints        = 150
+	PointsFinish   = 20
+	PointsFlawless = 20
 )
+
+// MaxPoints is the highest award of one flight.
+var MaxPoints = points.Cap(Rounds) + PointsFinish + PointsFlawless
 
 // Phases.
 const (
@@ -109,8 +111,10 @@ type Session struct {
 	round     int
 	shields   int
 	score     int
+	earned    int
 	correct   int
 	wrong     int
+	subject   string
 	question  questions.Question
 	removed   map[int]bool
 	roundAt   time.Time
@@ -146,6 +150,13 @@ func normLocale(l string) string {
 }
 
 // SetLocale switches the language of question texts.
+// SetSubject picks the question subject for the next run ("" or mix = all).
+func (s *Session) SetSubject(subject string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.subject = questions.NormSubject(subject)
+}
+
 func (s *Session) SetLocale(l string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -158,9 +169,9 @@ func (s *Session) Start(now time.Time) Message {
 	defer s.mu.Unlock()
 	s.LastSeen = now
 	s.seed++
-	s.gen = questions.NewFor(GameKey, s.Claims.Grade, s.seed)
+	s.gen = questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject)
 	s.phase = PhaseQuestion
-	s.round, s.shields, s.score, s.correct, s.wrong = 0, Shields, 0, 0, 0
+	s.round, s.shields, s.score, s.earned, s.correct, s.wrong = 0, Shields, 0, 0, 0, 0
 	s.started = now
 	s.result, s.reported = nil, false
 	s.lastHit = time.Time{}
@@ -174,36 +185,10 @@ func (s *Session) Start(now time.Time) Message {
 // nextQuestion prepares the round; it becomes playable after delay.
 func (s *Session) nextQuestion(now time.Time, delay time.Duration) {
 	q := s.gen.Choice()
-	s.question = trimOptions(q, s.gen)
+	s.question = questions.Trim(q, Options, s.gen.Rand)
 	s.removed = map[int]bool{}
 	s.roundAt = now.Add(delay)
 	s.drones = 0
-}
-
-// trimOptions keeps the correct answer and Options-1 distractors.
-func trimOptions(q questions.Question, g *questions.Generator) questions.Question {
-	if len(q.Options) <= Options {
-		return q
-	}
-	keep := []int{q.Answer}
-	for _, i := range g.Rand.Perm(len(q.Options)) {
-		if len(keep) == Options {
-			break
-		}
-		if i != q.Answer {
-			keep = append(keep, i)
-		}
-	}
-	g.Rand.Shuffle(len(keep), func(a, b int) { keep[a], keep[b] = keep[b], keep[a] })
-	out := q
-	out.Options = make([]questions.Text, 0, Options)
-	for idx, i := range keep {
-		out.Options = append(out.Options, q.Options[i])
-		if i == q.Answer {
-			out.Answer = idx
-		}
-	}
-	return out
 }
 
 func (s *Session) elapsed(now time.Time) time.Duration {
@@ -263,6 +248,7 @@ func (s *Session) Touch(option int, now time.Time) (Message, *Result, error) {
 	if option == s.question.Answer {
 		s.correct++
 		s.score += ScoreCorrect
+		s.earned += s.question.Worth()
 		return s.resolve(FeedbackCorrect, ScoreCorrect, 0, now)
 	}
 	s.wrong++
@@ -406,7 +392,7 @@ func (s *Session) finish(now time.Time) *Result {
 		GameKey:     GameKey,
 		Mission:     "sky",
 		Grade:       s.Claims.Grade,
-		Points:      Award(s.correct, s.round, s.shields),
+		Points:      Award(s.earned, s.correct, s.round, s.shields),
 		Correct:     s.correct,
 		Wrong:       s.wrong,
 		Seconds:     int(now.Sub(s.started).Seconds()),
@@ -419,16 +405,17 @@ func (s *Session) finish(now time.Time) *Result {
 // Passed reports whether more than PassPercent of all questions were answered correctly.
 func Passed(correct int) bool { return correct*100 > PassPercent*Rounds }
 
-// Award converts a flight into portal points.
-func Award(correct, rounds, shields int) int {
-	points := correct * PointsPerCorrect
+// Award converts a flight into portal points. Every flight pays the
+// standard participation award on top of what the pilot achieved.
+func Award(earned, correct, rounds, shields int) int {
+	achieved := earned
 	if rounds >= Rounds && shields > 0 {
-		points += PointsFinish
+		achieved += PointsFinish
 		if correct == Rounds {
-			points += PointsFlawless
+			achieved += PointsFlawless
 		}
 	}
-	return min(points, MaxPoints)
+	return points.Finished(achieved, MaxPoints)
 }
 
 // State returns the current snapshot (welcome / reconnect).
@@ -441,19 +428,21 @@ func (s *Session) State(now time.Time) Message {
 
 func (s *Session) stateLocked(feedback Message, now time.Time) Message {
 	msg := Message{
-		"t":       "sky_state",
-		"phase":   s.phase,
-		"round":   s.round,
-		"total":   Rounds,
-		"shields": s.shields,
-		"max":     Shields,
-		"score":   s.score,
-		"correct": s.correct,
-		"wrong":   s.wrong,
-		"player":  Message{"name": s.Claims.Name, "grade": s.Claims.Grade},
-		"speed":   FallSpeed(s.Claims.Grade),
-		"paused":  !s.pausedAt.IsZero(),
-		"history": append([]bool{}, s.history...),
+		"t":                "sky_state",
+		"phase":            s.phase,
+		"subject":          subjectOrMix(s.subject),
+		"subject_fallback": s.gen != nil && s.gen.Fallback(),
+		"round":            s.round,
+		"total":            Rounds,
+		"shields":          s.shields,
+		"max":              Shields,
+		"score":            s.score,
+		"correct":          s.correct,
+		"wrong":            s.wrong,
+		"player":           Message{"name": s.Claims.Name, "grade": s.Claims.Grade},
+		"speed":            FallSpeed(s.Claims.Grade),
+		"paused":           !s.pausedAt.IsZero(),
+		"history":          append([]bool{}, s.history...),
 	}
 	if s.phase == PhaseQuestion {
 		opts := make([]string, len(s.question.Options))
@@ -491,4 +480,11 @@ func (s *Session) Snapshot() (phase string, round, shields, score int, answer in
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.phase, s.round, s.shields, s.score, s.question.Answer, len(s.question.Options)
+}
+
+func subjectOrMix(s string) string {
+	if s == "" {
+		return questions.Mix
+	}
+	return s
 }

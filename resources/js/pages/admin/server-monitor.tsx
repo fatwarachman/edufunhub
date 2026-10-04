@@ -79,6 +79,10 @@ interface Props {
 const GAME_NAMES: Record<string, string> = {
     'flag-quest': 'Flag Quest',
     'sky-quiz': 'Sky Quiz',
+    'quiz-duel': 'Class Quiz Duel',
+    'knowledge-train': 'Knowledge Train',
+    'snakes-and-ladders': 'Snakes & Ladders (rooms)',
+    crossword: 'Crossword (rooms)',
 };
 
 function formatBytes(bytes: number | null | undefined): string {

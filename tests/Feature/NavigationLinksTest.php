@@ -41,11 +41,13 @@ it('serves every player navigation destination', function (string $url, string $
     'flag quest' => ['/games/flag-quest', 'games/flag-quest'],
     'snakes and ladders' => ['/games/snakes-and-ladders', 'games/snakes-and-ladders'],
     'sky quiz' => ['/games/sky-quiz', 'games/sky-quiz'],
+    'quiz duel' => ['/games/quiz-duel', 'games/quiz-duel'],
+    'knowledge train' => ['/games/knowledge-train', 'games/knowledge-train'],
 ]);
 
 it('sends guests to login from player-only destinations', function (string $url): void {
     $this->get($url)->assertRedirect('/login');
-})->with(['/portal', '/dashboard', '/character', '/games/flag-quest']);
+})->with(['/portal', '/dashboard', '/character', '/games/flag-quest', '/games/quiz-duel', '/games/knowledge-train']);
 
 it('links the landing page game list to the app game list', function (): void {
     $landing = file_get_contents(public_path('new-landing/index.html'));

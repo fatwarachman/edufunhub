@@ -1,8 +1,10 @@
 import InputError from '@/components/input-error';
+import { InstallAppCard } from '@/components/install-app-card';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
 import { NavButton } from '@/components/site-nav';
+import { Vault, type VaultItem } from '@/components/vault';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { GRADE_LEVELS, gradeLabel, hasGrade } from '@/lib/grade';
@@ -21,6 +23,8 @@ import {
 
 interface DashboardProps {
     points: number;
+    balance: number;
+    vault: VaultItem[];
     grade: number | null;
     playerDetails: PlayerDetails;
     character: CharacterData;
@@ -44,6 +48,8 @@ interface PlayerDetails {
 
 export default function Dashboard({
     points,
+    balance,
+    vault,
     grade,
     playerDetails,
     character,
@@ -87,10 +93,11 @@ export default function Dashboard({
                         <NavButton
                             href="/character"
                             icon={UserRound}
-                            label={t('player.customize')}
+                            label={t('shop.title')}
                             block
                         />
                     </section>
+                    <InstallAppCard />
                     <PlayerDetailsCard details={playerDetails} />
                     <GradeCard grade={grade} />
                     <section className="auth-card flex flex-col gap-3 !bg-[#ffd93d]">
@@ -104,9 +111,21 @@ export default function Dashboard({
                             )}
                         </p>
                         <p className="text-sm">{t('player.pointsNote')}</p>
+                        <p
+                            className="flex items-center justify-between gap-2 rounded-xl border-2 border-[#151b2e] bg-white/70 px-3 py-2 text-sm font-bold"
+                            data-testid="dashboard-balance"
+                        >
+                            <span>{t('shop.balance')}</span>
+                            <span className="tabular-nums">
+                                {new Intl.NumberFormat(i18n.language).format(
+                                    balance,
+                                )}
+                            </span>
+                        </p>
                     </section>
                 </aside>
                 <div className="flex min-w-0 flex-col gap-8">
+                    <Vault items={vault} character={character} />
                     <section className="flex flex-col gap-4">
                         <h2 className="flex items-center gap-2 text-2xl font-bold">
                             <Gamepad2 />

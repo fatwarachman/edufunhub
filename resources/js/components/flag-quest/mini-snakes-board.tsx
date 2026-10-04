@@ -1,5 +1,6 @@
 import PlayerCharacter from '@/components/player-character';
 import { useTranslations } from '@/hooks/use-translations';
+import { type CharacterLook } from '@/lib/character/draw-character';
 
 /** Tile centre in the 1000×1000 viewBox for a boustrophedon board. */
 export function miniBoardPoint(
@@ -22,7 +23,7 @@ interface Props {
     cols: number;
     jumps: [number, number][];
     position: number;
-    look: { color: string; accessory: string };
+    look: CharacterLook;
     moving: boolean;
     jumping: boolean;
 }

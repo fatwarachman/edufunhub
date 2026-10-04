@@ -19,20 +19,23 @@ test('unverified new player gets real empty dashboard without writes', function 
     $this->actingAs($user)->get('/dashboard')->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('user/dashboard', false)
         ->where('points', 0)
-        ->where('character', ['color' => 'amber', 'accessory' => 'none', 'nickname' => null])
+        ->where('character', ['color' => 'amber', 'accessory' => 'none', 'gender' => 'boy', 'skin' => 'light', 'hair' => 'brown', 'items' => [], 'nickname' => null])
         ->has('history', 0)
         ->where('grade', null)
-        ->has('categories', 3)
+        ->has('categories', 5)
         ->where('categories.0.titleKey', 'player.adventure')
         ->where('categories.0.games.0.url', '/games/flag-quest')
         ->where('categories.1.games.0.url', '/games/snakes-and-ladders')
-        ->where('categories.2.games.0.url', '/games/sky-quiz'));
+        ->where('categories.2.games.0.url', '/games/sky-quiz')
+        ->where('categories.2.games.1.url', '/games/quiz-duel')
+        ->where('categories.3.games.0.url', '/games/crossword')
+        ->where('categories.4.games.0.url', '/games/knowledge-train'));
     $this->assertDatabaseCount('player_profiles', 0);
     $this->assertDatabaseCount('point_ledgers', 0);
     $this->assertDatabaseCount('game_histories', 0);
 });
 
-test('dashboard sums only own ledger and shows own newest history', function (): void {
+test('dashboard shows earned points, spendable balance and own newest history', function (): void {
     $user = User::factory()->create();
     PointLedger::factory()->for($user)->create(['points' => 25]);
     PointLedger::factory()->for($user)->create(['points' => -5]);
@@ -41,7 +44,7 @@ test('dashboard sums only own ledger and shows own newest history', function ():
     $latest = GameHistory::factory()->for($user)->create(['game_name' => 'Sky Quiz']);
     GameHistory::factory()->create(['game_name' => 'Private game']);
     $this->actingAs($user)->get('/dashboard')->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('user/dashboard', false)->where('points', 20)->has('history', 2)
+        ->component('user/dashboard', false)->where('points', 25)->where('balance', 20)->has('history', 2)
         ->where('history.0.id', $latest->id)->where('history.0.game_name', 'Sky Quiz')
         ->where('history.1.game_name', 'Old game'));
 });

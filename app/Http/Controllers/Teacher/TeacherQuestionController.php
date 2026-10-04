@@ -149,6 +149,7 @@ class TeacherQuestionController extends Controller
     {
         return [
             'games' => Question::GAMES,
+            'choiceOnlyGames' => Question::CHOICE_ONLY_GAMES,
             'subjects' => Question::SUBJECTS,
             'grades' => Question::GRADES,
         ];

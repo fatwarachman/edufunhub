@@ -19,7 +19,10 @@ test('character saves across requests and updates same profile', function (): vo
     $this->actingAs($user)->patch('/character', ['color' => 'teal', 'accessory' => 'cap', 'nickname' => 'Pemain'])
         ->assertRedirect(route('character.show'));
     $this->get('/character')->assertInertia(fn (Assert $page) => $page->component('user/character', false)
-        ->where('character', ['color' => 'teal', 'accessory' => 'cap', 'nickname' => 'Pemain']));
+        ->where('character.color', 'teal')
+        ->where('character.accessory', 'cap')
+        ->where('character.items.hat.style', 'cap')
+        ->where('character.nickname', 'Pemain'));
     $this->patch('/character', ['color' => 'violet', 'accessory' => 'glasses', 'nickname' => null])->assertSessionHasNoErrors();
     $this->assertDatabaseCount('player_profiles', 1);
     $this->assertDatabaseHas('player_profiles', ['user_id' => $user->id, 'color' => 'violet', 'nickname' => null]);

@@ -105,8 +105,28 @@ export interface Flash {
     importErrors?: { row: number; messages: string[] }[] | null;
 }
 
+export interface GameMenuGame {
+    key: string;
+    titleKey: string;
+    descriptionKey: string | null;
+    url: string;
+    icon: string;
+    accent: string;
+    minGrade: number;
+    maxGrade: number;
+    awardsPoints: boolean;
+    guestPlayable: boolean;
+}
+
+export interface GameMenuCategory {
+    key: string;
+    titleKey: string;
+    games: GameMenuGame[];
+}
+
 export interface SharedData {
     name: string;
+    gameMenu?: GameMenuCategory[];
     quote: { message: string; author: string };
     auth: Auth;
     currentWorkspace: Workspace | null;

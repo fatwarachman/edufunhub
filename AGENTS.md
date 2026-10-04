@@ -13,6 +13,7 @@
 - Integrasi melalui API/WebSocket terdokumentasi. Perubahan arsitektur ini memerlukan persetujuan pemilik aplikasi.
 - Ini aturan pengembangan; bukan pernyataan bahwa service Go sudah tersedia. Jangan membuat atau deploy container tanpa permintaan.
 - Rujukan: `docs/architecture.md` dan `DEVELOPER.md`.
+- Game multiplayer wajib memakai standar undangan PIN + link (`internal/lobby`, `GameInviteController`, `components/multiplayer/room.tsx`) dan aturan poin `internal/points` (setiap permainan selesai menambah poin akun). Rujukan: `docs/multiplayer.md`.
 
 <laravel-boost-guidelines>
 === foundation rules ===

@@ -1,3 +1,4 @@
+import { type Paginated, SimplePagination } from '@/components/admin/admin-kit';
 import {
     axisTick,
     chartTooltipStyle,
@@ -17,7 +18,10 @@ import {
     rateTone,
     SUBJECT_LABELS,
 } from '@/components/admin/game-stats';
+import { type MatchRow, MatchCard } from '@/components/admin/match-history';
+import PlayerCharacter from '@/components/player-character';
 import AdminLayout from '@/layouts/admin-layout';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import { cn } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
 import {
@@ -43,6 +47,8 @@ import {
     Shield,
     ShieldCheck,
     ShieldOff,
+    ShoppingBag,
+    Swords,
     Target,
     Trash2,
     Trophy,
@@ -77,6 +83,7 @@ interface UserDetail {
     status: 'active' | 'suspended';
     two_factor_enabled: boolean;
     roles: { id: number; name: string; slug: string }[];
+    is_teacher: boolean;
     providers: { provider: string; linked_at: string | null }[];
     player_profile: {
         nickname: string | null;
@@ -119,6 +126,8 @@ interface Props {
         rank: number | null;
         logins: number;
         failed_logins: number;
+        spent_points: number;
+        balance: number;
     };
     perGame: {
         key: string;
@@ -176,9 +185,58 @@ interface Props {
         next_page_url: string | null;
     };
     passPercent: number;
+    matchHistory: {
+        summary: {
+            matches: number;
+            wins: number;
+            multiplayer_matches: number;
+            multiplayer_wins: number;
+            win_rate: number | null;
+            accuracy: number | null;
+            left_early: number;
+            opponents: number;
+        };
+        opponents: {
+            user_id: number;
+            name: string;
+            account: string | null;
+            grade: number;
+            matches: number;
+            wins: number;
+            losses: number;
+            draws: number;
+            last_played_at: string;
+        }[];
+        monthly: {
+            month: string;
+            matches: number;
+            wins: number;
+            win_rate: number | null;
+            accuracy: number | null;
+            avg_level: number | null;
+        }[];
+        byGame: {
+            game_key: string;
+            matches: number;
+            wins: number;
+            best_level: number | null;
+            avg_rank: number;
+        }[];
+    };
+    matches: Paginated<MatchRow>;
+    shop: {
+        items: {
+            id: number;
+            name: string;
+            slot: string;
+            price_paid: number;
+            bought_at: string | null;
+        }[];
+        character: CharacterLook | null;
+    };
 }
 
-type Tab = 'games' | 'activity' | 'logins';
+type Tab = 'games' | 'matches' | 'activity' | 'logins';
 
 function formatDate(
     value: string | null | undefined,
@@ -305,6 +363,29 @@ export default function ShowUser(props: Props) {
                             </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    router.patch(
+                                        `/admin/users/${user.id}/teacher`,
+                                        {},
+                                        { preserveScroll: true },
+                                    )
+                                }
+                                data-testid="user-toggle-teacher"
+                                aria-pressed={user.is_teacher}
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                                    user.is_teacher
+                                        ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-300'
+                                        : 'border-border text-foreground hover:bg-accent',
+                                )}
+                            >
+                                <GraduationCap className="size-4" />
+                                {user.is_teacher
+                                    ? 'Remove teacher'
+                                    : 'Make teacher'}
+                            </button>
                             <Link
                                 href={`/admin/users/${user.id}/edit`}
                                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
@@ -355,7 +436,8 @@ export default function ShowUser(props: Props) {
                         accent="var(--color-bubble-orange)"
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                Best single game: {formatNumber(stats.best)}
+                                Spendable {formatNumber(stats.balance)} · spent{' '}
+                                {formatNumber(stats.spent_points)} in shop
                             </span>
                         }
                     />
@@ -445,16 +527,55 @@ export default function ShowUser(props: Props) {
                                     label="Last school"
                                     value={profile?.school_name}
                                 />
-                                <Fact
-                                    icon={UserRound}
-                                    label="Character"
-                                    value={
-                                        profile
-                                            ? `${profile.color ?? '—'} · ${profile.accessory ?? 'none'}`
-                                            : null
-                                    }
-                                />
                             </dl>
+                        </Panel>
+                        <Panel
+                            title="Character & items"
+                            icon={ShoppingBag}
+                            actions={
+                                <span className="text-xs text-muted-foreground">
+                                    {props.shop.items.length} bought
+                                </span>
+                            }
+                        >
+                            <div className="flex items-start gap-4">
+                                <div className="size-24 shrink-0 rounded-2xl bg-[#d8c7a4]/60">
+                                    {props.shop.character && (
+                                        <PlayerCharacter
+                                            character={props.shop.character}
+                                            backdrop={false}
+                                            className="size-full"
+                                        />
+                                    )}
+                                </div>
+                                {props.shop.items.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        No items bought yet.
+                                    </p>
+                                ) : (
+                                    <ul
+                                        className="flex min-w-0 flex-1 flex-col gap-1.5 text-sm"
+                                        data-testid="user-items"
+                                    >
+                                        {props.shop.items.map((item) => (
+                                            <li
+                                                key={item.id}
+                                                className="flex items-center justify-between gap-2"
+                                            >
+                                                <span className="truncate text-foreground">
+                                                    {item.name}
+                                                </span>
+                                                <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                                                    {formatNumber(
+                                                        item.price_paid,
+                                                    )}{' '}
+                                                    pts
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
                         </Panel>
                         <Panel title="Account" icon={KeyRound}>
                             <dl className="flex flex-col gap-3 text-sm">
@@ -769,6 +890,8 @@ export default function ShowUser(props: Props) {
                     </div>
                 </div>
 
+                <MatchProgress history={props.matchHistory} />
+
                 {/* Logs */}
                 <section className="flex flex-col rounded-2xl border border-border bg-card shadow-sm">
                     <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
@@ -783,6 +906,11 @@ export default function ShowUser(props: Props) {
                                         key: 'games',
                                         label: `Game history (${props.plays.total})`,
                                         icon: History,
+                                    },
+                                    {
+                                        key: 'matches',
+                                        label: `Matches (${props.matches.total})`,
+                                        icon: Swords,
                                     },
                                     {
                                         key: 'activity',
@@ -821,6 +949,23 @@ export default function ShowUser(props: Props) {
                     </header>
                     <div className="p-5">
                         {tab === 'games' && <GameHistory plays={props.plays} />}
+                        {tab === 'matches' &&
+                            (props.matches.data.length === 0 ? (
+                                <EmptyState
+                                    icon={Swords}
+                                    title="No room or duel matches yet"
+                                />
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                    {props.matches.data.map((match) => (
+                                        <MatchCard
+                                            key={match.id}
+                                            match={match}
+                                        />
+                                    ))}
+                                    <SimplePagination {...props.matches} />
+                                </div>
+                            ))}
                         {tab === 'activity' && (
                             <ActivityTimeline
                                 rows={props.activityLog}
@@ -1273,3 +1418,193 @@ function LoginTable({ rows }: { rows: Props['logins'] }) {
 ShowUser.layout = (page: ReactNode) => (
     <AdminLayout title="User Profile">{page}</AdminLayout>
 );
+
+function MatchProgress({ history }: { history: Props['matchHistory'] }) {
+    const { summary, monthly, opponents, byGame } = history;
+
+    return (
+        <Panel
+            title="Matches & progress"
+            icon={Swords}
+            actions={
+                <span className="text-xs text-muted-foreground">
+                    Rooms, invites and duels
+                </span>
+            }
+        >
+            {summary.matches === 0 ? (
+                <EmptyState
+                    icon={Swords}
+                    title="No recorded matches yet"
+                    description="Ular Tangga, Teka-Teki Silang and duel matches appear here."
+                />
+            ) : (
+                <div
+                    className="flex flex-col gap-6"
+                    data-testid="match-progress"
+                >
+                    <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                        {[
+                            ['Matches', formatNumber(summary.matches)],
+                            [
+                                'Wins vs others',
+                                `${summary.multiplayer_wins} / ${summary.multiplayer_matches}`,
+                            ],
+                            ['Win rate', formatPercent(summary.win_rate)],
+                            ['Players met', formatNumber(summary.opponents)],
+                        ].map(([label, value]) => (
+                            <div
+                                key={label}
+                                className="rounded-xl border border-border bg-muted/30 px-3 py-2.5"
+                            >
+                                <dt className="text-xs text-muted-foreground">
+                                    {label}
+                                </dt>
+                                <dd className="text-lg font-semibold text-foreground tabular-nums">
+                                    {value}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+
+                    <div className="grid gap-6 lg:grid-cols-2">
+                        <div className="flex min-w-0 flex-col gap-2">
+                            <h4 className="text-sm font-semibold text-foreground">
+                                Monthly progress
+                            </h4>
+                            <div className="overflow-x-auto">
+                                <table className="w-full min-w-[420px] text-sm">
+                                    <thead className="text-left text-xs text-muted-foreground">
+                                        <tr>
+                                            <th className="py-1.5 font-medium">
+                                                Month
+                                            </th>
+                                            <th className="py-1.5 text-right font-medium">
+                                                Matches
+                                            </th>
+                                            <th className="py-1.5 text-right font-medium">
+                                                Win rate
+                                            </th>
+                                            <th className="py-1.5 text-right font-medium">
+                                                Accuracy
+                                            </th>
+                                            <th className="py-1.5 text-right font-medium">
+                                                Avg level
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border">
+                                        {monthly.map((row) => (
+                                            <tr key={row.month}>
+                                                <td className="py-1.5 text-foreground">
+                                                    {new Date(
+                                                        `${row.month}-01T00:00:00`,
+                                                    ).toLocaleDateString(
+                                                        'en-GB',
+                                                        {
+                                                            month: 'short',
+                                                            year: 'numeric',
+                                                        },
+                                                    )}
+                                                </td>
+                                                <td className="py-1.5 text-right tabular-nums">
+                                                    {row.matches}
+                                                </td>
+                                                <td className="py-1.5 text-right tabular-nums">
+                                                    {formatPercent(
+                                                        row.win_rate,
+                                                    )}
+                                                </td>
+                                                <td
+                                                    className={cn(
+                                                        'py-1.5 text-right tabular-nums',
+                                                        rateTone(row.accuracy),
+                                                    )}
+                                                >
+                                                    {formatPercent(
+                                                        row.accuracy,
+                                                    )}
+                                                </td>
+                                                <td className="py-1.5 text-right tabular-nums">
+                                                    {row.avg_level ?? '—'}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {byGame.map((game) => (
+                                    <span
+                                        key={game.game_key}
+                                        className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground"
+                                    >
+                                        {gameLabel(game.game_key)}:{' '}
+                                        {game.matches} · avg rank{' '}
+                                        {game.avg_rank}
+                                        {game.best_level !== null &&
+                                            ` · best level ${game.best_level}`}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex min-w-0 flex-col gap-2">
+                            <h4 className="text-sm font-semibold text-foreground">
+                                Played with most
+                            </h4>
+                            {opponents.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    Only solo or bot matches so far.
+                                </p>
+                            ) : (
+                                <ul
+                                    className="flex flex-col divide-y divide-border rounded-xl border border-border"
+                                    data-testid="match-opponents"
+                                >
+                                    {opponents.map((opponent) => (
+                                        <li
+                                            key={opponent.user_id}
+                                            className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm"
+                                        >
+                                            <span className="flex min-w-0 items-baseline gap-1.5">
+                                                <Link
+                                                    href={`/admin/users/${opponent.user_id}`}
+                                                    className="truncate font-medium text-foreground hover:underline"
+                                                >
+                                                    {opponent.name}
+                                                </Link>
+                                                <span className="shrink-0 text-xs text-muted-foreground">
+                                                    {opponent.grade === 0
+                                                        ? 'TK'
+                                                        : `Grade ${opponent.grade}`}
+                                                    {opponent.account &&
+                                                        opponent.account !==
+                                                            opponent.name &&
+                                                        ` · ${opponent.account}`}
+                                                </span>
+                                            </span>
+                                            <span className="text-xs text-muted-foreground tabular-nums">
+                                                {opponent.matches} matches ·{' '}
+                                                <span className="text-emerald-600 dark:text-emerald-400">
+                                                    {opponent.wins}W
+                                                </span>{' '}
+                                                <span className="text-red-600 dark:text-red-400">
+                                                    {opponent.losses}L
+                                                </span>{' '}
+                                                {opponent.draws}D ·{' '}
+                                                {timeAgo(
+                                                    opponent.last_played_at,
+                                                )}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </Panel>
+    );
+}

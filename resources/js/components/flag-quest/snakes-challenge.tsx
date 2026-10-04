@@ -1,5 +1,6 @@
 import MiniSnakesBoard from '@/components/flag-quest/mini-snakes-board';
 import { useTranslations } from '@/hooks/use-translations';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import type { ChallengeState } from '@/lib/flag-quest/world';
 import {
     Dice1,
@@ -24,7 +25,7 @@ type Sound = 'dice' | 'step' | 'correct' | 'wrong';
 
 interface Props {
     challenge: ChallengeState;
-    look: { color: string; accessory: string };
+    look: CharacterLook;
     onRoll: () => void;
     onSound?: (sound: Sound) => void;
     question: ReactNode;

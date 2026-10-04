@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\CharacterShop;
 use Database\Factories\PlayerProfileFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,11 +15,17 @@ class PlayerProfile extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['color', 'accessory', 'nickname', 'grade', 'birth_date', 'school_name'];
+    protected $fillable = ['color', 'accessory', 'nickname', 'grade', 'birth_date', 'school_name', 'gender', 'skin', 'hair_color', 'equipped'];
 
     public const COLORS = ['amber', 'coral', 'teal', 'violet'];
 
     public const ACCESSORIES = ['none', 'cap', 'glasses'];
+
+    public const GENDERS = ['boy', 'girl'];
+
+    public const SKINS = ['light', 'tan', 'brown', 'dark'];
+
+    public const HAIR_COLORS = ['brown', 'black', 'blonde', 'red', 'blue', 'pink', 'teal'];
 
     /** 0 is kindergarten (TK). */
     public const MIN_GRADE = 0;
@@ -35,12 +42,16 @@ class PlayerProfile extends Model
     protected $appends = ['age'];
 
     /** @var array<string, mixed> */
-    protected $attributes = ['color' => 'amber', 'accessory' => 'none'];
+    protected $attributes = ['color' => 'amber', 'accessory' => 'none', 'gender' => 'boy', 'skin' => 'light', 'hair_color' => 'brown'];
 
-    /** @return array{color: string, accessory: string, nickname: ?string} */
+    /**
+     * Drawable character: base look, equipped shop items and nickname.
+     *
+     * @return array{color: string, accessory: string, gender: string, skin: string, hair: string, items: array<string, array{style: string, color: ?string}>, nickname: ?string}
+     */
     public function character(): array
     {
-        return ['color' => $this->color, 'accessory' => $this->accessory, 'nickname' => $this->nickname];
+        return [...app(CharacterShop::class)->look($this), 'nickname' => $this->nickname];
     }
 
     /** Age in whole years from birth date, or null when unknown. */
@@ -52,7 +63,7 @@ class PlayerProfile extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['grade' => 'integer', 'birth_date' => 'immutable_date:Y-m-d'];
+        return ['grade' => 'integer', 'birth_date' => 'immutable_date:Y-m-d', 'equipped' => 'array'];
     }
 
     /** @return BelongsTo<User, $this> */

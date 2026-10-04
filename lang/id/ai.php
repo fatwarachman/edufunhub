@@ -1,0 +1,23 @@
+<?php
+
+return [
+    'not_connected' => 'Simpan base URL dan API key terlebih dahulu.',
+    'not_configured' => 'Atur koneksi AI dan pilih model terlebih dahulu.',
+    'unreachable' => 'Server AI tidak dapat dihubungi. Periksa base URL.',
+    'http_error' => 'Server AI membalas HTTP :status. Periksa base URL dan API key.',
+    'bad_response' => 'Balasan server AI untuk model :model tidak bisa dibaca (harus satu jawaban JSON). Pastikan server mendukung API OpenAI chat completions.',
+    'bad_models_response' => 'Server AI tidak mengirim daftar model yang kompatibel dengan OpenAI.',
+    'base_url_invalid' => 'Masukkan URL lengkap, contoh https://api.openai.com/v1.',
+    'connection_saved' => 'Koneksi AI disimpan.',
+    'models_loaded' => '{0} Server tidak memiliki model.|{1} 1 model dimuat.|[2,*] :count model dimuat.',
+    'model_unknown' => 'Pilih model dari daftar yang dimuat dari server.',
+    'model_saved' => 'Soal akan dibuat dengan :model.',
+    'key_removed' => 'API key dihapus.',
+    'points_saved' => 'Aturan poin disimpan. Game memakainya dalam satu menit.',
+    'pick_subject' => 'Pilih minimal satu mata pelajaran.',
+    'pick_grade' => 'Pilih minimal satu kelas.',
+    'too_many' => 'Permintaan ini menghasilkan :total soal; batas per permintaan :max.',
+    'generation_started' => 'Membuat :total soal di latar belakang.',
+    'teacher_assigned' => ':name sekarang guru dan dapat membuka Ruang Guru.',
+    'teacher_removed' => ':name bukan guru lagi.',
+];

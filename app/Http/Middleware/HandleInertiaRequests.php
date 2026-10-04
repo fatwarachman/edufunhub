@@ -5,6 +5,8 @@ namespace App\Http\Middleware;
 use App\Models\Announcement;
 use App\Models\SeoMetadata;
 use App\Services\FeatureService;
+use App\Services\PlayerNotifications;
+use App\Services\PlayerPortal;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -70,6 +72,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'gameMenu' => fn (): array => app(PlayerPortal::class)->menu(),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $user ? [
@@ -93,6 +96,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
                 'is_impersonating' => $request->session()->has('impersonated_by'),
             ],
+            'unreadNotifications' => fn (): int => $user ? app(PlayerNotifications::class)->unreadCount($user) : 0,
             'show_experience_survey' => $showExperienceSurvey,
             'locale' => $locale,
             'currentWorkspace' => $currentWorkspace ? [

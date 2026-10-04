@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
+use App\Services\CharacterShop;
 use App\Services\PlayerPortal;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,7 +12,7 @@ use Inertia\Response;
 
 class UserDashboardController extends Controller
 {
-    public function __invoke(Request $request, PlayerPortal $portal): Response
+    public function __invoke(Request $request, PlayerPortal $portal, CharacterShop $shop): Response
     {
         $user = $request->user();
         $profile = $user->playerProfile()->first() ?? new PlayerProfile;
@@ -20,7 +21,9 @@ class UserDashboardController extends Controller
 
         return Inertia::render('user/dashboard', [
             'points' => $points,
+            'balance' => $portal->balance($user),
             'character' => $profile->character(),
+            'vault' => $shop->vault($user, $user->locale === 'en' ? 'en' : 'id'),
             'grade' => $profile->grade,
             'playerDetails' => [
                 'birth_date' => $profile->birth_date?->toDateString(),

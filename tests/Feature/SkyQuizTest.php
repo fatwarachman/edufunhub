@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Requests\StoreGameResultRequest;
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\User;
@@ -128,7 +129,7 @@ it('rejects invalid sky results', function (string $field, mixed $value): void {
     $this->call('POST', '/api/internal/game-results', [], [], [], transformHeaders($headers), $body)->assertUnprocessable();
     expect($user->pointLedgers()->count())->toBe(0);
 })->with([
-    'points above sky cap' => ['points', 151],
+    'points above sky cap' => ['points', StoreGameResultRequest::GAMES['sky-quiz']['max_points'] + 1],
     'flag quest mission' => ['mission', 'lakeside'],
     'flag quest event id' => ['event_id', 'fq-1-lakeside-1'],
 ]);

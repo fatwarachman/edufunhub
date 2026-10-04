@@ -1,0 +1,1156 @@
+{
+  "words": [
+    {
+      "key": "cw-1-SAPI",
+      "level": 1,
+      "answer": "SAPI",
+      "clue": {
+        "en": "Farm animal that gives milk",
+        "id": "Hewan ternak penghasil susu"
+      }
+    },
+    {
+      "key": "cw-1-BUKU",
+      "level": 1,
+      "answer": "BUKU",
+      "clue": {
+        "en": "Bound pages you read",
+        "id": "Lembaran kertas berjilid untuk dibaca"
+      }
+    },
+    {
+      "key": "cw-1-BOLA",
+      "level": 1,
+      "answer": "BOLA",
+      "clue": {
+        "en": "Round thing kicked in football",
+        "id": "Benda bulat yang ditendang saat bermain sepak bola"
+      }
+    },
+    {
+      "key": "cw-1-MATA",
+      "level": 1,
+      "answer": "MATA",
+      "clue": {
+        "en": "Sense organ used to see",
+        "id": "Indra untuk melihat"
+      }
+    },
+    {
+      "key": "cw-1-IKAN",
+      "level": 1,
+      "answer": "IKAN",
+      "clue": {
+        "en": "Water animal that breathes with gills",
+        "id": "Hewan air yang bernapas dengan insang"
+      }
+    },
+    {
+      "key": "cw-1-BULAN",
+      "level": 1,
+      "answer": "BULAN",
+      "clue": {
+        "en": "Bright object in the night sky",
+        "id": "Benda langit yang tampak terang di malam hari"
+      }
+    },
+    {
+      "key": "cw-1-AYAM",
+      "level": 1,
+      "answer": "AYAM",
+      "clue": {
+        "en": "Bird that crows in the morning",
+        "id": "Unggas yang berkokok di pagi hari"
+      }
+    },
+    {
+      "key": "cw-1-PADI",
+      "level": 1,
+      "answer": "PADI",
+      "clue": {
+        "en": "Plant that produces rice",
+        "id": "Tanaman yang menghasilkan beras"
+      }
+    },
+    {
+      "key": "cw-1-HIJAU",
+      "level": 1,
+      "answer": "HIJAU",
+      "clue": {
+        "en": "Colour of fresh leaves",
+        "id": "Warna daun yang segar"
+      }
+    },
+    {
+      "key": "cw-1-RODA",
+      "level": 1,
+      "answer": "RODA",
+      "clue": {
+        "en": "Round part of a vehicle that spins",
+        "id": "Bagian kendaraan yang berputar"
+      }
+    },
+    {
+      "key": "cw-1-KAKI",
+      "level": 1,
+      "answer": "KAKI",
+      "clue": {
+        "en": "Body part used to walk",
+        "id": "Anggota tubuh untuk berjalan"
+      }
+    },
+    {
+      "key": "cw-1-TOPI",
+      "level": 1,
+      "answer": "TOPI",
+      "clue": {
+        "en": "Head covering against the sun",
+        "id": "Penutup kepala agar tidak kepanasan"
+      }
+    },
+    {
+      "key": "cw-1-GAJAH",
+      "level": 1,
+      "answer": "GAJAH",
+      "clue": {
+        "en": "Big animal with a trunk",
+        "id": "Hewan besar berbelalai"
+      }
+    },
+    {
+      "key": "cw-1-SUSU",
+      "level": 1,
+      "answer": "SUSU",
+      "clue": {
+        "en": "White drink from cows",
+        "id": "Minuman putih dari sapi"
+      }
+    },
+    {
+      "key": "cw-1-APEL",
+      "level": 1,
+      "answer": "APEL",
+      "clue": {
+        "en": "Crunchy red or green fruit",
+        "id": "Buah merah atau hijau yang renyah"
+      }
+    },
+    {
+      "key": "cw-1-TELUR",
+      "level": 1,
+      "answer": "TELUR",
+      "clue": {
+        "en": "Laid by hens, can be boiled",
+        "id": "Dihasilkan ayam dan bisa direbus"
+      }
+    },
+    {
+      "key": "cw-1-AWAN",
+      "level": 1,
+      "answer": "AWAN",
+      "clue": {
+        "en": "White water vapour in the sky",
+        "id": "Kumpulan uap air putih di langit"
+      }
+    },
+    {
+      "key": "cw-1-HUJAN",
+      "level": 1,
+      "answer": "HUJAN",
+      "clue": {
+        "en": "Water falling from the sky",
+        "id": "Air yang turun dari langit"
+      }
+    },
+    {
+      "key": "cw-1-PAGI",
+      "level": 1,
+      "answer": "PAGI",
+      "clue": {
+        "en": "Time when the sun rises",
+        "id": "Waktu matahari terbit"
+      }
+    },
+    {
+      "key": "cw-1-LIMA",
+      "level": 1,
+      "answer": "LIMA",
+      "clue": {
+        "en": "Number after four",
+        "id": "Angka setelah empat"
+      }
+    },
+    {
+      "key": "cw-1-ROTI",
+      "level": 1,
+      "answer": "ROTI",
+      "clue": {
+        "en": "Baked food made from flour",
+        "id": "Makanan dari tepung yang dipanggang"
+      }
+    },
+    {
+      "key": "cw-1-MADU",
+      "level": 1,
+      "answer": "MADU",
+      "clue": {
+        "en": "Sweet liquid made by bees",
+        "id": "Cairan manis yang dibuat lebah"
+      }
+    },
+    {
+      "key": "cw-1-KUDA",
+      "level": 1,
+      "answer": "KUDA",
+      "clue": {
+        "en": "Fast animal people ride",
+        "id": "Hewan yang bisa ditunggangi dan berlari kencang"
+      }
+    },
+    {
+      "key": "cw-1-BEBEK",
+      "level": 1,
+      "answer": "BEBEK",
+      "clue": {
+        "en": "Bird that swims and quacks",
+        "id": "Unggas yang pandai berenang dan berbunyi kwek"
+      }
+    },
+    {
+      "key": "cw-1-JERUK",
+      "level": 1,
+      "answer": "JERUK",
+      "clue": {
+        "en": "Orange fruit rich in vitamin C",
+        "id": "Buah oranye yang kaya vitamin C"
+      }
+    },
+    {
+      "key": "cw-1-MEJA",
+      "level": 1,
+      "answer": "MEJA",
+      "clue": {
+        "en": "Furniture to write or eat on",
+        "id": "Perabot untuk menulis atau makan"
+      }
+    },
+    {
+      "key": "cw-1-KURSI",
+      "level": 1,
+      "answer": "KURSI",
+      "clue": {
+        "en": "Furniture to sit on",
+        "id": "Perabot untuk duduk"
+      }
+    },
+    {
+      "key": "cw-1-GURU",
+      "level": 1,
+      "answer": "GURU",
+      "clue": {
+        "en": "Person who teaches at school",
+        "id": "Orang yang mengajar di sekolah"
+      }
+    },
+    {
+      "key": "cw-1-BINTANG",
+      "level": 1,
+      "answer": "BINTANG",
+      "clue": {
+        "en": "Twinkling light in the night sky",
+        "id": "Benda langit yang berkelip di malam hari"
+      }
+    },
+    {
+      "key": "cw-1-PELANGI",
+      "level": 1,
+      "answer": "PELANGI",
+      "clue": {
+        "en": "Colourful arc after rain",
+        "id": "Lengkung warna-warni setelah hujan"
+      }
+    },
+    {
+      "key": "cw-1-TIGA",
+      "level": 1,
+      "answer": "TIGA",
+      "clue": {
+        "en": "Number of sides of a triangle",
+        "id": "Jumlah sisi segitiga"
+      }
+    },
+    {
+      "key": "cw-1-SEMUT",
+      "level": 1,
+      "answer": "SEMUT",
+      "clue": {
+        "en": "Small insect that loves sugar",
+        "id": "Serangga kecil yang suka gula"
+      }
+    },
+    {
+      "key": "cw-2-GARUDA",
+      "level": 2,
+      "answer": "GARUDA",
+      "clue": {
+        "en": "Bird on Indonesia's coat of arms",
+        "id": "Burung lambang negara Indonesia"
+      }
+    },
+    {
+      "key": "cw-2-BATIK",
+      "level": 2,
+      "answer": "BATIK",
+      "clue": {
+        "en": "Patterned cloth, Indonesian heritage",
+        "id": "Kain bermotif warisan budaya Indonesia"
+      }
+    },
+    {
+      "key": "cw-2-ANGKLUNG",
+      "level": 2,
+      "answer": "ANGKLUNG",
+      "clue": {
+        "en": "Bamboo instrument from West Java",
+        "id": "Alat musik bambu dari Jawa Barat"
+      }
+    },
+    {
+      "key": "cw-2-KOMPAS",
+      "level": 2,
+      "answer": "KOMPAS",
+      "clue": {
+        "en": "Tool that shows directions",
+        "id": "Alat penunjuk arah mata angin"
+      }
+    },
+    {
+      "key": "cw-2-KUBUS",
+      "level": 2,
+      "answer": "KUBUS",
+      "clue": {
+        "en": "Solid with six square faces",
+        "id": "Bangun ruang dengan enam sisi persegi"
+      }
+    },
+    {
+      "key": "cw-2-AKAR",
+      "level": 2,
+      "answer": "AKAR",
+      "clue": {
+        "en": "Plant part that absorbs water from soil",
+        "id": "Bagian tumbuhan yang menyerap air dari tanah"
+      }
+    },
+    {
+      "key": "cw-2-MATAHARI",
+      "level": 2,
+      "answer": "MATAHARI",
+      "clue": {
+        "en": "Star at the centre of the solar system",
+        "id": "Bintang pusat tata surya"
+      }
+    },
+    {
+      "key": "cw-2-BUMI",
+      "level": 2,
+      "answer": "BUMI",
+      "clue": {
+        "en": "Planet we live on",
+        "id": "Planet tempat kita tinggal"
+      }
+    },
+    {
+      "key": "cw-2-PULAU",
+      "level": 2,
+      "answer": "PULAU",
+      "clue": {
+        "en": "Land surrounded by water",
+        "id": "Daratan yang dikelilingi air"
+      }
+    },
+    {
+      "key": "cw-2-SAMUDRA",
+      "level": 2,
+      "answer": "SAMUDRA",
+      "clue": {
+        "en": "Very large body of salt water",
+        "id": "Lautan yang sangat luas"
+      }
+    },
+    {
+      "key": "cw-2-MERAPI",
+      "level": 2,
+      "answer": "MERAPI",
+      "clue": {
+        "en": "Active volcano near Yogyakarta",
+        "id": "Gunung api aktif di dekat Yogyakarta"
+      }
+    },
+    {
+      "key": "cw-2-SAWAH",
+      "level": 2,
+      "answer": "SAWAH",
+      "clue": {
+        "en": "Wet field where rice grows",
+        "id": "Lahan basah tempat menanam padi"
+      }
+    },
+    {
+      "key": "cw-2-PERSEGI",
+      "level": 2,
+      "answer": "PERSEGI",
+      "clue": {
+        "en": "Flat shape with four equal sides",
+        "id": "Bangun datar dengan empat sisi sama panjang"
+      }
+    },
+    {
+      "key": "cw-2-LINGKARAN",
+      "level": 2,
+      "answer": "LINGKARAN",
+      "clue": {
+        "en": "Flat shape with no corners",
+        "id": "Bangun datar yang tidak memiliki sudut"
+      }
+    },
+    {
+      "key": "cw-2-KATAK",
+      "level": 2,
+      "answer": "KATAK",
+      "clue": {
+        "en": "Amphibian that is good at jumping",
+        "id": "Hewan amfibi yang pandai melompat"
+      }
+    },
+    {
+      "key": "cw-2-PAUS",
+      "level": 2,
+      "answer": "PAUS",
+      "clue": {
+        "en": "Largest sea mammal",
+        "id": "Mamalia laut terbesar"
+      }
+    },
+    {
+      "key": "cw-2-DAUN",
+      "level": 2,
+      "answer": "DAUN",
+      "clue": {
+        "en": "Plant part where food is made",
+        "id": "Bagian tumbuhan tempat memasak makanan"
+      }
+    },
+    {
+      "key": "cw-2-KELINCI",
+      "level": 2,
+      "answer": "KELINCI",
+      "clue": {
+        "en": "Long-eared animal that likes carrots",
+        "id": "Hewan bertelinga panjang yang suka wortel"
+      }
+    },
+    {
+      "key": "cw-2-MERDEKA",
+      "level": 2,
+      "answer": "MERDEKA",
+      "clue": {
+        "en": "Free from colonial rule",
+        "id": "Bebas dari penjajahan"
+      }
+    },
+    {
+      "key": "cw-2-BENDERA",
+      "level": 2,
+      "answer": "BENDERA",
+      "clue": {
+        "en": "Coloured cloth that represents a country",
+        "id": "Kain berwarna lambang suatu negara"
+      }
+    },
+    {
+      "key": "cw-2-BAMBU",
+      "level": 2,
+      "answer": "BAMBU",
+      "clue": {
+        "en": "Jointed plant used to make angklung",
+        "id": "Tanaman beruas yang dipakai membuat angklung"
+      }
+    },
+    {
+      "key": "cw-2-KANCIL",
+      "level": 2,
+      "answer": "KANCIL",
+      "clue": {
+        "en": "Clever mouse-deer of Indonesian fables",
+        "id": "Hewan cerdik dalam dongeng Nusantara"
+      }
+    },
+    {
+      "key": "cw-2-PELABUHAN",
+      "level": 2,
+      "answer": "PELABUHAN",
+      "clue": {
+        "en": "Place where ships dock",
+        "id": "Tempat kapal berlabuh"
+      }
+    },
+    {
+      "key": "cw-2-PETANI",
+      "level": 2,
+      "answer": "PETANI",
+      "clue": {
+        "en": "Person who grows crops",
+        "id": "Orang yang bekerja menanam di sawah"
+      }
+    },
+    {
+      "key": "cw-2-DOKTER",
+      "level": 2,
+      "answer": "DOKTER",
+      "clue": {
+        "en": "Person who treats the sick",
+        "id": "Orang yang mengobati orang sakit"
+      }
+    },
+    {
+      "key": "cw-2-TERMOMETER",
+      "level": 2,
+      "answer": "TERMOMETER",
+      "clue": {
+        "en": "Tool to measure temperature",
+        "id": "Alat untuk mengukur suhu"
+      }
+    },
+    {
+      "key": "cw-2-PECAHAN",
+      "level": 2,
+      "answer": "PECAHAN",
+      "clue": {
+        "en": "Numbers like a half or a third",
+        "id": "Bilangan seperti setengah atau sepertiga"
+      }
+    },
+    {
+      "key": "cw-2-KALENDER",
+      "level": 2,
+      "answer": "KALENDER",
+      "clue": {
+        "en": "List of the days and months of a year",
+        "id": "Daftar hari, minggu, dan bulan dalam setahun"
+      }
+    },
+    {
+      "key": "cw-2-RUPIAH",
+      "level": 2,
+      "answer": "RUPIAH",
+      "clue": {
+        "en": "Indonesia's currency",
+        "id": "Mata uang Indonesia"
+      }
+    },
+    {
+      "key": "cw-2-WAYANG",
+      "level": 2,
+      "answer": "WAYANG",
+      "clue": {
+        "en": "Shadow puppets used by a dalang",
+        "id": "Boneka kulit dalam pertunjukan dalang"
+      }
+    },
+    {
+      "key": "cw-2-SUNGAI",
+      "level": 2,
+      "answer": "SUNGAI",
+      "clue": {
+        "en": "Large stream flowing to the sea",
+        "id": "Aliran air besar dari hulu ke hilir"
+      }
+    },
+    {
+      "key": "cw-2-VITAMIN",
+      "level": 2,
+      "answer": "VITAMIN",
+      "clue": {
+        "en": "Nutrient in food that keeps you healthy",
+        "id": "Zat dalam makanan yang menjaga kesehatan"
+      }
+    },
+    {
+      "key": "cw-3-KLOROFIL",
+      "level": 3,
+      "answer": "KLOROFIL",
+      "clue": {
+        "en": "Green pigment used in photosynthesis",
+        "id": "Zat hijau daun untuk fotosintesis"
+      }
+    },
+    {
+      "key": "cw-3-OKSIGEN",
+      "level": 3,
+      "answer": "OKSIGEN",
+      "clue": {
+        "en": "Gas we breathe in",
+        "id": "Gas yang kita hirup untuk bernapas"
+      }
+    },
+    {
+      "key": "cw-3-GRAVITASI",
+      "level": 3,
+      "answer": "GRAVITASI",
+      "clue": {
+        "en": "Force pulling objects to the earth",
+        "id": "Gaya tarik bumi terhadap benda"
+      }
+    },
+    {
+      "key": "cw-3-PROKLAMASI",
+      "level": 3,
+      "answer": "PROKLAMASI",
+      "clue": {
+        "en": "Indonesia's 1945 declaration of independence",
+        "id": "Pernyataan kemerdekaan Indonesia tahun 1945"
+      }
+    },
+    {
+      "key": "cw-3-MAGNET",
+      "level": 3,
+      "answer": "MAGNET",
+      "clue": {
+        "en": "Object that attracts iron",
+        "id": "Benda yang dapat menarik besi"
+      }
+    },
+    {
+      "key": "cw-3-DEMOKRASI",
+      "level": 3,
+      "answer": "DEMOKRASI",
+      "clue": {
+        "en": "Government of, by and for the people",
+        "id": "Pemerintahan dari, oleh, dan untuk rakyat"
+      }
+    },
+    {
+      "key": "cw-3-PRISMA",
+      "level": 3,
+      "answer": "PRISMA",
+      "clue": {
+        "en": "Solid with two identical end faces",
+        "id": "Bangun ruang dengan alas dan tutup yang sama"
+      }
+    },
+    {
+      "key": "cw-3-MAJAPAHIT",
+      "level": 3,
+      "answer": "MAJAPAHIT",
+      "clue": {
+        "en": "Kingdom whose prime minister was Gajah Mada",
+        "id": "Kerajaan besar dengan Mahapatih Gajah Mada"
+      }
+    },
+    {
+      "key": "cw-3-SRIWIJAYA",
+      "level": 3,
+      "answer": "SRIWIJAYA",
+      "clue": {
+        "en": "Great maritime kingdom in Sumatra",
+        "id": "Kerajaan maritim besar di Sumatra"
+      }
+    },
+    {
+      "key": "cw-3-EKUATOR",
+      "level": 3,
+      "answer": "EKUATOR",
+      "clue": {
+        "en": "Imaginary line at zero latitude",
+        "id": "Garis khayal lintang nol derajat"
+      }
+    },
+    {
+      "key": "cw-3-FOTOSINTESIS",
+      "level": 3,
+      "answer": "FOTOSINTESIS",
+      "clue": {
+        "en": "How plants make food from light",
+        "id": "Proses tumbuhan membuat makanan dengan cahaya"
+      }
+    },
+    {
+      "key": "cw-3-KONDENSASI",
+      "level": 3,
+      "answer": "KONDENSASI",
+      "clue": {
+        "en": "Vapour turning into water droplets",
+        "id": "Perubahan uap menjadi titik air"
+      }
+    },
+    {
+      "key": "cw-3-PANCASILA",
+      "level": 3,
+      "answer": "PANCASILA",
+      "clue": {
+        "en": "Foundation of the Indonesian state",
+        "id": "Dasar negara Indonesia"
+      }
+    },
+    {
+      "key": "cw-3-VERTEBRATA",
+      "level": 3,
+      "answer": "VERTEBRATA",
+      "clue": {
+        "en": "Animals with a backbone",
+        "id": "Kelompok hewan bertulang belakang"
+      }
+    },
+    {
+      "key": "cw-3-HERBIVORA",
+      "level": 3,
+      "answer": "HERBIVORA",
+      "clue": {
+        "en": "Plant-eating animal",
+        "id": "Hewan pemakan tumbuhan"
+      }
+    },
+    {
+      "key": "cw-3-KARNIVORA",
+      "level": 3,
+      "answer": "KARNIVORA",
+      "clue": {
+        "en": "Meat-eating animal",
+        "id": "Hewan pemakan daging"
+      }
+    },
+    {
+      "key": "cw-3-PARAGRAF",
+      "level": 3,
+      "answer": "PARAGRAF",
+      "clue": {
+        "en": "Group of sentences with one main idea",
+        "id": "Kumpulan kalimat dengan satu gagasan utama"
+      }
+    },
+    {
+      "key": "cw-3-SINONIM",
+      "level": 3,
+      "answer": "SINONIM",
+      "clue": {
+        "en": "Word with the same meaning",
+        "id": "Kata yang maknanya sama"
+      }
+    },
+    {
+      "key": "cw-3-ANTONIM",
+      "level": 3,
+      "answer": "ANTONIM",
+      "clue": {
+        "en": "Word with the opposite meaning",
+        "id": "Kata yang maknanya berlawanan"
+      }
+    },
+    {
+      "key": "cw-3-KOPERASI",
+      "level": 3,
+      "answer": "KOPERASI",
+      "clue": {
+        "en": "Business run on mutual help",
+        "id": "Badan usaha berasas kekeluargaan"
+      }
+    },
+    {
+      "key": "cw-3-DIAMETER",
+      "level": 3,
+      "answer": "DIAMETER",
+      "clue": {
+        "en": "Line across a circle through its centre",
+        "id": "Garis tengah lingkaran"
+      }
+    },
+    {
+      "key": "cw-3-STATISTIKA",
+      "level": 3,
+      "answer": "STATISTIKA",
+      "clue": {
+        "en": "Science of collecting and analysing data",
+        "id": "Ilmu mengumpulkan dan mengolah data"
+      }
+    },
+    {
+      "key": "cw-3-ATMOSFER",
+      "level": 3,
+      "answer": "ATMOSFER",
+      "clue": {
+        "en": "Layer of air around the earth",
+        "id": "Lapisan udara yang menyelimuti bumi"
+      }
+    },
+    {
+      "key": "cw-3-EROSI",
+      "level": 3,
+      "answer": "EROSI",
+      "clue": {
+        "en": "Soil worn away by water or wind",
+        "id": "Pengikisan tanah oleh air atau angin"
+      }
+    },
+    {
+      "key": "cw-3-KOMET",
+      "level": 3,
+      "answer": "KOMET",
+      "clue": {
+        "en": "Icy object with a tail orbiting the sun",
+        "id": "Benda langit berekor yang mengelilingi matahari"
+      }
+    },
+    {
+      "key": "cw-3-PROTEIN",
+      "level": 3,
+      "answer": "PROTEIN",
+      "clue": {
+        "en": "Nutrient that builds the body",
+        "id": "Zat gizi pembangun tubuh"
+      }
+    },
+    {
+      "key": "cw-3-MUSYAWARAH",
+      "level": 3,
+      "answer": "MUSYAWARAH",
+      "clue": {
+        "en": "Discussing to reach consensus",
+        "id": "Berunding untuk mencapai mufakat"
+      }
+    },
+    {
+      "key": "cw-3-NOVEL",
+      "level": 3,
+      "answer": "NOVEL",
+      "clue": {
+        "en": "Long work of fiction",
+        "id": "Karangan prosa panjang berisi cerita"
+      }
+    },
+    {
+      "key": "cw-3-PROVINSI",
+      "level": 3,
+      "answer": "PROVINSI",
+      "clue": {
+        "en": "Region directly under the national government",
+        "id": "Wilayah administrasi di bawah negara"
+      }
+    },
+    {
+      "key": "cw-3-EKSPOR",
+      "level": 3,
+      "answer": "EKSPOR",
+      "clue": {
+        "en": "Selling goods abroad",
+        "id": "Menjual barang ke luar negeri"
+      }
+    },
+    {
+      "key": "cw-3-IMPOR",
+      "level": 3,
+      "answer": "IMPOR",
+      "clue": {
+        "en": "Buying goods from abroad",
+        "id": "Membeli barang dari luar negeri"
+      }
+    },
+    {
+      "key": "cw-3-ALGORITMA",
+      "level": 3,
+      "answer": "ALGORITMA",
+      "clue": {
+        "en": "Step-by-step method to solve a problem",
+        "id": "Langkah-langkah logis untuk menyelesaikan masalah"
+      }
+    },
+    {
+      "key": "cw-4-MITOKONDRIA",
+      "level": 4,
+      "answer": "MITOKONDRIA",
+      "clue": {
+        "en": "Organelle where cells respire",
+        "id": "Organel tempat respirasi sel"
+      }
+    },
+    {
+      "key": "cw-4-HIPOTENUSA",
+      "level": 4,
+      "answer": "HIPOTENUSA",
+      "clue": {
+        "en": "Longest side of a right triangle",
+        "id": "Sisi miring segitiga siku-siku"
+      }
+    },
+    {
+      "key": "cw-4-LOGARITMA",
+      "level": 4,
+      "answer": "LOGARITMA",
+      "clue": {
+        "en": "Inverse operation of exponentiation",
+        "id": "Kebalikan dari operasi perpangkatan"
+      }
+    },
+    {
+      "key": "cw-4-EKOSISTEM",
+      "level": 4,
+      "answer": "EKOSISTEM",
+      "clue": {
+        "en": "Living things interacting with their environment",
+        "id": "Hubungan timbal balik makhluk hidup dan lingkungannya"
+      }
+    },
+    {
+      "key": "cw-4-INFLASI",
+      "level": 4,
+      "answer": "INFLASI",
+      "clue": {
+        "en": "General, ongoing rise in prices",
+        "id": "Kenaikan harga barang secara umum dan terus-menerus"
+      }
+    },
+    {
+      "key": "cw-4-KONDUKTOR",
+      "level": 4,
+      "answer": "KONDUKTOR",
+      "clue": {
+        "en": "Material that conducts electricity well",
+        "id": "Bahan yang mudah menghantarkan listrik"
+      }
+    },
+    {
+      "key": "cw-4-ELEKTRON",
+      "level": 4,
+      "answer": "ELEKTRON",
+      "clue": {
+        "en": "Negatively charged particle in an atom",
+        "id": "Partikel bermuatan negatif dalam atom"
+      }
+    },
+    {
+      "key": "cw-4-KHATULISTIWA",
+      "level": 4,
+      "answer": "KHATULISTIWA",
+      "clue": {
+        "en": "Another name for the equator",
+        "id": "Nama lain garis ekuator"
+      }
+    },
+    {
+      "key": "cw-4-PARLEMEN",
+      "level": 4,
+      "answer": "PARLEMEN",
+      "clue": {
+        "en": "Body of elected representatives",
+        "id": "Lembaga perwakilan rakyat"
+      }
+    },
+    {
+      "key": "cw-4-EVAPORASI",
+      "level": 4,
+      "answer": "EVAPORASI",
+      "clue": {
+        "en": "Water turning into vapour by heat",
+        "id": "Penguapan air karena panas"
+      }
+    },
+    {
+      "key": "cw-4-OSMOSIS",
+      "level": 4,
+      "answer": "OSMOSIS",
+      "clue": {
+        "en": "Water moving through a semipermeable membrane",
+        "id": "Perpindahan air melalui membran semipermeabel"
+      }
+    },
+    {
+      "key": "cw-4-ENZIM",
+      "level": 4,
+      "answer": "ENZIM",
+      "clue": {
+        "en": "Protein that speeds up reactions in the body",
+        "id": "Protein yang mempercepat reaksi kimia di tubuh"
+      }
+    },
+    {
+      "key": "cw-4-GLOBALISASI",
+      "level": 4,
+      "answer": "GLOBALISASI",
+      "clue": {
+        "en": "Process connecting countries worldwide",
+        "id": "Proses mendunia yang menghubungkan antarnegara"
+      }
+    },
+    {
+      "key": "cw-4-REFORMASI",
+      "level": 4,
+      "answer": "REFORMASI",
+      "clue": {
+        "en": "Indonesia's 1998 political reform movement",
+        "id": "Gerakan perubahan politik Indonesia tahun 1998"
+      }
+    },
+    {
+      "key": "cw-4-KATALIS",
+      "level": 4,
+      "answer": "KATALIS",
+      "clue": {
+        "en": "Substance that speeds up a reaction unchanged",
+        "id": "Zat yang mempercepat reaksi tanpa ikut berubah"
+      }
+    },
+    {
+      "key": "cw-4-MOLEKUL",
+      "level": 4,
+      "answer": "MOLEKUL",
+      "clue": {
+        "en": "Two or more atoms bonded together",
+        "id": "Gabungan dua atom atau lebih"
+      }
+    },
+    {
+      "key": "cw-4-KROMOSOM",
+      "level": 4,
+      "answer": "KROMOSOM",
+      "clue": {
+        "en": "Carrier of genes in the cell nucleus",
+        "id": "Pembawa sifat keturunan di inti sel"
+      }
+    },
+    {
+      "key": "cw-4-TRIGONOMETRI",
+      "level": 4,
+      "answer": "TRIGONOMETRI",
+      "clue": {
+        "en": "Maths of angles and triangles",
+        "id": "Cabang matematika tentang sudut dan segitiga"
+      }
+    },
+    {
+      "key": "cw-4-INTEGRAL",
+      "level": 4,
+      "answer": "INTEGRAL",
+      "clue": {
+        "en": "Inverse of the derivative in calculus",
+        "id": "Kebalikan dari turunan dalam kalkulus"
+      }
+    },
+    {
+      "key": "cw-4-RESONANSI",
+      "level": 4,
+      "answer": "RESONANSI",
+      "clue": {
+        "en": "Vibration caused by a matching frequency",
+        "id": "Ikut bergetarnya benda karena frekuensi yang sama"
+      }
+    },
+    {
+      "key": "cw-4-IONOSFER",
+      "level": 4,
+      "answer": "IONOSFER",
+      "clue": {
+        "en": "Atmosphere layer that reflects radio waves",
+        "id": "Lapisan atmosfer yang memantulkan gelombang radio"
+      }
+    },
+    {
+      "key": "cw-4-FEODALISME",
+      "level": 4,
+      "answer": "FEODALISME",
+      "clue": {
+        "en": "Social system based on noble landholding",
+        "id": "Sistem sosial berdasarkan kepemilikan tanah bangsawan"
+      }
+    },
+    {
+      "key": "cw-4-MONOPOLI",
+      "level": 4,
+      "answer": "MONOPOLI",
+      "clue": {
+        "en": "Market controlled by one seller",
+        "id": "Pasar yang dikuasai satu penjual"
+      }
+    },
+    {
+      "key": "cw-4-SUBSIDI",
+      "level": 4,
+      "answer": "SUBSIDI",
+      "clue": {
+        "en": "Government aid to keep prices down",
+        "id": "Bantuan dana pemerintah untuk menekan harga"
+      }
+    },
+    {
+      "key": "cw-4-HIDROLISIS",
+      "level": 4,
+      "answer": "HIDROLISIS",
+      "clue": {
+        "en": "Breaking down a substance with water",
+        "id": "Reaksi penguraian zat oleh air"
+      }
+    },
+    {
+      "key": "cw-4-METAFORA",
+      "level": 4,
+      "answer": "METAFORA",
+      "clue": {
+        "en": "Figure of speech comparing without like or as",
+        "id": "Majas perbandingan tanpa kata pembanding"
+      }
+    },
+    {
+      "key": "cw-4-VEKTOR",
+      "level": 4,
+      "answer": "VEKTOR",
+      "clue": {
+        "en": "Quantity with size and direction",
+        "id": "Besaran yang memiliki nilai dan arah"
+      }
+    },
+    {
+      "key": "cw-4-FOTON",
+      "level": 4,
+      "answer": "FOTON",
+      "clue": {
+        "en": "Particle of light",
+        "id": "Partikel cahaya"
+      }
+    },
+    {
+      "key": "cw-4-GENETIKA",
+      "level": 4,
+      "answer": "GENETIKA",
+      "clue": {
+        "en": "Science of heredity",
+        "id": "Ilmu tentang pewarisan sifat"
+      }
+    },
+    {
+      "key": "cw-4-DESENTRALISASI",
+      "level": 4,
+      "answer": "DESENTRALISASI",
+      "clue": {
+        "en": "Handing central power to regions",
+        "id": "Penyerahan wewenang pusat ke daerah"
+      }
+    },
+    {
+      "key": "cw-4-KOLONIALISME",
+      "level": 4,
+      "answer": "KOLONIALISME",
+      "clue": {
+        "en": "One nation ruling another's territory",
+        "id": "Penguasaan suatu bangsa atas wilayah bangsa lain"
+      }
+    },
+    {
+      "key": "cw-4-PROBABILITAS",
+      "level": 4,
+      "answer": "PROBABILITAS",
+      "clue": {
+        "en": "Chance that an event happens",
+        "id": "Peluang terjadinya suatu kejadian"
+      }
+    }
+  ]
+}

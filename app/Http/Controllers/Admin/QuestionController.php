@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\QuestionRequest;
 use App\Models\Question;
+use App\Services\PointRules;
 use App\Services\QuestionAnalytics;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,9 +22,9 @@ class QuestionController extends Controller
      */
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'game', 'band', 'subject', 'type', 'status', 'sort']);
+        $filters = $request->only(['search', 'game', 'band', 'subject', 'type', 'status', 'sort', 'source']);
         $subject = $filters['subject'] ?? null;
-        $showList = in_array($subject, [...Question::SUBJECTS, 'all'], true) || filled($filters['search'] ?? null);
+        $showList = in_array($subject, [...Question::SUBJECTS, 'all'], true) || filled($filters['search'] ?? null) || filled($filters['source'] ?? null);
 
         return Inertia::render('admin/questions/index', [
             'mode' => $showList ? 'list' : 'subjects',
@@ -33,6 +34,9 @@ class QuestionController extends Controller
             'summary' => [
                 'total' => Question::query()->count(),
                 'active' => Question::query()->active()->count(),
+                'ai' => Question::query()->where('source', Question::SOURCE_AI)->count(),
+                'ai_pending' => Question::query()->where('source', Question::SOURCE_AI)->where('is_active', false)->count(),
+                'bonus' => Question::query()->where('points', '>', 0)->count(),
                 'byGame' => collect(Question::GAMES)->mapWithKeys(fn (string $game): array => [
                     $game => Question::query()->active()->whereJsonContains('games', $game)->count(),
                 ]),
@@ -86,6 +90,8 @@ class QuestionController extends Controller
             ->when(isset($filters['band']) && $filters['band'] !== '' && array_key_exists((int) $filters['band'], Question::BANDS), fn (Builder $q) => $q->where('band', (int) $filters['band']))
             ->when(in_array($filters['subject'] ?? null, Question::SUBJECTS, true), fn (Builder $q) => $q->where('subject', $filters['subject']))
             ->when(in_array($filters['type'] ?? null, Question::TYPES, true), fn (Builder $q) => $q->where('type', $filters['type']))
+            ->when(($filters['source'] ?? null) === 'ai', fn (Builder $q) => $q->where('source', Question::SOURCE_AI))
+            ->when(($filters['source'] ?? null) === 'bonus', fn (Builder $q) => $q->where('points', '>', 0))
             ->when(($filters['status'] ?? null) === 'active', fn (Builder $q) => $q->where('is_active', true))
             ->when(($filters['status'] ?? null) === 'inactive', fn (Builder $q) => $q->where('is_active', false))
             ->when(($filters['sort'] ?? null) === 'hardest', fn (Builder $q) => $q->where('times_answered', '>', 0)->orderByRaw('times_correct * 1.0 / times_answered asc'))
@@ -95,7 +101,7 @@ class QuestionController extends Controller
             ->paginate(20)
             ->withQueryString()
             ->through(fn (Question $question): array => [
-                ...$question->only(['id', 'key', 'type', 'band', 'grades', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'games', 'is_active', 'source', 'times_answered', 'times_correct']),
+                ...$question->only(['id', 'key', 'type', 'band', 'grades', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
                 'author' => $question->author?->name,
                 'success_rate' => $question->successRate(),
             ]);
@@ -132,7 +138,7 @@ class QuestionController extends Controller
 
         return Inertia::render('admin/questions/show', [
             'question' => [
-                ...$question->only(['id', 'key', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'source', 'times_answered', 'times_correct']),
+                ...$question->only(['id', 'key', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
                 'created_at' => $question->created_at?->toIso8601String(),
                 'updated_at' => $question->updated_at?->toIso8601String(),
                 'author' => $question->author ? [
@@ -152,7 +158,7 @@ class QuestionController extends Controller
     {
         return Inertia::render('admin/questions/form', [
             'question' => [
-                ...$question->only(['id', 'key', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'times_answered', 'times_correct']),
+                ...$question->only(['id', 'key', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'points', 'times_answered', 'times_correct']),
                 'success_rate' => $question->successRate(),
             ],
             ...$this->options(),
@@ -195,8 +201,11 @@ class QuestionController extends Controller
     {
         return [
             'games' => Question::GAMES,
+            'choiceOnlyGames' => Question::CHOICE_ONLY_GAMES,
             'subjects' => Question::SUBJECTS,
             'types' => Question::TYPES,
+            'perCorrect' => PointRules::current()['per_correct'],
+            'maxPoints' => Question::MAX_POINTS,
             'bands' => collect(Question::BANDS)->map(fn (array $range, int $band): array => ['value' => $band, 'min' => $range[0], 'max' => $range[1]])->values(),
         ];
     }

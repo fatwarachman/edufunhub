@@ -185,7 +185,7 @@ class TeacherQuestionImporter
             'type' => $type,
             'grades' => $this->parseGrades($row['grades'] ?? ''),
             'subject' => Str::lower($row['subject'] ?? ''),
-            'games' => $games !== [] ? $games : ($type === Question::TYPE_TRUE_FALSE ? ['flag-quest'] : Question::GAMES),
+            'games' => $games !== [] ? $games : ($type === Question::TYPE_TRUE_FALSE ? array_values(array_diff(Question::GAMES, Question::CHOICE_ONLY_GAMES)) : Question::GAMES),
             'prompt_id' => $row['question_id'] ?? '',
             'prompt_en' => ($row['question_en'] ?? '') ?: null,
             'options' => $this->normalizeOptions($options, $type),

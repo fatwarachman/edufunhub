@@ -41,7 +41,17 @@ func (s *Server) Snapshot() Stats {
 		{Game: "flag-quest", Connections: len(s.conns), Sessions: len(s.sessions)},
 		{Game: "sky-quiz", Connections: len(s.skyConns), Sessions: len(s.skies)},
 	}
+	duelConns := len(s.duelSubs)
+	snakesConns := len(s.snakesSubs)
+	crosswordConns := len(s.crosswordSubs)
+	games = append(games, Usage{Game: "knowledge-train", Connections: len(s.trainConns), Sessions: len(s.trains)})
 	s.mu.Unlock()
+	matches, _ := s.duels.Counts()
+	games = append(games, Usage{Game: "quiz-duel", Connections: duelConns, Sessions: matches})
+	rooms, _ := s.snakes.Counts()
+	games = append(games, Usage{Game: "snakes-and-ladders", Connections: snakesConns, Sessions: rooms})
+	cwRooms, _ := s.crosswords.Counts()
+	games = append(games, Usage{Game: "crossword", Connections: crosswordConns, Sessions: cwRooms})
 	return Stats{
 		Service:        "edufunhub-game",
 		GoVersion:      runtime.Version(),

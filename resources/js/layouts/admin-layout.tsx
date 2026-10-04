@@ -6,28 +6,39 @@ import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     Activity,
+    BellRing,
+    Bot,
     ChartColumnBig,
     ChevronLeft,
     ChevronRight,
     Coins,
     Gauge,
+    Grid3x3,
     KeyRound,
+    ListChecks,
     Lock,
     LogOut,
     Menu,
     Moon,
     Server,
-    ListChecks,
     Settings,
     ShieldCheck,
-    Trophy,
+    ShoppingBag,
     Sun,
+    Swords,
+    Trophy,
     UserCog,
     Users,
     UsersRound,
     X,
 } from 'lucide-react';
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import {
+    type ReactNode,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 
 interface NavItem {
     title: string;
@@ -42,19 +53,89 @@ const navItems: NavItem[] = [
     { title: 'Users', href: '/admin/users', icon: Users },
     { title: 'Roles', href: '/admin/roles', icon: ShieldCheck },
     { title: 'Permissions', href: '/admin/permissions', icon: Lock },
-    { title: 'User Statistics', href: '/admin/user-statistics', icon: UsersRound, superadminOnly: true },
-    { title: 'Game Statistics', href: '/admin/games', icon: ChartColumnBig, superadminOnly: true },
-    { title: 'Leaderboard', href: '/admin/leaderboard', icon: Trophy, superadminOnly: true },
-    { title: 'Question Bank', href: '/admin/questions', icon: ListChecks, superadminOnly: true },
-    { title: 'Teacher Compensation', href: '/admin/compensation', icon: Coins, superadminOnly: true },
-    { title: 'Server Monitor', href: '/admin/server-monitor', icon: Server, superadminOnly: true },
+    {
+        title: 'User Statistics',
+        href: '/admin/user-statistics',
+        icon: UsersRound,
+        superadminOnly: true,
+    },
+    {
+        title: 'Game Statistics',
+        href: '/admin/games',
+        icon: ChartColumnBig,
+        superadminOnly: true,
+    },
+    {
+        title: 'Leaderboard',
+        href: '/admin/leaderboard',
+        icon: Trophy,
+        superadminOnly: true,
+    },
+    {
+        title: 'Question Bank',
+        href: '/admin/questions',
+        icon: ListChecks,
+        superadminOnly: true,
+    },
+    {
+        title: 'Point Rules',
+        href: '/admin/point-rules',
+        icon: Coins,
+        superadminOnly: true,
+    },
+    {
+        title: 'Notifications',
+        href: '/admin/notifications',
+        icon: BellRing,
+        superadminOnly: true,
+    },
+    {
+        title: 'AI Settings',
+        href: '/admin/ai-settings',
+        icon: Bot,
+        superadminOnly: true,
+    },
+    {
+        title: 'Crossword Words',
+        href: '/admin/crossword-words',
+        icon: Grid3x3,
+        superadminOnly: true,
+    },
+    {
+        title: 'Character Items',
+        href: '/admin/character-items',
+        icon: ShoppingBag,
+        superadminOnly: true,
+    },
+    {
+        title: 'Match History',
+        href: '/admin/matches',
+        icon: Swords,
+        superadminOnly: true,
+    },
+    {
+        title: 'Teacher Compensation',
+        href: '/admin/compensation',
+        icon: Coins,
+        superadminOnly: true,
+    },
+    {
+        title: 'Server Monitor',
+        href: '/admin/server-monitor',
+        icon: Server,
+        superadminOnly: true,
+    },
     { title: 'Activity Log', href: '/admin/activity-log', icon: Activity },
     { title: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
 function isActive(href: string, currentUrl: string, exact = false): boolean {
     if (exact) return currentUrl === href || currentUrl.startsWith(href + '?');
-    return currentUrl === href || currentUrl.startsWith(href + '/') || currentUrl.startsWith(href + '?');
+    return (
+        currentUrl === href ||
+        currentUrl.startsWith(href + '/') ||
+        currentUrl.startsWith(href + '?')
+    );
 }
 
 interface AdminLayoutProps {
@@ -114,7 +195,9 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     'fixed inset-y-0 left-0 z-50 flex flex-col bg-sidebar text-sidebar-foreground transition-all duration-200',
                     'md:relative md:z-auto',
                     sidebarCollapsed ? 'md:w-14' : 'md:w-64',
-                    sidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full md:translate-x-0',
+                    sidebarOpen
+                        ? 'w-72 translate-x-0'
+                        : '-translate-x-full md:translate-x-0',
                 )}
             >
                 {/* Sidebar header */}
@@ -127,12 +210,14 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                         <AppLogoIcon className="size-5 fill-current" />
                     </div>
-                    {(!sidebarCollapsed) && (
+                    {!sidebarCollapsed && (
                         <div className="flex flex-col">
-                            <span className="font-display text-sm font-semibold leading-tight text-sidebar-foreground">
+                            <span className="font-display text-sm leading-tight font-semibold text-sidebar-foreground">
                                 EduFunHub
                             </span>
-                            <span className="text-xs text-sidebar-foreground/60">Admin Panel</span>
+                            <span className="text-xs text-sidebar-foreground/60">
+                                Admin Panel
+                            </span>
                         </div>
                     )}
                     {/* Mobile close */}
@@ -149,32 +234,51 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                 <nav className="flex-1 overflow-y-auto p-2">
                     <ul className="flex flex-col gap-1" role="list">
                         {navItems
-                            .filter((item) => !item.superadminOnly || auth.user.is_superadmin)
+                            .filter(
+                                (item) =>
+                                    !item.superadminOnly ||
+                                    auth.user.is_superadmin,
+                            )
                             .map((item) => {
-                            const active = isActive(item.href, currentUrl, item.exact);
-                            return (
-                                <li key={item.href}>
-                                    <Link
-                                        href={item.href}
-                                        className={cn(
-                                            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                                            'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                                            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring',
-                                            active && 'bg-sidebar-accent text-sidebar-accent-foreground',
-                                            !active && 'text-sidebar-foreground/80',
-                                            sidebarCollapsed && 'md:justify-center md:px-2',
-                                        )}
-                                        aria-current={active ? 'page' : undefined}
-                                        title={sidebarCollapsed ? item.title : undefined}
-                                    >
-                                        <item.icon className="size-4 shrink-0" />
-                                        {!sidebarCollapsed && (
-                                            <span className="truncate">{item.title}</span>
-                                        )}
-                                    </Link>
-                                </li>
-                            );
-                        })}
+                                const active = isActive(
+                                    item.href,
+                                    currentUrl,
+                                    item.exact,
+                                );
+                                return (
+                                    <li key={item.href}>
+                                        <Link
+                                            href={item.href}
+                                            className={cn(
+                                                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                                                'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                                                'focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none',
+                                                active &&
+                                                    'bg-sidebar-accent text-sidebar-accent-foreground',
+                                                !active &&
+                                                    'text-sidebar-foreground/80',
+                                                sidebarCollapsed &&
+                                                    'md:justify-center md:px-2',
+                                            )}
+                                            aria-current={
+                                                active ? 'page' : undefined
+                                            }
+                                            title={
+                                                sidebarCollapsed
+                                                    ? item.title
+                                                    : undefined
+                                            }
+                                        >
+                                            <item.icon className="size-4 shrink-0" />
+                                            {!sidebarCollapsed && (
+                                                <span className="truncate">
+                                                    {item.title}
+                                                </span>
+                                            )}
+                                        </Link>
+                                    </li>
+                                );
+                            })}
 
                         {/* Separator */}
                         <li
@@ -190,13 +294,22 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                 className={cn(
                                     'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                                     'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring',
-                                    sidebarCollapsed && 'md:justify-center md:px-2',
+                                    'focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none',
+                                    sidebarCollapsed &&
+                                        'md:justify-center md:px-2',
                                 )}
-                                title={sidebarCollapsed ? 'Back to Site' : undefined}
+                                title={
+                                    sidebarCollapsed
+                                        ? 'Back to Site'
+                                        : undefined
+                                }
                             >
                                 <ChevronLeft className="size-4 shrink-0" />
-                                {!sidebarCollapsed && <span className="truncate">Back to Site</span>}
+                                {!sidebarCollapsed && (
+                                    <span className="truncate">
+                                        Back to Site
+                                    </span>
+                                )}
                             </Link>
                         </li>
                     </ul>
@@ -208,10 +321,14 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                         onClick={() => setSidebarCollapsed((c) => !c)}
                         className={cn(
                             'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/60',
-                            'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors',
+                            'transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                             sidebarCollapsed && 'justify-center px-2',
                         )}
-                        aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                        aria-label={
+                            sidebarCollapsed
+                                ? 'Expand sidebar'
+                                : 'Collapse sidebar'
+                        }
                     >
                         {sidebarCollapsed ? (
                             <ChevronRight className="size-4" />
@@ -232,7 +349,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     {/* Mobile hamburger */}
                     <button
                         onClick={() => setSidebarOpen(true)}
-                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:hidden"
                         aria-label="Open sidebar"
                     >
                         <Menu className="size-5" />
@@ -249,7 +366,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                         {/* Theme toggle */}
                         <button
                             onClick={toggleAppearance}
-                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                             aria-label="Toggle theme"
                         >
                             {resolvedAppearance === 'dark' ? (
@@ -266,7 +383,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                     e.stopPropagation();
                                     setUserMenuOpen((o) => !o);
                                 }}
-                                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                                 aria-label="User menu"
                                 aria-expanded={userMenuOpen}
                             >
@@ -288,12 +405,16 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
 
                             {userMenuOpen && (
                                 <div
-                                    className="absolute right-0 top-full z-50 mt-1 w-52 rounded-lg border border-border bg-popover py-1 shadow-lg"
+                                    className="absolute top-full right-0 z-50 mt-1 w-52 rounded-lg border border-border bg-popover py-1 shadow-lg"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <div className="border-b border-border px-3 py-2">
-                                        <p className="text-sm font-medium text-foreground">{user.name}</p>
-                                        <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                                        <p className="text-sm font-medium text-foreground">
+                                            {user.name}
+                                        </p>
+                                        <p className="truncate text-xs text-muted-foreground">
+                                            {user.email}
+                                        </p>
                                     </div>
                                     <Link
                                         href="/profile"

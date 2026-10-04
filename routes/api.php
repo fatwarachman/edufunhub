@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\CrosswordBankController;
 use App\Http\Controllers\Api\GameResultController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\QuestionBankController;
@@ -15,6 +16,10 @@ Route::post('/internal/game-results', [GameResultController::class, 'store'])
 Route::get('/internal/question-bank', QuestionBankController::class)
     ->middleware('throttle:120,1')
     ->name('api.internal.question-bank');
+
+Route::get('/internal/crossword-bank', CrosswordBankController::class)
+    ->middleware('throttle:120,1')
+    ->name('api.internal.crossword-bank');
 
 Route::get('/user', function (Request $request) {
     return $request->user();

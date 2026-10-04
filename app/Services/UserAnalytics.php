@@ -166,13 +166,16 @@ class UserAnalytics
             ->selectRaw('SUM(CASE WHEN correct IS NOT NULL AND (correct + wrong) > 0 THEN 1 ELSE 0 END) as scored')
             ->first();
 
-        $ledgerPoints = (int) PointLedger::query()->where('user_id', $user->id)->sum('points');
+        $ledgerPoints = (int) PointLedger::query()->where('user_id', $user->id)->where('points', '>', 0)->sum('points');
+        $spent = (int) -PointLedger::query()->where('user_id', $user->id)->where('points', '<', 0)->sum('points');
 
         return [
             'stats' => [
                 'plays' => (int) $totals->plays,
                 'game_points' => (int) $totals->points,
                 'points' => $ledgerPoints,
+                'spent_points' => $spent,
+                'balance' => $ledgerPoints - $spent,
                 'best' => (int) $totals->best,
                 'accuracy' => $this->percent((int) $totals->correct, (int) $totals->correct + (int) $totals->wrong),
                 'success_rate' => $this->percent((int) $totals->passed, (int) $totals->scored),
@@ -548,6 +551,7 @@ class UserAnalytics
         }
 
         $ahead = PointLedger::query()
+            ->where('points', '>', 0)
             ->whereIn('user_id', User::query()->select('id')->whereNull('disabled_at'))
             ->groupBy('user_id')
             ->havingRaw('SUM(points) > ?', [$points])
