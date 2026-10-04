@@ -13,4 +13,7 @@ return [
     'school_name_required' => 'Isi nama sekolah terakhir.',
     'school_name_invalid' => 'Nama sekolah 3 sampai 120 karakter.',
     'player_details_required' => 'Lengkapi tanggal lahir dan sekolah terakhir dulu sebelum bermain.',
+    'gender_invalid' => 'Pilih laki-laki atau perempuan.',
+    'skin_invalid' => 'Pilih warna kulit yang tersedia.',
+    'hair_invalid' => 'Pilih warna rambut yang tersedia.',
 ];

@@ -4,11 +4,17 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CharacterController;
+use App\Http\Controllers\CrosswordController;
 use App\Http\Controllers\FlagQuestController;
+use App\Http\Controllers\GameInviteController;
 use App\Http\Controllers\GradeController;
+use App\Http\Controllers\KnowledgeTrainController;
 use App\Http\Controllers\PlayerDetailsController;
+use App\Http\Controllers\PlayerNotificationController;
 use App\Http\Controllers\PortalController;
+use App\Http\Controllers\QuizDuelController;
 use App\Http\Controllers\SkyQuizController;
+use App\Http\Controllers\SnakesAndLaddersController;
 use App\Http\Controllers\Teacher\TeacherQuestionController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Middleware\EnsurePlayerDetailsComplete;
@@ -29,6 +35,11 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::get('/portal', PortalController::class)->name('portal');
     Route::get('/character', [CharacterController::class, 'show'])->name('character.show');
     Route::patch('/character', [CharacterController::class, 'update'])->name('character.update');
+    Route::post('/character/items/{item}/buy', [CharacterController::class, 'buy'])->middleware('throttle:30,1')->name('character.buy');
+    Route::post('/vault/{item}/wear', [CharacterController::class, 'wear'])->middleware('throttle:60,1')->name('vault.wear');
+    Route::get('/notifications', [PlayerNotificationController::class, 'index'])->name('player-notifications.index');
+    Route::post('/notifications/read', [PlayerNotificationController::class, 'readAll'])->name('player-notifications.read-all');
+    Route::post('/notifications/{id}/read', [PlayerNotificationController::class, 'read'])->whereUuid('id')->name('player-notifications.read');
     Route::patch('/grade', [GradeController::class, 'update'])->name('grade.update');
     Route::patch('/player-details', [PlayerDetailsController::class, 'update'])->name('player-details.update');
 
@@ -43,6 +54,14 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::middleware(EnsurePlayerDetailsComplete::class)->group(function (): void {
         Route::get('/games/flag-quest', [FlagQuestController::class, 'show'])->middleware(RecordGameAccess::class.':flag-quest')->name('games.flag-quest');
         Route::post('/games/flag-quest/token', [FlagQuestController::class, 'token'])->middleware('throttle:30,1')->name('games.flag-quest.token');
+        Route::get('/games/quiz-duel', [QuizDuelController::class, 'show'])->middleware(RecordGameAccess::class.':quiz-duel')->name('games.quiz-duel');
+        Route::post('/games/quiz-duel/token', [QuizDuelController::class, 'token'])->middleware('throttle:30,1')->name('games.quiz-duel.token');
+        Route::get('/games/knowledge-train', [KnowledgeTrainController::class, 'show'])->middleware(RecordGameAccess::class.':knowledge-train')->name('games.knowledge-train');
+        Route::post('/games/knowledge-train/token', [KnowledgeTrainController::class, 'token'])->middleware('throttle:30,1')->name('games.knowledge-train.token');
+        Route::get('/games/crossword', [CrosswordController::class, 'show'])->middleware(RecordGameAccess::class.':crossword')->name('games.crossword');
+        Route::post('/games/crossword/token', [CrosswordController::class, 'token'])->middleware('throttle:30,1')->name('games.crossword.token');
+        Route::get('/games/{game}/join/{pin}', GameInviteController::class)->where(['game' => '[a-z-]+', 'pin' => '[0-9]{6}'])->name('games.join');
+        Route::post('/games/snakes-and-ladders/token', [SnakesAndLaddersController::class, 'token'])->middleware('throttle:30,1')->name('games.snakes-and-ladders.token');
     });
 });
 
@@ -57,9 +76,7 @@ Route::get('/gamelist', function () {
 
 // Guests may try the demos; signed-in players must complete their details first.
 Route::middleware(EnsurePlayerDetailsComplete::class)->group(function (): void {
-    Route::get('/games/snakes-and-ladders', function () {
-        return Inertia::render('games/snakes-and-ladders');
-    })->middleware(RecordGameAccess::class.':snakes-and-ladders')->name('games.snakes-and-ladders');
+    Route::get('/games/snakes-and-ladders', [SnakesAndLaddersController::class, 'show'])->middleware(RecordGameAccess::class.':snakes-and-ladders')->name('games.snakes-and-ladders');
 
     Route::get('/games/sky-quiz', [SkyQuizController::class, 'show'])->middleware(RecordGameAccess::class.':sky-quiz')->name('games.sky-quiz');
 });

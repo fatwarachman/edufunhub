@@ -2,6 +2,7 @@
 
 use App\Models\PlayerProfile;
 use App\Models\User;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 
 const FLAG_QUEST_SECRET = 'flag-quest-test-secret-with-32-chars!!';
@@ -34,7 +35,7 @@ function flagQuestResult(User $user, array $overrides = []): array
 /**
  * @param  array<string, mixed>  $payload
  */
-function postSignedResult(mixed $test, array $payload, ?string $secret = null, ?int $timestamp = null): \Illuminate\Testing\TestResponse
+function postSignedResult(mixed $test, array $payload, ?string $secret = null, ?int $timestamp = null): TestResponse
 {
     $body = json_encode($payload);
     $timestamp ??= now()->getTimestamp();
@@ -150,7 +151,7 @@ test('result endpoint validates payload', function (string $field, mixed $value)
     postSignedResult($this, flagQuestResult($user, [$field => $value]))->assertUnprocessable()->assertJsonValidationErrors($field);
     $this->assertDatabaseCount('point_ledgers', 0);
 })->with([
-    ['points', 999], ['points', -5], ['mission', 'moon'], ['game_key', 'chess'],
+    ['points', 99999], ['points', -5], ['mission', 'moon'], ['game_key', 'chess'],
     ['user_id', 999999], ['event_id', 'drop table'], ['grade', 13],
 ]);
 

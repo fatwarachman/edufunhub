@@ -141,6 +141,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(GameHistory::class);
     }
 
+    /** Character shop items the user bought. @return BelongsToMany<CharacterItem, $this> */
+    public function characterItems(): BelongsToMany
+    {
+        return $this->belongsToMany(CharacterItem::class)->withPivot('price_paid')->withTimestamps();
+    }
+
+    /** Seats the user took in recorded room and duel matches. @return HasMany<GameMatchPlayer, $this> */
+    public function matchSeats(): HasMany
+    {
+        return $this->hasMany(GameMatchPlayer::class);
+    }
+
     public function workspaces(): BelongsToMany
     {
         return $this->belongsToMany(Workspace::class, 'workspace_user')
@@ -184,11 +196,12 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Teachers (role "guru") and super admins can author questions in the teacher portal.
+     * Only users with the "guru" role open the teacher room (Ruang Guru).
+     * Super admins manage questions from the admin panel instead.
      */
     public function isTeacher(): bool
     {
-        return (bool) $this->is_superadmin || $this->hasRole(Role::TEACHER);
+        return $this->hasRole(Role::TEACHER);
     }
 
     /**

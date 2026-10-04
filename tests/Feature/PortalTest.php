@@ -4,6 +4,7 @@ use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\PointLedger;
 use App\Models\User;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 
 const PORTAL_SECRET = 'portal-test-secret-with-at-least-32-chars';
@@ -16,7 +17,7 @@ beforeEach(function (): void {
 /**
  * @param  array<string, mixed>  $overrides
  */
-function reportPortalResult(mixed $test, User $user, array $overrides = []): \Illuminate\Testing\TestResponse
+function reportPortalResult(mixed $test, User $user, array $overrides = []): TestResponse
 {
     $body = json_encode(array_replace([
         'event_id' => 'fq-'.$user->id.'-lakeside-'.random_int(1, PHP_INT_MAX),
@@ -65,14 +66,16 @@ test('portal lists every catalog game with play urls and point rules', function 
         ->component('portal/index', false)
         ->where('player.name', 'Andika')
         ->where('player.grade', 3)
-        ->where('player.character', ['color' => 'teal', 'accessory' => 'cap', 'nickname' => 'Andika'])
-        ->has('categories', 3)
+        ->where('player.character.color', 'teal')
+        ->where('player.character.accessory', 'cap')
+        ->where('player.character.nickname', 'Andika')
+        ->has('categories', 5)
         ->where('categories.0.games.0.key', 'flag-quest')
         ->where('categories.0.games.0.url', '/games/flag-quest')
         ->where('categories.0.games.0.awardsPoints', true)
         ->where('categories.0.games.0.recommended', true)
         ->where('categories.1.games.0.url', '/games/snakes-and-ladders')
-        ->where('categories.1.games.0.awardsPoints', false)
+        ->where('categories.1.games.0.awardsPoints', true)
         ->where('categories.2.games.0.url', '/games/sky-quiz')
         ->where('categories.2.games.0.recommended', true)
         ->where('progress.points', 0)

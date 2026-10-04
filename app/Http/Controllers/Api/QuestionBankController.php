@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Question;
 use App\Services\GameServiceSigner;
+use App\Services\PointRules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,10 +23,12 @@ class QuestionBankController extends Controller
         ), 403);
 
         $questions = Question::query()->active()->orderBy('id')->get();
-        $version = sha1($questions->max('updated_at').'|'.$questions->count().'|'.$questions->pluck('id')->implode(','));
+        $rules = PointRules::current();
+        $version = sha1($questions->max('updated_at').'|'.$questions->count().'|'.$questions->pluck('id')->implode(',').'|'.implode(',', $rules));
 
         return response()->json([
             'version' => $version,
+            'points' => $rules,
             'questions' => $questions->map(fn (Question $question): array => $question->toGamePayload())->values(),
         ]);
     }
