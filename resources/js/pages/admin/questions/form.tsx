@@ -33,6 +33,7 @@ interface QuestionData {
     hint_en: string | null;
     games: string[];
     is_active: boolean;
+    points: number | null;
     times_answered: number;
     success_rate: number | null;
 }
@@ -41,8 +42,11 @@ interface FormProps {
     question: QuestionData | null;
     defaultSubject?: string | null;
     games: string[];
+    choiceOnlyGames: string[];
     subjects: string[];
     bands: { value: number; min: number; max: number }[];
+    perCorrect: number;
+    maxPoints: number;
 }
 
 const MIN_OPTIONS = 3;
@@ -53,8 +57,11 @@ export default function QuestionForm({
     question,
     defaultSubject,
     games,
+    choiceOnlyGames,
     subjects,
     bands,
+    perCorrect,
+    maxPoints,
 }: FormProps) {
     const editing = question !== null;
     const backHref = `/admin/questions?subject=${question?.subject ?? defaultSubject ?? 'all'}`;
@@ -78,6 +85,8 @@ export default function QuestionForm({
         hint_en: question?.hint_en ?? '',
         games: question?.games ?? [...games],
         is_active: question?.is_active ?? true,
+        bonus: (question?.points ?? 0) > 0,
+        points: question?.points ?? perCorrect * 2,
     });
     const { data, setData, errors, processing } = form;
     const isChoice = data.type === 'choice';
@@ -86,6 +95,10 @@ export default function QuestionForm({
 
     const submit: FormEventHandler = (event) => {
         event.preventDefault();
+        form.transform(({ bonus, points, ...rest }) => ({
+            ...rest,
+            points: bonus ? points : null,
+        }));
         if (editing) {
             form.put(`/admin/questions/${question.id}`);
         } else {
@@ -100,7 +113,9 @@ export default function QuestionForm({
             answer: type === 'true_false' ? 1 : 0,
             games:
                 type === 'true_false'
-                    ? current.games.filter((game) => game !== 'sky-quiz')
+                    ? current.games.filter(
+                          (game) => !choiceOnlyGames.includes(game),
+                      )
                     : current.games,
             options:
                 current.options.length >= MIN_OPTIONS
@@ -276,7 +291,7 @@ export default function QuestionForm({
                         <div className="flex flex-wrap gap-2">
                             {games.map((game) => {
                                 const disabled =
-                                    game === 'sky-quiz' && !isChoice;
+                                    choiceOnlyGames.includes(game) && !isChoice;
                                 const checked = data.games.includes(game);
                                 return (
                                     <label
@@ -304,7 +319,8 @@ export default function QuestionForm({
                         </div>
                         {!isChoice && (
                             <p className="text-xs text-muted-foreground">
-                                Sky Quiz only uses multiple choice questions.
+                                {choiceOnlyGames.map(gameLabel).join(', ')} only
+                                use multiple choice questions.
                             </p>
                         )}
                     </Field>
@@ -501,6 +517,47 @@ export default function QuestionForm({
                             </Field>
                         </div>
                     )}
+                </Section>
+
+                <Section
+                    title="Points"
+                    description={`A correct answer earns ${perCorrect} points (Point Rules). Mark special questions as bonus to award more.`}
+                >
+                    <div className="flex flex-wrap items-center gap-4">
+                        <label className="inline-flex items-center gap-2 text-sm text-foreground">
+                            <input
+                                type="checkbox"
+                                className="size-4 accent-[var(--primary)]"
+                                checked={data.bonus}
+                                onChange={(e) =>
+                                    setData('bonus', e.target.checked)
+                                }
+                                data-testid="question-bonus"
+                            />
+                            Bonus question
+                        </label>
+                        {data.bonus && (
+                            <label className="inline-flex items-center gap-2 text-sm text-foreground">
+                                <input
+                                    type="number"
+                                    min={1}
+                                    max={maxPoints}
+                                    value={data.points}
+                                    onChange={(e) =>
+                                        setData(
+                                            'points',
+                                            Number(e.target.value),
+                                        )
+                                    }
+                                    className="h-9 w-24 rounded-lg border border-input bg-background px-3 text-sm text-foreground tabular-nums focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                    aria-label="Bonus points"
+                                    data-testid="question-points"
+                                />
+                                points (1–{maxPoints})
+                            </label>
+                        )}
+                    </div>
+                    <InputError message={errorFor('points')} />
                 </Section>
 
                 <div className="flex flex-wrap items-center justify-between gap-3">

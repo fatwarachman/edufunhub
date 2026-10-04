@@ -70,6 +70,9 @@ button{cursor:pointer;font:inherit;border:0;background:0}
 .nav-dropdown-icon{width:32px;height:32px;border:2px solid var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:1px 1px 0 var(--ink)}
 .nav-dropdown-icon svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
 .nav-dropdown-item .dd-label{font-family:var(--display-font);font-weight:700;font-size:13px}
+
+.nav-dropdown-group{padding:8px 12px 2px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(21,27,46,.45)}
+.nav-dropdown-menu{max-height:min(75vh,620px);overflow-y:auto}
 .nav-dropdown-item .dd-desc{font-size:11px;color:rgba(21,27,46,.5);font-weight:500}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:var(--r-md);font-family:var(--display-font);font-weight:700;font-size:15px;border:3px solid var(--ink);transition:all .2s;white-space:nowrap}
 .btn-primary{background:var(--amber);color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
@@ -471,22 +474,32 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         </button>
         <div class="nav-dropdown-menu">
           <a href="/gamelist" class="nav-dropdown-item">
-            <div class="nav-dropdown-icon" style="background:var(--yellow)">
-              <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5" fill="currentColor"/><circle cx="15" cy="12" r="1.5" fill="currentColor"/></svg>
-            </div>
+            <div class="nav-dropdown-icon" style="background:var(--yellow)"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5" fill="currentColor"/><circle cx="15" cy="12" r="1.5" fill="currentColor"/></svg></div>
             <div><div class="dd-label">Semua Game</div><div class="dd-desc">Daftar lengkap game edukatif</div></div>
           </a>
-          <a href="/games/snakes-and-ladders" class="nav-dropdown-item">
-            <div class="nav-dropdown-icon" style="background:#d4f5ec">
-              <svg viewBox="0 0 24 24"><path d="M4 20 Q8 4 12 12 Q16 20 20 4" stroke-linecap="round"/></svg>
-            </div>
-            <div><div class="dd-label">Ular Tangga</div><div class="dd-desc">Board game kuis 2 pemain</div></div>
+          <div class="nav-dropdown-group">Petualangan</div>
+          <a href="/games/flag-quest" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#d4f5ec"><svg viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-2 4 2 4H5"/></svg></div>
+            <div><div class="dd-label">Misi Bendera</div><div class="dd-desc">Jelajah peta & kuis tiap pos</div></div>
           </a>
+          <div class="nav-dropdown-group">Kuis edukasi</div>
           <a href="/games/sky-quiz" class="nav-dropdown-item">
-            <div class="nav-dropdown-icon" style="background:#e3dbf9">
-              <svg viewBox="0 0 24 24"><path d="M3 12l7-7 11 7-11 7-7-7z"/><path d="M10 5v14"/></svg>
-            </div>
-            <div><div class="dd-label">Pesawat</div><div class="dd-desc">Game terbang & soal bonus</div></div>
+            <div class="nav-dropdown-icon" style="background:#e3dbf9"><svg viewBox="0 0 24 24"><path d="M3 12l7-7 11 7-11 7-7-7z"/><path d="M10 5v14"/></svg></div>
+            <div><div class="dd-label">Sukhoi Sky Quiz</div><div class="dd-desc">Terbang & tembak jawaban</div></div>
+          </a>
+          <a href="/games/quiz-duel" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#ffd6e0"><svg viewBox="0 0 24 24"><path d="M4 4l10 10M14 4L4 14"/><path d="M15 15l5 5M9 15l-5 5"/></svg></div>
+            <div><div class="dd-label">Duel Kuis Kelas</div><div class="dd-desc">Adu cepat 1 lawan 1</div></div>
+          </a>
+          <div class="nav-dropdown-group">Arkade edukasi</div>
+          <a href="/games/knowledge-train" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#c9f5e5"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12M9 21l-2-4M15 21l2-4"/></svg></div>
+            <div><div class="dd-label">Kereta Pengetahuan</div><div class="dd-desc">Pilih rel jawaban benar</div></div>
+          </a>
+          <div class="nav-dropdown-group">Permainan papan</div>
+          <a href="/games/snakes-and-ladders" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#fff3b0"><svg viewBox="0 0 24 24"><path d="M4 20 Q8 4 12 12 Q16 20 20 4" stroke-linecap="round"/></svg></div>
+            <div><div class="dd-label">Ular Tangga</div><div class="dd-desc">Board game kuis 2–4 pemain</div></div>
           </a>
         </div>
       </div>
@@ -509,8 +522,15 @@ button{cursor:pointer;font:inherit;border:0;background:0}
     <div style="height:1px;background:rgba(21,27,46,.08);margin:4px 0"></div>
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.35);padding:8px 0 4px">Mainkan</div>
     <a href="/gamelist" style="display:block;padding:10px 0;font-weight:700;font-size:15px;color:var(--ink)">🎮 Semua Game</a>
-    <a href="/games/snakes-and-ladders" style="display:block;padding:10px 0;font-weight:700;font-size:15px;color:var(--ink)">🐍 Ular Tangga</a>
-    <a href="/games/sky-quiz" style="display:block;padding:10px 0;font-weight:700;font-size:15px;color:var(--ink)">✈️ Pesawat Pengetahuan</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Petualangan</div>
+    <a href="/games/flag-quest" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Misi Bendera</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Kuis edukasi</div>
+    <a href="/games/sky-quiz" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Sukhoi Sky Quiz</a>
+    <a href="/games/quiz-duel" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Duel Kuis Kelas</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Arkade edukasi</div>
+    <a href="/games/knowledge-train" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Kereta Pengetahuan</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Permainan papan</div>
+    <a href="/games/snakes-and-ladders" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Ular Tangga</a>
     <div style="height:1px;background:rgba(21,27,46,.08);margin:4px 0"></div>
     <a href="#levels" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Jenjang</a>
     <a href="#subjects" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Mata Pelajaran</a>

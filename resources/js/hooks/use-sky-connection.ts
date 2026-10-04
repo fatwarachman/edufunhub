@@ -7,6 +7,8 @@ export type SkyConnectionStatus =
 export type SkyServerState = SkyRoundState & {
     player: { name: string; grade: number };
     paused?: boolean;
+    subject?: string;
+    subject_fallback?: boolean;
 };
 
 interface Handlers {

@@ -62,7 +62,12 @@
         "detailsSaved": "Details saved.",
         "detailsMissing": "Participant details incomplete",
         "kindergarten": "Kindergarten (TK)",
-        "kindergartenShort": "TK"
+        "kindergartenShort": "TK",
+        "duel": "Class Quiz Duel",
+        "train": "Knowledge Train",
+        "arcade": "Learning arcade",
+        "puzzle": "Brain teasers",
+        "crossword": "Crossword"
     },
     "flagQuest": {
         "title": "Flag Quest",
@@ -257,8 +262,11 @@
         "games": {
             "title": "Educational games",
             "flagQuest": "Explore the map, beat quizzes, snakes & ladders and math sprints at each station, then raise the flag.",
-            "snakes": "100-square snakes & ladders for 2–4 players taking turns, with questions from many subjects.",
-            "sky": "Fly the jet, collect correct answers, and shoot wrong ones. Questions follow your grade and results earn points."
+            "snakes": "100-square snakes and ladders with quizzes: play solo, 2–4 players on one device, or online with friends via PIN and link.",
+            "sky": "Fly the jet, collect correct answers, and shoot wrong ones. Questions follow your grade and results earn points.",
+            "duel": "Race a classmate to answer the same questions live. Results are verified by the server and earn points.",
+            "train": "Steer the train onto the rail with the right answer. Every correct answer adds a wagon and points.",
+            "crossword": "4-level crossword for every grade. Play solo or race with friends via PIN and link."
         },
         "detailsFirst": "Complete details first",
         "detailsNoticeTitle": "Complete your participant details first!",
@@ -280,7 +288,11 @@
         "backToGames": "Back to games",
         "backToDashboard": "Back to home",
         "backToLogin": "Back to login",
-        "teacher": "Teacher room"
+        "teacher": "Teacher room",
+        "allGames": "See all games",
+        "gradeRange": "Grades {{range}}",
+        "loginToPlay": "Sign in to play",
+        "menu": "Menu"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -356,7 +368,9 @@
         "progress": "Progress: {{done}} of {{total}} questions",
         "progressCorrect": "{{correct}} correct",
         "finished": "Flight finished. See your results below.",
-        "finishedPassed": "Great job! You answered more than 70% correctly."
+        "finishedPassed": "Great job! You answered more than 70% correctly.",
+        "joystick": "Joystick: drag to steer the jet",
+        "joystickHint": "Drag the joystick to fly, press Fire to shoot."
     },
     "teacher": {
         "title": "Teacher room",
@@ -423,7 +437,7 @@
             "choice": "Multiple choice",
             "trueFalse": "True / false",
             "games": "Show in games",
-            "skyChoiceOnly": "Sky Quiz only uses multiple choice questions.",
+            "skyChoiceOnly": "{{games}} only use multiple choice questions.",
             "question": "Question",
             "questionNote": "Indonesian is required; English is shown when the player chooses English.",
             "promptId": "Question (Indonesian)",
@@ -489,7 +503,10 @@
         },
         "games": {
             "flag-quest": "Flag Quest",
-            "sky-quiz": "Sukhoi Sky Quiz"
+            "sky-quiz": "Sukhoi Sky Quiz",
+            "quiz-duel": "Class Quiz Duel",
+            "knowledge-train": "Knowledge Train",
+            "snakes-and-ladders": "Educational Snakes & Ladders"
         },
         "levels": {
             "tk": "Kindergarten",
@@ -497,5 +514,464 @@
             "smp": "Junior high",
             "sma": "Senior high"
         }
+    },
+    "duel": {
+        "title": "Class Quiz Duel",
+        "grade": "Grade {{grade}}",
+        "noGrade": "Grade not set",
+        "points": "{{count}} points",
+        "you": "You",
+        "vs": "VS",
+        "bot": "Robot",
+        "score": "{{score}} score",
+        "round": "Question {{round}}/{{total}}",
+        "connection": {
+            "connecting": "Connecting",
+            "online": "Connected",
+            "reconnecting": "Reconnecting",
+            "offline": "Server unavailable",
+            "grade_required": "Grade needed"
+        },
+        "idle": {
+            "title": "Ready to duel, {{name}}?",
+            "rules": "You and a classmate answer the same {{rounds}} questions at the same time. Answer correctly and faster for a higher score. Results are verified by the server and earn points.",
+            "start": "Find an opponent",
+            "needGrade": "Set your grade on the portal first so opponents and questions match your level.",
+            "setGrade": "Set grade",
+            "unavailable": "The game server is not available yet. Please try again later."
+        },
+        "queue": {
+            "title": "Finding an opponent…",
+            "hint": "Waiting for a player at your level. If nobody joins, Robo Edu will play with you in {{seconds}} seconds.",
+            "cancel": "Cancel"
+        },
+        "countdown": {
+            "title": "Your opponent: {{name}}",
+            "ready": "Get ready…"
+        },
+        "question": {
+            "timeLeft": "{{seconds}} seconds left",
+            "waiting": "Answer locked. Waiting for your opponent…",
+            "opponentAnswered": "Opponent has answered!",
+            "opponentThinking": "Opponent is thinking…",
+            "opponentOffline": "Opponent disconnected"
+        },
+        "reveal": {
+            "correct": "Correct! +{{score}} score",
+            "wrong": "Not quite.",
+            "timeout": "Time's up.",
+            "answer": "Answer: {{answer}}",
+            "opponentCorrect": "Opponent correct (+{{score}})",
+            "opponentWrong": "Opponent wrong"
+        },
+        "result": {
+            "win": "You win!",
+            "lose": "Your opponent wins this time",
+            "draw": "It's a draw!",
+            "summary": "{{correct}}/{{total}} correct • score {{score}} vs {{opponent}}",
+            "earned": "+{{points}} points added to your account",
+            "noPoints": "No extra points this time — keep practising!",
+            "again": "Duel again",
+            "back": "Back to portal"
+        },
+        "errors": {
+            "generic": "The server rejected that action.",
+            "offline": "Connection lost. Reconnecting…"
+        },
+        "answerLabel": "Option {{letter}}: {{text}}",
+        "inviteTitle": "Duel a friend",
+        "inviteIntro": "Create a duel room, then share the PIN or link with one friend. Grades may differ; questions follow the lower grade.",
+        "randomTitle": "Random opponent",
+        "invite": "Invite a friend"
+    },
+    "train": {
+        "title": "Knowledge Train",
+        "grade": "Grade {{grade}}",
+        "noGrade": "Grade not set",
+        "points": "{{count}} points",
+        "score": "Score {{score}}",
+        "lives": "Lives {{lives}}/{{max}}",
+        "round": "Question {{round}}/{{total}}",
+        "wagons": "{{count}} wagons",
+        "streak": "Streak ×{{count}}",
+        "start": "All aboard!",
+        "playAgain": "Ride again",
+        "pause": "Pause",
+        "resume": "Resume",
+        "laneLabel": "Rail {{lane}}: {{text}}",
+        "left": "Move to the left rail",
+        "right": "Move to the right rail",
+        "hint": "Steer the train onto the rail with the CORRECT answer before the sign arrives.",
+        "canvasLabel": "Knowledge Train arena. Left and right arrows or A and D to switch rails, P to pause. On touch screens, tap a rail or swipe.",
+        "connection": {
+            "connecting": "Connecting",
+            "online": "Connected",
+            "reconnecting": "Reconnecting",
+            "offline": "Server unavailable",
+            "grade_required": "Grade needed"
+        },
+        "overlay": {
+            "readyTitle": "{{name}}, ready to depart?",
+            "rules": "{{rounds}} questions. Each one arrives with 3 answer signs on 3 rails. Move the train onto the right rail. Correct answers add a wagon and speed the train up; wrong ones cost a life.",
+            "pausedTitle": "Journey paused",
+            "needGrade": "Set your grade on the portal first so questions match your level.",
+            "setGrade": "Set grade",
+            "unavailable": "The game server is not available yet. Please try again later.",
+            "doneTitle": "Arrived at the station!",
+            "crashedTitle": "Out of lives — the train stopped",
+            "congratsTitle": "Great job, {{name}}!"
+        },
+        "feedback": {
+            "correct": "Correct! +{{score}} score, new wagon.",
+            "wrong": "Wrong rail. Answer: {{answer}}",
+            "missed": "Time's up. Answer: {{answer}}"
+        },
+        "result": {
+            "summary": "{{correct}}/{{total}} correct • {{wagons}} wagons • score {{score}}",
+            "earned": "+{{points}} points added to your account",
+            "noPoints": "No extra points this time — keep practising!",
+            "percent": "Score {{percent}}%"
+        },
+        "errors": {
+            "generic": "The server rejected that action.",
+            "offline": "Connection lost. Reconnecting…"
+        }
+    },
+    "gameList": {
+        "title": "Educational Games",
+        "meta": "EduFunHub's interactive learning games: adventures, quizzes, class duels, arcade and board games for kindergarten to senior high.",
+        "arena": "Game Arena",
+        "tagline": "edufunhub.com/gamelist • Pick & play learning games",
+        "badge": "{{count}} games ready to play",
+        "heading": "Educational",
+        "headingAccent": "Games",
+        "intro": "Games are grouped by type. Games labelled \"Earns points\" are verified by the server and add points to your account.",
+        "play": "Play now",
+        "upcoming": {
+            "title": "Coming soon",
+            "market": {
+                "title": "Market Math",
+                "desc": "Run a market stall: totals, change, discounts and percentages."
+            },
+            "garden": {
+                "title": "Number & Letter Garden",
+                "desc": "Numbers, letters, colours and shapes for kindergarten to grade 2."
+            },
+            "archipelago": {
+                "title": "Explore Indonesia",
+                "desc": "Map of Indonesia: provinces, capitals, culture and heroes."
+            },
+            "lab": {
+                "title": "Mini Lab",
+                "desc": "Simple science experiments: circuits, colours and the water cycle."
+            }
+        }
+    },
+    "snakes": {
+        "title": "Educational Snakes & Ladders",
+        "titleAccent": "Characters",
+        "meta": "Educational snakes and ladders with quizzes: play solo, take turns on one device, or play online with friends using a PIN or link.",
+        "tagline": "Solo, one device, or online with a PIN",
+        "sound": {
+            "on": "Sound on",
+            "off": "Sound off"
+        },
+        "restart": "Restart game",
+        "mode": {
+            "label": "How to play",
+            "local": "Practice (no account)",
+            "online": "Play & earn points",
+            "loginForOnline": "Sign in to play online",
+            "onlineUnavailable": "The online game server is not available yet.",
+            "guestNote": "Practice mode does not save points. Sign in to play and collect points."
+        },
+        "players": {
+            "label": "Players",
+            "count_one": "{{count}} player",
+            "count_other": "{{count}} players",
+            "default": "Player {{number}}",
+            "you": "You",
+            "host": "Host",
+            "offline": "Disconnected",
+            "left": "Left",
+            "inArena": "Players in the arena",
+            "square": "Square {{square}}",
+            "points": "{{points}} score"
+        },
+        "turn": {
+            "label": "Turn",
+            "yours": "Your turn!",
+            "of": "{{name}}'s turn",
+            "extra": "{{name}} rolled a 6 and gets another turn."
+        },
+        "dice": {
+            "title": "Dice",
+            "roll": "Roll the dice",
+            "rolling": "Rolling…",
+            "moving": "Moving…",
+            "waiting": "Waiting for {{name}}…",
+            "result": "Dice: {{value}}!",
+            "rollingTitle": "{{name}} is rolling…",
+            "rollingHint": "Get ready to answer!",
+            "openingQuestion": "Opening the question…",
+            "autoRoll": "Auto roll in {{seconds}} seconds",
+            "rollFor": "Roll for {{name}}"
+        },
+        "question": {
+            "turnOf": "{{name}}'s turn",
+            "advance": "Move {{count}} squares",
+            "target": "To square {{square}}",
+            "level": "Level: {{level}}",
+            "timeLeft": "{{seconds}} seconds left",
+            "spectating": "{{name}} is answering…",
+            "correct": "Correct! Moving {{count}} squares to square {{square}}.",
+            "wrong": "Not quite. No move this turn.",
+            "timeout": "Time's up. No move this turn.",
+            "answer": "Answer: {{answer}}",
+            "otherCorrect": "{{name}} got it right!",
+            "otherWrong": "{{name}} missed it."
+        },
+        "legend": {
+            "ladder": "Ladder (up)",
+            "snake": "Snake (down)",
+            "finish": "Square 100 (finish)"
+        },
+        "log": {
+            "title": "Move log",
+            "welcome": "Welcome to Educational Snakes & Ladders!",
+            "welcomeHint": "Roll the dice, answer the question, then move.",
+            "newGame": "New game started.",
+            "rolled": "{{name}} rolled {{value}}.",
+            "correct": "{{name}} is correct, +100 score!",
+            "wrong": "{{name}} missed it, next turn.",
+            "ladder": "{{name}} climbed a ladder from {{from}} to {{to}}.",
+            "snake": "{{name}} slid down a snake from {{from}} to {{to}}."
+        },
+        "winner": {
+            "title": "{{name}} wins!",
+            "summary": "Reached square 100 with {{score}} score.",
+            "you": "You win!",
+            "again": "Play again",
+            "waitingHost": "Waiting for the host to play again…",
+            "forfeit": "Everyone else left the room. Final score {{score}}."
+        },
+        "online": {
+            "intro": "Play solo, add players on this device, or create a room and share the PIN and link with friends (up to {{max}} players). Every finished game adds points to your account.",
+            "needGrade": "Set your grade first so questions match your level.",
+            "setGrade": "Set grade",
+            "soloHint": "Play solo right away, add players on this device, or wait for friends to join."
+        }
+    },
+    "room": {
+        "connection": {
+            "connecting": "Connecting",
+            "online": "Connected",
+            "reconnecting": "Reconnecting",
+            "offline": "Server unavailable",
+            "grade_required": "Grade needed"
+        },
+        "create": "Create a room",
+        "or": "or",
+        "pinLabel": "Room PIN",
+        "pinPlaceholder": "6-digit PIN",
+        "join": "Join",
+        "lobbyTitle": "Waiting room",
+        "shareTitle": "Invite friends",
+        "shareHint": "Share this PIN or link. Friends need to sign in to EduFunHub.",
+        "copyPin": "Copy PIN",
+        "copyLink": "Copy link",
+        "share": "Share",
+        "copied": "Copied!",
+        "shareText": "Play {{game}} with me on EduFunHub! PIN: {{pin}}",
+        "seats": "{{count}}/{{max}} players",
+        "emptySeat": "Empty seat",
+        "you": "You",
+        "host": "Host",
+        "offline": "Disconnected",
+        "left": "Left",
+        "local": "This device",
+        "localHint": "Takes turns on the host's device",
+        "localPlaceholder": "Name of a player on this device",
+        "localDefault": "Player {{number}}",
+        "addLocal": "Add a player on this device",
+        "removeLocal": "Remove {{name}}",
+        "start": "Start game",
+        "startSolo": "Play solo",
+        "needMore": "Waiting for at least {{min}} players",
+        "waitingHost": "Waiting for the host to start…",
+        "leave": "Leave room",
+        "points": "+{{points}} points added to your account",
+        "errors": {
+            "room_not_found": "No room found with that PIN.",
+            "room_full": "The room is full.",
+            "room_started": "The game in this room has already started.",
+            "not_enough_players": "Not enough players to start.",
+            "not_host": "Only the host can do that.",
+            "not_your_turn": "It's not your turn yet.",
+            "wrong_phase": "That can't be done right now.",
+            "too_early": "Read the question first.",
+            "too_fast": "Slow down and try again in a moment.",
+            "invalid_option": "Invalid option.",
+            "invalid_level": "Invalid level.",
+            "invalid_word": "Word not found.",
+            "already_solved": "This word is already solved.",
+            "wrong_length": "The number of letters doesn't match.",
+            "no_hints": "No hints left.",
+            "not_in_room": "You are not in a room.",
+            "local_limit": "This game doesn't support players on one device.",
+            "not_local": "That player is not on this device.",
+            "copy_failed": "Copy failed. Please copy it manually.",
+            "unknown": "Something went wrong. Try again.",
+            "time_up": "Time is up."
+        }
+    },
+    "crossword": {
+        "title": "Crossword",
+        "meta": "Educational crossword with 4 levels. Play solo or race with friends using a PIN and link.",
+        "tagline": "Fill the squares, guess the words, earn points",
+        "intro": "Hi {{name}}! Pick a level, then play solo or invite friends with a PIN and link. Whoever answers a word first gets its score.",
+        "level": {
+            "label": "Level",
+            "name": "Level {{level}}",
+            "detail": "{{words}} words • {{size}}×{{size}} grid • {{minutes}} minutes",
+            "1": "Beginner",
+            "2": "Explorer",
+            "3": "Scholar",
+            "4": "Champion"
+        },
+        "levelHint": "Higher levels have more squares and harder clues. Any grade may try any level.",
+        "soloHint": "You can play solo right away, or wait for friends to join.",
+        "across": "Across",
+        "down": "Down",
+        "clues": "Clues",
+        "answerLabel": "Answer for {{number}} {{dir}}",
+        "answerPlaceholder": "{{length}} letters",
+        "submit": "Answer",
+        "hint": "Hint ({{count}})",
+        "hintCost": "Reveals one letter, −30 score",
+        "pickWord": "Pick a square or clue to answer.",
+        "correct": "Correct!",
+        "wrong": "Not quite, try again.",
+        "solvedBy": "Solved by {{name}}",
+        "timeLeft": "Time left",
+        "score": "{{score}} score",
+        "words": "{{solved}}/{{total}} words",
+        "result": {
+            "solved": "Every word solved!",
+            "time": "Time's up!",
+            "win": "You win!",
+            "winner": "{{name}} wins!",
+            "summary": "{{solved}} words solved • score {{score}}",
+            "answers": "Answer key",
+            "again": "Play again",
+            "waitingHost": "Waiting for the host to play again…",
+            "leave": "Leave room",
+            "timeUp": "Time's up! {{count}} words were not solved; the answers are revealed.",
+            "draw": "It's a draw! No win bonus."
+        },
+        "playing": "Players",
+        "grade": "Grade {{grade}}",
+        "points": "{{count}} points",
+        "timeLimit": "Finish before time runs out: {{minutes}} minutes"
+    },
+    "shop": {
+        "title": "Character & Shop",
+        "intro": "Pick your character style, then trade points for hats, outfits, weapons and more.",
+        "balance": "Spendable points",
+        "balanceNote": "Shopping never lowers your level or rank.",
+        "look": "Appearance",
+        "gender": "Character",
+        "boy": "Boy",
+        "girl": "Girl",
+        "skin": "Skin tone",
+        "hair": "Hair colour",
+        "shirt": "Shirt colour",
+        "skins": {
+            "light": "Light",
+            "tan": "Tan",
+            "brown": "Brown",
+            "dark": "Dark"
+        },
+        "hairs": {
+            "brown": "Brown",
+            "black": "Black",
+            "blonde": "Blonde",
+            "red": "Red",
+            "blue": "Blue",
+            "pink": "Pink",
+            "teal": "Teal"
+        },
+        "slots": {
+            "hat": "Hat",
+            "face": "Face",
+            "outfit": "Outfit",
+            "back": "Back",
+            "weapon": "Weapon",
+            "offhand": "Shield"
+        },
+        "free": "Free",
+        "owned": "Owned",
+        "wearing": "Wearing",
+        "wear": "Wear",
+        "takeOff": "Take off",
+        "buy": "Buy",
+        "buyFor": "Buy for {{price}} points",
+        "needMore": "{{count}} more points needed",
+        "confirmTitle": "Buy {{item}}?",
+        "confirmText": "{{price}} points will be spent. You will have {{left}} left.",
+        "confirm": "Yes, buy",
+        "cancel": "Cancel",
+        "buying": "Buying…",
+        "empty": "No items in this section yet.",
+        "none": "None",
+        "unsaved": "You have unsaved changes.",
+        "reset": "Discard changes",
+        "try": "Try on",
+        "preview": "Preview: not bought yet"
+    },
+    "subjects": {
+        "label": "Subject",
+        "mix": "Mixed (all)",
+        "math": "Maths",
+        "science": "Science",
+        "language": "Indonesian",
+        "social": "Social studies",
+        "english": "English",
+        "civics": "Civics",
+        "hostPicks": "The host picks the subject.",
+        "playing": "Questions: {{subject}}",
+        "fallback": "There are no {{subject}} questions for your grade yet, so mixed questions are used."
+    },
+    "notifications": {
+        "label": "Notifications",
+        "labelUnread": "Notifications, {{count}} unread",
+        "title": "Notifications",
+        "readAll": "Mark all read",
+        "empty": "No notifications yet.",
+        "loading": "Loading…",
+        "new": "New",
+        "close": "Close notification",
+        "justNow": "just now"
+    },
+    "vault": {
+        "title": "Item Vault",
+        "intro": "Every item you bought is kept here. Wear it again any time.",
+        "empty": "Your vault is empty. Collect points and buy items in the shop!",
+        "shop": "Go to shop",
+        "wear": "Wear",
+        "takeOff": "Take off",
+        "retired": "No longer sold"
+    },
+    "pwa": {
+        "title": "Install the App",
+        "intro": "Install EduFunHub on your phone or laptop. Open it from your home screen, full screen without the browser bar.",
+        "install": "Install app",
+        "installed": "EduFunHub is installed on this device.",
+        "share": "Share",
+        "iosStep1": "Tap the Share button in Safari",
+        "iosStep2": "Choose \"Add to Home Screen\"",
+        "iosStep3": "Tap \"Add\"",
+        "otherStep1": "Open the browser menu (⋮ or ⋯)",
+        "otherStep2": "Choose \"Install app\" or \"Add to home screen\""
     }
 }

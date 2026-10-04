@@ -23,6 +23,9 @@ export const GAME_COLORS: Record<string, string> = {
     'flag-quest': 'var(--color-bubble-green)',
     'sky-quiz': 'var(--color-bubble-blue)',
     'snakes-and-ladders': 'var(--color-bubble-orange)',
+    'quiz-duel': 'var(--color-bubble-pink)',
+    crossword: '#0ea5e9',
+    'knowledge-train': 'var(--color-bubble-purple)',
 };
 
 export const chartTooltipStyle = {

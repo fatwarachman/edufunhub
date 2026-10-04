@@ -1,12 +1,13 @@
 import SnakesChallenge from '@/components/flag-quest/snakes-challenge';
 import { useTranslations } from '@/hooks/use-translations';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import type { ChallengeState } from '@/lib/flag-quest/world';
 import { CheckCircle2, LogOut, Timer, XCircle } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 
 interface Props {
     challenge: ChallengeState;
-    look: { color: string; accessory: string };
+    look: CharacterLook;
     onAnswer: (value: string) => void;
     onRoll: () => void;
     onLeave: () => void;

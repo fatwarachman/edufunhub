@@ -1,9 +1,15 @@
 import ChallengeDialog from '@/components/flag-quest/challenge-dialog';
+import {
+    type GameSubject,
+    rememberedSubject,
+    SubjectPicker,
+} from '@/components/multiplayer/subject-picker';
 import PlayerCharacter from '@/components/player-character';
 import { BackButton, NavButton } from '@/components/site-nav';
 import { useFlagQuestConnection } from '@/hooks/use-flag-quest-connection';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import { useTranslations } from '@/hooks/use-translations';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import {
     drawMinimap,
     FlagQuestRenderer,
@@ -54,6 +60,7 @@ interface Props {
         color: string;
         accessory: string;
     };
+    character: CharacterLook;
     points: number;
     serviceReady: boolean;
     wsUrl: string;
@@ -86,11 +93,15 @@ const MOVE_KEYS: Record<string, [number, number]> = {
 
 export default function FlagQuest({
     player,
+    character,
     points,
     serviceReady,
     wsUrl,
 }: Props) {
     const { t, i18n } = useTranslations();
+    const [subject, setSubject] = useState<GameSubject>(() =>
+        typeof window === 'undefined' ? 'mix' : rememberedSubject(),
+    );
     const { locale } = usePage<SharedData>().props;
     const lang = i18n.language === 'en' ? 'en' : 'id';
     const { play, muted, toggleMuted } = useGameAudio();
@@ -472,10 +483,9 @@ export default function FlagQuest({
                 zoom: r.zoom,
                 viewOffsetY: size.w < 768 ? Math.min(size.h * 0.08, 70) : 0,
                 look: {
+                    ...character,
                     name: player.name,
                     grade: player.grade ?? 1,
-                    color: player.color,
-                    accessory: player.accessory,
                 },
                 activeStation: null,
                 nearStation:
@@ -523,7 +533,7 @@ export default function FlagQuest({
             cancelAnimationFrame(frame);
             ro.disconnect();
         };
-    }, [renderer, send, player, t]);
+    }, [renderer, send, player, character, t]);
 
     // Joystick.
     const joyBase = useRef<HTMLDivElement>(null);
@@ -608,7 +618,7 @@ export default function FlagQuest({
                 <div className="fq-card flex items-center gap-2.5 p-2 sm:gap-3 sm:p-2.5">
                     <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border-[2.5px] border-[#151b2e] bg-[#ffb35c] sm:size-14">
                         <PlayerCharacter
-                            character={player}
+                            character={character}
                             backdrop={false}
                             className="size-full"
                         />
@@ -1023,7 +1033,7 @@ export default function FlagQuest({
                 <ChallengeDialog
                     key={challenge.checkpoint}
                     challenge={challenge}
-                    look={player}
+                    look={character}
                     onSound={play}
                     onAnswer={(value) => send({ t: 'answer', value })}
                     onRoll={() => send({ t: 'roll' })}
@@ -1125,13 +1135,22 @@ export default function FlagQuest({
                         <p className="text-sm text-muted-foreground">
                             {t('flagQuest.missionsNote')}
                         </p>
+                        <SubjectPicker
+                            value={subject}
+                            onChange={setSubject}
+                            compact
+                        />
                         {missions.map((m) => (
                             <button
                                 key={m.id}
                                 type="button"
                                 className={`fq-answer flex-col !items-start ${world?.mission === m.id ? '!bg-[#fff4cc]' : ''}`}
                                 onClick={() => {
-                                    send({ t: 'mission', mission: m.id });
+                                    send({
+                                        t: 'mission',
+                                        mission: m.id,
+                                        subject,
+                                    });
                                     conn.clearComplete();
                                     setMissionPicker(false);
                                 }}

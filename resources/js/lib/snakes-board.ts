@@ -26,3 +26,18 @@ export function boardPoint(position: number): { x: number; y: number } {
         y: 918 - row * 82,
     };
 }
+
+/** Squares a token walks through for a dice roll; overshooting 100 bounces back. */
+export function walkPath(from: number, dice: number): number[] {
+    const path: number[] = [];
+    let position = from;
+    let direction = 1;
+    for (let step = 0; step < dice; step++) {
+        if (position === 100) {
+            direction = -1;
+        }
+        position += direction;
+        path.push(position);
+    }
+    return path;
+}

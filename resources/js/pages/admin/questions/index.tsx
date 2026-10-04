@@ -1,3 +1,4 @@
+import { AiBadge } from '@/components/admin/admin-kit';
 import {
     BAND_LABELS,
     EmptyState,
@@ -21,6 +22,7 @@ import {
     ChartNoAxesColumn,
     ChevronLeft,
     ChevronRight,
+    Coins,
     GraduationCap,
     Landmark,
     Languages,
@@ -33,6 +35,7 @@ import {
     RotateCcw,
     Scale,
     Search,
+    Sparkles,
     Trash2,
 } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
@@ -53,6 +56,7 @@ interface QuestionRow {
     times_correct: number;
     success_rate: number | null;
     source: string;
+    points: number | null;
     author: string | null;
 }
 
@@ -73,6 +77,7 @@ interface Filters {
     type?: string;
     status?: string;
     sort?: string;
+    source?: string;
 }
 
 interface QuestionsProps {
@@ -83,6 +88,9 @@ interface QuestionsProps {
     summary: {
         total: number;
         active: number;
+        ai: number;
+        ai_pending: number;
+        bonus: number;
         byGame: Record<string, number>;
     };
     games: string[];
@@ -191,6 +199,14 @@ function SubjectOverview({
                         />
                     </form>
                     <Link
+                        href="/admin/questions/generate"
+                        className="inline-flex items-center gap-2 rounded-lg border border-violet-300 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-950/70"
+                        data-testid="questions-generate"
+                    >
+                        <Sparkles className="size-4" />
+                        Generate with AI
+                    </Link>
+                    <Link
                         href="/admin/questions/create"
                         className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
@@ -199,6 +215,36 @@ function SubjectOverview({
                     </Link>
                 </div>
             </div>
+
+            {(summary.ai > 0 || summary.bonus > 0) && (
+                <div className="flex flex-wrap gap-2 text-sm">
+                    {summary.ai > 0 && (
+                        <Link
+                            href="/admin/questions?source=ai"
+                            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 hover:bg-accent"
+                            data-testid="questions-ai-link"
+                        >
+                            <AiBadge />
+                            {formatNumber(summary.ai)} AI-created
+                            {summary.ai_pending > 0 && (
+                                <span className="text-xs text-amber-700 dark:text-amber-300">
+                                    · {formatNumber(summary.ai_pending)} waiting
+                                    for review
+                                </span>
+                            )}
+                        </Link>
+                    )}
+                    {summary.bonus > 0 && (
+                        <Link
+                            href="/admin/questions?source=bonus"
+                            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 hover:bg-accent"
+                        >
+                            <Coins className="size-4 text-amber-500" />
+                            {formatNumber(summary.bonus)} bonus questions
+                        </Link>
+                    )}
+                </div>
+            )}
 
             <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {subjectStats.map((stat) => {
@@ -364,6 +410,7 @@ function QuestionList({
         filters.band ||
         filters.type ||
         filters.status ||
+        filters.source ||
         filters.sort,
     );
     const prev = questions.links.find((link) =>
@@ -374,7 +421,11 @@ function QuestionList({
         ? subjectLabel(subject)
         : filters.subject === 'all'
           ? 'All subjects'
-          : 'Search results';
+          : filters.source === 'ai' && !filters.search
+            ? 'AI-created questions'
+            : filters.source === 'bonus' && !filters.search
+              ? 'Bonus questions'
+              : 'Search results';
 
     return (
         <div className="flex flex-col gap-6">
@@ -500,6 +551,19 @@ function QuestionList({
                     <option value="inactive">Inactive</option>
                 </select>
                 <select
+                    aria-label="Source"
+                    value={filters.source ?? ''}
+                    onChange={(e) =>
+                        apply({ source: e.target.value || undefined })
+                    }
+                    className={fieldClass}
+                    data-testid="questions-source-filter"
+                >
+                    <option value="">Any source</option>
+                    <option value="ai">AI-created</option>
+                    <option value="bonus">Bonus questions</option>
+                </select>
+                <select
                     aria-label="Sort"
                     value={filters.sort ?? ''}
                     onChange={(e) =>
@@ -581,6 +645,14 @@ function QuestionList({
                                             </span>
                                         </p>
                                         <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                                            {question.source === 'ai' && (
+                                                <AiBadge />
+                                            )}
+                                            {(question.points ?? 0) > 0 && (
+                                                <Badge tone="amber">
+                                                    Bonus +{question.points}
+                                                </Badge>
+                                            )}
                                             {!subject && (
                                                 <Badge>
                                                     {subjectLabel(
@@ -814,7 +886,7 @@ function Badge({
     tone = 'default',
 }: {
     children: ReactNode;
-    tone?: 'default' | 'primary' | 'muted';
+    tone?: 'default' | 'primary' | 'muted' | 'amber';
 }) {
     return (
         <span
@@ -823,6 +895,8 @@ function Badge({
                 tone === 'primary' && 'bg-primary/10 text-primary',
                 tone === 'muted' && 'bg-muted text-muted-foreground',
                 tone === 'default' && 'bg-secondary text-secondary-foreground',
+                tone === 'amber' &&
+                    'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
             )}
         >
             {children}

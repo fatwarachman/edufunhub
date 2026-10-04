@@ -5,6 +5,9 @@ export const GAME_LABELS: Record<string, string> = {
     'flag-quest': 'Flag Quest',
     'sky-quiz': 'Sky Quiz',
     'snakes-and-ladders': 'Snakes & Ladders',
+    'quiz-duel': 'Class Quiz Duel',
+    'knowledge-train': 'Knowledge Train',
+    crossword: 'Crossword',
 };
 
 export const SUBJECT_LABELS: Record<string, string> = {

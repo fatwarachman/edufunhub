@@ -31,6 +31,7 @@ interface QuestionData {
 interface TeacherFormProps {
     question: QuestionData | null;
     games: string[];
+    choiceOnlyGames: string[];
     subjects: string[];
     grades: number[];
 }
@@ -42,6 +43,7 @@ const blankOption = (): Option => ({ id: '', en: '' });
 export default function TeacherQuestionForm({
     question,
     games,
+    choiceOnlyGames,
     subjects,
 }: TeacherFormProps) {
     const { t } = useTranslations();
@@ -88,7 +90,9 @@ export default function TeacherQuestionForm({
             answer: type === 'true_false' ? 1 : 0,
             games:
                 type === 'true_false'
-                    ? current.games.filter((game) => game !== 'sky-quiz')
+                    ? current.games.filter(
+                          (game) => !choiceOnlyGames.includes(game),
+                      )
                     : current.games,
             options:
                 current.options.length >= MIN_OPTIONS
@@ -310,7 +314,10 @@ export default function TeacherQuestionForm({
                                     key={game}
                                     pressed={data.games.includes(game)}
                                     onClick={() => toggleGame(game)}
-                                    disabled={game === 'sky-quiz' && !isChoice}
+                                    disabled={
+                                        choiceOnlyGames.includes(game) &&
+                                        !isChoice
+                                    }
                                     testId={`teacher-game-${game}`}
                                 >
                                     {t(`teacher.games.${game}`)}
@@ -319,7 +326,13 @@ export default function TeacherQuestionForm({
                         </div>
                         {!isChoice && (
                             <p className="text-xs text-muted-foreground">
-                                {t('teacher.form.skyChoiceOnly')}
+                                {t('teacher.form.skyChoiceOnly', {
+                                    games: choiceOnlyGames
+                                        .map((game) =>
+                                            t(`teacher.games.${game}`),
+                                        )
+                                        .join(', '),
+                                })}
                             </p>
                         )}
                     </Field>

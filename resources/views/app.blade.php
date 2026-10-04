@@ -48,6 +48,12 @@
         <link rel="icon" href="/favicon.ico?v=edufunhub-logo-2" sizes="any">
         <link rel="icon" href="/favicon.svg?v=edufunhub-logo-2" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=edufunhub-logo-2">
+        <link rel="manifest" href="/manifest.webmanifest">
+        <meta name="theme-color" content="#ffd93d">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-title" content="EduFunHub">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&instrument-sans:400,500,600" rel="stylesheet" />

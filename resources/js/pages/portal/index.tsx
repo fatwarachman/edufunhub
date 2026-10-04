@@ -4,20 +4,17 @@ import PlayerCharacter, {
 import { NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
+import { gameIcon } from '@/lib/games';
 import { gradeLabel, hasGrade } from '@/lib/grade';
 import {
     CircleAlert,
     Coins,
     Crown,
-    Dice5,
-    Flag,
     Gamepad2,
     GraduationCap,
     History,
     IdCard,
-    type LucideIcon,
     Medal,
-    Plane,
     Play,
     Sparkles,
     Star,
@@ -70,13 +67,6 @@ interface PortalProps {
         played_at: string;
     }[];
 }
-
-const ICONS: Record<string, LucideIcon> = {
-    flag: Flag,
-    dice: Dice5,
-    plane: Plane,
-    gamepad: Gamepad2,
-};
 
 export default function Portal({
     player,
@@ -239,7 +229,7 @@ export default function Portal({
                         data-testid="portal-game-list"
                     >
                         {games.map((game) => {
-                            const Icon = ICONS[game.icon] ?? Gamepad2;
+                            const Icon = gameIcon(game.icon);
                             const needsDetails = !player.detailsComplete;
                             const blocked =
                                 game.requiresGrade && player.grade === null;

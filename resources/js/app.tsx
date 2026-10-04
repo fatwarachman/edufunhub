@@ -11,12 +11,15 @@ import { Toaster } from 'sonner';
 import { ToastProvider } from './components/ui/toast';
 import { initializeTheme } from './hooks/use-appearance';
 import i18n from './lib/i18n';
+import { initPwa } from './lib/pwa';
 
 if (import.meta.env.VITE_REVERB_APP_KEY) {
     configureEcho({
         broadcaster: 'reverb',
     });
 }
+
+initPwa();
 
 const appName = import.meta.env.VITE_APP_NAME || 'EduFunHub';
 
