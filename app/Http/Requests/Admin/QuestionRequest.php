@@ -26,6 +26,7 @@ class QuestionRequest extends FormRequest
             'options' => $this->input('type') === Question::TYPE_CHOICE ? $options : null,
             'prompt_id' => trim((string) $this->input('prompt_id')),
             'is_active' => $this->boolean('is_active'),
+            'points' => $this->filled('points') && (int) $this->input('points') > 0 ? (int) $this->input('points') : null,
         ]);
     }
 
@@ -49,6 +50,7 @@ class QuestionRequest extends FormRequest
             'games' => ['required', 'array', 'min:1'],
             'games.*' => ['required', Rule::in(Question::GAMES)],
             'is_active' => ['boolean'],
+            'points' => ['nullable', 'integer', 'between:1,'.Question::MAX_POINTS],
         ];
     }
 
@@ -56,8 +58,8 @@ class QuestionRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                if ($this->input('type') === Question::TYPE_TRUE_FALSE && in_array('sky-quiz', (array) $this->input('games'), true)) {
-                    $validator->errors()->add('games', __('Sky Quiz only supports multiple choice questions.'));
+                if ($this->input('type') === Question::TYPE_TRUE_FALSE && array_intersect(Question::CHOICE_ONLY_GAMES, (array) $this->input('games')) !== []) {
+                    $validator->errors()->add('games', __('questions.choice_only_games'));
                 }
 
                 $options = collect($this->input('options') ?? [])->pluck('id')->map(fn (string $id): string => mb_strtolower($id));

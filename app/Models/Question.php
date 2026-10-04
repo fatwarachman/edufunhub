@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\PointRules;
 use Database\Factories\QuestionFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,10 +28,19 @@ class Question extends Model
     public const SUBJECTS = ['math', 'science', 'language', 'social', 'english', 'civics'];
 
     /** Games whose Go runtime draws from the bank. */
-    public const GAMES = ['flag-quest', 'sky-quiz'];
+    public const GAMES = ['flag-quest', 'sky-quiz', 'quiz-duel', 'knowledge-train', 'snakes-and-ladders'];
+
+    /** Games that only use multiple choice questions. */
+    public const CHOICE_ONLY_GAMES = ['sky-quiz', 'quiz-duel', 'knowledge-train', 'snakes-and-ladders'];
 
     /** Where a question came from: built-in bank, admin panel, teacher portal or teacher import. */
-    public const SOURCES = ['system', 'admin', 'teacher', 'import'];
+    public const SOURCES = ['system', 'admin', 'teacher', 'import', 'ai'];
+
+    /** Questions written by the AI generator. */
+    public const SOURCE_AI = 'ai';
+
+    /** Highest custom value of a bonus question (mirrors the Go points cap). */
+    public const MAX_POINTS = 100;
 
     /** Grade band labels (band index => grade range). */
     public const BANDS = [0 => [1, 3], 1 => [4, 6], 2 => [7, 9], 3 => [10, 12]];
@@ -46,7 +56,7 @@ class Question extends Model
     /** @var list<string> */
     protected $fillable = [
         'key', 'type', 'band', 'grades', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer',
-        'hint_id', 'hint_en', 'games', 'is_active', 'source', 'created_by', 'updated_by',
+        'hint_id', 'hint_en', 'games', 'is_active', 'source', 'created_by', 'updated_by', 'points', 'generation_id',
     ];
 
     /** @return array<string, string> */
@@ -55,6 +65,7 @@ class Question extends Model
         return [
             'band' => 'integer',
             'answer' => 'integer',
+            'points' => 'integer',
             'options' => 'array',
             'games' => 'array',
             'grades' => 'array',
@@ -149,6 +160,19 @@ class Question extends Model
             'answer' => $this->answer,
             'hint' => ['id' => $this->hint_id ?? '', 'en' => $this->hint_en ?? ''],
             'games' => array_values($this->games ?? []),
+            'points' => $this->points ?? 0,
         ];
+    }
+
+    /** Whether the AI generator wrote this question. */
+    public function isAiGenerated(): bool
+    {
+        return $this->source === self::SOURCE_AI;
+    }
+
+    /** What a correct answer earns: the bonus value or the standard rule. */
+    public function worth(): int
+    {
+        return $this->points ?: PointRules::current()['per_correct'];
     }
 }

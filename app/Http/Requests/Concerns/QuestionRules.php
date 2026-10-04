@@ -73,8 +73,8 @@ trait QuestionRules
      */
     protected function validateQuestionConsistency(Validator $validator, array $input): void
     {
-        if (($input['type'] ?? null) === Question::TYPE_TRUE_FALSE && in_array('sky-quiz', (array) ($input['games'] ?? []), true)) {
-            $validator->errors()->add('games', __('questions.sky_quiz_choice_only'));
+        if (($input['type'] ?? null) === Question::TYPE_TRUE_FALSE && array_intersect(Question::CHOICE_ONLY_GAMES, (array) ($input['games'] ?? [])) !== []) {
+            $validator->errors()->add('games', __('questions.choice_only_games'));
         }
 
         $options = collect($input['options'] ?? [])->pluck('id')->map(fn (string $id): string => mb_strtolower($id));

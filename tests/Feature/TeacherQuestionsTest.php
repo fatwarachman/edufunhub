@@ -4,6 +4,7 @@ use App\Models\GameHistory;
 use App\Models\Question;
 use App\Models\QuestionAnswer;
 use App\Models\QuestionCompensationRate;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -74,11 +75,11 @@ function teacherCsvUpload(string $contents): UploadedFile
     return UploadedFile::fake()->createWithContent('soal.csv', $contents);
 }
 
-test('only teachers and super admins can open the teacher portal', function (string $path): void {
+test('only users with the teacher role can open the teacher portal', function (string $path): void {
     $this->get($path)->assertRedirect();
     $this->actingAs(User::factory()->create())->get($path)->assertForbidden();
+    $this->actingAs(User::factory()->superadmin()->create())->get($path)->assertForbidden();
     $this->actingAs($this->teacher)->get($path)->assertOk();
-    $this->actingAs(User::factory()->superadmin()->create())->get($path)->assertOk();
 })->with(['/teacher/questions', '/teacher/questions/create', '/teacher/questions/import', '/teacher/questions/template']);
 
 test('teacher creates a question for selected grades including kindergarten', function (): void {
@@ -256,7 +257,7 @@ test('teacher stats exclude other teachers and built-in questions', function ():
 
 test('only super admins manage compensation rates', function (): void {
     $admin = User::factory()->create();
-    $admin->roles()->attach(\App\Models\Role::query()->firstOrCreate(['slug' => 'admin'], ['name' => 'Admin']));
+    $admin->roles()->attach(Role::query()->firstOrCreate(['slug' => 'admin'], ['name' => 'Admin']));
 
     $this->actingAs($this->teacher)->get('/admin/compensation')->assertForbidden();
     $this->actingAs($admin)->get('/admin/compensation')->assertForbidden();

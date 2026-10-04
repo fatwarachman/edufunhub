@@ -4,7 +4,7 @@ return [
     'created' => 'Soal berhasil dibuat.',
     'updated' => 'Soal berhasil diperbarui.',
     'deleted' => 'Soal berhasil dihapus.',
-    'sky_quiz_choice_only' => 'Sky Quiz hanya mendukung soal pilihan ganda.',
+    'choice_only_games' => 'Sky Quiz, Duel Kuis Kelas, Kereta Pengetahuan, dan Ular Tangga hanya mendukung soal pilihan ganda.',
     'options_unique' => 'Pilihan jawaban tidak boleh sama.',
     'options_min' => 'Soal pilihan ganda membutuhkan minimal 3 pilihan.',
     'options_max' => 'Soal pilihan ganda maksimal 6 pilihan.',

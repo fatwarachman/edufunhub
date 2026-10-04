@@ -9,9 +9,11 @@ use App\Models\GameHistory;
 use App\Models\ImpersonationLog;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\RedirectResponse;
 use App\Services\GameAnalytics;
+use App\Services\MatchHistory;
+use App\Services\PlayerNotifications;
 use App\Services\UserAnalytics;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -92,9 +94,34 @@ class UserController extends Controller
     }
 
     /**
+     * Assign or remove the teacher (guru) role. Only teachers see Ruang Guru.
+     */
+    public function toggleTeacher(Request $request, User $user, PlayerNotifications $notifications): RedirectResponse
+    {
+        abort_unless((bool) $request->user()?->is_superadmin, 403);
+
+        $role = Role::query()->firstOrCreate(
+            ['slug' => Role::TEACHER],
+            ['name' => 'Guru', 'description' => 'Membuat dan mengelola quiz untuk kelas', 'is_system' => true],
+        );
+        $isTeacher = $user->roles()->whereKey($role->id)->exists();
+        $isTeacher ? $user->roles()->detach($role->id) : $user->roles()->attach($role->id);
+
+        activity()->causedBy($request->user())->performedOn($user)->log($isTeacher ? 'Removed teacher role' : 'Assigned teacher role');
+        $notifications->notify(
+            $user,
+            'teacher',
+            $isTeacher ? 'player_notifications.teacher_revoked' : 'player_notifications.teacher_granted',
+            url: $isTeacher ? '/dashboard' : '/teacher/questions',
+        );
+
+        return back()->with('success', $isTeacher ? __('ai.teacher_removed', ['name' => $user->name]) : __('ai.teacher_assigned', ['name' => $user->name]));
+    }
+
+    /**
      * Show user detail with roles and recent activity log.
      */
-    public function show(User $user, UserAnalytics $analytics): Response
+    public function show(User $user, UserAnalytics $analytics, MatchHistory $matchHistory): Response
     {
         $user->load(['roles', 'playerProfile', 'connectedAccounts:id,user_id,provider,created_at']);
 
@@ -104,6 +131,7 @@ class UserController extends Controller
                 'status' => $user->disabled_at ? 'suspended' : 'active',
                 'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
                 'roles' => $user->roles->map(fn ($role): array => ['id' => $role->id, 'name' => $role->name, 'slug' => $role->slug])->all(),
+                'is_teacher' => $user->roles->contains('slug', Role::TEACHER),
                 'providers' => $user->connectedAccounts->map(fn ($account): array => ['provider' => $account->provider, 'linked_at' => $account->created_at?->toIso8601String()])->all(),
                 'player_profile' => $user->playerProfile ? [
                     'nickname' => $user->playerProfile->nickname,
@@ -142,6 +170,18 @@ class UserController extends Controller
                     'played_at' => $play->played_at->toIso8601String(),
                 ]),
             'passPercent' => GameAnalytics::PASS_PERCENT,
+            'matchHistory' => $matchHistory->forUser($user),
+            'matches' => $matchHistory->matchesFor($user),
+            'shop' => [
+                'items' => $user->characterItems()->orderByPivot('created_at', 'desc')->get()->map(fn ($item): array => [
+                    'id' => $item->id,
+                    'name' => $item->name_en ?: $item->name_id,
+                    'slot' => $item->slot,
+                    'price_paid' => (int) $item->pivot->price_paid,
+                    'bought_at' => $item->pivot->created_at?->toIso8601String(),
+                ])->all(),
+                'character' => $user->playerProfile?->character(),
+            ],
         ]);
     }
 

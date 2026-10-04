@@ -3,7 +3,9 @@
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\Question;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 
 const ADMIN_GAME_SECRET = 'admin-games-test-secret-with-32-chars!!';
@@ -39,7 +41,7 @@ function playedGame(User $user, array $overrides = []): GameHistory
     ]);
 }
 
-function signedBankRequest(mixed $test, ?string $secret = null, ?int $timestamp = null): \Illuminate\Testing\TestResponse
+function signedBankRequest(mixed $test, ?string $secret = null, ?int $timestamp = null): TestResponse
 {
     $timestamp ??= now()->getTimestamp();
 
@@ -52,7 +54,7 @@ function signedBankRequest(mixed $test, ?string $secret = null, ?int $timestamp 
 
 test('only super admins can open game statistics, leaderboard and questions', function (string $path): void {
     $admin = User::factory()->create();
-    $admin->roles()->attach(\App\Models\Role::query()->firstOrCreate(['slug' => 'admin'], ['name' => 'Admin']));
+    $admin->roles()->attach(Role::query()->firstOrCreate(['slug' => 'admin'], ['name' => 'Admin']));
 
     $this->get($path)->assertRedirect();
     $this->actingAs(User::factory()->create())->get($path)->assertForbidden();
@@ -70,7 +72,16 @@ test('game list shows plays, players and success rate per catalog game', functio
 
     $this->actingAs($this->superadmin)->get('/admin/games')->assertInertia(fn (Assert $page) => $page
         ->component('admin/games/index')
-        ->has('games', 3)
+        ->has('games', 6)
+        ->where('games.5.key', 'knowledge-train')
+        ->where('games.5.tracked', true)
+        ->where('games.4.key', 'crossword')
+        ->where('games.4.tracked', false)
+        ->where('games.1.key', 'snakes-and-ladders')
+        ->where('games.1.tracked', true)
+        ->where('games.3.key', 'quiz-duel')
+        ->where('games.3.plays', 0)
+        ->where('games.3.tracked', true)
         ->where('games.2.key', 'sky-quiz')
         ->where('games.2.plays', 3)
         ->where('games.2.players', 2)

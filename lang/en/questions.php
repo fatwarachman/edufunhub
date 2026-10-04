@@ -4,7 +4,7 @@ return [
     'created' => 'Question created.',
     'updated' => 'Question updated.',
     'deleted' => 'Question deleted.',
-    'sky_quiz_choice_only' => 'Sky Quiz only supports multiple choice questions.',
+    'choice_only_games' => 'Sky Quiz, Class Quiz Duel, Knowledge Train and Snakes & Ladders only support multiple choice questions.',
     'options_unique' => 'Answer options must be unique.',
     'options_min' => 'Multiple choice questions need at least 3 options.',
     'options_max' => 'Multiple choice questions allow at most 6 options.',
