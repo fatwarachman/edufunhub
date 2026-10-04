@@ -49,7 +49,17 @@
             "sma": "Senior high"
         },
         "portal": "Portal",
-        "openPortal": "Open game portal"
+        "openPortal": "Open game portal",
+        "details": "Participant details",
+        "detailsNote": "Complete your date of birth and last school.",
+        "birthDate": "Date of birth",
+        "schoolName": "Last school",
+        "schoolNamePlaceholder": "Example: SDN 1 Bogor",
+        "age_one": "{{count}} year old",
+        "age_other": "{{count}} years old",
+        "detailsSave": "Save details",
+        "detailsSaved": "Details saved.",
+        "detailsMissing": "Participant details incomplete"
     },
     "flagQuest": {
         "title": "Flag Quest",
@@ -246,7 +256,11 @@
             "flagQuest": "Explore the map, beat quizzes, snakes & ladders and math sprints at each station, then raise the flag.",
             "snakes": "100-square snakes & ladders for 2–4 players taking turns, with questions from many subjects.",
             "sky": "Fly the jet, collect correct answers, and shoot wrong ones. Questions follow your grade and results earn points."
-        }
+        },
+        "detailsFirst": "Complete details first",
+        "detailsNoticeTitle": "Complete your participant details first!",
+        "detailsNoticeBody": "Before you can play, fill in your date of birth and last school. It only takes a moment.",
+        "detailsNoticeAction": "Fill in now"
     },
     "nav": {
         "label": "Main navigation",

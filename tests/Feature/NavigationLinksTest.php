@@ -27,7 +27,7 @@ it('serves every guest navigation destination', function (string $url, ?string $
 ]);
 
 it('serves every player navigation destination', function (string $url, string $component): void {
-    $player = User::factory()->create();
+    $player = User::factory()->withPlayerDetails()->create();
 
     $this->actingAs($player)
         ->get($url)

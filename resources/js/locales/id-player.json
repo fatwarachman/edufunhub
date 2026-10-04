@@ -49,7 +49,16 @@
             "sma": "SMA/SMK"
         },
         "portal": "Portal",
-        "openPortal": "Buka portal permainan"
+        "openPortal": "Buka portal permainan",
+        "details": "Data peserta",
+        "detailsNote": "Lengkapi tanggal lahir dan sekolah terakhir kamu.",
+        "birthDate": "Tanggal lahir",
+        "schoolName": "Sekolah terakhir",
+        "schoolNamePlaceholder": "Contoh: SDN 1 Bogor",
+        "age": "{{count}} tahun",
+        "detailsSave": "Simpan data",
+        "detailsSaved": "Data tersimpan.",
+        "detailsMissing": "Data peserta belum lengkap"
     },
     "flagQuest": {
         "title": "Misi Bendera",
@@ -246,7 +255,11 @@
             "flagQuest": "Jelajahi peta, selesaikan kuis, ular tangga, dan sprint hitung di tiap pos, lalu kibarkan bendera.",
             "snakes": "Ular tangga 100 petak untuk 2–4 pemain bergiliran dengan soal berbagai mata pelajaran.",
             "sky": "Terbangkan jet, ambil jawaban benar, dan tembak jawaban salah. Soal mengikuti kelasmu dan hasilnya menambah poin."
-        }
+        },
+        "detailsFirst": "Isi data peserta dulu",
+        "detailsNoticeTitle": "Lengkapi data peserta dulu, ya!",
+        "detailsNoticeBody": "Sebelum bisa bermain, isi tanggal lahir dan sekolah terakhir kamu. Hanya butuh sebentar.",
+        "detailsNoticeAction": "Isi data sekarang"
     },
     "nav": {
         "label": "Navigasi utama",

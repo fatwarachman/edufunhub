@@ -10,6 +10,9 @@ class Role extends Model
 {
     use HasFactory;
 
+    /** Default role for self-registered users who play educational games. */
+    public const PARTICIPANT = 'peserta';
+
     /**
      * The attributes that are mass assignable.
      *

@@ -159,6 +159,31 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Whether the participant has provided date of birth and last school.
+     */
+    public function hasCompletePlayerDetails(): bool
+    {
+        return $this->playerProfile()
+            ->whereNotNull('birth_date')
+            ->whereNotNull('school_name')
+            ->where('school_name', '!=', '')
+            ->exists();
+    }
+
+    /**
+     * Give a self-registered user the default participant role.
+     */
+    public function assignParticipantRole(): void
+    {
+        $role = Role::query()->firstOrCreate(
+            ['slug' => Role::PARTICIPANT],
+            ['name' => 'Peserta', 'description' => 'Memainkan game edukasi', 'is_system' => true],
+        );
+
+        $this->roles()->syncWithoutDetaching([$role->id]);
+    }
+
+    /**
      * Check whether this user has a given global role.
      */
     public function hasRole(string $slug): bool

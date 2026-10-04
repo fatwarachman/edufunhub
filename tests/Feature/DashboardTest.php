@@ -74,7 +74,7 @@ test('browser cannot award points or record history', function (string $path): v
 })->with(['/dashboard', '/character']);
 
 test('catalog only lists actual game routes', function (): void {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->withPlayerDetails()->create());
     foreach (config('game-catalog.categories') as $category) {
         foreach ($category['games'] as $game) {
             $this->get(route($game['route']))->assertOk();

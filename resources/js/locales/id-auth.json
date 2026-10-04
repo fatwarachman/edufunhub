@@ -28,7 +28,11 @@
         "hideConfirm": "Sembunyikan konfirmasi kata sandi",
         "showConfirm": "Tampilkan konfirmasi kata sandi",
         "match": "Kata sandi cocok",
-        "mismatch": "Kata sandi tidak cocok"
+        "mismatch": "Kata sandi tidak cocok",
+        "birthDate": "Tanggal lahir",
+        "birthDateHint": "Dipakai untuk mengetahui usia peserta.",
+        "schoolName": "Sekolah terakhir",
+        "schoolNamePlaceholder": "Contoh: SDN 1 Bogor"
     },
     "login": {
         "adminTitle": "Masuk Admin",

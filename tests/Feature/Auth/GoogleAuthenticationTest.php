@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Models\ConnectedAccount;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
@@ -111,7 +112,7 @@ test('new google user is verified unprivileged tokenless and session is regenera
     expect($user->is_superadmin)->toBeFalse()
         ->and($user->email_verified_at)->not->toBeNull()
         ->and($user->password)->not->toBeEmpty()
-        ->and($user->roles()->count())->toBe(0)
+        ->and($user->roles()->pluck('slug')->all())->toBe([Role::PARTICIPANT])
         ->and($user->workspaces()->count())->toBe(0)
         ->and(session()->getId())->not->toBe($oldSession);
     $account = $user->connectedAccounts()->sole();

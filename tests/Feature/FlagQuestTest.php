@@ -66,7 +66,7 @@ test('game page uses dashboard character name and grade', function (): void {
 });
 
 test('name falls back to account name without nickname', function (): void {
-    $user = User::factory()->create(['name' => 'Siti']);
+    $user = User::factory()->withPlayerDetails()->create(['name' => 'Siti']);
 
     $this->actingAs($user)->get('/games/flag-quest')
         ->assertInertia(fn (Assert $page) => $page->where('player.name', 'Siti')->where('player.grade', null));
@@ -74,9 +74,10 @@ test('name falls back to account name without nickname', function (): void {
 
 test('token requires grade and is verifiable by the go service format', function (): void {
     $user = User::factory()->create();
+    $profile = PlayerProfile::factory()->for($user)->create(['nickname' => 'Andika']);
     $this->actingAs($user)->postJson('/games/flag-quest/token')->assertStatus(422);
 
-    PlayerProfile::factory()->for($user)->create(['nickname' => 'Andika', 'grade' => 8]);
+    $profile->update(['grade' => 8]);
     $token = $this->actingAs($user)->postJson('/games/flag-quest/token')->assertOk()->json('token');
 
     [$payload, $signature] = explode('.', $token);

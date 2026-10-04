@@ -2,6 +2,7 @@
 
 namespace App\Actions\Fortify;
 
+use App\Http\Requests\Concerns\PlayerDetailsRules;
 use App\Models\User;
 use App\Services\WorkspaceService;
 use Illuminate\Support\Facades\DB;
@@ -11,7 +12,7 @@ use Laravel\Fortify\Contracts\CreatesNewUsers;
 
 class CreateNewUser implements CreatesNewUsers
 {
-    use PasswordValidationRules;
+    use PasswordValidationRules, PlayerDetailsRules;
 
     public function __construct(
         protected WorkspaceService $workspaceService
@@ -24,6 +25,8 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
+        $input['school_name'] = trim((string) ($input['school_name'] ?? ''));
+
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -34,13 +37,19 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
-        ])->validate();
+            ...$this->playerDetailsRules(),
+        ], $this->playerDetailsMessages())->validate();
 
         return DB::transaction(function () use ($input) {
             $user = User::create([
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'password' => $input['password'],
+            ]);
+            $user->assignParticipantRole();
+            $user->playerProfile()->create([
+                'birth_date' => $input['birth_date'],
+                'school_name' => $input['school_name'],
             ]);
 
             // Workspace creation is now handled exclusively via the Onboarding Wizard

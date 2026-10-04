@@ -84,7 +84,7 @@ class DatabaseSeeder extends Seeder
             'Super Admin' => 'Akses penuh ke seluruh sistem',
             'Admin' => 'Mengelola pengguna, quiz, dan konten',
             'Guru' => 'Membuat dan mengelola quiz untuk kelas',
-            'Siswa' => 'Mengikuti quiz dan duel',
+            'Peserta' => 'Memainkan game edukasi',
         ];
 
         $roleModels = [];
@@ -125,8 +125,8 @@ class DatabaseSeeder extends Seeder
         })->pluck('id');
         $roleModels['guru']->permissions()->sync($guruPermissions);
 
-        // Siswa: quiz + duel + leaderboard view only.
-        $siswaPermissions = collect($permissionModelBySlug)->filter(function (Permission $permission) {
+        // Peserta: quiz + duel + leaderboard view only.
+        $participantPermissions = collect($permissionModelBySlug)->filter(function (Permission $permission) {
             return in_array($permission->slug, [
                 'dashboard-view',
                 'quiz-view',
@@ -135,7 +135,7 @@ class DatabaseSeeder extends Seeder
                 'leaderboard-view',
             ]);
         })->pluck('id');
-        $roleModels['siswa']->permissions()->sync($siswaPermissions);
+        $roleModels[Role::PARTICIPANT]->permissions()->sync($participantPermissions);
 
         // 4. Superadmin user only — no dummy data.
         $superadmin = User::firstOrCreate(
