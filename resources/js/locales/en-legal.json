@@ -1,0 +1,171 @@
+{
+    "legal": {
+        "updatedLabel": "Last updated",
+        "updatedDate": "October 4, 2026",
+        "contactEmail": "ate.rachman@gmail.com",
+        "seeAlso": "See also",
+        "backHome": "Back to home",
+        "privacy": {
+            "title": "Privacy Policy",
+            "metaDescription": "EduFunHub Privacy Policy: what data we collect, how we use it, and your rights over it.",
+            "intro": "This policy explains how EduFunHub (\"we\") collects, uses, stores, and protects your personal data when you use the EduFunHub website and educational games.",
+            "sections": [
+                {
+                    "heading": "1. Data we collect",
+                    "paragraphs": [
+                        "We only collect the data needed to run the service:"
+                    ],
+                    "items": [
+                        "Account data: name, email address, and password (stored as a one-way hash).",
+                        "Data from Google: if you sign in with Google, we receive your name, email address, email verification status, and Google account ID. We never receive your Google password.",
+                        "Player profile: nickname, grade/level, and character appearance choices.",
+                        "Play activity: game history, scores, and points you earn.",
+                        "Security data: IP address, browser type, and sign-in times to protect accounts from abuse.",
+                        "Essential cookies: session and security (CSRF) cookies required to keep you signed in. We do not use advertising cookies."
+                    ]
+                },
+                {
+                    "heading": "2. How we use data",
+                    "items": [
+                        "To create and manage your account, including Google sign-in.",
+                        "To run games and save your progress, scores, points, and leaderboards.",
+                        "To match questions to your grade or level.",
+                        "To keep the service secure and prevent fraud or abuse.",
+                        "To send important account emails, such as email verification and password resets."
+                    ]
+                },
+                {
+                    "heading": "3. Google user data",
+                    "paragraphs": [
+                        "EduFunHub's use and transfer of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.",
+                        "We only request access to your basic profile and email address (openid, email, profile scopes). This data is used solely to create your account and sign you in to EduFunHub. We do not sell your Google data, use it for advertising, or share it with third parties."
+                    ]
+                },
+                {
+                    "heading": "4. Data sharing",
+                    "paragraphs": [
+                        "We do not sell your personal data. Data is only shared with infrastructure providers that help run the service (such as server hosting and email delivery) under confidentiality obligations, or when required by applicable law."
+                    ]
+                },
+                {
+                    "heading": "5. Storage and security",
+                    "paragraphs": [
+                        "Data is stored on servers we manage, with encrypted connections (HTTPS), hashed passwords, and restricted access. We keep data while your account is active. After an account is deleted, personal data is deleted or anonymized within a reasonable time, except where retention is required by law."
+                    ]
+                },
+                {
+                    "heading": "6. Children's privacy",
+                    "paragraphs": [
+                        "EduFunHub is designed for learners, including children. Users under 13 should sign up and play with the permission and supervision of a parent, guardian, or teacher. We do not show targeted ads to children. If you are a parent and believe your child provided data without permission, contact us and we will delete it."
+                    ]
+                },
+                {
+                    "heading": "7. Your rights",
+                    "paragraphs": [
+                        "Under Indonesia's Personal Data Protection Law (Law No. 27 of 2022), you have the right to:"
+                    ],
+                    "items": [
+                        "Access and request a copy of your personal data.",
+                        "Correct inaccurate data.",
+                        "Request deletion of your account and personal data.",
+                        "Revoke Google sign-in access at any time via https://myaccount.google.com/permissions."
+                    ]
+                },
+                {
+                    "heading": "8. Changes to this policy",
+                    "paragraphs": [
+                        "We may update this policy from time to time. Significant changes will be announced on the site, and the \"Last updated\" date above will be revised."
+                    ]
+                },
+                {
+                    "heading": "9. Contact us",
+                    "paragraphs": [
+                        "Privacy questions or requests can be sent to:"
+                    ],
+                    "contact": true
+                }
+            ]
+        },
+        "terms": {
+            "title": "Terms of Service",
+            "metaDescription": "EduFunHub Terms of Service: rules for using accounts, games, and points.",
+            "intro": "By creating an account or using EduFunHub, you agree to these Terms of Service. If you do not agree, please do not use the service.",
+            "sections": [
+                {
+                    "heading": "1. About the service",
+                    "paragraphs": [
+                        "EduFunHub is an interactive educational games platform that helps learners study through play with quizzes, board games, and subject-themed adventures."
+                    ]
+                },
+                {
+                    "heading": "2. Accounts",
+                    "items": [
+                        "You must provide accurate information when signing up, whether by email or with a Google account.",
+                        "You are responsible for keeping your password secret and for all activity on your account.",
+                        "Users under 13 must use the service with the permission and supervision of a parent, guardian, or teacher.",
+                        "One account per person. Accounts may not be transferred or sold."
+                    ]
+                },
+                {
+                    "heading": "3. Acceptable use",
+                    "paragraphs": ["When using EduFunHub, you must not:"],
+                    "items": [
+                        "Cheat or use bots, scripts, or exploits to manipulate scores and points.",
+                        "Harass, bully, or offend other players, including through nicknames.",
+                        "Attempt to access other people's accounts or restricted parts of the system.",
+                        "Disrupt, overload, or damage EduFunHub servers and services."
+                    ]
+                },
+                {
+                    "heading": "4. Points and virtual rewards",
+                    "paragraphs": [
+                        "Points, levels, and items on EduFunHub are virtual rewards to motivate learning. Points have no monetary value, cannot be exchanged for money, and may be adjusted or revoked if obtained by cheating or due to a system error."
+                    ]
+                },
+                {
+                    "heading": "5. Content and intellectual property",
+                    "paragraphs": [
+                        "All EduFunHub games, questions, designs, logos, and code belong to the EduFunHub operator or its licensors. You may use them for personal learning, but you may not copy, sell, or distribute them without written permission."
+                    ]
+                },
+                {
+                    "heading": "6. Suspension and account deletion",
+                    "paragraphs": [
+                        "We may suspend or disable accounts that violate these terms. You may stop using the service at any time and request account deletion by contacting us."
+                    ]
+                },
+                {
+                    "heading": "7. Limitation of liability",
+                    "paragraphs": [
+                        "The service is provided \"as is\". We work to keep it available and accurate, but we do not guarantee it will be uninterrupted or error-free. To the extent permitted by law, we are not liable for indirect losses arising from use of the service."
+                    ]
+                },
+                {
+                    "heading": "8. Privacy",
+                    "paragraphs": [
+                        "Use of your personal data is governed by our Privacy Policy, which forms part of these Terms of Service."
+                    ]
+                },
+                {
+                    "heading": "9. Changes to these terms",
+                    "paragraphs": [
+                        "We may change these terms from time to time. By continuing to use the service after changes are announced, you accept the updated terms."
+                    ]
+                },
+                {
+                    "heading": "10. Governing law",
+                    "paragraphs": [
+                        "These terms are governed by the laws of the Republic of Indonesia."
+                    ]
+                },
+                {
+                    "heading": "11. Contact us",
+                    "paragraphs": [
+                        "Questions about these terms can be sent to:"
+                    ],
+                    "contact": true
+                }
+            ]
+        }
+    }
+}
