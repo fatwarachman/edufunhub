@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"edufunhub/game/internal/crossword"
 	"edufunhub/game/internal/questions"
 	"edufunhub/game/internal/server"
 )
@@ -53,8 +54,15 @@ func main() {
 			}
 		}
 	}()
+	go srv.RunDuels(ctx, 250*time.Millisecond)
+	go srv.RunSnakes(ctx, 250*time.Millisecond)
+	go srv.RunCrosswords(ctx, time.Second)
 	if bankURL := os.Getenv("GAME_QUESTION_BANK_URL"); bankURL != "" {
 		syncer := &questions.Syncer{URL: bankURL, Secret: []byte(secret), Logger: logger}
+		go syncer.Run(ctx, time.Minute)
+	}
+	if wordsURL := os.Getenv("GAME_CROSSWORD_BANK_URL"); wordsURL != "" {
+		syncer := &crossword.Syncer{URL: wordsURL, Secret: []byte(secret), Logger: logger}
 		go syncer.Run(ctx, time.Minute)
 	}
 	go func() {

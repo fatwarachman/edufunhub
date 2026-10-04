@@ -85,9 +85,11 @@ type Challenge struct {
 	Ends        time.Time
 	// Answers logs answered bank questions for statistics.
 	Answers []questions.Answer
-	current questions.Question
-	gen     *questions.Generator
-	rollFn  func() int
+	// LastWorth is what the last correct answer was worth in portal points.
+	LastWorth int
+	current   questions.Question
+	gen       *questions.Generator
+	rollFn    func() int
 }
 
 // Feedback describes the result of one answer.
@@ -259,6 +261,7 @@ func (c *Challenge) record(ok bool, now time.Time) {
 	}
 	if ok {
 		c.Correct++
+		c.LastWorth = c.current.Worth()
 	} else {
 		c.Wrong++
 	}

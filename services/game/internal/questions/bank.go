@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"sync/atomic"
+
+	"edufunhub/game/internal/points"
 )
 
 // Item types.
@@ -26,6 +28,8 @@ type Item struct {
 	Answer  int      `json:"answer"`
 	Hint    Text     `json:"hint"`
 	Games   []string `json:"games"`
+	// Points overrides the per-correct award (bonus questions); 0 = default.
+	Points int `json:"points"`
 }
 
 // ForGame reports whether the item is distributed to game ("" matches every item).
@@ -95,6 +99,8 @@ func Validate(items []Item) error {
 			return fmt.Errorf("%s: true/false answer must be 0 or 1", it.Key)
 		case it.Type != TypeChoice && it.Type != TypeTrueFalse:
 			return fmt.Errorf("%s: unknown type %q", it.Key, it.Type)
+		case it.Points < 0 || it.Points > points.MaxPerQuestion:
+			return fmt.Errorf("%s: points out of range", it.Key)
 		}
 		seen[it.Key] = true
 	}
@@ -113,11 +119,15 @@ func validGrades(grades []int) bool {
 // Parse decodes and validates a bank payload: {"version": "...", "questions": [...]}.
 func Parse(body []byte) (*Bank, error) {
 	var payload struct {
-		Version   string `json:"version"`
-		Questions []Item `json:"questions"`
+		Version   string        `json:"version"`
+		Questions []Item        `json:"questions"`
+		Points    *points.Rules `json:"points"`
 	}
 	if err := json.Unmarshal(body, &payload); err != nil {
 		return nil, err
+	}
+	if payload.Points != nil {
+		points.Use(payload.Points)
 	}
 	if len(payload.Questions) == 0 {
 		return nil, errors.New("question bank is empty")
@@ -146,7 +156,7 @@ func Use(b *Bank) {
 // builtin is the bundled bank used before the first sync and as a fallback.
 var builtin = func() *Bank {
 	items := []Item{}
-	both := []string{"flag-quest", "sky-quiz"}
+	both := []string{"flag-quest", "sky-quiz", "quiz-duel", "knowledge-train", "snakes-and-ladders"}
 	for band, list := range choiceBank {
 		for i, q := range list {
 			items = append(items, Item{Key: fmt.Sprintf("mc-%d-%d", band, i), Type: TypeChoice, Band: band, Subject: q.subject, Prompt: q.prompt, Options: q.options, Answer: q.answer, Hint: q.hint, Games: both})

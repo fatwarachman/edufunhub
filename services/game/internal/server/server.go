@@ -19,8 +19,13 @@ import (
 	"github.com/coder/websocket/wsjson"
 
 	"edufunhub/game/internal/auth"
+	"edufunhub/game/internal/crossword"
+	"edufunhub/game/internal/duel"
+	"edufunhub/game/internal/lobby"
 	"edufunhub/game/internal/session"
 	"edufunhub/game/internal/sky"
+	"edufunhub/game/internal/snakes"
+	"edufunhub/game/internal/train"
 )
 
 // Config for the server.
@@ -37,13 +42,22 @@ type connection struct{ cancel context.CancelFunc }
 
 // Server holds sessions keyed by user id so a reconnect resumes progress.
 type Server struct {
-	cfg      Config
-	mu       sync.Mutex
-	sessions map[int64]*session.Session
-	conns    map[int64]*connection
-	skies    map[int64]*sky.Session
-	skyConns map[int64]*connection
-	started  time.Time
+	cfg           Config
+	mu            sync.Mutex
+	sessions      map[int64]*session.Session
+	conns         map[int64]*connection
+	skies         map[int64]*sky.Session
+	skyConns      map[int64]*connection
+	trains        map[int64]*train.Session
+	trainConns    map[int64]*connection
+	duels         *duel.Hub
+	duelSubs      map[int64]*duelSub
+	duelRooms     *lobby.Hub[struct{}, struct{}]
+	snakes        *snakes.Hub
+	snakesSubs    map[int64]*snakesSub
+	crosswords    *crossword.Hub
+	crosswordSubs map[int64]*crosswordSub
+	started       time.Time
 }
 
 // New builds a server.
@@ -60,6 +74,11 @@ func New(cfg Config) *Server {
 	return &Server{
 		cfg: cfg, sessions: map[int64]*session.Session{}, conns: map[int64]*connection{},
 		skies: map[int64]*sky.Session{}, skyConns: map[int64]*connection{},
+		trains: map[int64]*train.Session{}, trainConns: map[int64]*connection{},
+		duels: duel.NewHub(uint64(cfg.Now().UnixNano())), duelSubs: map[int64]*duelSub{},
+		duelRooms: lobby.New[struct{}, struct{}](uint64(cfg.Now().UnixNano())^0xd0e1, lobby.Config{Min: 2, Max: 2}),
+		snakes:    snakes.NewHub(uint64(cfg.Now().UnixNano()) ^ 0x51ed), snakesSubs: map[int64]*snakesSub{},
+		crosswords: crossword.NewHub(uint64(cfg.Now().UnixNano()) ^ 0xc055), crosswordSubs: map[int64]*crosswordSub{},
 		started: cfg.Now(),
 	}
 }
@@ -73,6 +92,10 @@ func (s *Server) Handler() http.Handler {
 	})
 	mux.HandleFunc("GET /ws", s.serveWS)
 	mux.HandleFunc("GET /ws/sky", s.serveSky)
+	mux.HandleFunc("GET /ws/duel", s.serveDuel)
+	mux.HandleFunc("GET /ws/train", s.serveTrain)
+	mux.HandleFunc("GET /ws/snakes", s.serveSnakes)
+	mux.HandleFunc("GET /ws/crossword", s.serveCrossword)
 	mux.HandleFunc("GET /internal/stats", s.serveStats)
 	return mux
 }
@@ -85,6 +108,12 @@ type inbound struct {
 	Mission string  `json:"mission"`
 	Option  int     `json:"option"`
 	Locale  string  `json:"locale"`
+	Pin     string  `json:"pin"`
+	Name    string  `json:"name"`
+	Seat    int     `json:"seat"`
+	Level   int     `json:"level"`
+	Word    int     `json:"word"`
+	Subject string  `json:"subject"`
 }
 
 func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
@@ -168,7 +197,7 @@ func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
 		case "locale":
 			sess.SetLocale(in.Locale)
 		case "mission":
-			if err := sess.StartMission(in.Mission, now); err != nil {
+			if err := sess.StartMission(in.Mission, in.Subject, now); err != nil {
 				send(session.Message{"t": "error", "code": "unknown_mission"})
 				continue
 			}
@@ -247,6 +276,17 @@ func (s *Server) Prune(ttl time.Duration) {
 			delete(s.skies, id)
 		}
 	}
+	for id, sess := range s.trains {
+		if _, online := s.trainConns[id]; !online && sess.LastSeen.Before(cutoff) {
+			delete(s.trains, id)
+		}
+	}
+	s.duels.Prune(s.cfg.Now())
+	s.duelRooms.Prune(s.cfg.Now(), 30*time.Minute, 5*time.Minute, nil)
+	s.snakes.Prune(s.cfg.Now())
+	s.reportSnakes()
+	s.crosswords.Prune(s.cfg.Now())
+	s.reportCrosswords()
 }
 
 // serveSky runs the Sukhoi Sky Quiz referee over WebSocket.
@@ -330,6 +370,7 @@ func (s *Server) serveSky(w http.ResponseWriter, r *http.Request) {
 		now := s.cfg.Now()
 		switch in.T {
 		case "start":
+			sess.SetSubject(in.Subject)
 			send(sess.Start(now))
 		case "touch":
 			reply(sess.Touch(in.Option, now))

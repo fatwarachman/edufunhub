@@ -4,6 +4,8 @@ package questions
 import (
 	"fmt"
 	"math/rand/v2"
+
+	"edufunhub/game/internal/points"
 )
 
 // Text is a bilingual string (Indonesian default, English translation).
@@ -32,7 +34,13 @@ type Question struct {
 	Hint    Text
 	// FromBank is true for curated bank questions (tracked in admin statistics), false for generated math.
 	FromBank bool
+	// Points is what a correct answer earns (admin bonus questions are worth
+	// more; 0 means the standard per-correct value).
+	Points int
 }
+
+// Worth returns the portal points of a correct answer to q.
+func (q Question) Worth() int { return points.Question(q.Points) }
 
 // Band maps a school grade (0 = kindergarten, 1-12) to a band index 0..3.
 func Band(grade int) int {
@@ -169,8 +177,14 @@ type Generator struct {
 	Grade int
 	// Game limits bank questions to those distributed to this game ("" = any).
 	Game string
-	Rand *rand.Rand
-	used map[string]bool
+	// Subject limits questions to one subject; "" (or Mix) mixes every subject.
+	Subject string
+	// Players whose history steers the order: questions they have not seen
+	// (or saw longest ago) come first, so every game starts differently.
+	Players  []int64
+	Rand     *rand.Rand
+	used     map[string]bool
+	fellBack bool
 }
 
 // New returns a generator for a grade with a seeded source.
@@ -183,26 +197,77 @@ func NewFor(game string, grade int, seed uint64) *Generator {
 	return &Generator{Grade: grade, Game: game, Rand: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), used: map[string]bool{}}
 }
 
-// pick draws an unused bank item, or false when none is available.
+// For narrows the generator to a subject and the players at the table.
+func (g *Generator) For(subject string, players ...int64) *Generator {
+	g.Subject = NormSubject(subject)
+	g.Players = players
+	return g
+}
+
+// mathAllowed reports whether generated arithmetic fits the chosen subject.
+func (g *Generator) mathAllowed() bool { return g.Subject == "" || g.Subject == "math" }
+
+// items returns the bank items for this generator's grade, game and subject.
+// A subject without questions for the grade falls back to the mix so a game
+// never stalls; Fallback then reports it to the players.
+func (g *Generator) items(kind string) []Item {
+	all := Current().filter(kind, g.Grade, g.Game)
+	if g.Subject == "" {
+		return all
+	}
+	out := make([]Item, 0, len(all))
+	for _, it := range all {
+		if it.Subject == g.Subject {
+			out = append(out, it)
+		}
+	}
+	if len(out) == 0 && g.Subject != "math" {
+		g.fellBack = true
+		return all
+	}
+	return out
+}
+
+// Fallback reports whether the chosen subject had no questions for this
+// grade and game, so the mix was used instead.
+func (g *Generator) Fallback() bool { return g.fellBack }
+
+// pick draws the bank item the players have least recently seen (unseen
+// first, ties broken randomly), never repeating within one game.
 func (g *Generator) pick(items []Item) (Item, bool) {
-	if len(items) == 0 || g.Rand.IntN(3) == 0 {
+	if len(items) == 0 {
 		return Item{}, false
 	}
-	for tries := 0; tries < 8; tries++ {
-		it := items[g.Rand.IntN(len(items))]
+	// Mixed play with arithmetic keeps some generated math in the rotation.
+	if g.mathAllowed() && g.Rand.IntN(4) == 0 {
+		return Item{}, false
+	}
+	best, bestAge, found := Item{}, int64(0), false
+	for _, i := range g.Rand.Perm(len(items)) {
+		it := items[i]
 		if g.used[it.Key] {
 			continue
 		}
-		g.used[it.Key] = true
-		return it, true
+		age := History.LastSeen(g.Players, it.Key)
+		if !found || age < bestAge {
+			best, bestAge, found = it, age, true
+		}
+		if age == 0 {
+			break
+		}
 	}
-	return Item{}, false
+	if !found {
+		return Item{}, false
+	}
+	g.used[best.Key] = true
+	History.Mark(g.Players, best.Key)
+	return best, true
 }
 
 // Choice returns a multiple choice question: bank question or generated arithmetic.
 func (g *Generator) Choice() Question {
-	if it, ok := g.pick(Current().choices(g.Grade, g.Game)); ok {
-		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true}
+	if it, ok := g.pick(g.items(TypeChoice)); ok {
+		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true, Points: it.Points}
 		g.shuffle(&q)
 		return q
 	}
@@ -235,8 +300,8 @@ func (g *Generator) Choice() Question {
 
 // TrueFalse returns a statement question.
 func (g *Generator) TrueFalse() Question {
-	if it, ok := g.pick(Current().truths(g.Grade, g.Game)); ok {
-		return Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Answer: it.Answer, FromBank: true}
+	if it, ok := g.pick(g.items(TypeTrueFalse)); ok {
+		return Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Answer: it.Answer, FromBank: true, Points: it.Points}
 	}
 	a, b, op, ans := g.arithmetic()
 	shown, truth := ans, 1
@@ -318,4 +383,30 @@ func (g *Generator) shuffle(q *Question) {
 			return
 		}
 	}
+}
+
+// Trim keeps the correct answer and up to n-1 random distractors, shuffled.
+func Trim(q Question, n int, r *rand.Rand) Question {
+	if len(q.Options) <= n {
+		return q
+	}
+	keep := []int{q.Answer}
+	for _, i := range r.Perm(len(q.Options)) {
+		if len(keep) == n {
+			break
+		}
+		if i != q.Answer {
+			keep = append(keep, i)
+		}
+	}
+	r.Shuffle(len(keep), func(a, b int) { keep[a], keep[b] = keep[b], keep[a] })
+	out := q
+	out.Options = make([]Text, 0, n)
+	for idx, i := range keep {
+		out.Options = append(out.Options, q.Options[i])
+		if i == q.Answer {
+			out.Answer = idx
+		}
+	}
+	return out
 }

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"edufunhub/game/internal/auth"
+	"edufunhub/game/internal/points"
 )
 
 var t0 = time.Date(2026, 9, 30, 10, 0, 0, 0, time.UTC)
@@ -66,7 +67,7 @@ func TestPerfectFlightAwardsMaxPoints(t *testing.T) {
 		}
 		res = r
 	}
-	if res == nil || res.Points != Rounds*PointsPerCorrect+PointsFinish+PointsFlawless || res.Correct != Rounds {
+	if res == nil || res.Points != 145 || res.Correct != Rounds {
 		t.Fatalf("unexpected result %+v", res)
 	}
 	phase, _, shields, score, _, _ := s.Snapshot()
@@ -99,7 +100,7 @@ func TestWrongAnswersDrainShieldsAndEndFlight(t *testing.T) {
 	if phase != PhaseDone || shields != 0 || round != Shields {
 		t.Fatalf("phase=%s round=%d shields=%d", phase, round, shields)
 	}
-	if res == nil || res.Points != 0 || res.Wrong != Shields {
+	if res == nil || res.Points != points.Defaults.Participation || res.Wrong != Shields {
 		t.Fatalf("result %+v", res)
 	}
 }
@@ -164,16 +165,16 @@ func TestStalledRoundTimesOut(t *testing.T) {
 
 func TestAwardRules(t *testing.T) {
 	cases := []struct{ correct, rounds, shields, want int }{
-		{10, 10, 5, 140},
-		{7, 10, 2, 90},
-		{3, 6, 0, 30},
-		{0, 5, 0, 0},
+		{10, 10, 5, 145},
+		{7, 10, 2, 95},
+		{3, 6, 0, 35},
+		{0, 5, 0, 5},
 	}
 	for _, c := range cases {
-		if got := Award(c.correct, c.rounds, c.shields); got != c.want {
+		if got := Award(c.correct*10, c.correct, c.rounds, c.shields); got != c.want {
 			t.Fatalf("Award(%d,%d,%d)=%d want %d", c.correct, c.rounds, c.shields, got, c.want)
 		}
-		if Award(c.correct, c.rounds, c.shields) > MaxPoints {
+		if Award(c.correct*10, c.correct, c.rounds, c.shields) > MaxPoints {
 			t.Fatal("award above cap")
 		}
 	}

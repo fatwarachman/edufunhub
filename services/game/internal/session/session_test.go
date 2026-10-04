@@ -125,13 +125,13 @@ func TestAbandonAppliesCooldown(t *testing.T) {
 func TestSwitchMissionResets(t *testing.T) {
 	now := time.Unix(1_800_000_000, 0)
 	s := New(claims(), "id", now)
-	if err := s.StartMission("summit", now); err != nil {
+	if err := s.StartMission("summit", "", now); err != nil {
 		t.Fatal(err)
 	}
 	if s.Welcome()["mission"] != "summit" {
 		t.Fatal("mission not switched")
 	}
-	if err := s.StartMission("nope", now); err == nil {
+	if err := s.StartMission("nope", "", now); err == nil {
 		t.Fatal("unknown mission accepted")
 	}
 }

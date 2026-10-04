@@ -153,3 +153,212 @@ func TestSkyWebSocketRequiresSkyTokenAndPlays(t *testing.T) {
 		t.Fatalf("instant touch must be refused, got %v", msg)
 	}
 }
+
+func TestDuelWebSocketMatchesTwoPlayers(t *testing.T) {
+	srv := New(Config{Secret: secret, AllowedOrigins: []string{"*"}})
+	ts := httptest.NewServer(srv.Handler())
+	defer ts.Close()
+	base := "ws" + strings.TrimPrefix(ts.URL, "http") + "/ws/duel?locale=id&token="
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if _, res, err := websocket.Dial(ctx, base+token(t, time.Now().Add(time.Hour)), nil); err == nil || res.StatusCode != http.StatusUnauthorized {
+		t.Fatal("flag-quest token accepted by duel endpoint")
+	}
+	dial := func(id int64) *websocket.Conn {
+		tok, _ := auth.Sign(auth.Claims{Subject: id, Name: "P" + strconv.FormatInt(id, 10), Grade: 5, Game: "quiz-duel", Expires: time.Now().Add(time.Hour).Unix()}, secret)
+		c, _, err := websocket.Dial(ctx, base+tok, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var msg map[string]any
+		if err := wsjson.Read(ctx, c, &msg); err != nil || msg["t"] != "duel_state" || msg["phase"] != "idle" {
+			t.Fatalf("initial duel state: %v %v", msg, err)
+		}
+		return c
+	}
+	a, b := dial(21), dial(22)
+	defer a.Close(websocket.StatusNormalClosure, "")
+	defer b.Close(websocket.StatusNormalClosure, "")
+
+	var msg map[string]any
+	_ = wsjson.Write(ctx, a, map[string]any{"t": "queue"})
+	if _ = wsjson.Read(ctx, a, &msg); msg["phase"] != "queue" {
+		t.Fatalf("a should wait: %v", msg)
+	}
+	_ = wsjson.Write(ctx, b, map[string]any{"t": "queue"})
+	for _, c := range []*websocket.Conn{a, b} {
+		if _ = wsjson.Read(ctx, c, &msg); msg["phase"] != "countdown" {
+			t.Fatalf("both should enter countdown: %v", msg)
+		}
+	}
+	if op := msg["opponent"].(map[string]any); op["name"] != "P21" || op["bot"] != false {
+		t.Fatalf("b's opponent should be P21: %v", op)
+	}
+}
+
+func TestTrainWebSocketRequiresTrainTokenAndStarts(t *testing.T) {
+	ts := httptest.NewServer(New(Config{Secret: secret, AllowedOrigins: []string{"*"}}).Handler())
+	defer ts.Close()
+	base := "ws" + strings.TrimPrefix(ts.URL, "http") + "/ws/train?locale=id&token="
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if _, res, err := websocket.Dial(ctx, base+token(t, time.Now().Add(time.Hour)), nil); err == nil || res.StatusCode != http.StatusUnauthorized {
+		t.Fatal("flag-quest token accepted by train endpoint")
+	}
+	tok, _ := auth.Sign(auth.Claims{Subject: 31, Name: "Rani", Grade: 0, Game: "knowledge-train", Expires: time.Now().Add(time.Hour).Unix()}, secret)
+	conn, _, err := websocket.Dial(ctx, base+tok, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close(websocket.StatusNormalClosure, "")
+	var msg map[string]any
+	if err := wsjson.Read(ctx, conn, &msg); err != nil || msg["t"] != "train_state" || msg["phase"] != "ready" {
+		t.Fatalf("initial train state: %v %v", msg, err)
+	}
+	_ = wsjson.Write(ctx, conn, map[string]any{"t": "start"})
+	_ = wsjson.Read(ctx, conn, &msg)
+	q, ok := msg["question"].(map[string]any)
+	if !ok || len(q["options"].([]any)) != 3 || q["approach_ms"].(float64) != 11000 {
+		t.Fatalf("start: %v", msg)
+	}
+	_ = wsjson.Write(ctx, conn, map[string]any{"t": "pass", "option": 0})
+	_ = wsjson.Read(ctx, conn, &msg)
+	if msg["code"] != "too_early" {
+		t.Fatalf("instant pass must be refused, got %v", msg)
+	}
+}
+
+func TestSnakesWebSocketSharesRoomByPin(t *testing.T) {
+	ts := httptest.NewServer(New(Config{Secret: secret, AllowedOrigins: []string{"*"}}).Handler())
+	defer ts.Close()
+	base := "ws" + strings.TrimPrefix(ts.URL, "http") + "/ws/snakes?locale=id&token="
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if _, res, err := websocket.Dial(ctx, base+token(t, time.Now().Add(time.Hour)), nil); err == nil || res.StatusCode != http.StatusUnauthorized {
+		t.Fatal("flag-quest token accepted by snakes endpoint")
+	}
+	dial := func(id int64) *websocket.Conn {
+		tok, _ := auth.Sign(auth.Claims{Subject: id, Name: "P" + strconv.FormatInt(id, 10), Grade: 4, Game: "snakes-and-ladders", Expires: time.Now().Add(time.Hour).Unix()}, secret)
+		c, _, err := websocket.Dial(ctx, base+tok, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var msg map[string]any
+		if err := wsjson.Read(ctx, c, &msg); err != nil || msg["t"] != "snakes_state" || msg["phase"] != "none" {
+			t.Fatalf("initial snakes state: %v %v", msg, err)
+		}
+		return c
+	}
+	a, b := dial(41), dial(42)
+	defer a.Close(websocket.StatusNormalClosure, "")
+	defer b.Close(websocket.StatusNormalClosure, "")
+
+	var msg map[string]any
+	_ = wsjson.Write(ctx, a, map[string]any{"t": "create"})
+	if _ = wsjson.Read(ctx, a, &msg); msg["phase"] != "lobby" {
+		t.Fatalf("create: %v", msg)
+	}
+	pin := msg["pin"].(string)
+	_ = wsjson.Write(ctx, b, map[string]any{"t": "join", "pin": "999999x"})
+	if _ = wsjson.Read(ctx, b, &msg); msg["code"] != "room_not_found" {
+		t.Fatalf("bad pin: %v", msg)
+	}
+	_ = wsjson.Write(ctx, b, map[string]any{"t": "join", "pin": pin})
+	for _, c := range []*websocket.Conn{a, b} {
+		if _ = wsjson.Read(ctx, c, &msg); len(msg["players"].([]any)) != 2 {
+			t.Fatalf("both should see two players: %v", msg)
+		}
+	}
+	_ = wsjson.Write(ctx, a, map[string]any{"t": "start"})
+	for _, c := range []*websocket.Conn{a, b} {
+		if _ = wsjson.Read(ctx, c, &msg); msg["phase"] != "playing" || msg["step"] != "roll" {
+			t.Fatalf("start: %v", msg)
+		}
+	}
+	_ = wsjson.Write(ctx, b, map[string]any{"t": "roll"})
+	if _ = wsjson.Read(ctx, b, &msg); msg["code"] != "not_your_turn" {
+		t.Fatalf("guest roll: %v", msg)
+	}
+}
+
+func TestDuelInviteRoomStartsPrivateMatch(t *testing.T) {
+	ts := httptest.NewServer(New(Config{Secret: secret, AllowedOrigins: []string{"*"}}).Handler())
+	defer ts.Close()
+	base := "ws" + strings.TrimPrefix(ts.URL, "http") + "/ws/duel?locale=id&token="
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	dial := func(id int64, grade int) *websocket.Conn {
+		tok, _ := auth.Sign(auth.Claims{Subject: id, Name: "P" + strconv.FormatInt(id, 10), Grade: grade, Game: "quiz-duel", Expires: time.Now().Add(time.Hour).Unix()}, secret)
+		c, _, err := websocket.Dial(ctx, base+tok, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var msg map[string]any
+		_ = wsjson.Read(ctx, c, &msg)
+		return c
+	}
+	a, b := dial(51, 2), dial(52, 9)
+	defer a.Close(websocket.StatusNormalClosure, "")
+	defer b.Close(websocket.StatusNormalClosure, "")
+
+	var msg map[string]any
+	_ = wsjson.Write(ctx, a, map[string]any{"t": "create"})
+	_ = wsjson.Read(ctx, a, &msg)
+	room, ok := msg["room"].(map[string]any)
+	if !ok || room["phase"] != "lobby" || room["max_players"].(float64) != 2 {
+		t.Fatalf("create: %v", msg)
+	}
+	_ = wsjson.Write(ctx, a, map[string]any{"t": "start"})
+	if msg = nil; wsjson.Read(ctx, a, &msg) != nil || msg["code"] != "not_enough_players" {
+		t.Fatalf("start alone: %v", msg)
+	}
+	_ = wsjson.Write(ctx, b, map[string]any{"t": "join", "pin": room["pin"]})
+	for _, c := range []*websocket.Conn{a, b} {
+		if msg = nil; wsjson.Read(ctx, c, &msg) != nil || len(msg["room"].(map[string]any)["players"].([]any)) != 2 {
+			t.Fatalf("both in room: %v", msg)
+		}
+	}
+	_ = wsjson.Write(ctx, a, map[string]any{"t": "start"})
+	for _, c := range []*websocket.Conn{a, b} {
+		if msg = nil; wsjson.Read(ctx, c, &msg) != nil || msg["phase"] != "countdown" || msg["room"] != nil {
+			t.Fatalf("private match must start for both across grade bands: %v", msg)
+		}
+	}
+	if op := msg["opponent"].(map[string]any); op["name"] != "P51" || op["bot"] != false {
+		t.Fatalf("opponent: %v", op)
+	}
+}
+
+func TestCrosswordWebSocketRequiresTokenAndHidesAnswers(t *testing.T) {
+	ts := httptest.NewServer(New(Config{Secret: secret, AllowedOrigins: []string{"*"}}).Handler())
+	defer ts.Close()
+	base := "ws" + strings.TrimPrefix(ts.URL, "http") + "/ws/crossword?locale=id&token="
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if _, res, err := websocket.Dial(ctx, base+token(t, time.Now().Add(time.Hour)), nil); err == nil || res.StatusCode != http.StatusUnauthorized {
+		t.Fatal("flag-quest token accepted by crossword endpoint")
+	}
+	tok, _ := auth.Sign(auth.Claims{Subject: 61, Name: "Sari", Grade: 0, Game: "crossword", Expires: time.Now().Add(time.Hour).Unix()}, secret)
+	c, _, err := websocket.Dial(ctx, base+tok, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close(websocket.StatusNormalClosure, "")
+	var msg map[string]any
+	if _ = wsjson.Read(ctx, c, &msg); msg["t"] != "crossword_state" || len(msg["levels"].([]any)) != 4 {
+		t.Fatalf("initial: %v", msg)
+	}
+	_ = wsjson.Write(ctx, c, map[string]any{"t": "create", "level": 2})
+	_ = wsjson.Read(ctx, c, &msg)
+	_ = wsjson.Write(ctx, c, map[string]any{"t": "start"})
+	if msg = nil; wsjson.Read(ctx, c, &msg) != nil || msg["phase"] != "playing" || msg["answers"] != nil || len(msg["words"].([]any)) < 6 {
+		t.Fatalf("solo start: %v", msg)
+	}
+	_ = wsjson.Write(ctx, c, map[string]any{"t": "guess", "word": 0, "value": "zz"})
+	if msg = nil; wsjson.Read(ctx, c, &msg) != nil || msg["code"] != "wrong_length" {
+		t.Fatalf("guess: %v", msg)
+	}
+}

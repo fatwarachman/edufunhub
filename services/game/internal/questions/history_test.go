@@ -1,0 +1,102 @@
+package questions
+
+import (
+	"fmt"
+	"strings"
+	"testing"
+
+	"edufunhub/game/internal/points"
+)
+
+func testBank(t *testing.T, n int) {
+	t.Helper()
+	var items []string
+	for i := 0; i < n; i++ {
+		subject := []string{"science", "social"}[i%2]
+		pts := 0
+		if i == 0 {
+			pts = 25
+		}
+		items = append(items, fmt.Sprintf(`{"key":"q%d","type":"choice","band":1,"subject":%q,"prompt":{"id":"Soal %d"},"options":[{"id":"A"},{"id":"B"},{"id":"C"}],"answer":0,"games":["sky-quiz"],"points":%d}`, i, subject, i, pts))
+	}
+	bank, err := Parse([]byte(`{"version":"t","points":{"per_correct":12,"win":30,"draw":0,"participation":5},"questions":[` + strings.Join(items, ",") + `]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	Use(bank)
+	History.Reset()
+	t.Cleanup(func() { Use(nil); points.Use(nil); History.Reset() })
+}
+
+func TestSubjectFilterAndMix(t *testing.T) {
+	testBank(t, 10)
+	g := NewFor("sky-quiz", 5, 7).For("social", 1)
+	for i := 0; i < 5; i++ {
+		if q := g.Choice(); q.Subject != "social" || !q.FromBank {
+			t.Fatalf("social game drew %q (bank %v)", q.Subject, q.FromBank)
+		}
+	}
+	// A subject without questions for the grade falls back to the mix.
+	g = NewFor("sky-quiz", 5, 7).For("civics", 1)
+	if q := g.Choice(); !q.FromBank || !g.Fallback() {
+		t.Fatal("empty subject must fall back to the bank mix and say so")
+	}
+	if g := NewFor("sky-quiz", 5, 7).For("social", 1); g.Choice().Subject != "social" || g.Fallback() {
+		t.Fatal("a subject with questions is not a fallback")
+	}
+	if NormSubject(Mix) != "" || NormSubject("hack") != "" || NormSubject("english") != "english" {
+		t.Fatal("subject normalisation")
+	}
+}
+
+func TestNextGameStartsWithUnseenQuestions(t *testing.T) {
+	testBank(t, 10)
+	first := map[string]bool{}
+	g := NewFor("sky-quiz", 5, 1).For("science", 42)
+	for i := 0; i < 3; i++ {
+		first[g.Choice().Key] = true
+	}
+	g = NewFor("sky-quiz", 5, 1).For("science", 42) // same seed on purpose
+	for i := 0; i < 2; i++ {
+		if k := g.Choice().Key; first[k] {
+			t.Fatalf("question %s repeated although unseen ones remain", k)
+		}
+	}
+	// Another player has no history and may see anything.
+	if NewFor("sky-quiz", 5, 1).For("science", 7).Choice().Key == "" {
+		t.Fatal("expected a question")
+	}
+}
+
+func TestOrderDiffersBetweenGames(t *testing.T) {
+	testBank(t, 12)
+	order := func() string {
+		g := NewFor("sky-quiz", 5, 99).For("social", 5)
+		var keys []string
+		for i := 0; i < 3; i++ {
+			keys = append(keys, g.Choice().Key)
+		}
+		return strings.Join(keys, ",")
+	}
+	if a, b := order(), order(); a == b {
+		t.Fatalf("two games in a row got the same order %s", a)
+	}
+}
+
+func TestBankPointsAndRules(t *testing.T) {
+	testBank(t, 2)
+	if r := points.Current(); r.PerCorrect != 12 || r.Win != 30 {
+		t.Fatalf("rules not applied: %+v", r)
+	}
+	g := NewFor("sky-quiz", 5, 3).For("science", 9)
+	q := g.Choice()
+	if q.Key != "q0" || q.Worth() != 25 {
+		t.Fatalf("bonus question worth %d", q.Worth())
+	}
+	if (Question{Points: 0}).Worth() != 12 {
+		t.Fatal("normal question uses per_correct")
+	}
+	if _, err := Parse([]byte(`{"questions":[{"key":"x","type":"choice","band":0,"prompt":{"id":"x"},"options":[{"id":"1"},{"id":"2"},{"id":"3"}],"answer":0,"points":500}]}`)); err == nil {
+		t.Fatal("points above the cap must be rejected")
+	}
+}
