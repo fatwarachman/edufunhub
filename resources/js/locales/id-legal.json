@@ -1,0 +1,173 @@
+{
+    "legal": {
+        "updatedLabel": "Terakhir diperbarui",
+        "updatedDate": "4 Oktober 2026",
+        "contactEmail": "ate.rachman@gmail.com",
+        "seeAlso": "Lihat juga",
+        "backHome": "Kembali ke beranda",
+        "privacy": {
+            "title": "Kebijakan Privasi",
+            "metaDescription": "Kebijakan Privasi EduFunHub: data apa yang kami kumpulkan, bagaimana digunakan, dan hak Anda atas data tersebut.",
+            "intro": "Kebijakan ini menjelaskan bagaimana EduFunHub (\"kami\") mengumpulkan, menggunakan, menyimpan, dan melindungi data pribadi Anda saat menggunakan situs dan permainan edukasi EduFunHub.",
+            "sections": [
+                {
+                    "heading": "1. Data yang kami kumpulkan",
+                    "paragraphs": [
+                        "Kami hanya mengumpulkan data yang diperlukan untuk menjalankan layanan:"
+                    ],
+                    "items": [
+                        "Data akun: nama, alamat email, dan kata sandi (disimpan dalam bentuk hash, tidak dapat dibaca).",
+                        "Data dari Google: jika Anda masuk dengan Google, kami menerima nama, alamat email, status verifikasi email, dan ID akun Google Anda. Kami tidak menerima kata sandi Google Anda.",
+                        "Profil pemain: nama panggilan, kelas/jenjang, dan pilihan tampilan karakter.",
+                        "Aktivitas bermain: riwayat permainan, skor, dan poin yang Anda kumpulkan.",
+                        "Data keamanan: alamat IP, jenis peramban, dan waktu masuk untuk melindungi akun dari penyalahgunaan.",
+                        "Cookie esensial: cookie sesi dan keamanan (CSRF) yang dibutuhkan agar Anda tetap masuk. Kami tidak menggunakan cookie iklan."
+                    ]
+                },
+                {
+                    "heading": "2. Cara kami menggunakan data",
+                    "items": [
+                        "Membuat dan mengelola akun Anda, termasuk masuk dengan Google.",
+                        "Menjalankan permainan, menyimpan kemajuan, skor, poin, dan papan peringkat.",
+                        "Menyesuaikan soal dengan kelas atau jenjang Anda.",
+                        "Menjaga keamanan layanan dan mencegah penipuan atau penyalahgunaan.",
+                        "Mengirim email penting terkait akun, seperti verifikasi email dan reset kata sandi."
+                    ]
+                },
+                {
+                    "heading": "3. Data pengguna Google",
+                    "paragraphs": [
+                        "Penggunaan dan pengiriman informasi yang diterima dari Google API oleh EduFunHub mematuhi Kebijakan Data Pengguna Layanan Google API (Google API Services User Data Policy), termasuk persyaratan Penggunaan Terbatas (Limited Use).",
+                        "Kami hanya meminta akses ke profil dasar dan alamat email (scope openid, email, profile). Data ini digunakan semata-mata untuk membuat akun dan memasukkan Anda ke EduFunHub. Kami tidak menjual data Google Anda, tidak menggunakannya untuk iklan, dan tidak membagikannya kepada pihak ketiga."
+                    ]
+                },
+                {
+                    "heading": "4. Berbagi data",
+                    "paragraphs": [
+                        "Kami tidak menjual data pribadi Anda. Data hanya dibagikan kepada penyedia infrastruktur yang membantu menjalankan layanan (misalnya hosting server dan pengiriman email) dengan kewajiban menjaga kerahasiaan, atau jika diwajibkan oleh hukum yang berlaku."
+                    ]
+                },
+                {
+                    "heading": "5. Penyimpanan dan keamanan",
+                    "paragraphs": [
+                        "Data disimpan di server yang kami kelola dengan koneksi terenkripsi (HTTPS), kata sandi yang di-hash, dan pembatasan akses. Kami menyimpan data selama akun Anda aktif. Setelah akun dihapus, data pribadi dihapus atau dianonimkan dalam waktu wajar, kecuali yang wajib disimpan menurut hukum."
+                    ]
+                },
+                {
+                    "heading": "6. Privasi anak",
+                    "paragraphs": [
+                        "EduFunHub ditujukan untuk pelajar, termasuk anak-anak. Pengguna di bawah 13 tahun sebaiknya mendaftar dan bermain dengan izin serta pendampingan orang tua, wali, atau guru. Kami tidak menampilkan iklan bertarget kepada anak-anak. Jika Anda orang tua dan yakin anak Anda memberikan data tanpa izin, hubungi kami agar data tersebut dapat dihapus."
+                    ]
+                },
+                {
+                    "heading": "7. Hak Anda",
+                    "paragraphs": [
+                        "Sesuai Undang-Undang Pelindungan Data Pribadi (UU No. 27 Tahun 2022), Anda berhak untuk:"
+                    ],
+                    "items": [
+                        "Mengakses dan meminta salinan data pribadi Anda.",
+                        "Memperbaiki data yang tidak akurat.",
+                        "Meminta penghapusan akun dan data pribadi Anda.",
+                        "Mencabut akses masuk dengan Google kapan saja melalui https://myaccount.google.com/permissions."
+                    ]
+                },
+                {
+                    "heading": "8. Perubahan kebijakan",
+                    "paragraphs": [
+                        "Kami dapat memperbarui kebijakan ini sewaktu-waktu. Perubahan penting akan diumumkan di situs, dan tanggal \"Terakhir diperbarui\" di atas akan disesuaikan."
+                    ]
+                },
+                {
+                    "heading": "9. Hubungi kami",
+                    "paragraphs": [
+                        "Pertanyaan atau permintaan terkait privasi dapat dikirim ke email berikut:"
+                    ],
+                    "contact": true
+                }
+            ]
+        },
+        "terms": {
+            "title": "Ketentuan Layanan",
+            "metaDescription": "Ketentuan Layanan EduFunHub: aturan penggunaan akun, permainan, dan poin.",
+            "intro": "Dengan membuat akun atau menggunakan EduFunHub, Anda menyetujui Ketentuan Layanan ini. Jika tidak setuju, mohon untuk tidak menggunakan layanan.",
+            "sections": [
+                {
+                    "heading": "1. Tentang layanan",
+                    "paragraphs": [
+                        "EduFunHub adalah platform permainan edukasi interaktif yang membantu pelajar belajar sambil bermain melalui kuis, permainan papan, dan petualangan bertema pelajaran."
+                    ]
+                },
+                {
+                    "heading": "2. Akun",
+                    "items": [
+                        "Anda wajib memberikan informasi yang benar saat mendaftar, baik dengan email maupun dengan akun Google.",
+                        "Anda bertanggung jawab menjaga kerahasiaan kata sandi dan semua aktivitas di akun Anda.",
+                        "Pengguna di bawah 13 tahun harus menggunakan layanan dengan izin dan pendampingan orang tua, wali, atau guru.",
+                        "Satu akun untuk satu orang. Akun tidak boleh dipindahtangankan atau diperjualbelikan."
+                    ]
+                },
+                {
+                    "heading": "3. Aturan penggunaan",
+                    "paragraphs": [
+                        "Saat menggunakan EduFunHub, Anda tidak boleh:"
+                    ],
+                    "items": [
+                        "Berbuat curang, memakai bot, skrip, atau celah sistem untuk memanipulasi skor dan poin.",
+                        "Mengganggu, merundung, atau menyinggung pemain lain, termasuk lewat nama panggilan.",
+                        "Mencoba mengakses akun orang lain atau bagian sistem yang tidak diizinkan.",
+                        "Mengganggu, membebani, atau merusak server dan layanan EduFunHub."
+                    ]
+                },
+                {
+                    "heading": "4. Poin dan hadiah virtual",
+                    "paragraphs": [
+                        "Poin, level, dan item di EduFunHub adalah hadiah virtual untuk motivasi belajar. Poin tidak memiliki nilai uang, tidak dapat ditukar dengan uang, dan dapat disesuaikan atau dibatalkan jika diperoleh dengan cara curang atau akibat kesalahan sistem."
+                    ]
+                },
+                {
+                    "heading": "5. Konten dan hak kekayaan intelektual",
+                    "paragraphs": [
+                        "Seluruh permainan, soal, desain, logo, dan kode EduFunHub adalah milik pengelola EduFunHub atau pemberi lisensinya. Anda boleh menggunakannya untuk keperluan belajar pribadi, tetapi tidak boleh menyalin, menjual, atau mendistribusikannya tanpa izin tertulis."
+                    ]
+                },
+                {
+                    "heading": "6. Penangguhan dan penghapusan akun",
+                    "paragraphs": [
+                        "Kami dapat menangguhkan atau menonaktifkan akun yang melanggar ketentuan ini. Anda dapat berhenti menggunakan layanan kapan saja dan meminta penghapusan akun dengan menghubungi kami."
+                    ]
+                },
+                {
+                    "heading": "7. Batasan tanggung jawab",
+                    "paragraphs": [
+                        "Layanan disediakan \"sebagaimana adanya\". Kami berupaya menjaga layanan tetap tersedia dan akurat, tetapi tidak menjamin layanan bebas gangguan atau bebas kesalahan. Sejauh diizinkan hukum, kami tidak bertanggung jawab atas kerugian tidak langsung akibat penggunaan layanan."
+                    ]
+                },
+                {
+                    "heading": "8. Privasi",
+                    "paragraphs": [
+                        "Penggunaan data pribadi Anda diatur dalam Kebijakan Privasi kami, yang merupakan bagian dari Ketentuan Layanan ini."
+                    ]
+                },
+                {
+                    "heading": "9. Perubahan ketentuan",
+                    "paragraphs": [
+                        "Kami dapat mengubah ketentuan ini sewaktu-waktu. Dengan tetap menggunakan layanan setelah perubahan diumumkan, Anda dianggap menyetujui ketentuan yang baru."
+                    ]
+                },
+                {
+                    "heading": "10. Hukum yang berlaku",
+                    "paragraphs": [
+                        "Ketentuan ini diatur oleh hukum Republik Indonesia."
+                    ]
+                },
+                {
+                    "heading": "11. Hubungi kami",
+                    "paragraphs": [
+                        "Pertanyaan tentang ketentuan ini dapat dikirim ke:"
+                    ],
+                    "contact": true
+                }
+            ]
+        }
+    }
+}

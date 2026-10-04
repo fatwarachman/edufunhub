@@ -28,6 +28,10 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::post('/games/flag-quest/token', [FlagQuestController::class, 'token'])->middleware('throttle:30,1')->name('games.flag-quest.token');
 });
 
+// 2. Legal Pages
+Route::inertia('/privacy', 'legal/privacy')->name('legal.privacy');
+Route::inertia('/terms', 'legal/terms')->name('legal.terms');
+
 // 3. Games Arena & EduFun Games
 Route::get('/gamelist', function () {
     return Inertia::render('games/index');
