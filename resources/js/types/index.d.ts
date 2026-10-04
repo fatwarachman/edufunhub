@@ -102,6 +102,7 @@ export interface Invoice {
 export interface Flash {
     success?: string;
     error?: string;
+    importErrors?: { row: number; messages: string[] }[] | null;
 }
 
 export interface SharedData {
@@ -131,6 +132,7 @@ export interface User {
     current_workspace_id?: number;
     locale?: string;
     is_superadmin?: boolean;
+    is_teacher?: boolean;
     bio?: string | null;
     timezone?: string;
     date_format?: string;

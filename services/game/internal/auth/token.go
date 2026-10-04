@@ -74,7 +74,7 @@ func Verify(token string, secret []byte, game string, now time.Time) (Claims, er
 		return claims, ErrExpired
 	}
 	name := strings.TrimSpace(claims.Name)
-	if claims.Subject <= 0 || claims.Game != game || claims.Grade < 1 || claims.Grade > 12 || name == "" || len([]rune(name)) > 60 {
+	if claims.Subject <= 0 || claims.Game != game || claims.Grade < 0 || claims.Grade > 12 || name == "" || len([]rune(name)) > 60 {
 		return claims, ErrClaims
 	}
 	claims.Name = name

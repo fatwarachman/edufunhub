@@ -5,6 +5,7 @@ import PlayerCharacter, {
 import { NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
+import { GRADE_LEVELS, gradeLabel, hasGrade } from '@/lib/grade';
 import { type SharedData } from '@/types';
 import { useForm, usePage } from '@inertiajs/react';
 import {
@@ -301,16 +302,10 @@ function PlayerDetailsCard({ details }: { details: PlayerDetails }) {
     );
 }
 
-const GRADE_BANDS: { key: string; grades: number[] }[] = [
-    { key: 'sd', grades: [1, 2, 3, 4, 5, 6] },
-    { key: 'smp', grades: [7, 8, 9] },
-    { key: 'sma', grades: [10, 11, 12] },
-];
-
 function GradeCard({ grade }: { grade: number | null }) {
     const { t } = useTranslations();
     const form = useForm<{ grade: string }>({
-        grade: grade ? String(grade) : '',
+        grade: hasGrade(grade) ? String(grade) : '',
     });
     return (
         <section
@@ -346,14 +341,14 @@ function GradeCard({ grade }: { grade: number | null }) {
                     <option value="" disabled>
                         {t('player.gradePlaceholder')}
                     </option>
-                    {GRADE_BANDS.map((band) => (
+                    {GRADE_LEVELS.map((band) => (
                         <optgroup
                             key={band.key}
                             label={t(`player.gradeBands.${band.key}`)}
                         >
                             {band.grades.map((value) => (
                                 <option key={value} value={value}>
-                                    {t('player.gradeOption', { grade: value })}
+                                    {gradeLabel(t, value)}
                                 </option>
                             ))}
                         </optgroup>

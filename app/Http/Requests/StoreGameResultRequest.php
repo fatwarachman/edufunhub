@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\PlayerProfile;
 use App\Services\GameServiceSigner;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,7 +27,7 @@ class StoreGameResultRequest extends FormRequest
             'user_id' => ['required', 'integer', 'exists:users,id'],
             'game_key' => ['required', 'string', 'in:flag-quest,sky-quiz'],
             'mission' => ['required', 'string', $isSky ? 'in:sky' : 'in:lakeside,forest,summit'],
-            'grade' => ['required', 'integer', 'between:1,12'],
+            'grade' => ['required', 'integer', 'between:'.PlayerProfile::MIN_GRADE.','.PlayerProfile::MAX_GRADE],
             'points' => ['required', 'integer', 'between:0,'.($isSky ? 150 : 250)],
             'correct' => ['required', 'integer', 'min:0', 'max:500'],
             'wrong' => ['required', 'integer', 'min:0', 'max:500'],

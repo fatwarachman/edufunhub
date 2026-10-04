@@ -17,10 +17,10 @@ func TestBuiltinBankMatchesLegacyKeys(t *testing.T) {
 	if err := Validate(b.items); err != nil {
 		t.Fatal(err)
 	}
-	if got := b.choices(0, "sky-quiz"); len(got) != 10 || got[0].Key != "mc-0-0" {
+	if got := b.choices(2, "sky-quiz"); len(got) != 10 || got[0].Key != "mc-0-0" {
 		t.Fatalf("unexpected band 0 sky choices: %d", len(got))
 	}
-	if got := b.truths(0, "sky-quiz"); len(got) != 0 {
+	if got := b.truths(2, "sky-quiz"); len(got) != 0 {
 		t.Fatal("true/false items are not distributed to sky quiz")
 	}
 }
@@ -100,5 +100,34 @@ func TestSyncerSignsRequestAndKeepsBankOnFailure(t *testing.T) {
 	}
 	if Current().Version != "v9" {
 		t.Fatal("failed sync must keep the last good bank")
+	}
+}
+
+func TestExplicitGradesOverrideBand(t *testing.T) {
+	bank, err := Parse([]byte(`{"version":"v2","questions":[
+		{"key":"q-tk","type":"choice","band":0,"grades":[0,2],"subject":"math","prompt":{"id":"Satu tambah satu?"},"options":[{"id":"2"},{"id":"3"},{"id":"4"}],"answer":0,"games":["sky-quiz"]},
+		{"key":"q-band","type":"choice","band":0,"subject":"math","prompt":{"id":"Dua tambah dua?"},"options":[{"id":"4"},{"id":"5"},{"id":"6"}],"answer":0,"games":["sky-quiz"]}
+	]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	keys := func(grade int) string {
+		var out []string
+		for _, it := range bank.choices(grade, "sky-quiz") {
+			out = append(out, it.Key)
+		}
+		return strings.Join(out, ",")
+	}
+	if got := keys(0); got != "q-tk,q-band" {
+		t.Fatalf("kindergarten: %q", got)
+	}
+	if got := keys(1); got != "q-band" {
+		t.Fatalf("grade 1 must skip a question targeted at TK and grade 2: %q", got)
+	}
+	if got := keys(2); got != "q-tk,q-band" {
+		t.Fatalf("grade 2: %q", got)
+	}
+	if _, err := Parse([]byte(`{"version":"v3","questions":[{"key":"q-bad","type":"choice","band":0,"grades":[13],"subject":"math","prompt":{"id":"x"},"options":[{"id":"a"},{"id":"b"},{"id":"c"}],"answer":0,"games":["sky-quiz"]}]}`)); err == nil {
+		t.Fatal("grade 13 must be rejected")
 	}
 }

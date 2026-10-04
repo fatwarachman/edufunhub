@@ -13,6 +13,9 @@ class Role extends Model
     /** Default role for self-registered users who play educational games. */
     public const PARTICIPANT = 'peserta';
 
+    /** Teachers author questions and earn compensation for correct answers. */
+    public const TEACHER = 'guru';
+
     /**
      * The attributes that are mass assignable.
      *

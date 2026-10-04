@@ -49,11 +49,11 @@ func TestVerifyRejectsTamperingExpiryAndBadClaims(t *testing.T) {
 	}
 
 	for name, mutate := range map[string]func(*Claims){
-		"grade zero": func(c *Claims) { c.Grade = 0 },
-		"grade 13":   func(c *Claims) { c.Grade = 13 },
-		"other game": func(c *Claims) { c.Game = "sky-quiz" },
-		"no subject": func(c *Claims) { c.Subject = 0 },
-		"blank name": func(c *Claims) { c.Name = "   " },
+		"grade below kindergarten": func(c *Claims) { c.Grade = -1 },
+		"grade 13":                 func(c *Claims) { c.Grade = 13 },
+		"other game":               func(c *Claims) { c.Game = "sky-quiz" },
+		"no subject":               func(c *Claims) { c.Subject = 0 },
+		"blank name":               func(c *Claims) { c.Name = "   " },
 	} {
 		c := validClaims(now)
 		mutate(&c)

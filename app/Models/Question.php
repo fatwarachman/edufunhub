@@ -29,15 +29,23 @@ class Question extends Model
     /** Games whose Go runtime draws from the bank. */
     public const GAMES = ['flag-quest', 'sky-quiz'];
 
-    /** Where a question came from: built-in bank, admin panel, or (future) teacher upload. */
+    /** Where a question came from: built-in bank, admin panel, teacher portal or teacher import. */
     public const SOURCES = ['system', 'admin', 'teacher', 'import'];
 
     /** Grade band labels (band index => grade range). */
     public const BANDS = [0 => [1, 3], 1 => [4, 6], 2 => [7, 9], 3 => [10, 12]];
 
+    /** Grade 0 is kindergarten (TK); 1-12 are school grades. */
+    public const KINDERGARTEN = 0;
+
+    public const GRADES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+    /** Sources that belong to a teacher and earn compensation. */
+    public const TEACHER_SOURCES = ['teacher', 'import'];
+
     /** @var list<string> */
     protected $fillable = [
-        'key', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer',
+        'key', 'type', 'band', 'grades', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer',
         'hint_id', 'hint_en', 'games', 'is_active', 'source', 'created_by', 'updated_by',
     ];
 
@@ -49,6 +57,7 @@ class Question extends Model
             'answer' => 'integer',
             'options' => 'array',
             'games' => 'array',
+            'grades' => 'array',
             'is_active' => 'boolean',
             'times_answered' => 'integer',
             'times_correct' => 'integer',
@@ -79,6 +88,31 @@ class Question extends Model
         $query->where('is_active', true);
     }
 
+    /**
+     * Questions a teacher authored through the teacher portal or an import.
+     *
+     * @param  Builder<Question>  $query
+     */
+    public function scopeAuthoredByTeacher(Builder $query, User $teacher): void
+    {
+        $query->where('created_by', $teacher->id)->whereIn('source', self::TEACHER_SOURCES);
+    }
+
+    public function isTeacherAuthored(): bool
+    {
+        return $this->created_by !== null && in_array($this->source, self::TEACHER_SOURCES, true);
+    }
+
+    /**
+     * Band used for grouping when a question targets explicit grades.
+     *
+     * @param  list<int>  $grades
+     */
+    public static function bandForGrades(array $grades): int
+    {
+        return self::bandForGrade(max(1, min($grades)));
+    }
+
     /** Percentage of correct answers, or null when never answered. */
     public function successRate(): ?float
     {
@@ -106,6 +140,7 @@ class Question extends Model
             'key' => $this->key,
             'type' => $this->type,
             'band' => $this->band,
+            'grades' => array_values(array_map('intval', $this->grades ?? [])),
             'subject' => $this->subject,
             'prompt' => ['id' => $this->prompt_id, 'en' => $this->prompt_en ?? ''],
             'options' => $this->type === self::TYPE_CHOICE

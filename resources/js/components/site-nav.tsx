@@ -3,6 +3,7 @@ import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
+    BookOpenCheck,
     Gamepad2,
     Home,
     LayoutDashboard,
@@ -130,6 +131,12 @@ const PLAYER_ITEMS: NavItem[] = [
     { href: '/character', labelKey: 'nav.character', icon: UserRound },
 ];
 
+const TEACHER_ITEM: NavItem = {
+    href: '/teacher/questions',
+    labelKey: 'nav.teacher',
+    icon: BookOpenCheck,
+};
+
 const GUEST_ITEMS: NavItem[] = [
     { href: '/', labelKey: 'nav.home', icon: Home, external: true },
     { href: '/gamelist', labelKey: 'nav.games', icon: Gamepad2 },
@@ -156,7 +163,12 @@ export function SiteNav({
     const { t } = useTranslations();
     const { props, url } = usePage<SharedData>();
     const signedIn = Boolean(props.auth?.user);
-    const items = signedIn ? PLAYER_ITEMS : GUEST_ITEMS;
+    const isTeacher = Boolean(props.auth?.user?.is_teacher);
+    const items = signedIn
+        ? isTeacher
+            ? [...PLAYER_ITEMS, TEACHER_ITEM]
+            : PLAYER_ITEMS
+        : GUEST_ITEMS;
 
     return (
         <nav

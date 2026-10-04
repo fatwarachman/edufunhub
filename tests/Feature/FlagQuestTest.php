@@ -111,7 +111,7 @@ test('grade validation rejects invalid values', function (mixed $grade): void {
 
     $this->actingAs($user)->patch('/grade', ['grade' => $grade])->assertSessionHasErrors('grade');
     $this->assertDatabaseCount('player_profiles', 0);
-})->with([0, 13, 'tujuh', null, [[5]]]);
+})->with([-1, 13, 'tujuh', null, [[5]]]);
 
 test('character update keeps existing grade', function (): void {
     $user = User::factory()->create();

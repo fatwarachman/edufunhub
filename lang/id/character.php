@@ -5,7 +5,7 @@ return [
     'accessory_invalid' => 'Pilih aksesori yang tersedia.',
     'nickname_invalid' => 'Nama panggilan harus berupa teks maksimal 40 karakter.',
     'field_prohibited' => 'Kolom ini tidak dapat diubah.',
-    'grade_invalid' => 'Pilih kelas 1 sampai 12.',
+    'grade_invalid' => 'Pilih TK atau kelas 1 sampai 12.',
     'grade_required' => 'Atur kelas kamu di beranda terlebih dahulu.',
     'birth_date_required' => 'Isi tanggal lahir.',
     'birth_date_invalid' => 'Format tanggal lahir tidak valid.',

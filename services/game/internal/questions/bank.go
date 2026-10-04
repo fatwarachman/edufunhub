@@ -15,9 +15,11 @@ const (
 
 // Item is one curated bank question. For true/false items Options is empty and Answer is 1 (true) or 0 (false).
 type Item struct {
-	Key     string   `json:"key"`
-	Type    string   `json:"type"`
-	Band    int      `json:"band"`
+	Key  string `json:"key"`
+	Type string `json:"type"`
+	Band int    `json:"band"`
+	// Grades lists explicit target grades (0 = kindergarten). Empty means the whole band.
+	Grades  []int    `json:"grades"`
 	Subject string   `json:"subject"`
 	Prompt  Text     `json:"prompt"`
 	Options []Text   `json:"options"`
@@ -39,6 +41,19 @@ func (it Item) ForGame(game string) bool {
 	return false
 }
 
+// ForGrade reports whether the item targets grade: explicit grades win over the band.
+func (it Item) ForGrade(grade int) bool {
+	if len(it.Grades) == 0 {
+		return it.Band == Band(grade)
+	}
+	for _, g := range it.Grades {
+		if g == grade {
+			return true
+		}
+	}
+	return false
+}
+
 // Bank is an immutable set of items grouped by type and band.
 type Bank struct {
 	Version string
@@ -48,18 +63,18 @@ type Bank struct {
 // Len returns the number of items.
 func (b *Bank) Len() int { return len(b.items) }
 
-func (b *Bank) filter(kind string, band int, game string) []Item {
+func (b *Bank) filter(kind string, grade int, game string) []Item {
 	out := make([]Item, 0, 16)
 	for _, it := range b.items {
-		if it.Type == kind && it.Band == band && it.ForGame(game) {
+		if it.Type == kind && it.ForGrade(grade) && it.ForGame(game) {
 			out = append(out, it)
 		}
 	}
 	return out
 }
 
-func (b *Bank) choices(band int, game string) []Item { return b.filter(TypeChoice, band, game) }
-func (b *Bank) truths(band int, game string) []Item  { return b.filter(TypeTrueFalse, band, game) }
+func (b *Bank) choices(grade int, game string) []Item { return b.filter(TypeChoice, grade, game) }
+func (b *Bank) truths(grade int, game string) []Item  { return b.filter(TypeTrueFalse, grade, game) }
 
 // Validate rejects malformed items so a bad sync never reaches players.
 func Validate(items []Item) error {
@@ -70,6 +85,8 @@ func Validate(items []Item) error {
 			return fmt.Errorf("invalid or duplicate key %q", it.Key)
 		case it.Band < 0 || it.Band > 3:
 			return fmt.Errorf("%s: band out of range", it.Key)
+		case !validGrades(it.Grades):
+			return fmt.Errorf("%s: grades must be between 0 and 12", it.Key)
 		case it.Prompt.ID == "":
 			return fmt.Errorf("%s: empty prompt", it.Key)
 		case it.Type == TypeChoice && (len(it.Options) < 3 || it.Answer < 0 || it.Answer >= len(it.Options)):
@@ -82,6 +99,15 @@ func Validate(items []Item) error {
 		seen[it.Key] = true
 	}
 	return nil
+}
+
+func validGrades(grades []int) bool {
+	for _, g := range grades {
+		if g < 0 || g > 12 {
+			return false
+		}
+	}
+	return true
 }
 
 // Parse decodes and validates a bank payload: {"version": "...", "questions": [...]}.
