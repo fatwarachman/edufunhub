@@ -298,6 +298,16 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                         </th>
                                         <th className="px-5 py-3 text-left">
                                             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                                Age
+                                            </span>
+                                        </th>
+                                        <th className="px-5 py-3 text-left">
+                                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                                Last school
+                                            </span>
+                                        </th>
+                                        <th className="px-5 py-3 text-left">
+                                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                                                 Roles
                                             </span>
                                         </th>
@@ -347,6 +357,15 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                             </td>
                                             <td className="px-5 py-3 text-muted-foreground">
                                                 {user.email}
+                                            </td>
+                                            <td className="px-5 py-3 whitespace-nowrap text-foreground tabular-nums">
+                                                {user.player_profile?.age ?? '—'}
+                                            </td>
+                                            <td
+                                                className="max-w-56 truncate px-5 py-3 text-foreground"
+                                                title={user.player_profile?.school_name ?? undefined}
+                                            >
+                                                {user.player_profile?.school_name ?? '—'}
                                             </td>
                                             <td className="px-5 py-3">
                                                 <div className="flex flex-wrap gap-1">
@@ -482,6 +501,12 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                         <div>
                                             <p className="font-medium text-foreground">{user.name}</p>
                                             <p className="text-xs text-muted-foreground">{user.email}</p>
+                                            {user.player_profile?.school_name && (
+                                                <p className="text-xs text-muted-foreground">
+                                                    {user.player_profile.age !== null ? `${user.player_profile.age} y · ` : ''}
+                                                    {user.player_profile.school_name}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                     <span

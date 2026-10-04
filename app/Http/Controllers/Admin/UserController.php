@@ -21,7 +21,7 @@ class UserController extends Controller
     public function index(Request $request): Response
     {
         $query = User::query()
-            ->with('roles')
+            ->with(['roles', 'playerProfile:id,user_id,birth_date,school_name'])
             ->when($request->search, function ($q, string $search): void {
                 $q->where(function ($q) use ($search): void {
                     $q->where('name', 'like', "%{$search}%")
@@ -88,7 +88,7 @@ class UserController extends Controller
      */
     public function show(User $user): Response
     {
-        $user->load('roles');
+        $user->load(['roles', 'playerProfile:id,user_id,birth_date,school_name,grade']);
 
         $activityLog = Activity::query()
             ->where('subject_type', User::class)

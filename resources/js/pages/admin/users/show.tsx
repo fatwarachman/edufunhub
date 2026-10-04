@@ -7,7 +7,9 @@ import {
     ArrowLeft,
     Calendar,
     Edit,
+    Cake,
     Mail,
+    School,
     Shield,
     ShieldOff,
     Trash2,
@@ -37,6 +39,14 @@ function formatDate(str: string | null | undefined): string {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
+    });
+}
+
+function formatBirthDate(date: string): string {
+    return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
     });
 }
 
@@ -192,6 +202,22 @@ export default function ShowUser({ user, activity }: ShowUserProps) {
                                     {user.email_verified_at
                                         ? formatDate(user.email_verified_at)
                                         : 'Not verified'}
+                                </dd>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Cake className="size-4 text-muted-foreground" />
+                                <dt className="text-muted-foreground">Age</dt>
+                                <dd className="ml-auto font-medium text-foreground">
+                                    {user.player_profile?.birth_date
+                                        ? `${user.player_profile.age} years (${formatBirthDate(user.player_profile.birth_date)})`
+                                        : '—'}
+                                </dd>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <School className="size-4 text-muted-foreground" />
+                                <dt className="text-muted-foreground">Last school</dt>
+                                <dd className="ml-auto min-w-0 truncate text-right font-medium text-foreground">
+                                    {user.player_profile?.school_name ?? '—'}
                                 </dd>
                             </div>
                         </dl>

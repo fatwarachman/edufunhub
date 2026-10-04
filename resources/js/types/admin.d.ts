@@ -39,8 +39,16 @@ export interface ActivityLog {
     updated_at: string;
 }
 
+export interface AdminPlayerProfile {
+    birth_date: string | null;
+    school_name: string | null;
+    grade?: number | null;
+    age: number | null;
+}
+
 export interface AdminUser extends User {
     roles?: Role[];
+    player_profile?: AdminPlayerProfile | null;
     status?: 'active' | 'inactive' | 'suspended';
     last_seen_at?: string | null;
 }

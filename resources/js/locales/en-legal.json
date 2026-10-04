@@ -18,7 +18,7 @@
                     "items": [
                         "Account data: name, email address, and password (stored as a one-way hash).",
                         "Data from Google: if you sign in with Google, we receive your name, email address, email verification status, and Google account ID. We never receive your Google password.",
-                        "Player profile: nickname, grade/level, and character appearance choices.",
+                        "Player profile: nickname, grade/level, date of birth (to know your age), last school, and character appearance choices. Date of birth and last school are required before playing.",
                         "Play activity: game history, scores, and points you earn.",
                         "Security data: IP address, browser type, and sign-in times to protect accounts from abuse.",
                         "Essential cookies: session and security (CSRF) cookies required to keep you signed in. We do not use advertising cookies."
@@ -29,7 +29,7 @@
                     "items": [
                         "To create and manage your account, including Google sign-in.",
                         "To run games and save your progress, scores, points, and leaderboards.",
-                        "To match questions to your grade or level.",
+                        "To match questions to your grade, level, and age, and to understand participant age and school distribution for content development.",
                         "To keep the service secure and prevent fraud or abuse.",
                         "To send important account emails, such as email verification and password resets."
                     ]

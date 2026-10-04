@@ -5,6 +5,7 @@ import { NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import {
+    CircleAlert,
     Coins,
     Crown,
     Dice5,
@@ -12,6 +13,7 @@ import {
     Gamepad2,
     GraduationCap,
     History,
+    IdCard,
     type LucideIcon,
     Medal,
     Plane,
@@ -36,7 +38,13 @@ interface PortalGame {
 }
 
 interface PortalProps {
-    player: { name: string; grade: number | null; character: CharacterData };
+    player: {
+        name: string;
+        grade: number | null;
+        character: CharacterData;
+        detailsComplete: boolean;
+    };
+    detailsRequiredNotice: boolean;
     progress: {
         points: number;
         level: number;
@@ -71,6 +79,7 @@ const ICONS: Record<string, LucideIcon> = {
 
 export default function Portal({
     player,
+    detailsRequiredNotice,
     progress,
     rank,
     categories,
@@ -99,6 +108,9 @@ export default function Portal({
 
     return (
         <PlayerLayout title={t('portal.title')}>
+            {!player.detailsComplete && (
+                <PlayerDetailsNotice emphasized={detailsRequiredNotice} />
+            )}
             <section
                 className="auth-card grid items-center gap-6 !bg-[#fff4d6] md:grid-cols-[200px_minmax(0,1fr)] lg:grid-cols-[220px_minmax(0,1fr)_280px]"
                 aria-labelledby="portal-hero-title"
@@ -229,6 +241,7 @@ export default function Portal({
                     >
                         {games.map((game) => {
                             const Icon = ICONS[game.icon] ?? Gamepad2;
+                            const needsDetails = !player.detailsComplete;
                             const blocked =
                                 game.requiresGrade && player.grade === null;
                             return (
@@ -284,7 +297,14 @@ export default function Portal({
                                                 </p>
                                             )}
                                         </div>
-                                        {blocked ? (
+                                        {needsDetails ? (
+                                            <NavButton
+                                                href="/dashboard#player-details"
+                                                icon={IdCard}
+                                                label={t('portal.detailsFirst')}
+                                                testId={`portal-details-${game.key}`}
+                                            />
+                                        ) : blocked ? (
                                             <NavButton
                                                 href="/dashboard#grade"
                                                 icon={GraduationCap}
@@ -426,5 +446,39 @@ export default function Portal({
                 </aside>
             </div>
         </PlayerLayout>
+    );
+}
+
+function PlayerDetailsNotice({ emphasized }: { emphasized: boolean }) {
+    const { t } = useTranslations();
+
+    return (
+        <section
+            role={emphasized ? 'alert' : 'status'}
+            data-testid="portal-details-notice"
+            className={`auth-card flex flex-col gap-4 !bg-[#ffe3e3] sm:flex-row sm:items-center ${
+                emphasized ? 'ring-4 ring-[#e85d75]/40' : ''
+            }`}
+        >
+            <span className="grid size-12 shrink-0 place-items-center rounded-2xl border-[3px] border-[#151b2e] bg-[#e85d75] text-white shadow-[3px_3px_0_#151b2e]">
+                <CircleAlert className="size-6" />
+            </span>
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <h2 className="text-lg font-bold">
+                    {t('portal.detailsNoticeTitle')}
+                </h2>
+                <p className="text-sm text-[#151b2e]/80">
+                    {t('portal.detailsNoticeBody')}
+                </p>
+            </div>
+            <NavButton
+                href="/dashboard#player-details"
+                icon={IdCard}
+                label={t('portal.detailsNoticeAction')}
+                variant="primary"
+                className="shrink-0 self-start sm:self-center"
+                testId="portal-details-notice-action"
+            />
+        </section>
     );
 }

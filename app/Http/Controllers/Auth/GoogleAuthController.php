@@ -90,6 +90,7 @@ class GoogleAuthController extends Controller
                     'password' => Str::random(64),
                     'is_superadmin' => false,
                 ])->save();
+                $user->assignParticipantRole();
                 $user->connectedAccounts()->create([
                     'provider' => 'google',
                     'provider_id' => $id,

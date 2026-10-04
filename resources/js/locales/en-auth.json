@@ -28,7 +28,11 @@
         "hideConfirm": "Hide confirmation password",
         "showConfirm": "Show confirmation password",
         "match": "Passwords match",
-        "mismatch": "Passwords do not match"
+        "mismatch": "Passwords do not match",
+        "birthDate": "Date of birth",
+        "birthDateHint": "Used to know the participant's age.",
+        "schoolName": "Last school",
+        "schoolNamePlaceholder": "Example: SDN 1 Bogor"
     },
     "login": {
         "adminTitle": "Admin Sign In",

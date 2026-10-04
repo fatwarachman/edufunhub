@@ -74,7 +74,7 @@ it('issues a sky-quiz token carrying the profile grade', function (): void {
 });
 
 it('requires a grade before issuing a token', function (): void {
-    $user = User::factory()->create();
+    $user = User::factory()->withPlayerDetails()->create();
 
     $this->actingAs($user)->postJson('/games/sky-quiz/token')->assertStatus(422);
 });

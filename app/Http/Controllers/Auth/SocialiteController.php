@@ -74,6 +74,7 @@ class SocialiteController extends Controller
                 ]);
 
                 $user->markEmailAsVerified();
+                $user->assignParticipantRole();
 
                 // Workspace creation is natively deferred to the Onboarding Wizard
 

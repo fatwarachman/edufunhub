@@ -18,7 +18,7 @@
                     "items": [
                         "Data akun: nama, alamat email, dan kata sandi (disimpan dalam bentuk hash, tidak dapat dibaca).",
                         "Data dari Google: jika Anda masuk dengan Google, kami menerima nama, alamat email, status verifikasi email, dan ID akun Google Anda. Kami tidak menerima kata sandi Google Anda.",
-                        "Profil pemain: nama panggilan, kelas/jenjang, dan pilihan tampilan karakter.",
+                        "Profil pemain: nama panggilan, kelas/jenjang, tanggal lahir (untuk mengetahui usia), sekolah terakhir, dan pilihan tampilan karakter. Tanggal lahir dan sekolah terakhir wajib diisi sebelum bermain.",
                         "Aktivitas bermain: riwayat permainan, skor, dan poin yang Anda kumpulkan.",
                         "Data keamanan: alamat IP, jenis peramban, dan waktu masuk untuk melindungi akun dari penyalahgunaan.",
                         "Cookie esensial: cookie sesi dan keamanan (CSRF) yang dibutuhkan agar Anda tetap masuk. Kami tidak menggunakan cookie iklan."
@@ -29,7 +29,7 @@
                     "items": [
                         "Membuat dan mengelola akun Anda, termasuk masuk dengan Google.",
                         "Menjalankan permainan, menyimpan kemajuan, skor, poin, dan papan peringkat.",
-                        "Menyesuaikan soal dengan kelas atau jenjang Anda.",
+                        "Menyesuaikan soal dengan kelas, jenjang, dan usia Anda, serta memahami sebaran usia dan asal sekolah peserta untuk pengembangan materi.",
                         "Menjaga keamanan layanan dan mencegah penipuan atau penyalahgunaan.",
                         "Mengirim email penting terkait akun, seperti verifikasi email dan reset kata sandi."
                     ]

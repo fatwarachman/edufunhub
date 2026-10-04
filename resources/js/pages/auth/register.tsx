@@ -6,7 +6,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/hooks/use-translations';
 import { Head, useForm } from '@inertiajs/react';
-import { Eye, EyeOff, Gamepad2, Loader2, Lock, Mail, User } from 'lucide-react';
+import {
+    Calendar,
+    Eye,
+    EyeOff,
+    Gamepad2,
+    Loader2,
+    Lock,
+    Mail,
+    School,
+    User,
+} from 'lucide-react';
 import { type FormEventHandler, useState } from 'react';
 import '../../../css/auth-landing.css';
 
@@ -94,9 +104,12 @@ export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
+        birth_date: '',
+        school_name: '',
         password: '',
         password_confirmation: '',
     });
+    const today = new Date().toISOString().slice(0, 10);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -221,6 +234,70 @@ export default function Register() {
                                             />
                                         </div>
                                         <InputError message={errors.email} />
+                                    </div>
+
+                                    {/* Birth date */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <Label htmlFor="birth_date">
+                                            {t('register.birthDate')}
+                                        </Label>
+                                        <div className="relative">
+                                            <Calendar className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="birth_date"
+                                                type="date"
+                                                name="birth_date"
+                                                value={data.birth_date}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'birth_date',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                max={today}
+                                                autoComplete="bday"
+                                                required
+                                            />
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('register.birthDateHint')}
+                                        </p>
+                                        <InputError
+                                            message={errors.birth_date}
+                                        />
+                                    </div>
+
+                                    {/* Last school */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <Label htmlFor="school_name">
+                                            {t('register.schoolName')}
+                                        </Label>
+                                        <div className="relative">
+                                            <School className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                id="school_name"
+                                                type="text"
+                                                name="school_name"
+                                                value={data.school_name}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'school_name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="pl-9"
+                                                placeholder={t(
+                                                    'register.schoolNamePlaceholder',
+                                                )}
+                                                maxLength={120}
+                                                autoComplete="organization"
+                                                required
+                                            />
+                                        </div>
+                                        <InputError
+                                            message={errors.school_name}
+                                        />
                                     </div>
 
                                     {/* Password */}

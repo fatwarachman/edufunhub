@@ -22,6 +22,10 @@ class UserDashboardController extends Controller
             'points' => $points,
             'character' => $profile->character(),
             'grade' => $profile->grade,
+            'playerDetails' => [
+                'birth_date' => $profile->birth_date?->toDateString(),
+                'school_name' => $profile->school_name,
+            ],
             'categories' => $portal->catalog($profile->grade),
             'progress' => $portal->progress($points),
             'history' => $history->getCollection()->map(fn (GameHistory $game): array => [
