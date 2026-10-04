@@ -48,7 +48,13 @@ class GameServiceSigner
             return false;
         }
 
-        return hash_equals(hash_hmac('sha256', $timestamp.'.'.$body, $this->secret()), $signature);
+        return hash_equals($this->sign($timestamp, $body), $signature);
+    }
+
+    /** Signature for requests Laravel sends to the game service. */
+    public function sign(string $timestamp, string $body): string
+    {
+        return hash_hmac('sha256', $timestamp.'.'.$body, $this->secret());
     }
 
     private function secret(): string

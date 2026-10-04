@@ -1,0 +1,271 @@
+import { ShareBars } from '@/components/admin/dashboard-kit';
+import {
+    EmptyState,
+    formatNumber,
+    gameLabel,
+    Panel,
+} from '@/components/admin/game-stats';
+import {
+    AppWindow,
+    Laptop,
+    MonitorSmartphone,
+    Smartphone,
+    Tablet,
+} from 'lucide-react';
+
+export type DeviceType = 'mobile' | 'tablet' | 'desktop';
+
+export interface DeviceSummary {
+    days: number;
+    total: number;
+    users: number;
+    guests: number;
+    types: { key: DeviceType; accesses: number; users: number }[];
+    os: ({
+        name: string;
+        accesses: number;
+        users: number;
+    } & Record<DeviceType, number>)[];
+    browsers: { name: string; accesses: number }[];
+    games: ({ game: string } & Record<DeviceType, number>)[];
+}
+
+export const DEVICE_META: Record<
+    DeviceType,
+    { label: string; color: string; icon: React.ElementType }
+> = {
+    mobile: {
+        label: 'Mobile',
+        color: 'var(--color-bubble-blue)',
+        icon: Smartphone,
+    },
+    tablet: {
+        label: 'Tablet',
+        color: 'var(--color-bubble-purple)',
+        icon: Tablet,
+    },
+    desktop: {
+        label: 'Desktop',
+        color: 'var(--color-bubble-orange)',
+        icon: Laptop,
+    },
+};
+
+const DEVICE_ORDER: DeviceType[] = ['mobile', 'tablet', 'desktop'];
+
+const OS_COLORS = [
+    'var(--color-bubble-green)',
+    'var(--color-bubble-blue)',
+    'var(--color-bubble-orange)',
+    'var(--color-bubble-purple)',
+    'var(--color-bubble-pink)',
+    'var(--muted-foreground)',
+];
+
+function share(part: number, whole: number): string {
+    return whole > 0 ? `${Math.round((part / whole) * 100)}%` : '0%';
+}
+
+/** Device class, operating system and browser mix of game page opens. */
+export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
+    if (devices.total === 0) {
+        return (
+            <Panel
+                title="Devices & operating systems"
+                description={`Game opens in the last ${devices.days} days`}
+                icon={MonitorSmartphone}
+            >
+                <EmptyState
+                    icon={MonitorSmartphone}
+                    title="No game opens recorded yet"
+                    description="Device and OS data is collected each time a player opens a game page."
+                />
+            </Panel>
+        );
+    }
+
+    return (
+        <div
+            className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+            data-testid="device-usage"
+        >
+            <Panel
+                title="Device type"
+                description={`${formatNumber(devices.total)} game opens · last ${devices.days} days`}
+                icon={MonitorSmartphone}
+            >
+                <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-3 gap-2">
+                        {devices.types.map((type) => {
+                            const meta = DEVICE_META[type.key];
+                            const Icon = meta.icon;
+                            return (
+                                <div
+                                    key={type.key}
+                                    data-testid={`device-${type.key}`}
+                                    className="flex min-w-0 flex-col gap-1 rounded-xl bg-muted/50 px-3 py-2.5"
+                                >
+                                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                        <Icon
+                                            className="size-3.5 shrink-0"
+                                            style={{ color: meta.color }}
+                                        />
+                                        <span className="truncate">
+                                            {meta.label}
+                                        </span>
+                                    </span>
+                                    <span className="font-display text-xl leading-none font-bold text-foreground tabular-nums">
+                                        {share(type.accesses, devices.total)}
+                                    </span>
+                                    <span className="truncate text-xs text-muted-foreground tabular-nums">
+                                        {formatNumber(type.users)} users
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <ShareBars
+                        rows={devices.types.map((type) => ({
+                            key: type.key,
+                            label: DEVICE_META[type.key].label,
+                            value: type.accesses,
+                            color: DEVICE_META[type.key].color,
+                        }))}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        {formatNumber(devices.users)} signed-in players ·{' '}
+                        {formatNumber(devices.guests)} guest opens
+                    </p>
+                </div>
+            </Panel>
+
+            <Panel
+                title="Operating system"
+                description="Opens per OS, split by device type"
+                icon={AppWindow}
+            >
+                <ul className="flex flex-col gap-3" data-testid="device-os">
+                    {devices.os.slice(0, 7).map((os, index) => (
+                        <li key={os.name} className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-2 text-sm">
+                                <span
+                                    className="size-2.5 shrink-0 rounded-full"
+                                    style={{
+                                        background:
+                                            OS_COLORS[index % OS_COLORS.length],
+                                    }}
+                                />
+                                <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                                    {os.name}
+                                </span>
+                                <span className="text-xs text-muted-foreground tabular-nums">
+                                    {formatNumber(os.users)} users
+                                </span>
+                                <span className="w-12 text-right font-semibold text-foreground tabular-nums">
+                                    {formatNumber(os.accesses)}
+                                </span>
+                            </div>
+                            <SplitBar row={os} total={os.accesses} />
+                        </li>
+                    ))}
+                </ul>
+            </Panel>
+
+            <Panel
+                title="Per game & browser"
+                description="Device split for each game"
+                icon={Smartphone}
+            >
+                <div className="flex flex-col gap-5">
+                    <ul className="flex flex-col gap-3">
+                        {devices.games.map((game) => {
+                            const total =
+                                game.mobile + game.tablet + game.desktop;
+                            return (
+                                <li
+                                    key={game.game}
+                                    className="flex flex-col gap-1.5"
+                                >
+                                    <div className="flex items-center justify-between gap-2 text-sm">
+                                        <span className="truncate font-medium text-foreground">
+                                            {gameLabel(game.game)}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground tabular-nums">
+                                            {share(
+                                                game.mobile + game.tablet,
+                                                total,
+                                            )}{' '}
+                                            mobile/tablet
+                                        </span>
+                                    </div>
+                                    <SplitBar row={game} total={total} />
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    <div className="flex flex-wrap gap-1.5">
+                        {devices.browsers.map((browser) => (
+                            <span
+                                key={browser.name}
+                                className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-foreground"
+                            >
+                                {browser.name}
+                                <span className="text-muted-foreground tabular-nums">
+                                    {share(browser.accesses, devices.total)}
+                                </span>
+                            </span>
+                        ))}
+                    </div>
+                    <DeviceLegend />
+                </div>
+            </Panel>
+        </div>
+    );
+}
+
+function SplitBar({
+    row,
+    total,
+}: {
+    row: Record<DeviceType, number>;
+    total: number;
+}) {
+    return (
+        <div
+            className="flex h-2 w-full overflow-hidden rounded-full bg-muted"
+            role="img"
+            aria-label={DEVICE_ORDER.map(
+                (type) => `${DEVICE_META[type].label} ${row[type]}`,
+            ).join(', ')}
+        >
+            {DEVICE_ORDER.map((type) =>
+                row[type] > 0 ? (
+                    <span
+                        key={type}
+                        className="h-full"
+                        style={{
+                            width: `${(row[type] / Math.max(1, total)) * 100}%`,
+                            background: DEVICE_META[type].color,
+                        }}
+                    />
+                ) : null,
+            )}
+        </div>
+    );
+}
+
+function DeviceLegend() {
+    return (
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            {DEVICE_ORDER.map((type) => (
+                <span key={type} className="inline-flex items-center gap-1">
+                    <span
+                        className="size-2 rounded-full"
+                        style={{ background: DEVICE_META[type].color }}
+                    />
+                    {DEVICE_META[type].label}
+                </span>
+            ))}
+        </div>
+    );
+}

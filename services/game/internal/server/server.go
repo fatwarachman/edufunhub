@@ -43,6 +43,7 @@ type Server struct {
 	conns    map[int64]*connection
 	skies    map[int64]*sky.Session
 	skyConns map[int64]*connection
+	started  time.Time
 }
 
 // New builds a server.
@@ -59,6 +60,7 @@ func New(cfg Config) *Server {
 	return &Server{
 		cfg: cfg, sessions: map[int64]*session.Session{}, conns: map[int64]*connection{},
 		skies: map[int64]*sky.Session{}, skyConns: map[int64]*connection{},
+		started: cfg.Now(),
 	}
 }
 
@@ -71,6 +73,7 @@ func (s *Server) Handler() http.Handler {
 	})
 	mux.HandleFunc("GET /ws", s.serveWS)
 	mux.HandleFunc("GET /ws/sky", s.serveSky)
+	mux.HandleFunc("GET /internal/stats", s.serveStats)
 	return mux
 }
 
