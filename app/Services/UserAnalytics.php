@@ -105,7 +105,7 @@ class UserAnalytics
     public function demographics(array $filters): array
     {
         $profiles = $this->profileRows();
-        $level = $filters['level'] ?? null;
+        $level = (string) ($filters['level'] ?? '');
         $school = trim((string) ($filters['school'] ?? ''));
 
         if (isset(GameAnalytics::LEVELS[$level])) {
