@@ -38,6 +38,7 @@ services:
       GAME_ADDR: ":8090"
       GAME_SERVICE_SECRET: ${GAME_SERVICE_SECRET:?GAME_SERVICE_SECRET is required}
       GAME_RESULT_URL: ${GAME_RESULT_URL:-http://edufunhub-app:8000/api/internal/game-results}
+      GAME_QUESTION_BANK_URL: ${GAME_QUESTION_BANK_URL:-http://edufunhub-app:8000/api/internal/question-bank}
       GAME_ALLOWED_ORIGINS: ${GAME_ALLOWED_ORIGINS:-edufunhub.com,*.edufunhub.com,172.16.200.23:*,localhost:*,127.0.0.1:*}
     expose:
       - "8090"

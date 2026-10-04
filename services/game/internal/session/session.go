@@ -36,29 +36,34 @@ type Result struct {
 	Wrong       int    `json:"wrong"`
 	Seconds     int    `json:"duration_seconds"`
 	CompletedAt string `json:"completed_at"`
+	// Answers lists bank questions answered during the mission.
+	Answers []questions.Answer `json:"answers"`
 }
 
 // Session is safe for concurrent use.
 type Session struct {
-	mu        sync.Mutex
-	Claims    auth.Claims
-	Locale    string
-	world     *world.World
-	mission   world.Mission
-	x, y      float64
-	lastMove  time.Time
-	active    *challenge.Challenge
-	settled   bool
-	cooldown  map[int]time.Time
-	correct   int
-	wrong     int
-	failures  int
-	started   time.Time
-	raising   time.Time
-	completed bool
-	result    *Result
-	seed      uint64
-	LastSeen  time.Time
+	mu       sync.Mutex
+	Claims   auth.Claims
+	Locale   string
+	world    *world.World
+	mission  world.Mission
+	x, y     float64
+	lastMove time.Time
+	active   *challenge.Challenge
+	settled  bool
+	cooldown map[int]time.Time
+	correct  int
+	wrong    int
+	failures int
+	answers  []questions.Answer
+	// loggedFromActive counts answers already copied from the running challenge.
+	loggedFromActive int
+	started          time.Time
+	raising          time.Time
+	completed        bool
+	result           *Result
+	seed             uint64
+	LastSeen         time.Time
 }
 
 // New creates a session on the first mission.
@@ -87,6 +92,7 @@ func (s *Session) startMission(id string, now time.Time) error {
 	s.active = nil
 	s.cooldown = map[int]time.Time{}
 	s.correct, s.wrong, s.failures = 0, 0, 0
+	s.answers = nil
 	s.started = now
 	s.raising = time.Time{}
 	s.completed = false
@@ -181,8 +187,9 @@ func (s *Session) Interact(now time.Time) Message {
 			return Message{"t": "error", "code": "cooldown", "retry_ms": until.Sub(now).Milliseconds()}
 		}
 		s.seed++
-		gen := questions.New(s.Claims.Grade, s.seed)
+		gen := questions.NewFor(GameKey, s.Claims.Grade, s.seed)
 		s.active = challenge.Start(cp.Kind, cp.ID, s.mission.Difficulty, gen, now)
+		s.loggedFromActive = 0
 		s.settled = false
 		return s.challengeLocked(nil)
 	}
@@ -296,6 +303,7 @@ func (s *Session) Tick(now time.Time) (Message, *Result) {
 			UserID:  s.Claims.Subject, GameKey: GameKey, Mission: s.mission.ID, Grade: s.Claims.Grade,
 			Points: points, Correct: s.correct, Wrong: s.wrong, Seconds: elapsed,
 			CompletedAt: now.UTC().Format(time.RFC3339),
+			Answers:     append([]questions.Answer{}, s.answers...),
 		}
 		return s.completeLocked(), s.result
 	}
@@ -311,6 +319,10 @@ func (s *Session) count(fb challenge.Feedback, now time.Time) {
 		s.correct++
 	} else if fb.Answer != "" {
 		s.wrong++
+	}
+	if c := s.active; c != nil && len(c.Answers) > s.loggedFromActive {
+		s.answers = append(s.answers, c.Answers[s.loggedFromActive:]...)
+		s.loggedFromActive = len(c.Answers)
 	}
 	s.settle(now)
 }

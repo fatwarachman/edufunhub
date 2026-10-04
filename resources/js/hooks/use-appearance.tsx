@@ -19,12 +19,37 @@ const setCookie = (name: string, value: string, days = 365) => {
     document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax`;
 };
 
+/**
+ * Switch the theme class in a single frame.
+ *
+ * Every `transition-colors` element would otherwise animate its own colour
+ * change (hundreds at once on chart-heavy pages), which makes the toggle feel
+ * slow. Transitions are suppressed for the frame in which the class flips.
+ */
 const applyTheme = (appearance: Appearance) => {
     const isDark =
         appearance === 'dark' || (appearance === 'system' && prefersDark());
+    const root = document.documentElement;
 
-    document.documentElement.classList.toggle('dark', isDark);
-    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    if (root.classList.contains('dark') === isDark) {
+        root.style.colorScheme = isDark ? 'dark' : 'light';
+        return;
+    }
+
+    const blocker = document.createElement('style');
+    blocker.appendChild(
+        document.createTextNode(
+            '*,*::before,*::after{transition:none!important;animation-duration:0s!important}',
+        ),
+    );
+    document.head.appendChild(blocker);
+
+    root.classList.toggle('dark', isDark);
+    root.style.colorScheme = isDark ? 'dark' : 'light';
+
+    // Force a style flush so the new colours apply without transitions, then restore.
+    void window.getComputedStyle(document.body).opacity;
+    requestAnimationFrame(() => blocker.remove());
 };
 
 const mediaQuery = () => {

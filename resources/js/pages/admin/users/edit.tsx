@@ -19,7 +19,7 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
         email: user.email,
         password: '',
         password_confirmation: '',
-        roles: userRoles,
+        roles: userRoles ?? [],
     });
 
     const toggleRole = (roleId: number) => {

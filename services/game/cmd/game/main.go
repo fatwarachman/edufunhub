@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"edufunhub/game/internal/questions"
 	"edufunhub/game/internal/server"
 )
 
@@ -52,6 +53,10 @@ func main() {
 			}
 		}
 	}()
+	if bankURL := os.Getenv("GAME_QUESTION_BANK_URL"); bankURL != "" {
+		syncer := &questions.Syncer{URL: bankURL, Secret: []byte(secret), Logger: logger}
+		go syncer.Run(ctx, time.Minute)
+	}
 	go func() {
 		logger.Info("game service listening", "addr", addr)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {

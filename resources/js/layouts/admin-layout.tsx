@@ -6,6 +6,7 @@ import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     Activity,
+    ChartColumnBig,
     ChevronLeft,
     ChevronRight,
     Gauge,
@@ -14,11 +15,14 @@ import {
     LogOut,
     Menu,
     Moon,
+    ListChecks,
     Settings,
     ShieldCheck,
+    Trophy,
     Sun,
     UserCog,
     Users,
+    UsersRound,
     X,
 } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
@@ -28,6 +32,7 @@ interface NavItem {
     href: string;
     icon: React.ElementType;
     exact?: boolean;
+    superadminOnly?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -35,6 +40,10 @@ const navItems: NavItem[] = [
     { title: 'Users', href: '/admin/users', icon: Users },
     { title: 'Roles', href: '/admin/roles', icon: ShieldCheck },
     { title: 'Permissions', href: '/admin/permissions', icon: Lock },
+    { title: 'User Statistics', href: '/admin/user-statistics', icon: UsersRound, superadminOnly: true },
+    { title: 'Game Statistics', href: '/admin/games', icon: ChartColumnBig, superadminOnly: true },
+    { title: 'Leaderboard', href: '/admin/leaderboard', icon: Trophy, superadminOnly: true },
+    { title: 'Question Bank', href: '/admin/questions', icon: ListChecks, superadminOnly: true },
     { title: 'Activity Log', href: '/admin/activity-log', icon: Activity },
     { title: 'Settings', href: '/admin/settings', icon: Settings },
 ];
@@ -139,7 +148,9 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                 {/* Nav items */}
                 <nav className="flex-1 overflow-y-auto p-2">
                     <ul className="flex flex-col gap-1" role="list">
-                        {navItems.map((item) => {
+                        {navItems
+                            .filter((item) => !item.superadminOnly || auth.user.is_superadmin)
+                            .map((item) => {
                             const active = isActive(item.href, currentUrl, item.exact);
                             return (
                                 <li key={item.href}>

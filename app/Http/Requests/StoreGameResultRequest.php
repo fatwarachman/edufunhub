@@ -32,6 +32,9 @@ class StoreGameResultRequest extends FormRequest
             'wrong' => ['required', 'integer', 'min:0', 'max:500'],
             'duration_seconds' => ['required', 'integer', 'min:0'],
             'completed_at' => ['required', 'date'],
+            'answers' => ['sometimes', 'nullable', 'array', 'max:100'],
+            'answers.*.key' => ['required', 'string', 'max:40'],
+            'answers.*.correct' => ['required', 'boolean'],
         ];
     }
 }

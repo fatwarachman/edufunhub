@@ -8,6 +8,7 @@ import {
     ChevronRight,
     Edit,
     Eye,
+    Mail,
     Loader2,
     MoreHorizontal,
     Plus,
@@ -68,12 +69,32 @@ function SortHeader({
     );
 }
 
+function SignupBadge({ google }: { google: boolean }) {
+    return google ? (
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2 py-0.5 text-xs font-medium text-foreground">
+            <svg viewBox="0 0 24 24" className="size-3.5" aria-hidden="true">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09Z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.24 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z" />
+                <path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.96 10.96 0 0 0 12 1 11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z" />
+            </svg>
+            Google
+        </span>
+    ) : (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+            <Mail className="size-3.5" aria-hidden="true" />
+            Email
+        </span>
+    );
+}
+
 interface UsersIndexProps {
     users: PaginatedData<AdminUser>;
     roles: Role[];
     filters: {
         search?: string;
         role?: string;
+        signup?: string;
         sort?: string;
         direction?: 'asc' | 'desc';
     };
@@ -180,7 +201,8 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
         (params: Record<string, string | undefined>) => {
             const query = {
                 search: params.search ?? filters.search,
-                role: params.role ?? filters.role,
+                role: 'role' in params ? params.role : filters.role,
+                signup: 'signup' in params ? params.signup : filters.signup,
                 sort: params.sort ?? filters.sort,
                 direction: params.direction ?? filters.direction,
             };
@@ -273,6 +295,16 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                             </option>
                         ))}
                     </select>
+                    <select
+                        aria-label="Sign-up method"
+                        value={filters.signup ?? ''}
+                        onChange={(e) => updateFilters({ signup: e.target.value || undefined })}
+                        className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                        <option value="">All sign-up methods</option>
+                        <option value="google">Google account</option>
+                        <option value="email">Email (direct)</option>
+                    </select>
                 </div>
 
                 {/* Desktop table */}
@@ -295,6 +327,11 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                         </th>
                                         <th className="px-5 py-3 text-left">
                                             <SortHeader column="email" sort={filters.sort} direction={filters.direction} onSort={handleSort}>Email</SortHeader>
+                                        </th>
+                                        <th className="px-5 py-3 text-left">
+                                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                                Sign-up
+                                            </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
                                             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -343,10 +380,13 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                                             getInitialsFromName(user.name)
                                                         )}
                                                     </div>
-                                                    <div>
-                                                        <p className="font-medium text-foreground">
+                                                    <div className="min-w-0">
+                                                        <Link
+                                                            href={`/admin/users/${user.id}`}
+                                                            className="font-medium text-foreground hover:text-primary hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                                        >
                                                             {user.name}
-                                                        </p>
+                                                        </Link>
                                                         {user.is_superadmin && (
                                                             <span className="text-xs text-bubble-purple">
                                                                 Superadmin
@@ -357,6 +397,9 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                             </td>
                                             <td className="px-5 py-3 text-muted-foreground">
                                                 {user.email}
+                                            </td>
+                                            <td className="px-5 py-3 whitespace-nowrap">
+                                                <SignupBadge google={Boolean(user.signed_up_with_google)} />
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap text-foreground tabular-nums">
                                                 {user.player_profile?.age ?? '—'}
@@ -498,9 +541,17 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                                 getInitialsFromName(user.name)
                                             )}
                                         </div>
-                                        <div>
-                                            <p className="font-medium text-foreground">{user.name}</p>
+                                        <div className="min-w-0">
+                                            <Link
+                                                href={`/admin/users/${user.id}`}
+                                                className="font-medium text-foreground hover:text-primary hover:underline"
+                                            >
+                                                {user.name}
+                                            </Link>
                                             <p className="text-xs text-muted-foreground">{user.email}</p>
+                                            <div className="mt-1">
+                                                <SignupBadge google={Boolean(user.signed_up_with_google)} />
+                                            </div>
                                             {user.player_profile?.school_name && (
                                                 <p className="text-xs text-muted-foreground">
                                                     {user.player_profile.age !== null ? `${user.player_profile.age} y · ` : ''}
