@@ -46,7 +46,8 @@
         "gradeBands": {
             "sd": "SD",
             "smp": "SMP",
-            "sma": "SMA/SMK"
+            "sma": "SMA/SMK",
+            "tk": "TK"
         },
         "portal": "Portal",
         "openPortal": "Buka portal permainan",
@@ -58,7 +59,9 @@
         "age": "{{count}} tahun",
         "detailsSave": "Simpan data",
         "detailsSaved": "Data tersimpan.",
-        "detailsMissing": "Data peserta belum lengkap"
+        "detailsMissing": "Data peserta belum lengkap",
+        "kindergarten": "TK",
+        "kindergartenShort": "TK"
     },
     "flagQuest": {
         "title": "Misi Bendera",
@@ -275,7 +278,8 @@
         "backToPortal": "Kembali ke portal",
         "backToGames": "Kembali ke daftar game",
         "backToDashboard": "Kembali ke beranda",
-        "backToLogin": "Kembali masuk"
+        "backToLogin": "Kembali masuk",
+        "teacher": "Ruang Guru"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -352,5 +356,145 @@
         "progressCorrect": "{{correct}} benar",
         "finished": "Penerbangan selesai. Lihat hasilmu di bawah.",
         "finishedPassed": "Hebat! Kamu menjawab lebih dari 70% soal dengan benar."
+    },
+    "teacher": {
+        "title": "Ruang Guru",
+        "badge": "RUANG GURU",
+        "heading": "Soal buatanmu",
+        "intro": "Pantau pemakaian soal, jawaban peserta, dan kompensasi dari setiap jawaban benar.",
+        "create": "Buat soal",
+        "import": "Impor soal",
+        "stats": {
+            "questions": "Soal dibuat",
+            "questionsHint": "{{active}} aktif · {{used}} sudah dipakai",
+            "used": "Dipakai",
+            "usedHint": "kali dijawab oleh {{players}} peserta",
+            "correct": "Jawaban benar",
+            "wrong": "Jawaban salah",
+            "successRate": "{{rate}} benar",
+            "compensation": "Kompensasi",
+            "compensationHint": "dari {{count}} jawaban benar",
+            "byGame": "Dipakai di permainan",
+            "byLevel": "Dipakai per jenjang",
+            "byGrade": "Dipakai per kelas",
+            "answered": "Dijawab",
+            "players": "Peserta",
+            "empty": "Belum ada data",
+            "emptyHint": "Statistik muncul setelah peserta menjawab soalmu di dalam permainan."
+        },
+        "rates": {
+            "title": "Tarif kompensasi per jawaban benar",
+            "note": "Ditentukan admin. Kompensasi dihitung saat peserta menjawab benar, sesuai kelas peserta."
+        },
+        "list": {
+            "title": "Daftar soal",
+            "search": "Cari soal…",
+            "allGrades": "Semua kelas",
+            "allSubjects": "Semua mapel",
+            "question": "Soal",
+            "grades": "Kelas",
+            "usage": "Pemakaian",
+            "compensation": "Kompensasi",
+            "actions": "Aksi",
+            "edit": "Ubah",
+            "delete": "Hapus",
+            "confirmDelete": "Hapus soal ini? Statistik soal ini juga akan terhapus.",
+            "inactive": "Nonaktif",
+            "emptyTitle": "Belum ada soal",
+            "emptyHint": "Buat soal pertama atau impor dari file CSV.",
+            "noMatch": "Tidak ada soal yang cocok dengan filter.",
+            "playedIn": "Dimainkan di",
+            "playedBy": "Dijawab kelas",
+            "prev": "Sebelumnya",
+            "next": "Berikutnya",
+            "page": "Halaman {{current}} dari {{last}}"
+        },
+        "form": {
+            "createTitle": "Buat soal baru",
+            "editTitle": "Ubah soal",
+            "back": "Kembali ke Ruang Guru",
+            "placement": "Untuk siapa soal ini",
+            "placementNote": "Pilih kelas peserta yang akan menerima soal ini. Bisa lebih dari satu.",
+            "grades": "Kelas",
+            "selectLevel": "Pilih semua {{level}}",
+            "subject": "Mata pelajaran",
+            "type": "Jenis soal",
+            "choice": "Pilihan ganda",
+            "trueFalse": "Benar / salah",
+            "games": "Tampilkan di permainan",
+            "skyChoiceOnly": "Sky Quiz hanya memakai soal pilihan ganda.",
+            "question": "Pertanyaan",
+            "questionNote": "Bahasa Indonesia wajib; bahasa Inggris dipakai saat peserta memilih bahasa Inggris.",
+            "promptId": "Pertanyaan (Indonesia)",
+            "promptEn": "Pertanyaan (Inggris, opsional)",
+            "answer": "Jawaban",
+            "answerChoiceNote": "Isi 3–6 pilihan lalu tandai jawaban yang benar. Urutan pilihan diacak di dalam game.",
+            "answerTrueFalseNote": "Apakah pernyataan ini benar atau salah?",
+            "option": "Pilihan {{number}}",
+            "optionEn": "Inggris (opsional)",
+            "markCorrect": "Tandai pilihan {{number}} sebagai jawaban benar",
+            "removeOption": "Hapus pilihan {{number}}",
+            "addOption": "Tambah pilihan",
+            "true": "Benar",
+            "false": "Salah",
+            "hintId": "Penjelasan setelah menjawab (Indonesia)",
+            "hintEn": "Penjelasan (Inggris)",
+            "active": "Aktif (ditampilkan ke peserta)",
+            "cancel": "Batal",
+            "save": "Simpan perubahan",
+            "create": "Simpan soal",
+            "saving": "Menyimpan…"
+        },
+        "importPage": {
+            "title": "Impor soal dari CSV",
+            "intro": "Unggah banyak soal sekaligus memakai template CSV. Bisa diisi dengan Excel, Google Sheets, atau LibreOffice.",
+            "download": "Unduh template CSV",
+            "steps": "Langkah impor",
+            "step1": "Unduh template, lalu isi satu soal per baris. Hapus baris contoh sebelum mengunggah.",
+            "step2": "Simpan sebagai CSV (UTF-8). Pemisah koma atau titik koma sama-sama didukung.",
+            "step3": "Unggah file. Semua baris dicek dulu; jika ada yang salah, tidak ada soal yang disimpan.",
+            "columns": "Panduan kolom",
+            "column": "Kolom",
+            "description": "Keterangan",
+            "required": "Wajib",
+            "file": "File CSV",
+            "choose": "Pilih file CSV",
+            "selected": "File dipilih: {{name}}",
+            "upload": "Impor soal",
+            "uploading": "Mengimpor…",
+            "maxRows": "Maksimal {{count}} soal per file, ukuran maksimal 2 MB.",
+            "errorsTitle": "Impor dibatalkan",
+            "errorsIntro": "Perbaiki baris berikut lalu unggah ulang:",
+            "row": "Baris {{row}}",
+            "docs": {
+                "type": "choice (pilihan ganda) atau true_false (benar/salah). Juga menerima pg / bs.",
+                "grades": "Kelas sasaran dipisah titik koma: TK;1;2 atau rentang 4-6.",
+                "subject": "math, science, language, social, english, atau civics.",
+                "games": "flag-quest dan/atau sky-quiz dipisah titik koma. Kosong = semua permainan yang cocok.",
+                "question_id": "Pertanyaan dalam Bahasa Indonesia.",
+                "question_en": "Pertanyaan dalam Bahasa Inggris (opsional).",
+                "options": "option_1_id … option_6_id: pilihan jawaban (minimal 3 untuk pilihan ganda). Kolom _en opsional.",
+                "answer": "Pilihan ganda: nomor pilihan benar (1–6) atau huruf A–F. Benar/salah: true/false atau benar/salah.",
+                "hint": "hint_id / hint_en: penjelasan setelah menjawab (opsional)."
+            }
+        },
+        "subjects": {
+            "math": "Matematika",
+            "science": "IPA",
+            "language": "Bahasa Indonesia",
+            "social": "IPS",
+            "english": "Bahasa Inggris",
+            "civics": "PKn"
+        },
+        "games": {
+            "flag-quest": "Misi Bendera",
+            "sky-quiz": "Sukhoi Sky Quiz"
+        },
+        "levels": {
+            "tk": "TK",
+            "sd": "SD",
+            "smp": "SMP",
+            "sma": "SMA/SMK"
+        }
     }
 }

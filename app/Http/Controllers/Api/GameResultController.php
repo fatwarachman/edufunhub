@@ -7,6 +7,7 @@ use App\Http\Requests\StoreGameResultRequest;
 use App\Models\GameHistory;
 use App\Models\Question;
 use App\Models\QuestionAnswer;
+use App\Models\QuestionCompensationRate;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
@@ -57,6 +58,8 @@ class GameResultController extends Controller
 
     /**
      * Store per-question outcomes for bank questions and bump their counters.
+     * Correct answers to teacher questions lock in the compensation rate for the
+     * player's grade at that moment.
      *
      * @param  list<array{key: string, correct: bool}>  $answers
      */
@@ -66,12 +69,20 @@ class GameResultController extends Controller
             return;
         }
 
-        $questions = Question::query()->whereIn('key', array_column($answers, 'key'))->pluck('id', 'key');
+        $questions = Question::query()->whereIn('key', array_column($answers, 'key'))->get(['id', 'key', 'source', 'created_by'])->keyBy('key');
+        $rate = null;
 
         foreach ($answers as $answer) {
-            $questionId = $questions[$answer['key']] ?? null;
-            if ($questionId === null) {
+            $question = $questions->get($answer['key']);
+            if ($question === null) {
                 continue;
+            }
+            $questionId = $question->id;
+
+            $compensation = 0;
+            if ($answer['correct'] && $question->isTeacherAuthored()) {
+                $rate ??= (int) (QuestionCompensationRate::amounts()[$history->grade] ?? 0);
+                $compensation = $rate;
             }
 
             QuestionAnswer::query()->create([
@@ -79,6 +90,7 @@ class GameResultController extends Controller
                 'game_history_id' => $history->id,
                 'game_key' => $history->game_key,
                 'correct' => (bool) $answer['correct'],
+                'compensation' => $compensation,
             ]);
 
             Question::query()->whereKey($questionId)->incrementEach([

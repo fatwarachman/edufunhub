@@ -78,6 +78,7 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'email_verified_at' => $user->email_verified_at,
                     'is_superadmin' => $user->is_superadmin,
+                    'is_teacher' => $user->isTeacher(),
                     'locale' => $user->locale,
                     'onboarded_at' => $user->onboarded_at,
                     'avatar_url' => $user->avatar_url,
@@ -111,6 +112,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
+                'importErrors' => $request->session()->get('importErrors'),
                 'info' => $request->session()->get('info'),
                 'token' => $request->session()->get('token'),
             ],

@@ -17,6 +17,7 @@ import {
     screenToWorldDir,
     type WorldData,
 } from '@/lib/flag-quest/world';
+import { hasGrade, KINDERGARTEN } from '@/lib/grade';
 import { type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import {
@@ -483,9 +484,12 @@ export default function FlagQuest({
                     ? Math.min((now - rs.startedAt) / rs.duration, 1)
                     : 0,
                 completed: completeRef.current !== null,
-                gradeLabel: t('flagQuest.gradeShort', {
-                    grade: player.grade ?? '-',
-                }),
+                gradeLabel:
+                    player.grade === KINDERGARTEN
+                        ? t('player.kindergartenShort')
+                        : t('flagQuest.gradeShort', {
+                              grade: player.grade ?? '-',
+                          }),
             });
 
             const mini = miniRef.current;
@@ -548,8 +552,10 @@ export default function FlagQuest({
         runtime.current.joystick = { x: 0, y: 0 };
     };
 
-    const gradeLabel = player.grade
-        ? t('flagQuest.grade', { grade: player.grade })
+    const gradeLabel = hasGrade(player.grade)
+        ? player.grade === KINDERGARTEN
+            ? t('player.kindergarten')
+            : t('flagQuest.grade', { grade: player.grade })
         : t('flagQuest.noGrade');
     const missions = conn.welcome?.missions ?? [];
     const allCleared = world ? cleared === world.checkpoints.length : false;

@@ -20,7 +20,8 @@ class PlayerProfile extends Model
 
     public const ACCESSORIES = ['none', 'cap', 'glasses'];
 
-    public const MIN_GRADE = 1;
+    /** 0 is kindergarten (TK). */
+    public const MIN_GRADE = 0;
 
     public const MAX_GRADE = 12;
 

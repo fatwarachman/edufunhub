@@ -75,11 +75,37 @@ export function initializeTheme() {
     mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
+const APPEARANCE_EVENT = 'appearance-change';
+
+const resolveAppearance = (appearance: Appearance): 'light' | 'dark' =>
+    appearance === 'dark' || (appearance === 'system' && prefersDark())
+        ? 'dark'
+        : 'light';
+
+const storedAppearance = (): Appearance => {
+    if (typeof window === 'undefined') {
+        return 'system';
+    }
+
+    const saved = localStorage.getItem('appearance');
+
+    return saved === 'light' || saved === 'dark' ? saved : 'system';
+};
+
+/**
+ * `appearance` is the saved choice (light, dark or system); `resolvedAppearance`
+ * is what is on screen. Toggles must flip the resolved value: with the saved
+ * choice "system" on a dark-mode phone, setting "dark" would change nothing.
+ */
 export function useAppearance() {
-    const [appearance, setAppearance] = useState<Appearance>('system');
+    const [appearance, setAppearance] = useState<Appearance>(storedAppearance);
+    const [resolvedAppearance, setResolvedAppearance] = useState<
+        'light' | 'dark'
+    >(() => resolveAppearance(storedAppearance()));
 
     const updateAppearance = useCallback((mode: Appearance) => {
         setAppearance(mode);
+        setResolvedAppearance(resolveAppearance(mode));
 
         // Store in localStorage for client-side persistence...
         localStorage.setItem('appearance', mode);
@@ -88,22 +114,41 @@ export function useAppearance() {
         setCookie('appearance', mode);
 
         applyTheme(mode);
+
+        // Keep every other mounted toggle in sync.
+        window.dispatchEvent(
+            new CustomEvent<Appearance>(APPEARANCE_EVENT, { detail: mode }),
+        );
     }, []);
 
     useEffect(() => {
-        const savedAppearance = localStorage.getItem(
-            'appearance',
-        ) as Appearance | null;
+        const sync = () => {
+            const mode = storedAppearance();
+            setAppearance(mode);
+            setResolvedAppearance(resolveAppearance(mode));
+        };
+        const media = mediaQuery();
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        updateAppearance(savedAppearance || 'system');
+        applyTheme(storedAppearance());
+        window.addEventListener(APPEARANCE_EVENT, sync);
+        window.addEventListener('storage', sync);
+        media?.addEventListener('change', sync);
 
-        return () =>
-            mediaQuery()?.removeEventListener(
-                'change',
-                handleSystemThemeChange,
-            );
-    }, [updateAppearance]);
+        return () => {
+            window.removeEventListener(APPEARANCE_EVENT, sync);
+            window.removeEventListener('storage', sync);
+            media?.removeEventListener('change', sync);
+        };
+    }, []);
 
-    return { appearance, updateAppearance } as const;
+    const toggleAppearance = useCallback(() => {
+        updateAppearance(resolvedAppearance === 'dark' ? 'light' : 'dark');
+    }, [resolvedAppearance, updateAppearance]);
+
+    return {
+        appearance,
+        resolvedAppearance,
+        updateAppearance,
+        toggleAppearance,
+    } as const;
 }

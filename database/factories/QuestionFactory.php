@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Question;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -43,6 +44,22 @@ class QuestionFactory extends Factory
             'options' => null,
             'answer' => $answer ? 1 : 0,
             'games' => ['flag-quest'],
+        ]);
+    }
+
+    /**
+     * A question authored by a teacher for explicit grades.
+     *
+     * @param  list<int>  $grades
+     */
+    public function byTeacher(User $teacher, array $grades = [5]): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'source' => 'teacher',
+            'created_by' => $teacher->id,
+            'updated_by' => $teacher->id,
+            'grades' => $grades,
+            'band' => Question::bandForGrades($grades),
         ]);
     }
 

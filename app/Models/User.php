@@ -184,6 +184,24 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Teachers (role "guru") and super admins can author questions in the teacher portal.
+     */
+    public function isTeacher(): bool
+    {
+        return (bool) $this->is_superadmin || $this->hasRole(Role::TEACHER);
+    }
+
+    /**
+     * Questions this user authored.
+     *
+     * @return HasMany<Question, $this>
+     */
+    public function authoredQuestions(): HasMany
+    {
+        return $this->hasMany(Question::class, 'created_by');
+    }
+
+    /**
      * Check whether this user has a given global role.
      */
     public function hasRole(string $slug): bool

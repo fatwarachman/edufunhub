@@ -46,7 +46,8 @@
         "gradeBands": {
             "sd": "Primary",
             "smp": "Junior high",
-            "sma": "Senior high"
+            "sma": "Senior high",
+            "tk": "Kindergarten"
         },
         "portal": "Portal",
         "openPortal": "Open game portal",
@@ -59,7 +60,9 @@
         "age_other": "{{count}} years old",
         "detailsSave": "Save details",
         "detailsSaved": "Details saved.",
-        "detailsMissing": "Participant details incomplete"
+        "detailsMissing": "Participant details incomplete",
+        "kindergarten": "Kindergarten (TK)",
+        "kindergartenShort": "TK"
     },
     "flagQuest": {
         "title": "Flag Quest",
@@ -276,7 +279,8 @@
         "backToPortal": "Back to portal",
         "backToGames": "Back to games",
         "backToDashboard": "Back to home",
-        "backToLogin": "Back to login"
+        "backToLogin": "Back to login",
+        "teacher": "Teacher room"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -353,5 +357,145 @@
         "progressCorrect": "{{correct}} correct",
         "finished": "Flight finished. See your results below.",
         "finishedPassed": "Great job! You answered more than 70% correctly."
+    },
+    "teacher": {
+        "title": "Teacher room",
+        "badge": "TEACHER ROOM",
+        "heading": "Your questions",
+        "intro": "Track how your questions are used, how players answer them and the compensation earned for every correct answer.",
+        "create": "Create question",
+        "import": "Import questions",
+        "stats": {
+            "questions": "Questions created",
+            "questionsHint": "{{active}} active · {{used}} already used",
+            "used": "Used",
+            "usedHint": "answers by {{players}} players",
+            "correct": "Correct answers",
+            "wrong": "Wrong answers",
+            "successRate": "{{rate}} correct",
+            "compensation": "Compensation",
+            "compensationHint": "from {{count}} correct answers",
+            "byGame": "Used in games",
+            "byLevel": "Used by school level",
+            "byGrade": "Used by grade",
+            "answered": "Answered",
+            "players": "Players",
+            "empty": "No data yet",
+            "emptyHint": "Statistics appear once players answer your questions in a game."
+        },
+        "rates": {
+            "title": "Compensation per correct answer",
+            "note": "Set by the admin. Compensation is calculated when a player answers correctly, based on the player's grade."
+        },
+        "list": {
+            "title": "Question list",
+            "search": "Search questions…",
+            "allGrades": "All grades",
+            "allSubjects": "All subjects",
+            "question": "Question",
+            "grades": "Grades",
+            "usage": "Usage",
+            "compensation": "Compensation",
+            "actions": "Actions",
+            "edit": "Edit",
+            "delete": "Delete",
+            "confirmDelete": "Delete this question? Its statistics will be deleted too.",
+            "inactive": "Inactive",
+            "emptyTitle": "No questions yet",
+            "emptyHint": "Create your first question or import a CSV file.",
+            "noMatch": "No questions match the filters.",
+            "playedIn": "Played in",
+            "playedBy": "Answered by grade",
+            "prev": "Previous",
+            "next": "Next",
+            "page": "Page {{current}} of {{last}}"
+        },
+        "form": {
+            "createTitle": "Create a question",
+            "editTitle": "Edit question",
+            "back": "Back to teacher room",
+            "placement": "Who is this question for",
+            "placementNote": "Choose the player grades that receive this question. You can pick more than one.",
+            "grades": "Grades",
+            "selectLevel": "Select all {{level}}",
+            "subject": "Subject",
+            "type": "Question type",
+            "choice": "Multiple choice",
+            "trueFalse": "True / false",
+            "games": "Show in games",
+            "skyChoiceOnly": "Sky Quiz only uses multiple choice questions.",
+            "question": "Question",
+            "questionNote": "Indonesian is required; English is shown when the player chooses English.",
+            "promptId": "Question (Indonesian)",
+            "promptEn": "Question (English, optional)",
+            "answer": "Answer",
+            "answerChoiceNote": "Add 3–6 options and mark the correct one. Options are shuffled in the game.",
+            "answerTrueFalseNote": "Is the statement true or false?",
+            "option": "Option {{number}}",
+            "optionEn": "English (optional)",
+            "markCorrect": "Mark option {{number}} as correct",
+            "removeOption": "Remove option {{number}}",
+            "addOption": "Add option",
+            "true": "True",
+            "false": "False",
+            "hintId": "Explanation after answering (Indonesian)",
+            "hintEn": "Explanation (English)",
+            "active": "Active (shown to players)",
+            "cancel": "Cancel",
+            "save": "Save changes",
+            "create": "Save question",
+            "saving": "Saving…"
+        },
+        "importPage": {
+            "title": "Import questions from CSV",
+            "intro": "Upload many questions at once with the CSV template. Fill it in Excel, Google Sheets or LibreOffice.",
+            "download": "Download CSV template",
+            "steps": "How to import",
+            "step1": "Download the template and fill one question per row. Remove the sample rows before uploading.",
+            "step2": "Save as CSV (UTF-8). Comma and semicolon separators are both supported.",
+            "step3": "Upload the file. Every row is checked first; if any row is wrong, nothing is saved.",
+            "columns": "Column guide",
+            "column": "Column",
+            "description": "Description",
+            "required": "Required",
+            "file": "CSV file",
+            "choose": "Choose a CSV file",
+            "selected": "Selected file: {{name}}",
+            "upload": "Import questions",
+            "uploading": "Importing…",
+            "maxRows": "At most {{count}} questions per file, up to 2 MB.",
+            "errorsTitle": "Import cancelled",
+            "errorsIntro": "Fix these rows and upload again:",
+            "row": "Row {{row}}",
+            "docs": {
+                "type": "choice (multiple choice) or true_false. Also accepts mc / tf.",
+                "grades": "Target grades separated by semicolons: TK;1;2 or a range such as 4-6.",
+                "subject": "math, science, language, social, english or civics.",
+                "games": "flag-quest and/or sky-quiz separated by semicolons. Empty = every matching game.",
+                "question_id": "Question in Indonesian.",
+                "question_en": "Question in English (optional).",
+                "options": "option_1_id … option_6_id: answer options (at least 3 for multiple choice). _en columns are optional.",
+                "answer": "Multiple choice: number of the correct option (1–6) or letter A–F. True/false: true/false or benar/salah.",
+                "hint": "hint_id / hint_en: explanation after answering (optional)."
+            }
+        },
+        "subjects": {
+            "math": "Math",
+            "science": "Science",
+            "language": "Bahasa Indonesia",
+            "social": "Social studies",
+            "english": "English",
+            "civics": "Civics"
+        },
+        "games": {
+            "flag-quest": "Flag Quest",
+            "sky-quiz": "Sukhoi Sky Quiz"
+        },
+        "levels": {
+            "tk": "Kindergarten",
+            "sd": "Elementary",
+            "smp": "Junior high",
+            "sma": "Senior high"
+        }
     }
 }

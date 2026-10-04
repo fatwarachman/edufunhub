@@ -4,6 +4,7 @@ import PlayerCharacter, {
 import { NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
+import { gradeLabel, hasGrade } from '@/lib/grade';
 import {
     CircleAlert,
     Coins,
@@ -132,10 +133,8 @@ export default function Portal({
                     <div className="flex flex-wrap gap-2 text-sm font-bold">
                         <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-[#151b2e] bg-[#6c5ce7] px-3 py-1 text-white">
                             <GraduationCap className="size-4" />
-                            {player.grade
-                                ? t('player.gradeOption', {
-                                      grade: player.grade,
-                                  })
+                            {hasGrade(player.grade)
+                                ? gradeLabel(t, player.grade)
                                 : t('player.gradeMissing')}
                         </span>
                         <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-[#151b2e] bg-white px-3 py-1">
@@ -172,7 +171,7 @@ export default function Portal({
                             })}
                         </p>
                     </div>
-                    {!player.grade && (
+                    {!hasGrade(player.grade) && (
                         <NavButton
                             href="/dashboard#grade"
                             icon={GraduationCap}

@@ -10,6 +10,7 @@ import {
     useSkyConnection,
 } from '@/hooks/use-sky-connection';
 import { useTranslations } from '@/hooks/use-translations';
+import { hasGrade, KINDERGARTEN } from '@/lib/grade';
 import {
     createLocalReferee,
     hasPassed,
@@ -1076,10 +1077,12 @@ export default function SkyQuiz({
                                     <GraduationCap className="size-4" />
                                     <span className="truncate">
                                         {player.name} •{' '}
-                                        {player.grade
-                                            ? t('sky.grade', {
-                                                  grade: player.grade,
-                                              })
+                                        {hasGrade(player.grade)
+                                            ? player.grade === KINDERGARTEN
+                                                ? t('player.kindergarten')
+                                                : t('sky.grade', {
+                                                      grade: player.grade,
+                                                  })
                                             : t('sky.noGrade')}
                                     </span>
                                 </span>
@@ -1248,7 +1251,9 @@ export default function SkyQuiz({
                 <div className="rounded-xl border-2 border-[#20364a] bg-[#fff9e6] px-4 py-3">
                     <span className="text-xs font-bold text-[#845ec2]">
                         {subject}
-                        {grade ? ` • ${t('sky.grade', { grade })}` : ''}
+                        {hasGrade(grade)
+                            ? ` • ${grade === KINDERGARTEN ? t('player.kindergarten') : t('sky.grade', { grade })}`
+                            : ''}
                     </span>
                     <p
                         className="font-display text-lg font-bold sm:text-xl"

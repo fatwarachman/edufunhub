@@ -95,7 +95,7 @@ class QuestionController extends Controller
             ->paginate(20)
             ->withQueryString()
             ->through(fn (Question $question): array => [
-                ...$question->only(['id', 'key', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'games', 'is_active', 'source', 'times_answered', 'times_correct']),
+                ...$question->only(['id', 'key', 'type', 'band', 'grades', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'games', 'is_active', 'source', 'times_answered', 'times_correct']),
                 'author' => $question->author?->name,
                 'success_rate' => $question->successRate(),
             ]);
@@ -161,7 +161,12 @@ class QuestionController extends Controller
 
     public function update(QuestionRequest $request, Question $question): RedirectResponse
     {
-        $question->update([...$request->validated(), 'updated_by' => $request->user()->id]);
+        $data = $request->validated();
+        if ($question->grades !== null && (int) $data['band'] !== $question->band) {
+            $data['grades'] = null;
+        }
+
+        $question->update([...$data, 'updated_by' => $request->user()->id]);
 
         activity()->causedBy($request->user())->performedOn($question)->log('Updated question');
 

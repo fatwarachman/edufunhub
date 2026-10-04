@@ -9,12 +9,14 @@ import {
     ChartColumnBig,
     ChevronLeft,
     ChevronRight,
+    Coins,
     Gauge,
     KeyRound,
     Lock,
     LogOut,
     Menu,
     Moon,
+    Server,
     ListChecks,
     Settings,
     ShieldCheck,
@@ -44,6 +46,8 @@ const navItems: NavItem[] = [
     { title: 'Game Statistics', href: '/admin/games', icon: ChartColumnBig, superadminOnly: true },
     { title: 'Leaderboard', href: '/admin/leaderboard', icon: Trophy, superadminOnly: true },
     { title: 'Question Bank', href: '/admin/questions', icon: ListChecks, superadminOnly: true },
+    { title: 'Teacher Compensation', href: '/admin/compensation', icon: Coins, superadminOnly: true },
+    { title: 'Server Monitor', href: '/admin/server-monitor', icon: Server, superadminOnly: true },
     { title: 'Activity Log', href: '/admin/activity-log', icon: Activity },
     { title: 'Settings', href: '/admin/settings', icon: Settings },
 ];
@@ -60,7 +64,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children, title }: AdminLayoutProps) {
     const { auth } = usePage<SharedData>().props;
-    const { appearance, updateAppearance } = useAppearance();
+    const { resolvedAppearance, toggleAppearance } = useAppearance();
     const getInitials = useInitials();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -89,10 +93,6 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
         e.preventDefault();
         router.post('/logout');
     }, []);
-
-    const toggleTheme = useCallback(() => {
-        updateAppearance(appearance === 'dark' ? 'light' : 'dark');
-    }, [appearance, updateAppearance]);
 
     const user = auth.user;
     const initials = getInitials(user.name);
@@ -248,11 +248,11 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     <div className="ml-auto flex items-center gap-2">
                         {/* Theme toggle */}
                         <button
-                            onClick={toggleTheme}
+                            onClick={toggleAppearance}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             aria-label="Toggle theme"
                         >
-                            {appearance === 'dark' ? (
+                            {resolvedAppearance === 'dark' ? (
                                 <Sun className="size-4" />
                             ) : (
                                 <Moon className="size-4" />

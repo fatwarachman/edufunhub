@@ -13,6 +13,10 @@ import {
     UserAvatar,
 } from '@/components/admin/dashboard-kit';
 import {
+    type DeviceSummary,
+    DeviceUsagePanels,
+} from '@/components/admin/device-usage';
+import {
     EmptyState,
     formatNumber,
     formatPercent,
@@ -78,6 +82,7 @@ interface Kpis {
 
 interface DashboardProps {
     kpis: Kpis;
+    devices: DeviceSummary;
     daily: {
         date: string;
         signups: number;
@@ -707,6 +712,13 @@ export default function Dashboard(props: DashboardProps) {
                         </div>
                     </Panel>
                 </div>
+
+                {/* Devices */}
+                <SectionHeading
+                    title="How they play"
+                    description="Device type, operating system and browser used to open games"
+                />
+                <DeviceUsagePanels devices={props.devices} />
 
                 {/* Rankings */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

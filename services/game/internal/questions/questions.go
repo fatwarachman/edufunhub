@@ -34,7 +34,7 @@ type Question struct {
 	FromBank bool
 }
 
-// Band maps a school grade (1-12) to a band index 0..3.
+// Band maps a school grade (0 = kindergarten, 1-12) to a band index 0..3.
 func Band(grade int) int {
 	switch {
 	case grade <= 3:
@@ -201,7 +201,7 @@ func (g *Generator) pick(items []Item) (Item, bool) {
 
 // Choice returns a multiple choice question: bank question or generated arithmetic.
 func (g *Generator) Choice() Question {
-	if it, ok := g.pick(Current().choices(g.bank(), g.Game)); ok {
+	if it, ok := g.pick(Current().choices(g.Grade, g.Game)); ok {
 		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true}
 		g.shuffle(&q)
 		return q
@@ -235,7 +235,7 @@ func (g *Generator) Choice() Question {
 
 // TrueFalse returns a statement question.
 func (g *Generator) TrueFalse() Question {
-	if it, ok := g.pick(Current().truths(g.bank(), g.Game)); ok {
+	if it, ok := g.pick(Current().truths(g.Grade, g.Game)); ok {
 		return Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Answer: it.Answer, FromBank: true}
 	}
 	a, b, op, ans := g.arithmetic()

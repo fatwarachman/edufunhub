@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\PlayerProfile;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -76,6 +77,20 @@ class UserFactory extends Factory
     public function withPlayerDetails(): static
     {
         return $this->has(PlayerProfile::factory(), 'playerProfile');
+    }
+
+    /**
+     * Give the user the teacher ("guru") role.
+     */
+    public function teacher(): static
+    {
+        return $this->afterCreating(function (User $user): void {
+            $role = Role::query()->firstOrCreate(
+                ['slug' => Role::TEACHER],
+                ['name' => 'Guru', 'description' => 'Membuat dan mengelola quiz untuk kelas', 'is_system' => true],
+            );
+            $user->roles()->syncWithoutDetaching([$role->id]);
+        });
     }
 
     /**

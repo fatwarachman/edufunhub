@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\DeviceAnalytics;
 use App\Services\UserAnalytics;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,13 +17,14 @@ class DashboardController extends Controller
     /**
      * Render the admin dashboard: platform KPIs, game activity, player demographics and recent activity.
      */
-    public function index(UserAnalytics $analytics): Response
+    public function index(UserAnalytics $analytics, DeviceAnalytics $devices): Response
     {
         $newUsers30d = User::query()->where('created_at', '>=', now()->subDays(30))->count();
         $previous30d = User::query()->whereBetween('created_at', [now()->subDays(60), now()->subDays(30)])->count();
 
         return Inertia::render('admin/dashboard', [
             ...$analytics->dashboard(),
+            'devices' => $devices->summary(),
             'metrics' => [
                 'total_users' => User::query()->count(),
                 'total_superadmins' => User::query()->where('is_superadmin', true)->count(),

@@ -9,11 +9,15 @@ use App\Http\Controllers\GradeController;
 use App\Http\Controllers\PlayerDetailsController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\SkyQuizController;
+use App\Http\Controllers\Teacher\TeacherQuestionController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Middleware\EnsurePlayerDetailsComplete;
 use App\Http\Middleware\EnsurePlayerIsActive;
+use App\Http\Middleware\EnsureTeacher;
+use App\Http\Middleware\RecordGameAccess;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
 // 1. Landing Page (Bauhaus Geometric)
 Route::get('/', function () {
@@ -28,8 +32,16 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::patch('/grade', [GradeController::class, 'update'])->name('grade.update');
     Route::patch('/player-details', [PlayerDetailsController::class, 'update'])->name('player-details.update');
 
+    // Teacher portal: question statistics, authoring and CSV import.
+    Route::middleware(EnsureTeacher::class)->prefix('teacher')->name('teacher.')->group(function (): void {
+        Route::get('/questions/import', [TeacherQuestionController::class, 'importForm'])->name('questions.import');
+        Route::post('/questions/import', [TeacherQuestionController::class, 'import'])->middleware('throttle:10,1')->name('questions.import.store');
+        Route::get('/questions/template', [TeacherQuestionController::class, 'template'])->name('questions.template');
+        Route::resource('questions', TeacherQuestionController::class)->except(['show']);
+    });
+
     Route::middleware(EnsurePlayerDetailsComplete::class)->group(function (): void {
-        Route::get('/games/flag-quest', [FlagQuestController::class, 'show'])->name('games.flag-quest');
+        Route::get('/games/flag-quest', [FlagQuestController::class, 'show'])->middleware(RecordGameAccess::class.':flag-quest')->name('games.flag-quest');
         Route::post('/games/flag-quest/token', [FlagQuestController::class, 'token'])->middleware('throttle:30,1')->name('games.flag-quest.token');
     });
 });
@@ -47,9 +59,9 @@ Route::get('/gamelist', function () {
 Route::middleware(EnsurePlayerDetailsComplete::class)->group(function (): void {
     Route::get('/games/snakes-and-ladders', function () {
         return Inertia::render('games/snakes-and-ladders');
-    })->name('games.snakes-and-ladders');
+    })->middleware(RecordGameAccess::class.':snakes-and-ladders')->name('games.snakes-and-ladders');
 
-    Route::get('/games/sky-quiz', [SkyQuizController::class, 'show'])->name('games.sky-quiz');
+    Route::get('/games/sky-quiz', [SkyQuizController::class, 'show'])->middleware(RecordGameAccess::class.':sky-quiz')->name('games.sky-quiz');
 });
 
 Route::post('/games/sky-quiz/token', [SkyQuizController::class, 'token'])
@@ -59,7 +71,7 @@ Route::post('/games/sky-quiz/token', [SkyQuizController::class, 'token'])
 // ── Auth Routes ──────────────────────────────────────────────
 Route::middleware('guest')->group(function (): void {
     Route::get('/admin/login', [LoginController::class, 'showLoginForm'])->name('admin.login');
-    Route::post('/admin/login', [\Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('admin.login.store');
+    Route::post('/admin/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:login')->name('admin.login.store');
     Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->middleware('throttle:10,1')->name('google.redirect');
     Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:10,1')->name('google.callback');
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
