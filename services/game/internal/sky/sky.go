@@ -94,6 +94,8 @@ type Result struct {
 	Wrong       int    `json:"wrong"`
 	Seconds     int    `json:"duration_seconds"`
 	CompletedAt string `json:"completed_at"`
+	// Answers lists bank questions answered during the flight.
+	Answers []questions.Answer `json:"answers"`
 }
 
 // Session is one player's flight. Safe for concurrent use.
@@ -118,6 +120,7 @@ type Session struct {
 	drones    int
 	pausedAt  time.Time
 	history   []bool
+	answers   []questions.Answer
 	result    *Result
 	reported  bool
 	LastSeen  time.Time
@@ -155,7 +158,7 @@ func (s *Session) Start(now time.Time) Message {
 	defer s.mu.Unlock()
 	s.LastSeen = now
 	s.seed++
-	s.gen = questions.New(s.Claims.Grade, s.seed)
+	s.gen = questions.NewFor(GameKey, s.Claims.Grade, s.seed)
 	s.phase = PhaseQuestion
 	s.round, s.shields, s.score, s.correct, s.wrong = 0, Shields, 0, 0, 0
 	s.started = now
@@ -163,6 +166,7 @@ func (s *Session) Start(now time.Time) Message {
 	s.lastHit = time.Time{}
 	s.pausedAt = time.Time{}
 	s.history = []bool{}
+	s.answers = nil
 	s.nextQuestion(now, 0)
 	return s.stateLocked(nil, now)
 }
@@ -377,6 +381,9 @@ func (s *Session) resolve(kind string, score, damage int, now time.Time) (Messag
 	}
 	s.shields = max(0, s.shields-damage)
 	s.history = append(s.history, kind == FeedbackCorrect)
+	if s.question.FromBank {
+		s.answers = append(s.answers, questions.Answer{Key: s.question.Key, Correct: kind == FeedbackCorrect})
+	}
 	s.round++
 	var res *Result
 	if s.shields == 0 || s.round >= Rounds {
@@ -404,6 +411,7 @@ func (s *Session) finish(now time.Time) *Result {
 		Wrong:       s.wrong,
 		Seconds:     int(now.Sub(s.started).Seconds()),
 		CompletedAt: now.UTC().Format(time.RFC3339),
+		Answers:     append([]questions.Answer{}, s.answers...),
 	}
 	return s.result
 }

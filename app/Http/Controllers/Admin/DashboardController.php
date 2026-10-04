@@ -6,75 +6,50 @@ use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Services\UserAnalytics;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Activitylog\Models\Activity;
 
 class DashboardController extends Controller
 {
     /**
-     * Render the admin dashboard with aggregate stats and recent activity.
+     * Render the admin dashboard: platform KPIs, game activity, player demographics and recent activity.
      */
-    public function index(): Response
+    public function index(UserAnalytics $analytics): Response
     {
-        $stats = [
-            'total_users'       => User::query()->count(),
-            'active_users'      => User::query()->where('last_seen_at', '>=', now()->subDays(30))->count(),
-            'total_roles'       => Role::query()->count(),
-            'total_permissions' => Permission::query()->count(),
-        ];
-
-        // Pull recent activity from the activity_log table (Spatie Activitylog).
-        // Falls back to empty array when table is empty or model unavailable.
-        $recentActivity = [];
-
-        try {
-            $recentActivity = DB::table('activity_log')
-                ->orderByDesc('created_at')
-                ->limit(10)
-                ->get()
-                ->map(fn ($row) => [
-                    'id'           => $row->id,
-                    'log_name'     => $row->log_name ?? 'default',
-                    'description'  => $row->description,
-                    'subject_type' => $row->subject_type,
-                    'subject_id'   => $row->subject_id,
-                    'causer_type'  => $row->causer_type,
-                    'causer_id'    => $row->causer_id,
-                    'causer_name'  => null,
-                    'properties'   => json_decode($row->properties ?? '{}', true),
-                    'created_at'   => $row->created_at,
-                ])
-                ->toArray();
-
-            // Enrich with causer names in one query
-            $causerIds = collect($recentActivity)
-                ->where('causer_type', '=', User::class)
-                ->pluck('causer_id')
-                ->unique()
-                ->filter()
-                ->values();
-
-            if ($causerIds->isNotEmpty()) {
-                $names = User::query()
-                    ->whereIn('id', $causerIds)
-                    ->pluck('name', 'id');
-
-                $recentActivity = array_map(function ($row) use ($names) {
-                    if ($row['causer_type'] === User::class && $row['causer_id']) {
-                        $row['causer_name'] = $names[$row['causer_id']] ?? null;
-                    }
-
-                    return $row;
-                }, $recentActivity);
-            }
-        } catch (\Throwable) {
-            // activity_log table may not exist yet — keep empty array
-        }
+        $newUsers30d = User::query()->where('created_at', '>=', now()->subDays(30))->count();
+        $previous30d = User::query()->whereBetween('created_at', [now()->subDays(60), now()->subDays(30)])->count();
 
         return Inertia::render('admin/dashboard', [
-            'stats'          => $stats,
-            'recentActivity' => $recentActivity,
+            ...$analytics->dashboard(),
+            'metrics' => [
+                'total_users' => User::query()->count(),
+                'total_superadmins' => User::query()->where('is_superadmin', true)->count(),
+                'total_roles' => Role::query()->count(),
+                'total_permissions' => Permission::query()->count(),
+                'new_users_30d' => $newUsers30d,
+                'user_growth_percent' => $previous30d > 0 ? round(($newUsers30d - $previous30d) / $previous30d * 100, 1) : null,
+            ],
+            'sparklines' => [
+                'new_users' => collect(range(6, 0))->map(fn (int $ago): int => User::query()->whereDate('created_at', now()->subDays($ago)->toDateString())->count())->all(),
+            ],
+            'dailySignups' => collect(range(29, 0))->map(fn (int $ago): array => [
+                'date' => now()->subDays($ago)->toDateString(),
+                'count' => User::query()->whereDate('created_at', now()->subDays($ago)->toDateString())->count(),
+            ])->all(),
+            'roleDistribution' => Role::query()->withCount('users')->orderByDesc('users_count')->get(['id', 'name', 'slug'])
+                ->map(fn (Role $role): array => ['name' => $role->name, 'slug' => $role->slug, 'count' => $role->users_count])->all(),
+            'recent_users' => User::query()->latest('id')->limit(5)->get(['id', 'name', 'email', 'created_at']),
+            'recentActivity' => Activity::query()->with('causer')->latest('id')->limit(8)->get()
+                ->map(fn (Activity $activity): array => [
+                    'id' => $activity->id,
+                    'description' => $activity->description,
+                    'log_name' => $activity->log_name,
+                    'subject_type' => $activity->subject_type ? class_basename($activity->subject_type) : null,
+                    'causer_name' => $activity->causer?->name,
+                    'created_at' => $activity->created_at?->toIso8601String(),
+                ])->all(),
         ]);
     }
 }

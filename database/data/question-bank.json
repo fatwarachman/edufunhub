@@ -1,0 +1,1821 @@
+{
+  "questions": [
+    {
+      "key": "mc-0-0",
+      "type": "choice",
+      "band": 0,
+      "subject": "science",
+      "prompt": {
+        "id": "Hewan yang hidup di air dan bernapas dengan insang adalah…",
+        "en": "An animal that lives in water and breathes with gills is a…"
+      },
+      "options": [
+        {
+          "id": "Ikan",
+          "en": "Fish"
+        },
+        {
+          "id": "Kucing",
+          "en": "Cat"
+        },
+        {
+          "id": "Ayam",
+          "en": "Chicken"
+        },
+        {
+          "id": "Kambing",
+          "en": "Goat"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Insang ada pada ikan.",
+        "en": "Fish have gills."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-0-1",
+      "type": "choice",
+      "band": 0,
+      "subject": "science",
+      "prompt": {
+        "id": "Matahari terbit dari arah…",
+        "en": "The sun rises in the…"
+      },
+      "options": [
+        {
+          "id": "Timur",
+          "en": "East"
+        },
+        {
+          "id": "Barat",
+          "en": "West"
+        },
+        {
+          "id": "Utara",
+          "en": "North"
+        },
+        {
+          "id": "Selatan",
+          "en": "South"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Matahari terbit di timur.",
+        "en": "The sun rises in the east."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-0-2",
+      "type": "choice",
+      "band": 0,
+      "subject": "science",
+      "prompt": {
+        "id": "Tumbuhan membutuhkan … untuk tumbuh.",
+        "en": "Plants need … to grow."
+      },
+      "options": [
+        {
+          "id": "Air dan cahaya",
+          "en": "Water and light"
+        },
+        {
+          "id": "Pasir saja",
+          "en": "Only sand"
+        },
+        {
+          "id": "Plastik",
+          "en": "Plastic"
+        },
+        {
+          "id": "Gelap",
+          "en": "Darkness"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Tumbuhan butuh air dan cahaya matahari.",
+        "en": "Plants need water and sunlight."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-0-3",
+      "type": "choice",
+      "band": 0,
+      "subject": "language",
+      "prompt": {
+        "id": "Lawan kata \"besar\" adalah…",
+        "en": "The opposite of \"big\" is…"
+      },
+      "options": [
+        {
+          "id": "Kecil",
+          "en": "Small"
+        },
+        {
+          "id": "Tinggi",
+          "en": "Tall"
+        },
+        {
+          "id": "Luas",
+          "en": "Wide"
+        },
+        {
+          "id": "Berat",
+          "en": "Heavy"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Besar lawan katanya kecil.",
+        "en": "Big is the opposite of small."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-0-4",
+      "type": "choice",
+      "band": 0,
+      "subject": "language",
+      "prompt": {
+        "id": "Huruf vokal adalah…",
+        "en": "Which one is a vowel?"
+      },
+      "options": [
+        {
+          "id": "A",
+          "en": "A"
+        },
+        {
+          "id": "B",
+          "en": "B"
+        },
+        {
+          "id": "K",
+          "en": "K"
+        },
+        {
+          "id": "T",
+          "en": "T"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Vokal: A, I, U, E, O.",
+        "en": "Vowels: A, E, I, O, U."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-0-5",
+      "type": "choice",
+      "band": 0,
+      "subject": "social",
+      "prompt": {
+        "id": "Warna bendera Indonesia adalah…",
+        "en": "The colours of Indonesia's flag are…"
+      },
+      "options": [
+        {
+          "id": "Merah putih",
+          "en": "Red and white"
+        },
+        {
+          "id": "Biru putih",
+          "en": "Blue and white"
+        },
+        {
+          "id": "Merah kuning",
+          "en": "Red and yellow"
+        },
+        {
+          "id": "Hijau putih",
+          "en": "Green and white"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Sang Saka Merah Putih.",
+        "en": "The Red and White flag."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-0-6",
+      "type": "choice",
+      "band": 0,
+      "subject": "social",
+      "prompt": {
+        "id": "Dalam seminggu ada … hari.",
+        "en": "There are … days in a week."
+      },
+      "options": [
+        {
+          "id": "7",
+          "en": "7"
+        },
+        {
+          "id": "5",
+          "en": "5"
+        },
+        {
+          "id": "6",
+          "en": "6"
+        },
+        {
+          "id": "10",
+          "en": "10"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Senin sampai Minggu = 7 hari.",
+        "en": "Monday to Sunday = 7 days."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-0-7",
+      "type": "choice",
+      "band": 0,
+      "subject": "english",
+      "prompt": {
+        "id": "Bahasa Inggris dari \"kucing\" adalah…",
+        "en": "Which word means a small furry pet that says \"meow\"?"
+      },
+      "options": [
+        {
+          "id": "Cat",
+          "en": "Cat"
+        },
+        {
+          "id": "Dog",
+          "en": "Dog"
+        },
+        {
+          "id": "Bird",
+          "en": "Bird"
+        },
+        {
+          "id": "Fish",
+          "en": "Fish"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Kucing = cat.",
+        "en": "A cat says meow."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-0-8",
+      "type": "choice",
+      "band": 0,
+      "subject": "civics",
+      "prompt": {
+        "id": "Sila pertama Pancasila adalah…",
+        "en": "The first principle of Pancasila is…"
+      },
+      "options": [
+        {
+          "id": "Ketuhanan Yang Maha Esa",
+          "en": "Belief in the One and Only God"
+        },
+        {
+          "id": "Persatuan Indonesia",
+          "en": "Unity of Indonesia"
+        },
+        {
+          "id": "Keadilan sosial",
+          "en": "Social justice"
+        },
+        {
+          "id": "Kerakyatan",
+          "en": "Democracy"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Sila ke-1: Ketuhanan Yang Maha Esa.",
+        "en": "Principle 1: Belief in the One and Only God."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-0-9",
+      "type": "choice",
+      "band": 0,
+      "subject": "science",
+      "prompt": {
+        "id": "Bagian tubuh untuk melihat adalah…",
+        "en": "The body part we use to see is the…"
+      },
+      "options": [
+        {
+          "id": "Mata",
+          "en": "Eyes"
+        },
+        {
+          "id": "Telinga",
+          "en": "Ears"
+        },
+        {
+          "id": "Hidung",
+          "en": "Nose"
+        },
+        {
+          "id": "Lidah",
+          "en": "Tongue"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Kita melihat dengan mata.",
+        "en": "We see with our eyes."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-1-0",
+      "type": "choice",
+      "band": 1,
+      "subject": "science",
+      "prompt": {
+        "id": "Proses tumbuhan membuat makanan sendiri disebut…",
+        "en": "The process by which plants make their own food is called…"
+      },
+      "options": [
+        {
+          "id": "Fotosintesis",
+          "en": "Photosynthesis"
+        },
+        {
+          "id": "Respirasi",
+          "en": "Respiration"
+        },
+        {
+          "id": "Evaporasi",
+          "en": "Evaporation"
+        },
+        {
+          "id": "Penyerbukan",
+          "en": "Pollination"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Fotosintesis memakai cahaya matahari.",
+        "en": "Photosynthesis uses sunlight."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-1-1",
+      "type": "choice",
+      "band": 1,
+      "subject": "science",
+      "prompt": {
+        "id": "Planet terdekat dengan Matahari adalah…",
+        "en": "The planet closest to the Sun is…"
+      },
+      "options": [
+        {
+          "id": "Merkurius",
+          "en": "Mercury"
+        },
+        {
+          "id": "Venus",
+          "en": "Venus"
+        },
+        {
+          "id": "Bumi",
+          "en": "Earth"
+        },
+        {
+          "id": "Mars",
+          "en": "Mars"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Urutan: Merkurius, Venus, Bumi…",
+        "en": "Order: Mercury, Venus, Earth…"
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-1-2",
+      "type": "choice",
+      "band": 1,
+      "subject": "science",
+      "prompt": {
+        "id": "Perubahan wujud air menjadi uap disebut…",
+        "en": "Water changing into vapour is called…"
+      },
+      "options": [
+        {
+          "id": "Menguap",
+          "en": "Evaporation"
+        },
+        {
+          "id": "Membeku",
+          "en": "Freezing"
+        },
+        {
+          "id": "Mencair",
+          "en": "Melting"
+        },
+        {
+          "id": "Mengembun",
+          "en": "Condensation"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Cair ke gas = menguap.",
+        "en": "Liquid to gas = evaporation."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-1-3",
+      "type": "choice",
+      "band": 1,
+      "subject": "social",
+      "prompt": {
+        "id": "Ibu kota Provinsi Jawa Barat adalah…",
+        "en": "The capital of West Java province is…"
+      },
+      "options": [
+        {
+          "id": "Bandung",
+          "en": "Bandung"
+        },
+        {
+          "id": "Semarang",
+          "en": "Semarang"
+        },
+        {
+          "id": "Surabaya",
+          "en": "Surabaya"
+        },
+        {
+          "id": "Serang",
+          "en": "Serang"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Bandung adalah ibu kota Jawa Barat.",
+        "en": "Bandung is West Java's capital."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-1-4",
+      "type": "choice",
+      "band": 1,
+      "subject": "social",
+      "prompt": {
+        "id": "Proklamasi kemerdekaan Indonesia dibacakan tahun…",
+        "en": "Indonesia's independence was proclaimed in…"
+      },
+      "options": [
+        {
+          "id": "1945",
+          "en": "1945"
+        },
+        {
+          "id": "1942",
+          "en": "1942"
+        },
+        {
+          "id": "1949",
+          "en": "1949"
+        },
+        {
+          "id": "1950",
+          "en": "1950"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "17 Agustus 1945.",
+        "en": "17 August 1945."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-1-5",
+      "type": "choice",
+      "band": 1,
+      "subject": "language",
+      "prompt": {
+        "id": "Kalimat yang menggunakan tanda tanya adalah kalimat…",
+        "en": "A sentence that ends with a question mark is a…"
+      },
+      "options": [
+        {
+          "id": "Tanya",
+          "en": "Question"
+        },
+        {
+          "id": "Perintah",
+          "en": "Command"
+        },
+        {
+          "id": "Berita",
+          "en": "Statement"
+        },
+        {
+          "id": "Seru",
+          "en": "Exclamation"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Kalimat tanya diakhiri tanda tanya.",
+        "en": "Questions end with a question mark."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-1-6",
+      "type": "choice",
+      "band": 1,
+      "subject": "english",
+      "prompt": {
+        "id": "\"I … to school every day.\"",
+        "en": "\"I … to school every day.\""
+      },
+      "options": [
+        {
+          "id": "go",
+          "en": "go"
+        },
+        {
+          "id": "goes",
+          "en": "goes"
+        },
+        {
+          "id": "going",
+          "en": "going"
+        },
+        {
+          "id": "went",
+          "en": "went"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Subjek I memakai go.",
+        "en": "Subject I uses go."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-1-7",
+      "type": "choice",
+      "band": 1,
+      "subject": "civics",
+      "prompt": {
+        "id": "Lambang negara Indonesia adalah…",
+        "en": "Indonesia's national emblem is…"
+      },
+      "options": [
+        {
+          "id": "Garuda Pancasila",
+          "en": "Garuda Pancasila"
+        },
+        {
+          "id": "Bintang",
+          "en": "A star"
+        },
+        {
+          "id": "Banteng",
+          "en": "A bull"
+        },
+        {
+          "id": "Padi dan kapas",
+          "en": "Rice and cotton"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Garuda Pancasila.",
+        "en": "Garuda Pancasila."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-1-8",
+      "type": "choice",
+      "band": 1,
+      "subject": "science",
+      "prompt": {
+        "id": "Hewan pemakan tumbuhan disebut…",
+        "en": "Animals that eat only plants are called…"
+      },
+      "options": [
+        {
+          "id": "Herbivora",
+          "en": "Herbivores"
+        },
+        {
+          "id": "Karnivora",
+          "en": "Carnivores"
+        },
+        {
+          "id": "Omnivora",
+          "en": "Omnivores"
+        },
+        {
+          "id": "Dekomposer",
+          "en": "Decomposers"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Herbivora makan tumbuhan.",
+        "en": "Herbivores eat plants."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-1-9",
+      "type": "choice",
+      "band": 1,
+      "subject": "social",
+      "prompt": {
+        "id": "Mata uang Indonesia adalah…",
+        "en": "Indonesia's currency is the…"
+      },
+      "options": [
+        {
+          "id": "Rupiah",
+          "en": "Rupiah"
+        },
+        {
+          "id": "Ringgit",
+          "en": "Ringgit"
+        },
+        {
+          "id": "Baht",
+          "en": "Baht"
+        },
+        {
+          "id": "Peso",
+          "en": "Peso"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Rupiah (Rp).",
+        "en": "Rupiah (Rp)."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-2-0",
+      "type": "choice",
+      "band": 2,
+      "subject": "science",
+      "prompt": {
+        "id": "Satuan kuat arus listrik dalam SI adalah…",
+        "en": "The SI unit of electric current is the…"
+      },
+      "options": [
+        {
+          "id": "Ampere",
+          "en": "Ampere"
+        },
+        {
+          "id": "Volt",
+          "en": "Volt"
+        },
+        {
+          "id": "Ohm",
+          "en": "Ohm"
+        },
+        {
+          "id": "Watt",
+          "en": "Watt"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Arus diukur dalam ampere.",
+        "en": "Current is measured in amperes."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-2-1",
+      "type": "choice",
+      "band": 2,
+      "subject": "science",
+      "prompt": {
+        "id": "Organel tempat fotosintesis adalah…",
+        "en": "The organelle where photosynthesis happens is the…"
+      },
+      "options": [
+        {
+          "id": "Kloroplas",
+          "en": "Chloroplast"
+        },
+        {
+          "id": "Mitokondria",
+          "en": "Mitochondrion"
+        },
+        {
+          "id": "Ribosom",
+          "en": "Ribosome"
+        },
+        {
+          "id": "Vakuola",
+          "en": "Vacuole"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Kloroplas mengandung klorofil.",
+        "en": "Chloroplasts contain chlorophyll."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-2-2",
+      "type": "choice",
+      "band": 2,
+      "subject": "science",
+      "prompt": {
+        "id": "Rumus kimia air adalah…",
+        "en": "The chemical formula of water is…"
+      },
+      "options": [
+        {
+          "id": "H₂O",
+          "en": "H₂O"
+        },
+        {
+          "id": "CO₂",
+          "en": "CO₂"
+        },
+        {
+          "id": "O₂",
+          "en": "O₂"
+        },
+        {
+          "id": "NaCl",
+          "en": "NaCl"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Dua hidrogen, satu oksigen.",
+        "en": "Two hydrogens, one oxygen."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-2-3",
+      "type": "choice",
+      "band": 2,
+      "subject": "social",
+      "prompt": {
+        "id": "ASEAN didirikan melalui Deklarasi…",
+        "en": "ASEAN was founded through the … Declaration."
+      },
+      "options": [
+        {
+          "id": "Bangkok",
+          "en": "Bangkok"
+        },
+        {
+          "id": "Jakarta",
+          "en": "Jakarta"
+        },
+        {
+          "id": "Manila",
+          "en": "Manila"
+        },
+        {
+          "id": "Kuala Lumpur",
+          "en": "Kuala Lumpur"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Deklarasi Bangkok 1967.",
+        "en": "The 1967 Bangkok Declaration."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-2-4",
+      "type": "choice",
+      "band": 2,
+      "subject": "social",
+      "prompt": {
+        "id": "Garis khayal yang membagi bumi utara dan selatan adalah…",
+        "en": "The imaginary line dividing north and south is the…"
+      },
+      "options": [
+        {
+          "id": "Khatulistiwa",
+          "en": "Equator"
+        },
+        {
+          "id": "Meridian",
+          "en": "Meridian"
+        },
+        {
+          "id": "Garis balik",
+          "en": "Tropic"
+        },
+        {
+          "id": "Garis bujur",
+          "en": "Longitude"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Khatulistiwa = lintang 0°.",
+        "en": "The equator is 0° latitude."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-2-5",
+      "type": "choice",
+      "band": 2,
+      "subject": "language",
+      "prompt": {
+        "id": "Teks yang bertujuan meyakinkan pembaca disebut teks…",
+        "en": "A text written to convince readers is a … text."
+      },
+      "options": [
+        {
+          "id": "Persuasi",
+          "en": "Persuasive"
+        },
+        {
+          "id": "Narasi",
+          "en": "Narrative"
+        },
+        {
+          "id": "Deskripsi",
+          "en": "Descriptive"
+        },
+        {
+          "id": "Prosedur",
+          "en": "Procedure"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Persuasi = mengajak/meyakinkan.",
+        "en": "Persuasive texts convince."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-2-6",
+      "type": "choice",
+      "band": 2,
+      "subject": "english",
+      "prompt": {
+        "id": "Past tense of \"write\" is…",
+        "en": "The past tense of \"write\" is…"
+      },
+      "options": [
+        {
+          "id": "wrote",
+          "en": "wrote"
+        },
+        {
+          "id": "writed",
+          "en": "writed"
+        },
+        {
+          "id": "written",
+          "en": "written"
+        },
+        {
+          "id": "writes",
+          "en": "writes"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "write – wrote – written.",
+        "en": "write – wrote – written."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-2-7",
+      "type": "choice",
+      "band": 2,
+      "subject": "civics",
+      "prompt": {
+        "id": "Lembaga yang berwenang mengubah UUD 1945 adalah…",
+        "en": "The body authorised to amend the 1945 Constitution is the…"
+      },
+      "options": [
+        {
+          "id": "MPR",
+          "en": "MPR"
+        },
+        {
+          "id": "DPR",
+          "en": "DPR"
+        },
+        {
+          "id": "MA",
+          "en": "MA"
+        },
+        {
+          "id": "KPU",
+          "en": "KPU"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "MPR berwenang mengubah UUD.",
+        "en": "The MPR can amend the constitution."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-2-8",
+      "type": "choice",
+      "band": 2,
+      "subject": "math",
+      "prompt": {
+        "id": "Gradien garis y = 3x + 2 adalah…",
+        "en": "The gradient of y = 3x + 2 is…"
+      },
+      "options": [
+        {
+          "id": "3",
+          "en": "3"
+        },
+        {
+          "id": "2",
+          "en": "2"
+        },
+        {
+          "id": "5",
+          "en": "5"
+        },
+        {
+          "id": "1/3",
+          "en": "1/3"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "y = mx + c, m = 3.",
+        "en": "y = mx + c, m = 3."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-2-9",
+      "type": "choice",
+      "band": 2,
+      "subject": "math",
+      "prompt": {
+        "id": "Sudut-sudut segitiga berjumlah…",
+        "en": "The angles of a triangle add up to…"
+      },
+      "options": [
+        {
+          "id": "180°",
+          "en": "180°"
+        },
+        {
+          "id": "90°",
+          "en": "90°"
+        },
+        {
+          "id": "360°",
+          "en": "360°"
+        },
+        {
+          "id": "270°",
+          "en": "270°"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Jumlah sudut segitiga 180°.",
+        "en": "Triangle angles sum to 180°."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-3-0",
+      "type": "choice",
+      "band": 3,
+      "subject": "science",
+      "prompt": {
+        "id": "Hukum Newton II dirumuskan sebagai…",
+        "en": "Newton's second law is written as…"
+      },
+      "options": [
+        {
+          "id": "F = m·a",
+          "en": "F = m·a"
+        },
+        {
+          "id": "E = m·c²",
+          "en": "E = m·c²"
+        },
+        {
+          "id": "V = I·R",
+          "en": "V = I·R"
+        },
+        {
+          "id": "P = W/t",
+          "en": "P = W/t"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Gaya = massa × percepatan.",
+        "en": "Force = mass × acceleration."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-3-1",
+      "type": "choice",
+      "band": 3,
+      "subject": "science",
+      "prompt": {
+        "id": "Bilangan Avogadro kira-kira…",
+        "en": "Avogadro's number is approximately…"
+      },
+      "options": [
+        {
+          "id": "6,02 × 10²³",
+          "en": "6,02 × 10²³"
+        },
+        {
+          "id": "3,00 × 10⁸",
+          "en": "3,00 × 10⁸"
+        },
+        {
+          "id": "9,81",
+          "en": "9,81"
+        },
+        {
+          "id": "1,6 × 10⁻¹⁹",
+          "en": "1,6 × 10⁻¹⁹"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Jumlah partikel per mol.",
+        "en": "Particles per mole."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-3-2",
+      "type": "choice",
+      "band": 3,
+      "subject": "science",
+      "prompt": {
+        "id": "Molekul pembawa informasi genetik adalah…",
+        "en": "The molecule that carries genetic information is…"
+      },
+      "options": [
+        {
+          "id": "DNA",
+          "en": "DNA"
+        },
+        {
+          "id": "ATP",
+          "en": "ATP"
+        },
+        {
+          "id": "Glukosa",
+          "en": "Glukosa"
+        },
+        {
+          "id": "Lipid",
+          "en": "Lipid"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "DNA menyimpan kode genetik.",
+        "en": "DNA stores the genetic code."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-3-3",
+      "type": "choice",
+      "band": 3,
+      "subject": "math",
+      "prompt": {
+        "id": "Turunan dari f(x) = x³ adalah…",
+        "en": "The derivative of f(x) = x³ is…"
+      },
+      "options": [
+        {
+          "id": "3x²",
+          "en": "3x²"
+        },
+        {
+          "id": "x²",
+          "en": "x²"
+        },
+        {
+          "id": "3x",
+          "en": "3x"
+        },
+        {
+          "id": "x⁴/4",
+          "en": "x⁴/4"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "d/dx xⁿ = n·xⁿ⁻¹.",
+        "en": "d/dx xⁿ = n·xⁿ⁻¹."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-3-4",
+      "type": "choice",
+      "band": 3,
+      "subject": "math",
+      "prompt": {
+        "id": "Nilai sin 30° adalah…",
+        "en": "The value of sin 30° is…"
+      },
+      "options": [
+        {
+          "id": "1/2",
+          "en": "1/2"
+        },
+        {
+          "id": "√3/2",
+          "en": "√3/2"
+        },
+        {
+          "id": "1",
+          "en": "1"
+        },
+        {
+          "id": "0",
+          "en": "0"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "sin 30° = 0,5.",
+        "en": "sin 30° = 0.5."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-3-5",
+      "type": "choice",
+      "band": 3,
+      "subject": "math",
+      "prompt": {
+        "id": "log₁₀ 1000 = …",
+        "en": "log₁₀ 1000 = …"
+      },
+      "options": [
+        {
+          "id": "3",
+          "en": "3"
+        },
+        {
+          "id": "2",
+          "en": "2"
+        },
+        {
+          "id": "10",
+          "en": "10"
+        },
+        {
+          "id": "100",
+          "en": "100"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "10³ = 1000.",
+        "en": "10³ = 1000."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-3-6",
+      "type": "choice",
+      "band": 3,
+      "subject": "social",
+      "prompt": {
+        "id": "Konferensi Asia Afrika 1955 diadakan di…",
+        "en": "The 1955 Asian–African Conference was held in…"
+      },
+      "options": [
+        {
+          "id": "Bandung",
+          "en": "Bandung"
+        },
+        {
+          "id": "Jakarta",
+          "en": "Jakarta"
+        },
+        {
+          "id": "Yogyakarta",
+          "en": "Yogyakarta"
+        },
+        {
+          "id": "Bogor",
+          "en": "Bogor"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "KAA di Bandung.",
+        "en": "It took place in Bandung."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-3-7",
+      "type": "choice",
+      "band": 3,
+      "subject": "social",
+      "prompt": {
+        "id": "Inflasi adalah kenaikan … secara umum dan terus-menerus.",
+        "en": "Inflation is a general, continuous rise in…"
+      },
+      "options": [
+        {
+          "id": "Harga",
+          "en": "Prices"
+        },
+        {
+          "id": "Upah saja",
+          "en": "Wages only"
+        },
+        {
+          "id": "Ekspor",
+          "en": "Exports"
+        },
+        {
+          "id": "Pajak",
+          "en": "Taxes"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Inflasi = harga naik terus.",
+        "en": "Inflation = rising prices."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-3-8",
+      "type": "choice",
+      "band": 3,
+      "subject": "english",
+      "prompt": {
+        "id": "\"If I … rich, I would travel the world.\"",
+        "en": "\"If I … rich, I would travel the world.\""
+      },
+      "options": [
+        {
+          "id": "were",
+          "en": "were"
+        },
+        {
+          "id": "am",
+          "en": "am"
+        },
+        {
+          "id": "will be",
+          "en": "will be"
+        },
+        {
+          "id": "being",
+          "en": "being"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Conditional tipe 2 memakai were.",
+        "en": "Second conditional uses were."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "mc-3-9",
+      "type": "choice",
+      "band": 3,
+      "subject": "language",
+      "prompt": {
+        "id": "Majas yang membandingkan secara langsung tanpa kata \"seperti\" adalah…",
+        "en": "A figure of speech comparing directly without \"like\" is a…"
+      },
+      "options": [
+        {
+          "id": "Metafora",
+          "en": "Metaphor"
+        },
+        {
+          "id": "Simile",
+          "en": "Simile"
+        },
+        {
+          "id": "Hiperbola",
+          "en": "Hyperbole"
+        },
+        {
+          "id": "Personifikasi",
+          "en": "Personification"
+        }
+      ],
+      "answer": 0,
+      "hint": {
+        "id": "Metafora = perbandingan langsung.",
+        "en": "A metaphor compares directly."
+      },
+      "games": [
+        "flag-quest",
+        "sky-quiz"
+      ]
+    },
+    {
+      "key": "tf-0-0",
+      "type": "true_false",
+      "band": 0,
+      "subject": "science",
+      "prompt": {
+        "id": "Ikan bernapas menggunakan paru-paru.",
+        "en": "Fish breathe with lungs."
+      },
+      "answer": 0,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-0-1",
+      "type": "true_false",
+      "band": 0,
+      "subject": "science",
+      "prompt": {
+        "id": "Es akan mencair jika dipanaskan.",
+        "en": "Ice melts when heated."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-0-2",
+      "type": "true_false",
+      "band": 0,
+      "subject": "social",
+      "prompt": {
+        "id": "Indonesia merdeka pada tanggal 17 Agustus.",
+        "en": "Indonesia became independent on 17 August."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-0-3",
+      "type": "true_false",
+      "band": 0,
+      "subject": "science",
+      "prompt": {
+        "id": "Bulan memancarkan cahayanya sendiri.",
+        "en": "The Moon makes its own light."
+      },
+      "answer": 0,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-0-4",
+      "type": "true_false",
+      "band": 0,
+      "subject": "english",
+      "prompt": {
+        "id": "\"Apple\" dalam bahasa Indonesia berarti apel.",
+        "en": "An apple is a fruit."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-0-5",
+      "type": "true_false",
+      "band": 0,
+      "subject": "science",
+      "prompt": {
+        "id": "Laba-laba memiliki enam kaki.",
+        "en": "Spiders have six legs."
+      },
+      "answer": 0,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-1-0",
+      "type": "true_false",
+      "band": 1,
+      "subject": "science",
+      "prompt": {
+        "id": "Jantung berfungsi memompa darah.",
+        "en": "The heart pumps blood."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-1-1",
+      "type": "true_false",
+      "band": 1,
+      "subject": "science",
+      "prompt": {
+        "id": "Bumi berputar pada porosnya disebut revolusi.",
+        "en": "Earth spinning on its axis is called revolution."
+      },
+      "answer": 0,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-1-2",
+      "type": "true_false",
+      "band": 1,
+      "subject": "social",
+      "prompt": {
+        "id": "Pulau terbesar di Indonesia adalah Pulau Jawa.",
+        "en": "Java is Indonesia's largest island."
+      },
+      "answer": 0,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-1-3",
+      "type": "true_false",
+      "band": 1,
+      "subject": "civics",
+      "prompt": {
+        "id": "Pancasila memiliki lima sila.",
+        "en": "Pancasila has five principles."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-1-4",
+      "type": "true_false",
+      "band": 1,
+      "subject": "science",
+      "prompt": {
+        "id": "Kelelawar termasuk mamalia.",
+        "en": "Bats are mammals."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-1-5",
+      "type": "true_false",
+      "band": 1,
+      "subject": "english",
+      "prompt": {
+        "id": "\"She go to school\" adalah kalimat yang benar.",
+        "en": "\"She go to school\" is grammatically correct."
+      },
+      "answer": 0,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-2-0",
+      "type": "true_false",
+      "band": 2,
+      "subject": "science",
+      "prompt": {
+        "id": "Cahaya merambat lebih cepat daripada bunyi.",
+        "en": "Light travels faster than sound."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-2-1",
+      "type": "true_false",
+      "band": 2,
+      "subject": "science",
+      "prompt": {
+        "id": "Mitokondria adalah tempat respirasi sel.",
+        "en": "Mitochondria are where cellular respiration happens."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-2-2",
+      "type": "true_false",
+      "band": 2,
+      "subject": "social",
+      "prompt": {
+        "id": "Indonesia terletak di antara dua benua dan dua samudra.",
+        "en": "Indonesia lies between two continents and two oceans."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-2-3",
+      "type": "true_false",
+      "band": 2,
+      "subject": "science",
+      "prompt": {
+        "id": "Logam adalah isolator listrik yang baik.",
+        "en": "Metals are good electrical insulators."
+      },
+      "answer": 0,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-2-4",
+      "type": "true_false",
+      "band": 2,
+      "subject": "civics",
+      "prompt": {
+        "id": "DPR adalah lembaga yudikatif.",
+        "en": "The DPR is a judicial institution."
+      },
+      "answer": 0,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-2-5",
+      "type": "true_false",
+      "band": 2,
+      "subject": "english",
+      "prompt": {
+        "id": "\"Children\" adalah bentuk jamak dari \"child\".",
+        "en": "\"Children\" is the plural of \"child\"."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-3-0",
+      "type": "true_false",
+      "band": 3,
+      "subject": "science",
+      "prompt": {
+        "id": "Elektron bermuatan positif.",
+        "en": "Electrons carry a positive charge."
+      },
+      "answer": 0,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-3-1",
+      "type": "true_false",
+      "band": 3,
+      "subject": "science",
+      "prompt": {
+        "id": "Enzim adalah biokatalisator.",
+        "en": "Enzymes are biological catalysts."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-3-2",
+      "type": "true_false",
+      "band": 3,
+      "subject": "math",
+      "prompt": {
+        "id": "Bilangan π adalah bilangan rasional.",
+        "en": "π is a rational number."
+      },
+      "answer": 0,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-3-3",
+      "type": "true_false",
+      "band": 3,
+      "subject": "social",
+      "prompt": {
+        "id": "Sumpah Pemuda diikrarkan pada tahun 1928.",
+        "en": "The Youth Pledge was declared in 1928."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-3-4",
+      "type": "true_false",
+      "band": 3,
+      "subject": "science",
+      "prompt": {
+        "id": "Percepatan gravitasi bumi kira-kira 9,8 m/s².",
+        "en": "Earth's gravitational acceleration is about 9.8 m/s²."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    },
+    {
+      "key": "tf-3-5",
+      "type": "true_false",
+      "band": 3,
+      "subject": "english",
+      "prompt": {
+        "id": "\"Has been\" menandakan present perfect continuous.",
+        "en": "\"Has been + -ing\" forms the present perfect continuous."
+      },
+      "answer": 1,
+      "games": [
+        "flag-quest"
+      ]
+    }
+  ],
+  "version": 1
+}

@@ -71,7 +71,7 @@ class ActivityLogController extends Controller
         return Inertia::render('admin/activity-log', [
             'logs'       => $logs,
             'users'      => $users,
-            'filters'    => $filters,
+            'filters'    => (object) $filters,
             'eventTypes' => $eventTypes,
         ]);
     }

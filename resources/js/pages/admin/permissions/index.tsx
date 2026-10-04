@@ -1,7 +1,8 @@
 import AdminLayout from '@/layouts/admin-layout';
 import { type Permission, type Role } from '@/types/admin';
 import { Head } from '@inertiajs/react';
-import { ChevronDown, ChevronUp, Lock, ShieldCheck } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { ChevronDown, Lock, ShieldCheck } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 
 interface PermissionsIndexProps {
@@ -33,6 +34,7 @@ function ModuleSection({
     defaultOpen: boolean;
 }) {
     const [open, setOpen] = useState(defaultOpen);
+    const panelId = `permissions-${moduleName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
     return (
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
@@ -40,6 +42,7 @@ function ModuleSection({
                 onClick={() => setOpen((o) => !o)}
                 className="flex w-full items-center justify-between px-5 py-4 text-left hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 aria-expanded={open}
+                aria-controls={panelId}
             >
                 <div className="flex items-center gap-2">
                     <Lock className="size-4 text-muted-foreground" />
@@ -48,14 +51,25 @@ function ModuleSection({
                         {perms.length}
                     </span>
                 </div>
-                {open ? (
-                    <ChevronUp className="size-4 text-muted-foreground" />
-                ) : (
-                    <ChevronDown className="size-4 text-muted-foreground" />
-                )}
+                <ChevronDown
+                    className={cn(
+                        'size-4 text-muted-foreground transition-transform duration-300 ease-out motion-reduce:transition-none',
+                        open && 'rotate-180',
+                    )}
+                    aria-hidden="true"
+                />
             </button>
 
-            {open && (
+            <div
+                id={panelId}
+                className={cn(
+                    'grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none',
+                    open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
+                )}
+                aria-hidden={!open}
+                inert={!open}
+            >
+                <div className="min-h-0 overflow-hidden">
                 <div className="border-t border-border">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
@@ -117,7 +131,8 @@ function ModuleSection({
                         </table>
                     </div>
                 </div>
-            )}
+                </div>
+            </div>
         </div>
     );
 }

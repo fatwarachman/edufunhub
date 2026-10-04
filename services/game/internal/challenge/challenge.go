@@ -83,9 +83,11 @@ type Challenge struct {
 	Passed      bool
 	Deadline    time.Time
 	Ends        time.Time
-	current     questions.Question
-	gen         *questions.Generator
-	rollFn      func() int
+	// Answers logs answered bank questions for statistics.
+	Answers []questions.Answer
+	current questions.Question
+	gen     *questions.Generator
+	rollFn  func() int
 }
 
 // Feedback describes the result of one answer.
@@ -252,6 +254,9 @@ func (c *Challenge) answerText(locale string) string {
 }
 
 func (c *Challenge) record(ok bool, now time.Time) {
+	if c.current.FromBank {
+		c.Answers = append(c.Answers, questions.Answer{Key: c.current.Key, Correct: ok})
+	}
 	if ok {
 		c.Correct++
 	} else {

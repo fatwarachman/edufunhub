@@ -30,6 +30,8 @@ type Question struct {
 	Options []Text
 	Answer  int
 	Hint    Text
+	// FromBank is true for curated bank questions (tracked in admin statistics), false for generated math.
+	FromBank bool
 }
 
 // Band maps a school grade (1-12) to a band index 0..3.
@@ -165,31 +167,44 @@ var truthBank = [4][]tf{
 // Generator produces questions. Rand is injectable for deterministic tests.
 type Generator struct {
 	Grade int
-	Rand  *rand.Rand
-	used  map[string]bool
+	// Game limits bank questions to those distributed to this game ("" = any).
+	Game string
+	Rand *rand.Rand
+	used map[string]bool
 }
 
 // New returns a generator for a grade with a seeded source.
 func New(grade int, seed uint64) *Generator {
-	return &Generator{Grade: grade, Rand: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), used: map[string]bool{}}
+	return NewFor("", grade, seed)
 }
 
-// Choice returns a multiple choice question: static bank or generated arithmetic.
-func (g *Generator) Choice() Question {
-	band := g.bank()
-	if g.Rand.IntN(3) > 0 {
-		for tries := 0; tries < 8; tries++ {
-			i := g.Rand.IntN(len(choiceBank[band]))
-			key := fmt.Sprintf("mc-%d-%d", band, i)
-			if g.used[key] {
-				continue
-			}
-			g.used[key] = true
-			src := choiceBank[band][i]
-			q := Question{Key: key, Subject: src.subject, Prompt: src.prompt, Hint: src.hint, Options: append([]Text(nil), src.options...), Answer: src.answer}
-			g.shuffle(&q)
-			return q
+// NewFor returns a generator that only draws bank questions distributed to game.
+func NewFor(game string, grade int, seed uint64) *Generator {
+	return &Generator{Grade: grade, Game: game, Rand: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), used: map[string]bool{}}
+}
+
+// pick draws an unused bank item, or false when none is available.
+func (g *Generator) pick(items []Item) (Item, bool) {
+	if len(items) == 0 || g.Rand.IntN(3) == 0 {
+		return Item{}, false
+	}
+	for tries := 0; tries < 8; tries++ {
+		it := items[g.Rand.IntN(len(items))]
+		if g.used[it.Key] {
+			continue
 		}
+		g.used[it.Key] = true
+		return it, true
+	}
+	return Item{}, false
+}
+
+// Choice returns a multiple choice question: bank question or generated arithmetic.
+func (g *Generator) Choice() Question {
+	if it, ok := g.pick(Current().choices(g.bank(), g.Game)); ok {
+		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true}
+		g.shuffle(&q)
+		return q
 	}
 	a, b, op, ans := g.arithmetic()
 	options := []int{ans}
@@ -220,22 +235,8 @@ func (g *Generator) Choice() Question {
 
 // TrueFalse returns a statement question.
 func (g *Generator) TrueFalse() Question {
-	band := g.bank()
-	if g.Rand.IntN(3) > 0 {
-		for tries := 0; tries < 8; tries++ {
-			i := g.Rand.IntN(len(truthBank[band]))
-			key := fmt.Sprintf("tf-%d-%d", band, i)
-			if g.used[key] {
-				continue
-			}
-			g.used[key] = true
-			src := truthBank[band][i]
-			ans := 0
-			if src.answer {
-				ans = 1
-			}
-			return Question{Key: key, Subject: src.subject, Prompt: src.prompt, Answer: ans}
-		}
+	if it, ok := g.pick(Current().truths(g.bank(), g.Game)); ok {
+		return Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Answer: it.Answer, FromBank: true}
 	}
 	a, b, op, ans := g.arithmetic()
 	shown, truth := ans, 1

@@ -51,6 +51,7 @@ export interface AdminUser extends User {
     player_profile?: AdminPlayerProfile | null;
     status?: 'active' | 'inactive' | 'suspended';
     last_seen_at?: string | null;
+    signed_up_with_google?: boolean;
 }
 
 export interface PaginatedData<T> {

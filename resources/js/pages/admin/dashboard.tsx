@@ -1,248 +1,1108 @@
+import {
+    axisTick,
+    chartTooltipStyle,
+    Delta,
+    GAME_COLORS,
+    GameDot,
+    KpiCard,
+    LEVEL_COLORS,
+    LEVEL_SHORT,
+    SectionHeading,
+    ShareBars,
+    timeAgo,
+    UserAvatar,
+} from '@/components/admin/dashboard-kit';
+import {
+    EmptyState,
+    formatNumber,
+    formatPercent,
+    gameLabel,
+    Panel,
+    rateTone,
+} from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
-import { type DashboardStats, type ActivityLog } from '@/types/admin';
-import { Head, Link } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
+import { type SharedData } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
 import {
     Activity,
-    ArrowUpRight,
-    KeyRound,
-    Lock,
-    Plus,
-    ShieldCheck,
-    TrendingUp,
-    UserCheck,
+    ArrowRight,
+    Cake,
+    ChartColumnBig,
+    Gamepad2,
+    GraduationCap,
+    ListChecks,
+    Medal,
+    Radio,
+    School,
+    Sparkles,
+    Target,
+    Trophy,
+    UserPlus,
     Users,
+    UsersRound,
 } from 'lucide-react';
-import { type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
+import {
+    Area,
+    AreaChart,
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
+
+interface Kpis {
+    users: number;
+    signups_today: number;
+    signups_7d: number;
+    signups_delta: number | null;
+    plays: number;
+    plays_today: number;
+    plays_7d: number;
+    plays_delta: number | null;
+    players: number;
+    active_players_7d: number;
+    active_delta: number | null;
+    points: number;
+    accuracy: number | null;
+    online_15m: number;
+    profile_complete: number;
+    profiles: number;
+    schools: number;
+}
 
 interface DashboardProps {
-    stats: DashboardStats;
-    recentActivity?: ActivityLog[];
+    kpis: Kpis;
+    daily: {
+        date: string;
+        signups: number;
+        plays: number;
+        players: number;
+        points: number;
+    }[];
+    games: {
+        key: string;
+        accent: string;
+        plays: number;
+        players: number;
+        success_rate: number | null;
+        tracked: boolean;
+    }[];
+    levels: { key: string; users: number }[];
+    grades: { grade: number; users: number }[];
+    ages: { label: string; users: number }[];
+    topPlayers: {
+        rank: number;
+        user_id: number;
+        name: string;
+        school_name: string | null;
+        grade: number | null;
+        points: number;
+        plays: number;
+        accuracy: number | null;
+    }[];
+    topSchools: {
+        school: string;
+        players: number;
+        points: number;
+        plays: number;
+    }[];
+    recentPlays: {
+        id: number;
+        user_id: number;
+        name: string | null;
+        game: string;
+        points: number;
+        accuracy: number | null;
+        played_at: string;
+    }[];
+    recentUsers: {
+        id: number;
+        name: string;
+        email: string;
+        avatar_url: string | null;
+        grade: number | null;
+        age: number | null;
+        school_name: string | null;
+        created_at: string;
+    }[];
+    recentActivity: {
+        id: number;
+        description: string;
+        subject_type: string | null;
+        causer_name: string | null;
+        created_at: string;
+    }[];
 }
 
-function StatCard({
-    label,
-    value,
-    icon: Icon,
-    trend,
-    color,
-    href,
-}: {
-    label: string;
-    value: number;
-    icon: React.ElementType;
-    trend?: number;
-    color: string;
-    href: string;
-}) {
-    return (
-        <Link
-            href={href}
-            className="group flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-            <div className="flex items-start justify-between">
-                <div
-                    className={`flex size-10 items-center justify-center rounded-xl ${color} text-white shadow-sm`}
-                >
-                    <Icon className="size-5" />
-                </div>
-                <ArrowUpRight className="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-            </div>
-            <div>
-                <p className="text-3xl font-bold text-foreground tabular-nums">
-                    {value.toLocaleString()}
-                </p>
-                <p className="mt-0.5 text-sm text-muted-foreground">{label}</p>
-            </div>
-            {trend !== undefined && (
-                <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                    <TrendingUp className="size-3" />
-                    <span>+{trend}% this month</span>
-                </div>
-            )}
-        </Link>
-    );
+type Metric = 'plays' | 'players' | 'signups' | 'points';
+
+const METRICS: { key: Metric; label: string; color: string }[] = [
+    { key: 'plays', label: 'Plays', color: 'var(--color-bubble-blue)' },
+    {
+        key: 'players',
+        label: 'Active players',
+        color: 'var(--color-bubble-green)',
+    },
+    { key: 'signups', label: 'Sign-ups', color: 'var(--color-bubble-orange)' },
+    {
+        key: 'points',
+        label: 'Points earned',
+        color: 'var(--color-bubble-purple)',
+    },
+];
+
+const PODIUM = [
+    'bg-amber-400 text-amber-950',
+    'bg-slate-300 text-slate-900',
+    'bg-orange-400 text-orange-950',
+];
+
+function greeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 11) return 'Good morning';
+    if (hour < 15) return 'Good afternoon';
+    if (hour < 19) return 'Good evening';
+    return 'Good night';
 }
 
-function timeAgo(dateStr: string): string {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
-}
-
-function getInitialsFromName(name: string): string {
-    return name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .slice(0, 2)
-        .toUpperCase();
-}
-
-function ActivityItem({ log }: { log: ActivityLog }) {
-    const causerName = log.causer?.name ?? 'System';
-    const initials = getInitialsFromName(causerName);
-
-    return (
-        <li className="flex items-start gap-3 py-3">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                {initials}
-            </div>
-            <div className="min-w-0 flex-1">
-                <p className="text-sm text-foreground">
-                    <span className="font-medium">{causerName}</span>{' '}
-                    <span className="text-muted-foreground">{log.description}</span>
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{timeAgo(log.created_at)}</p>
-            </div>
-        </li>
-    );
-}
-
-export default function Dashboard({ stats, recentActivity = [] }: DashboardProps) {
-    const statCards = [
-        {
-            label: 'Total Users',
-            value: stats.total_users,
-            icon: Users,
-            trend: stats.users_trend,
-            color: 'bg-bubble-blue',
-            href: '/admin/users',
-        },
-        {
-            label: 'Active Users (30d)',
-            value: stats.active_users,
-            icon: UserCheck,
-            trend: stats.active_trend,
-            color: 'bg-bubble-green',
-            href: '/admin/users',
-        },
-        {
-            label: 'Total Roles',
-            value: stats.total_roles,
-            icon: ShieldCheck,
-            color: 'bg-bubble-purple',
-            href: '/admin/roles',
-        },
-        {
-            label: 'Total Permissions',
-            value: stats.total_permissions,
-            icon: Lock,
-            color: 'bg-bubble-orange',
-            href: '/admin/permissions',
-        },
-    ];
+export default function Dashboard(props: DashboardProps) {
+    const { auth } = usePage<SharedData>().props;
+    const { kpis, daily } = props;
+    const superadmin = Boolean(auth.user.is_superadmin);
+    const [metric, setMetric] = useState<Metric>('plays');
+    const active = METRICS.find((m) => m.key === metric)!;
+    const completeRate =
+        kpis.profiles > 0
+            ? Math.round((kpis.profile_complete / kpis.profiles) * 100)
+            : 0;
+    const today = new Date().toLocaleDateString(undefined, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
+    const periodTotal = daily.reduce((sum, day) => sum + day[metric], 0);
 
     return (
         <>
             <Head title="Admin Dashboard" />
-
-            <div className="space-y-6">
-                {/* Page header */}
-                <div>
-                    <h2 className="font-display text-2xl font-bold text-foreground">Dashboard</h2>
-                    <p className="text-sm text-muted-foreground">
-                        System overview and quick actions
-                    </p>
-                </div>
-
-                {/* Stats grid */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    {statCards.map((card) => (
-                        <StatCard key={card.label} {...card} />
-                    ))}
-                </div>
-
-                {/* Lower section */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    {/* Recent activity */}
-                    <div className="lg:col-span-2">
-                        <div className="rounded-2xl border border-border bg-card shadow-sm">
-                            <div className="flex items-center justify-between border-b border-border px-5 py-4">
-                                <div className="flex items-center gap-2">
-                                    <Activity className="size-4 text-muted-foreground" />
-                                    <h3 className="font-semibold text-foreground">
-                                        Recent Activity
-                                    </h3>
-                                </div>
-                                <Link
-                                    href="/admin/activity-log"
-                                    className="text-xs text-primary hover:underline"
-                                >
-                                    View all
-                                </Link>
-                            </div>
-
-                            <div className="px-5">
-                                {recentActivity.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                                        <Activity className="mb-2 size-8 text-muted-foreground/40" />
-                                        <p className="text-sm text-muted-foreground">
-                                            No recent activity
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <ul className="divide-y divide-border">
-                                        {recentActivity.map((log) => (
-                                            <ActivityItem key={log.id} log={log} />
-                                        ))}
-                                    </ul>
+            <div className="flex flex-col gap-6">
+                {/* Pulse header */}
+                <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+                    <div
+                        className="pointer-events-none absolute inset-0 opacity-70 dark:opacity-40"
+                        aria-hidden="true"
+                        style={{
+                            background:
+                                'radial-gradient(circle at 12% 0%, color-mix(in oklab, var(--color-bubble-orange) 22%, transparent) 0, transparent 42%), radial-gradient(circle at 88% 20%, color-mix(in oklab, var(--color-bubble-blue) 20%, transparent) 0, transparent 40%), radial-gradient(circle at 60% 120%, color-mix(in oklab, var(--color-bubble-green) 18%, transparent) 0, transparent 45%)',
+                        }}
+                    />
+                    <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="flex flex-col gap-2">
+                            <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+                                <span className="relative flex size-2">
+                                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                                    <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                                </span>
+                                {today}
+                            </span>
+                            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+                                {greeting()}, {auth.user.name.split(' ')[0]}
+                            </h2>
+                            <p className="max-w-2xl text-sm text-muted-foreground">
+                                Today:{' '}
+                                <strong className="text-foreground">
+                                    {formatNumber(kpis.plays_today)}
+                                </strong>{' '}
+                                {kpis.plays_today === 1 ? 'game' : 'games'}{' '}
+                                played and{' '}
+                                <strong className="text-foreground">
+                                    {formatNumber(kpis.signups_today)}
+                                </strong>{' '}
+                                new{' '}
+                                {kpis.signups_today === 1
+                                    ? 'learner'
+                                    : 'learners'}{' '}
+                                joined.
+                                {kpis.profiles - kpis.profile_complete > 0 && (
+                                    <span className="mt-1 block">
+                                        {formatNumber(
+                                            kpis.profiles -
+                                                kpis.profile_complete,
+                                        )}{' '}
+                                        {kpis.profiles -
+                                            kpis.profile_complete ===
+                                        1
+                                            ? 'player still needs'
+                                            : 'players still need'}{' '}
+                                        to complete their profile.
+                                    </span>
                                 )}
-                            </div>
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                            <PulseStat
+                                icon={Gamepad2}
+                                label="Plays today"
+                                value={kpis.plays_today}
+                                color="var(--color-bubble-blue)"
+                            />
+                            <PulseStat
+                                icon={UserPlus}
+                                label="New today"
+                                value={kpis.signups_today}
+                                color="var(--color-bubble-orange)"
+                            />
+                            <PulseStat
+                                icon={Radio}
+                                label="Online"
+                                value={kpis.online_15m}
+                                color="var(--color-bubble-green)"
+                            />
                         </div>
                     </div>
+                </section>
 
-                    {/* Quick actions */}
-                    <div>
-                        <div className="rounded-2xl border border-border bg-card shadow-sm">
-                            <div className="border-b border-border px-5 py-4">
-                                <h3 className="font-semibold text-foreground">Quick Actions</h3>
-                            </div>
-                            <div className="flex flex-col gap-2 p-5">
-                                {[
-                                    {
-                                        label: 'Add new user',
-                                        href: '/admin/users/create',
-                                        icon: Users,
-                                        color: 'bg-bubble-blue/10 text-bubble-blue hover:bg-bubble-blue/20',
-                                    },
-                                    {
-                                        label: 'Create role',
-                                        href: '/admin/roles/create',
-                                        icon: ShieldCheck,
-                                        color: 'bg-bubble-purple/10 text-bubble-purple hover:bg-bubble-purple/20',
-                                    },
-                                    {
-                                        label: 'View permissions',
-                                        href: '/admin/permissions',
-                                        icon: KeyRound,
-                                        color: 'bg-bubble-orange/10 text-bubble-orange hover:bg-bubble-orange/20',
-                                    },
-                                    {
-                                        label: 'Activity log',
-                                        href: '/admin/activity-log',
-                                        icon: Activity,
-                                        color: 'bg-bubble-green/10 text-bubble-green hover:bg-bubble-green/20',
-                                    },
-                                ].map((action) => (
-                                    <Link
-                                        key={action.href}
-                                        href={action.href}
-                                        className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${action.color}`}
+                {/* KPI row */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <KpiCard
+                        label="Registered users"
+                        value={formatNumber(kpis.users)}
+                        icon={Users}
+                        accent="var(--color-bubble-orange)"
+                        spark={{ data: daily, dataKey: 'signups' }}
+                        footer={
+                            <Delta
+                                value={kpis.signups_delta}
+                                suffix={`${kpis.signups_7d} this week`}
+                            />
+                        }
+                        href="/admin/users"
+                    />
+                    <KpiCard
+                        label="Active players · 7d"
+                        value={formatNumber(kpis.active_players_7d)}
+                        icon={UsersRound}
+                        accent="var(--color-bubble-green)"
+                        spark={{ data: daily, dataKey: 'players' }}
+                        footer={<Delta value={kpis.active_delta} />}
+                        href={superadmin ? '/admin/user-statistics' : undefined}
+                    />
+                    <KpiCard
+                        label="Games played"
+                        value={formatNumber(kpis.plays)}
+                        icon={Gamepad2}
+                        accent="var(--color-bubble-blue)"
+                        spark={{ data: daily, dataKey: 'plays' }}
+                        footer={
+                            <Delta
+                                value={kpis.plays_delta}
+                                suffix={`${kpis.plays_7d} this week`}
+                            />
+                        }
+                        href={superadmin ? '/admin/games' : undefined}
+                    />
+                    <KpiCard
+                        label="Answer accuracy"
+                        value={
+                            <span className={rateTone(kpis.accuracy)}>
+                                {formatPercent(kpis.accuracy)}
+                            </span>
+                        }
+                        icon={Target}
+                        accent="var(--color-bubble-purple)"
+                        spark={{ data: daily, dataKey: 'points' }}
+                        footer={
+                            <span className="text-xs text-muted-foreground">
+                                {formatNumber(kpis.points)} points earned ·{' '}
+                                {formatNumber(kpis.players)} players all-time
+                            </span>
+                        }
+                        href={superadmin ? '/admin/leaderboard' : undefined}
+                    />
+                </div>
+
+                {/* Trend + games */}
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                    <Panel
+                        title="Last 30 days"
+                        description={`${formatNumber(periodTotal)} ${active.label.toLowerCase()} in this period`}
+                        icon={ChartColumnBig}
+                        className="xl:col-span-2"
+                        actions={
+                            <div
+                                className="inline-flex flex-wrap rounded-lg border border-border bg-background p-1"
+                                role="group"
+                                aria-label="Chart metric"
+                            >
+                                {METRICS.map((m) => (
+                                    <button
+                                        key={m.key}
+                                        type="button"
+                                        aria-pressed={metric === m.key}
+                                        onClick={() => setMetric(m.key)}
+                                        className={cn(
+                                            'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                                            metric === m.key
+                                                ? 'bg-muted text-foreground'
+                                                : 'text-muted-foreground hover:text-foreground',
+                                        )}
                                     >
-                                        <Plus className="size-4 shrink-0" />
-                                        {action.label}
-                                    </Link>
+                                        <span
+                                            className="size-2 rounded-full"
+                                            style={{ background: m.color }}
+                                        />
+                                        {m.label}
+                                    </button>
                                 ))}
                             </div>
+                        }
+                    >
+                        <div className="h-72">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart
+                                    data={daily}
+                                    margin={{ left: -18, right: 8, top: 8 }}
+                                >
+                                    <defs>
+                                        <linearGradient
+                                            id="trend-fill"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            <stop
+                                                offset="0%"
+                                                stopColor={active.color}
+                                                stopOpacity={0.35}
+                                            />
+                                            <stop
+                                                offset="100%"
+                                                stopColor={active.color}
+                                                stopOpacity={0}
+                                            />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                        stroke="var(--border)"
+                                        vertical={false}
+                                    />
+                                    <XAxis
+                                        dataKey="date"
+                                        tick={axisTick}
+                                        tickFormatter={(v: string) =>
+                                            new Date(v).toLocaleDateString(
+                                                undefined,
+                                                {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                },
+                                            )
+                                        }
+                                        minTickGap={24}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <YAxis
+                                        allowDecimals={false}
+                                        domain={[
+                                            0,
+                                            (max: number) =>
+                                                Math.max(
+                                                    4,
+                                                    Math.ceil(max * 1.2),
+                                                ),
+                                        ]}
+                                        tick={axisTick}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <Tooltip
+                                        contentStyle={chartTooltipStyle}
+                                        labelFormatter={(v) =>
+                                            new Date(
+                                                String(v),
+                                            ).toLocaleDateString(undefined, {
+                                                weekday: 'short',
+                                                day: 'numeric',
+                                                month: 'short',
+                                            })
+                                        }
+                                    />
+                                    <Area
+                                        type="linear"
+                                        dataKey={metric}
+                                        name={active.label}
+                                        stroke={active.color}
+                                        strokeWidth={2.5}
+                                        fill="url(#trend-fill)"
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
                         </div>
-                    </div>
+                    </Panel>
+
+                    <Panel
+                        title="Games"
+                        description="All-time plays and success rate"
+                        icon={Gamepad2}
+                        actions={
+                            superadmin ? (
+                                <PanelLink href="/admin/games">
+                                    Details
+                                </PanelLink>
+                            ) : undefined
+                        }
+                    >
+                        <ul className="flex flex-col gap-4">
+                            {props.games.map((game) => {
+                                const max = Math.max(
+                                    1,
+                                    ...props.games.map((g) => g.plays),
+                                );
+                                return (
+                                    <li
+                                        key={game.key}
+                                        className="flex flex-col gap-1.5"
+                                    >
+                                        <div className="flex items-center justify-between gap-2 text-sm">
+                                            {superadmin ? (
+                                                <Link
+                                                    href={`/admin/games/${game.key}`}
+                                                    className="font-medium text-foreground hover:underline"
+                                                >
+                                                    <GameDot game={game.key} />
+                                                </Link>
+                                            ) : (
+                                                <span className="font-medium text-foreground">
+                                                    <GameDot game={game.key} />
+                                                </span>
+                                            )}
+                                            <span className="text-xs text-muted-foreground">
+                                                {game.tracked ? (
+                                                    <>
+                                                        {formatNumber(
+                                                            game.players,
+                                                        )}{' '}
+                                                        players ·{' '}
+                                                        <span
+                                                            className={cn(
+                                                                'font-semibold',
+                                                                rateTone(
+                                                                    game.success_rate,
+                                                                ),
+                                                            )}
+                                                        >
+                                                            {formatPercent(
+                                                                game.success_rate,
+                                                            )}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="rounded-full bg-secondary px-2 py-0.5 font-medium text-secondary-foreground">
+                                                        Demo · not tracked
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </div>
+                                        {game.tracked && (
+                                            <div className="flex items-center gap-2">
+                                                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
+                                                    <div
+                                                        className="h-full rounded-full transition-all"
+                                                        style={{
+                                                            width: `${(game.plays / max) * 100}%`,
+                                                            background:
+                                                                GAME_COLORS[
+                                                                    game.key
+                                                                ] ??
+                                                                game.accent,
+                                                        }}
+                                                    />
+                                                </div>
+                                                <span className="w-12 text-right text-sm font-semibold text-foreground tabular-nums">
+                                                    {formatNumber(game.plays)}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                        <div className="mt-5 grid grid-cols-2 gap-3 border-t border-border pt-4">
+                            <MiniStat
+                                label="Profile complete"
+                                value={`${completeRate}%`}
+                                hint={`${kpis.profile_complete}/${kpis.profiles} players`}
+                            />
+                            <MiniStat
+                                label="Schools"
+                                value={formatNumber(kpis.schools)}
+                                hint="distinct names"
+                            />
+                        </div>
+                    </Panel>
                 </div>
+
+                {/* Demographics */}
+                <SectionHeading
+                    title="Who is learning"
+                    description="Player profiles by school level, grade and age"
+                    actions={
+                        superadmin ? (
+                            <PanelLink href="/admin/user-statistics">
+                                Open user statistics
+                            </PanelLink>
+                        ) : undefined
+                    }
+                />
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                    <Panel title="School level" icon={School}>
+                        <ShareBars
+                            rows={props.levels.map((level) => ({
+                                key: level.key,
+                                label: LEVEL_SHORT[level.key],
+                                value: level.users,
+                                color: LEVEL_COLORS[level.key],
+                            }))}
+                            emptyLabel="No player profiles yet"
+                        />
+                    </Panel>
+                    <Panel
+                        title="Grade"
+                        icon={GraduationCap}
+                        actions={
+                            <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {(['sd', 'smp', 'sma'] as const).map(
+                                    (level) => (
+                                        <span
+                                            key={level}
+                                            className="inline-flex items-center gap-1"
+                                        >
+                                            <span
+                                                className="size-2 rounded-full"
+                                                style={{
+                                                    background:
+                                                        LEVEL_COLORS[level],
+                                                }}
+                                            />
+                                            {LEVEL_SHORT[level]}
+                                        </span>
+                                    ),
+                                )}
+                            </span>
+                        }
+                    >
+                        <div className="h-48">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    data={props.grades}
+                                    margin={{ left: -24, right: 4, top: 4 }}
+                                >
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                        stroke="var(--border)"
+                                        vertical={false}
+                                    />
+                                    <XAxis
+                                        dataKey="grade"
+                                        tick={axisTick}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <YAxis
+                                        allowDecimals={false}
+                                        domain={[
+                                            0,
+                                            (max: number) =>
+                                                Math.max(
+                                                    4,
+                                                    Math.ceil(max * 1.2),
+                                                ),
+                                        ]}
+                                        tick={axisTick}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <Tooltip
+                                        contentStyle={chartTooltipStyle}
+                                        cursor={{ fill: 'var(--muted)' }}
+                                        labelFormatter={(v) => `Grade ${v}`}
+                                    />
+                                    <Bar
+                                        dataKey="users"
+                                        name="Users"
+                                        radius={[6, 6, 0, 0]}
+                                    >
+                                        {props.grades.map((row) => (
+                                            <Cell
+                                                key={row.grade}
+                                                fill={
+                                                    row.grade <= 6
+                                                        ? LEVEL_COLORS.sd
+                                                        : row.grade <= 9
+                                                          ? LEVEL_COLORS.smp
+                                                          : LEVEL_COLORS.sma
+                                                }
+                                            />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </Panel>
+                    <Panel title="Age" icon={Cake}>
+                        <div className="h-48">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    data={props.ages}
+                                    margin={{ left: -24, right: 4, top: 4 }}
+                                >
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                        stroke="var(--border)"
+                                        vertical={false}
+                                    />
+                                    <XAxis
+                                        dataKey="label"
+                                        tick={axisTick}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <YAxis
+                                        allowDecimals={false}
+                                        domain={[
+                                            0,
+                                            (max: number) =>
+                                                Math.max(
+                                                    4,
+                                                    Math.ceil(max * 1.2),
+                                                ),
+                                        ]}
+                                        tick={axisTick}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <Tooltip
+                                        contentStyle={chartTooltipStyle}
+                                        cursor={{ fill: 'var(--muted)' }}
+                                        labelFormatter={(v) => `Age ${v}`}
+                                    />
+                                    <Bar
+                                        dataKey="users"
+                                        name="Users"
+                                        radius={[6, 6, 0, 0]}
+                                        fill="var(--color-bubble-orange)"
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </Panel>
+                </div>
+
+                {/* Rankings */}
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <Panel
+                        title="Top players"
+                        description="All-time points"
+                        icon={Trophy}
+                        actions={
+                            superadmin ? (
+                                <PanelLink href="/admin/leaderboard">
+                                    Leaderboard
+                                </PanelLink>
+                            ) : undefined
+                        }
+                    >
+                        {props.topPlayers.length === 0 ? (
+                            <EmptyState
+                                icon={Trophy}
+                                title="No ranked players yet"
+                            />
+                        ) : (
+                            <ol className="flex flex-col gap-1">
+                                {props.topPlayers.map((player) => (
+                                    <li key={player.user_id}>
+                                        <Link
+                                            href={`/admin/users/${player.user_id}`}
+                                            className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/60"
+                                        >
+                                            <span
+                                                className={cn(
+                                                    'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold',
+                                                    PODIUM[player.rank - 1] ??
+                                                        'bg-secondary text-secondary-foreground ring-1 ring-border',
+                                                )}
+                                            >
+                                                {player.rank}
+                                            </span>
+                                            <span className="flex min-w-0 flex-1 flex-col">
+                                                <span className="truncate text-sm font-medium text-foreground">
+                                                    {player.name}
+                                                </span>
+                                                <span className="truncate text-xs text-muted-foreground">
+                                                    {[
+                                                        player.grade
+                                                            ? `Grade ${player.grade}`
+                                                            : null,
+                                                        player.school_name,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(' · ') || '—'}
+                                                </span>
+                                            </span>
+                                            <span className="flex flex-col items-end">
+                                                <span className="text-sm font-bold text-foreground tabular-nums">
+                                                    {formatNumber(
+                                                        player.points,
+                                                    )}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {player.plays} plays
+                                                </span>
+                                            </span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ol>
+                        )}
+                    </Panel>
+                    <Panel
+                        title="Top schools"
+                        description="Total points from their players"
+                        icon={Medal}
+                        actions={
+                            superadmin ? (
+                                <PanelLink href="/admin/user-statistics">
+                                    By school
+                                </PanelLink>
+                            ) : undefined
+                        }
+                    >
+                        {props.topSchools.length === 0 ? (
+                            <EmptyState
+                                icon={School}
+                                title="No school results yet"
+                            />
+                        ) : (
+                            <ol className="flex flex-col gap-3">
+                                {props.topSchools.map((school, index) => {
+                                    const max = Math.max(
+                                        1,
+                                        ...props.topSchools.map(
+                                            (s) => s.points,
+                                        ),
+                                    );
+                                    return (
+                                        <li
+                                            key={school.school}
+                                            className="flex flex-col gap-1.5"
+                                        >
+                                            <div className="flex items-center justify-between gap-2 text-sm">
+                                                <span className="flex min-w-0 items-center gap-2">
+                                                    <span className="w-5 text-xs font-bold text-muted-foreground tabular-nums">
+                                                        #{index + 1}
+                                                    </span>
+                                                    <span className="truncate font-medium text-foreground">
+                                                        {school.school}
+                                                    </span>
+                                                </span>
+                                                <span className="shrink-0 text-xs text-muted-foreground">
+                                                    {school.players} players ·{' '}
+                                                    <span className="font-semibold text-foreground">
+                                                        {formatNumber(
+                                                            school.points,
+                                                        )}
+                                                    </span>{' '}
+                                                    pts
+                                                </span>
+                                            </div>
+                                            <div className="h-2 overflow-hidden rounded-full bg-muted">
+                                                <div
+                                                    className="h-full rounded-full bg-primary"
+                                                    style={{
+                                                        width: `${(school.points / max) * 100}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ol>
+                        )}
+                    </Panel>
+                </div>
+
+                {/* Live feeds */}
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                    <Panel title="Latest plays" icon={Gamepad2}>
+                        {props.recentPlays.length === 0 ? (
+                            <EmptyState
+                                icon={Gamepad2}
+                                title="No games played yet"
+                            />
+                        ) : (
+                            <ul className="flex flex-col divide-y divide-border">
+                                {props.recentPlays.map((play) => (
+                                    <li
+                                        key={play.id}
+                                        className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0"
+                                    >
+                                        <span
+                                            className="flex size-9 shrink-0 items-center justify-center rounded-xl text-white"
+                                            style={{
+                                                background:
+                                                    GAME_COLORS[play.game] ??
+                                                    'var(--primary)',
+                                            }}
+                                        >
+                                            <Gamepad2 className="size-4" />
+                                        </span>
+                                        <span className="flex min-w-0 flex-1 flex-col">
+                                            <Link
+                                                href={`/admin/users/${play.user_id}`}
+                                                className="truncate text-sm font-medium text-foreground hover:underline"
+                                            >
+                                                {play.name ?? 'Deleted user'}
+                                            </Link>
+                                            <span className="truncate text-xs text-muted-foreground">
+                                                {gameLabel(play.game)} ·{' '}
+                                                {timeAgo(play.played_at)}
+                                            </span>
+                                        </span>
+                                        <span className="flex flex-col items-end">
+                                            <span className="text-sm font-bold text-foreground tabular-nums">
+                                                +{play.points}
+                                            </span>
+                                            <span
+                                                className={cn(
+                                                    'text-xs font-medium tabular-nums',
+                                                    rateTone(play.accuracy),
+                                                )}
+                                            >
+                                                {formatPercent(play.accuracy)}
+                                            </span>
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </Panel>
+                    <Panel
+                        title="New learners"
+                        icon={Sparkles}
+                        actions={
+                            <PanelLink href="/admin/users">All users</PanelLink>
+                        }
+                    >
+                        {props.recentUsers.length === 0 ? (
+                            <EmptyState icon={UserPlus} title="No users yet" />
+                        ) : (
+                            <ul className="flex flex-col divide-y divide-border">
+                                {props.recentUsers.map((user) => (
+                                    <li key={user.id}>
+                                        <Link
+                                            href={`/admin/users/${user.id}`}
+                                            className="flex items-center gap-3 py-2.5 transition-colors hover:text-primary"
+                                        >
+                                            <UserAvatar
+                                                name={user.name}
+                                                src={user.avatar_url}
+                                            />
+                                            <span className="flex min-w-0 flex-1 flex-col">
+                                                <span className="truncate text-sm font-medium text-foreground">
+                                                    {user.name}
+                                                </span>
+                                                <span className="truncate text-xs text-muted-foreground">
+                                                    {[
+                                                        user.grade
+                                                            ? `Grade ${user.grade}`
+                                                            : null,
+                                                        user.age !== null
+                                                            ? `${user.age} y/o`
+                                                            : null,
+                                                        user.school_name,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(' · ') ||
+                                                        'Profile not completed'}
+                                                </span>
+                                            </span>
+                                            <span className="shrink-0 text-xs text-muted-foreground">
+                                                {timeAgo(user.created_at)}
+                                            </span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </Panel>
+                    <Panel
+                        title="Admin activity"
+                        icon={Activity}
+                        actions={
+                            <PanelLink href="/admin/activity-log">
+                                Log
+                            </PanelLink>
+                        }
+                    >
+                        {props.recentActivity.length === 0 ? (
+                            <EmptyState
+                                icon={Activity}
+                                title="No recent activity"
+                            />
+                        ) : (
+                            <ol className="relative flex flex-col gap-4 border-l border-border pl-4">
+                                {props.recentActivity.map((log) => (
+                                    <li key={log.id} className="relative">
+                                        <span className="absolute top-1.5 -left-[21px] size-2.5 rounded-full border-2 border-card bg-primary" />
+                                        <p className="text-sm text-foreground">
+                                            <span className="font-medium">
+                                                {log.causer_name ?? 'System'}
+                                            </span>{' '}
+                                            <span className="text-muted-foreground">
+                                                {log.description.toLowerCase()}
+                                            </span>
+                                            {log.subject_type && (
+                                                <span className="text-muted-foreground">
+                                                    {' '}
+                                                    · {log.subject_type}
+                                                </span>
+                                            )}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {timeAgo(log.created_at)}
+                                        </p>
+                                    </li>
+                                ))}
+                            </ol>
+                        )}
+                    </Panel>
+                </div>
+
+                {superadmin && (
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                        <QuickLink
+                            href="/admin/users/create"
+                            icon={UserPlus}
+                            label="Add user"
+                            color="var(--color-bubble-orange)"
+                        />
+                        <QuickLink
+                            href="/admin/questions/create"
+                            icon={ListChecks}
+                            label="Add question"
+                            color="var(--color-bubble-blue)"
+                        />
+                        <QuickLink
+                            href="/admin/user-statistics"
+                            icon={UsersRound}
+                            label="User statistics"
+                            color="var(--color-bubble-green)"
+                        />
+                        <QuickLink
+                            href="/admin/leaderboard"
+                            icon={Trophy}
+                            label="Leaderboard"
+                            color="var(--color-bubble-purple)"
+                        />
+                    </div>
+                )}
             </div>
         </>
+    );
+}
+
+function PulseStat({
+    icon: Icon,
+    label,
+    value,
+    color,
+}: {
+    icon: React.ElementType;
+    label: string;
+    value: number;
+    color: string;
+}) {
+    return (
+        <div className="flex min-w-24 flex-col gap-1 rounded-2xl border border-border bg-background/80 px-3 py-3 backdrop-blur sm:min-w-28 sm:px-4">
+            <Icon className="size-4" style={{ color }} />
+            <span className="font-display text-2xl leading-none font-bold text-foreground tabular-nums">
+                {formatNumber(value)}
+            </span>
+            <span className="text-xs text-muted-foreground">{label}</span>
+        </div>
+    );
+}
+
+function MiniStat({
+    label,
+    value,
+    hint,
+}: {
+    label: string;
+    value: string;
+    hint: string;
+}) {
+    return (
+        <div className="flex flex-col gap-0.5 rounded-xl bg-muted/50 px-3 py-2.5">
+            <span className="text-xs text-muted-foreground">{label}</span>
+            <span className="font-display text-xl font-bold text-foreground tabular-nums">
+                {value}
+            </span>
+            <span className="text-xs text-muted-foreground">{hint}</span>
+        </div>
+    );
+}
+
+function PanelLink({ href, children }: { href: string; children: ReactNode }) {
+    return (
+        <Link
+            href={href}
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+        >
+            {children}
+            <ArrowRight className="size-3" />
+        </Link>
+    );
+}
+
+function QuickLink({
+    href,
+    icon: Icon,
+    label,
+    color,
+}: {
+    href: string;
+    icon: React.ElementType;
+    label: string;
+    color: string;
+}) {
+    return (
+        <Link
+            href={href}
+            className="group flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+            <span
+                className="flex size-9 items-center justify-center rounded-xl"
+                style={{
+                    background: `color-mix(in oklab, ${color} 16%, transparent)`,
+                    color,
+                }}
+            >
+                <Icon className="size-4" />
+            </span>
+            {label}
+            <ArrowRight className="ml-auto size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+        </Link>
     );
 }
 

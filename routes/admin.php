@@ -2,10 +2,14 @@
 
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GameStatisticsController;
+use App\Http\Controllers\Admin\LeaderboardController;
+use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserStatisticsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,6 +42,16 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnsureAdmin::class, 'veri
 
         // Activity Log
         Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
+
+        // Super admin: game statistics, leaderboard and question bank
+        Route::middleware(\App\Http\Middleware\EnsureSuperadmin::class)->group(function (): void {
+            Route::get('/games', [GameStatisticsController::class, 'index'])->name('games.index');
+            Route::get('/games/{game}', [GameStatisticsController::class, 'show'])->where('game', '[a-z0-9-]+')->name('games.show');
+            Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard.index');
+            Route::get('/user-statistics', [UserStatisticsController::class, 'index'])->name('user-statistics.index');
+            Route::patch('/questions/{question}/toggle', [QuestionController::class, 'toggle'])->name('questions.toggle');
+            Route::resource('questions', QuestionController::class);
+        });
 
         // Settings
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

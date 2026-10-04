@@ -5,13 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Models\GameHistory;
+use App\Models\ImpersonationLog;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use App\Services\GameAnalytics;
+use App\Services\UserAnalytics;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\Activitylog\Models\Activity;
 
 class UserController extends Controller
 {
@@ -22,6 +25,11 @@ class UserController extends Controller
     {
         $query = User::query()
             ->with(['roles', 'playerProfile:id,user_id,birth_date,school_name'])
+            ->withExists(['connectedAccounts as signed_up_with_google' => fn ($q) => $q->where('provider', 'google')])
+            ->when(in_array($request->signup, ['google', 'email'], true), function ($q) use ($request): void {
+                $method = $request->signup === 'google' ? 'whereHas' : 'whereDoesntHave';
+                $q->{$method}('connectedAccounts', fn ($accounts) => $accounts->where('provider', 'google'));
+            })
             ->when($request->search, function ($q, string $search): void {
                 $q->where(function ($q) use ($search): void {
                     $q->where('name', 'like', "%{$search}%")
@@ -44,7 +52,7 @@ class UserController extends Controller
         return Inertia::render('admin/users/index', [
             'users' => $query->paginate(20)->withQueryString(),
             'roles' => Role::query()->select('id', 'name', 'slug')->get(),
-            'filters' => $request->only(['search', 'role', 'sort', 'direction']),
+            'filters' => (object) $request->only(['search', 'role', 'signup', 'sort', 'direction']),
         ]);
     }
 
@@ -86,20 +94,54 @@ class UserController extends Controller
     /**
      * Show user detail with roles and recent activity log.
      */
-    public function show(User $user): Response
+    public function show(User $user, UserAnalytics $analytics): Response
     {
-        $user->load(['roles', 'playerProfile:id,user_id,birth_date,school_name,grade']);
-
-        $activityLog = Activity::query()
-            ->where('subject_type', User::class)
-            ->where('subject_id', $user->id)
-            ->latest()
-            ->limit(50)
-            ->get();
+        $user->load(['roles', 'playerProfile', 'connectedAccounts:id,user_id,provider,created_at']);
 
         return Inertia::render('admin/users/show', [
-            'user' => $user,
-            'activity' => $activityLog,
+            'user' => [
+                ...$user->only(['id', 'name', 'email', 'avatar_url', 'is_superadmin', 'created_at', 'last_seen_at', 'email_verified_at', 'disabled_at', 'onboarded_at', 'password_updated_at', 'deleted_at']),
+                'status' => $user->disabled_at ? 'suspended' : 'active',
+                'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
+                'roles' => $user->roles->map(fn ($role): array => ['id' => $role->id, 'name' => $role->name, 'slug' => $role->slug])->all(),
+                'providers' => $user->connectedAccounts->map(fn ($account): array => ['provider' => $account->provider, 'linked_at' => $account->created_at?->toIso8601String()])->all(),
+                'player_profile' => $user->playerProfile ? [
+                    'nickname' => $user->playerProfile->nickname,
+                    'grade' => $user->playerProfile->grade,
+                    'birth_date' => $user->playerProfile->birth_date?->toDateString(),
+                    'age' => $user->playerProfile->age,
+                    'school_name' => $user->playerProfile->school_name,
+                    'color' => $user->playerProfile->color,
+                    'accessory' => $user->playerProfile->accessory,
+                ] : null,
+            ],
+            ...$analytics->userDetail($user),
+            'activityLog' => $analytics->activityFor($user),
+            'impersonationLogs' => ImpersonationLog::query()
+                ->with('impersonator:id,name')
+                ->where('impersonated_id', $user->id)
+                ->latest('started_at')
+                ->limit(10)
+                ->get()
+                ->map(fn (ImpersonationLog $log): array => [
+                    'id' => $log->id,
+                    'impersonator' => $log->impersonator?->name,
+                    'ip_address' => $log->ip_address,
+                    'started_at' => $log->started_at?->toIso8601String(),
+                    'ended_at' => $log->ended_at?->toIso8601String(),
+                ])->all(),
+            'plays' => GameHistory::query()
+                ->where('user_id', $user->id)
+                ->latest('played_at')
+                ->latest('id')
+                ->paginate(15, ['id', 'game_key', 'mission', 'grade', 'points', 'correct', 'wrong', 'duration_seconds', 'played_at'], 'plays_page')
+                ->withQueryString()
+                ->through(fn (GameHistory $play): array => [
+                    ...$play->only(['id', 'game_key', 'mission', 'grade', 'points', 'correct', 'wrong', 'duration_seconds']),
+                    'accuracy' => $play->accuracy(),
+                    'played_at' => $play->played_at->toIso8601String(),
+                ]),
+            'passPercent' => GameAnalytics::PASS_PERCENT,
         ]);
     }
 
@@ -108,11 +150,12 @@ class UserController extends Controller
      */
     public function edit(User $user): Response
     {
-        $user->load('roles');
+        $user->load('roles:id');
 
         return Inertia::render('admin/users/edit', [
-            'user' => $user,
-            'roles' => Role::query()->select('id', 'name', 'slug')->get(),
+            'user' => $user->only(['id', 'name', 'email', 'created_at', 'last_seen_at', 'email_verified_at', 'is_superadmin']),
+            'roles' => Role::query()->select('id', 'name', 'slug', 'description', 'is_system')->orderBy('name')->get(),
+            'userRoles' => $user->roles->pluck('id')->values(),
         ]);
     }
 
@@ -141,7 +184,7 @@ class UserController extends Controller
             ->performedOn($user)
             ->log('Updated user');
 
-        return redirect()->route('admin.users.index')
+        return redirect()->route('admin.users.show', $user)
             ->with('success', 'User updated successfully.');
     }
 
