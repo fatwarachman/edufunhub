@@ -18,7 +18,7 @@ if (import.meta.env.VITE_REVERB_APP_KEY) {
     });
 }
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'EduFunHub';
 
 Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN_PUBLIC,
