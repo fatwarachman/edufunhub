@@ -34,6 +34,9 @@ it('shares the grouped game menu with every catalog game', function (): void {
         ->where('gameMenu.4.key', 'arcade')
         ->where('gameMenu.4.games.0.key', 'knowledge-train')
         ->where('gameMenu.4.games.0.awardsPoints', true)
+        ->where('gameMenu.4.games.1.key', 'port-sorter')
+        ->where('gameMenu.4.games.1.url', '/games/port-sorter')
+        ->where('gameMenu.4.games.1.minGrade', 10)
         ->where('gameMenu.5.key', 'explore')
         ->where('gameMenu.5.games.0.key', 'market-math')
         ->where('gameMenu.5.games.3.url', '/games/mini-lab')
@@ -52,10 +55,10 @@ it('links every game from the landing page menu', function (string $url): void {
     $landing = file_get_contents(public_path('new-landing/index.html'));
 
     expect($landing)->toContain('href="'.$url.'"');
-})->with(['/games/flag-quest', '/games/sky-quiz', '/games/quiz-duel', '/games/knowledge-train', '/games/snakes-and-ladders', '/games/market-math', '/games/number-garden', '/games/explore-indonesia', '/games/mini-lab', '/games/floor-drop', '/games/economy-heist', '/games/order-rush']);
+})->with(['/games/flag-quest', '/games/sky-quiz', '/games/quiz-duel', '/games/knowledge-train', '/games/snakes-and-ladders', '/games/market-math', '/games/number-garden', '/games/explore-indonesia', '/games/mini-lab', '/games/floor-drop', '/games/economy-heist', '/games/order-rush', '/games/port-sorter']);
 
 it('describes every coming-soon game in both locales', function (): void {
-    $games = ['monsterCafe', 'saboteurLab', 'kartRacer', 'bossDefense', 'pixelPainter', 'tetrisQuiz', 'portSorter', 'osiPingPong'];
+    $games = ['monsterCafe', 'saboteurLab', 'kartRacer', 'bossDefense', 'pixelPainter', 'tetrisQuiz', 'osiPingPong'];
 
     foreach (['id', 'en'] as $locale) {
         $catalog = json_decode(

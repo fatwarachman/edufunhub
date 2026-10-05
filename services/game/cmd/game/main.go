@@ -12,6 +12,7 @@ import (
 
 	"edufunhub/game/internal/crossword"
 	"edufunhub/game/internal/orderrush"
+	"edufunhub/game/internal/portsorter"
 	"edufunhub/game/internal/questions"
 	"edufunhub/game/internal/server"
 )
@@ -68,6 +69,10 @@ func main() {
 	}
 	if seqURL := os.Getenv("GAME_SEQUENCE_BANK_URL"); seqURL != "" {
 		syncer := &orderrush.Syncer{URL: seqURL, Secret: []byte(secret), Logger: logger}
+		go syncer.Run(ctx, time.Minute)
+	}
+	if sorterURL := os.Getenv("GAME_SORTER_BANK_URL"); sorterURL != "" {
+		syncer := &portsorter.Syncer{URL: sorterURL, Secret: []byte(secret), Logger: logger}
 		go syncer.Run(ctx, time.Minute)
 	}
 	if wordsURL := os.Getenv("GAME_CROSSWORD_BANK_URL"); wordsURL != "" {

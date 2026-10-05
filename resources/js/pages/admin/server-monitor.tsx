@@ -81,6 +81,7 @@ const GAME_NAMES: Record<string, string> = {
     'sky-quiz': 'Sky Quiz',
     'quiz-duel': 'Class Quiz Duel',
     'knowledge-train': 'Knowledge Train',
+    'port-sorter': 'Port Sorter',
     'snakes-and-ladders': 'Snakes & Ladders (rooms)',
     crossword: 'Crossword (rooms)',
     'market-math': 'Market Math (rooms)',

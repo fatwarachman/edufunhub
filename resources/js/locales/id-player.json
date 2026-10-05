@@ -74,7 +74,8 @@
         "miniLab": "Lab Mini",
         "floorDrop": "Lantai Runtuh",
         "economyHeist": "Peti Emas Misteri",
-        "orderRush": "Order Rush TKJ"
+        "orderRush": "Order Rush TKJ",
+        "portSorter": "Pilah Port & Protokol"
     },
     "flagQuest": {
         "title": "Misi Bendera",
@@ -292,7 +293,8 @@
             "miniLab": "Lakukan percobaan sains mini dan tebak hasilnya: wujud benda, magnet, listrik, asam basa, hingga hukum Newton.",
             "floorDrop": "Battle royale kuis untuk 2–100 pemain. Jawab benar agar ubinmu tidak runtuh; terakhir bertahan jadi juara.",
             "economyHeist": "Kuis emas mandiri untuk 2–60 pemain. Jawab benar, buka peti misteri, curi atau tukar emas, dan pasang perisai!",
-            "orderRush": "Balapan menyusun urutan kabel UTP, core fiber, OSI, DHCP dan TCP untuk siswa TKJ. Benar beruntun dapat power-up sabotase!"
+            "orderRush": "Balapan menyusun urutan kabel UTP, core fiber, OSI, DHCP dan TCP untuk siswa TKJ. Benar beruntun dapat power-up sabotase!",
+            "portSorter": "Pilah paket jaringan ke keranjang yang tepat sebelum jatuh! Topik dan keranjang diatur guru: port & protokol, layanan, dan lainnya."
         },
         "detailsFirst": "Isi data peserta dulu",
         "detailsNoticeTitle": "Lengkapi data peserta dulu, ya!",
@@ -763,18 +765,6 @@
                         "Mode Benteng Co-op: sekelas membangun satu tembok benteng bersama. Jawab kuis untuk dapat giliran menjatuhkan balok penambal, sementara monster terus memukul tembok; makin rapi susunannya, makin kuat bentengnya."
                     ],
                     "fun": "Sensasi balas serangan dan bertahan sampai jadi juara terakhir; mode Kata & Rumus mengasah otak langsung di board, dan mode Co-op minim toxic untuk kelas SD yang butuh kekompakan."
-                },
-                "portSorter": {
-                    "title": "Port Sorter / Pilah Port & Protokol",
-                    "inspiration": "Pengetahuan IT · mekanik pilah barang",
-                    "concept": "Pilah paket jaringan ke keranjang protokol yang tepat sebelum jatuh ke tanah.",
-                    "gameplay": [
-                        "Paket berisi nomor port jatuh dari atas: 80, 443, 22, 53, 21, 25, 3306.",
-                        "Di bawah ada 4 keranjang protokol: HTTP/WEB, DNS, SSH/REMOTE, dan MAIL.",
-                        "Geser (swipe) paket ke kiri atau kanan menuju keranjang yang pas sebelum menyentuh tanah.",
-                        "Makin lama, paket turun makin cepat."
-                    ],
-                    "fun": "Cukup satu jari dan refleks cepat tanpa hitungan rumit, sehingga anak TKJ langsung hafal port standar di luar kepala."
                 },
                 "osiPingPong": {
                     "title": "Ping Pong Network / OSI Layer Match",
@@ -1578,5 +1568,57 @@
         "accuracy": "Akurasi",
         "avgTime": "Rata-rata",
         "hit": "Terkena sabotase"
+    },
+    "portSorter": {
+        "title": "Pilah Port & Protokol",
+        "points": "{{count}} poin",
+        "score": "Skor {{score}}",
+        "lives": "Nyawa {{lives}}/{{max}}",
+        "round": "Paket {{round}}/{{total}}",
+        "level": "Level {{level}}/{{max}}",
+        "streak": "Beruntun ×{{count}}",
+        "start": "Mulai memilah!",
+        "playAgain": "Main lagi",
+        "pause": "Jeda",
+        "resume": "Lanjutkan",
+        "mute": "Matikan suara",
+        "unmute": "Nyalakan suara",
+        "left": "Geser paket ke kiri",
+        "right": "Geser paket ke kanan",
+        "hint": "Geser paket ke keranjang yang pas sebelum menyentuh tanah.",
+        "canvasLabel": "Arena Pilah Paket. Panah kiri dan kanan, A dan D, atau angka 1 sampai 9 untuk memindahkan paket, P untuk jeda. Di layar sentuh, geser atau ketuk kolom keranjang.",
+        "packetLabel": "Paket jatuh: {{label}}.",
+        "packetCaption": "PAKET",
+        "connection": {
+            "connecting": "Menghubungkan",
+            "online": "Terhubung",
+            "reconnecting": "Menyambung ulang",
+            "offline": "Server tidak tersedia",
+            "grade_required": "Perlu kelas"
+        },
+        "overlay": {
+            "readyTitle": "{{name}}, siap jadi router?",
+            "rules": "{{packets}} paket jatuh satu per satu di atas {{bins}} keranjang. Geser tiap paket ke keranjang yang tepat sebelum menyentuh tanah. Tiap 5 paket kecepatan naik. Salah keranjang mengurangi nyawa.",
+            "pausedTitle": "Lalu lintas dijeda",
+            "unavailable": "Server permainan belum tersedia. Coba lagi nanti.",
+            "doneTitle": "Semua paket terkirim!",
+            "crashedTitle": "Nyawa habis — jaringan macet",
+            "congratsTitle": "Mantap, {{name}}! Kamu router andal!",
+            "pickTopic": "Pilih topik"
+        },
+        "feedback": {
+            "correct": "Benar! {{item}} masuk {{bin}}. +{{score}} skor",
+            "wrong": "Salah keranjang. {{item}} seharusnya ke {{bin}}.",
+            "missed": "Paket hilang. {{item}} masuk {{bin}}."
+        },
+        "result": {
+            "summary": "{{correct}}/{{total}} paket benar • beruntun terbaik {{streak}} • skor {{score}}",
+            "earned": "+{{points}} poin masuk ke akunmu",
+            "noPoints": "Belum ada poin tambahan kali ini — terus berlatih!",
+            "review": "Yang perlu diulang"
+        },
+        "errors": {
+            "generic": "Aksi ditolak server."
+        }
     }
 }

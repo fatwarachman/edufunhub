@@ -16,6 +16,7 @@ export const GAME_LABELS: Record<string, string> = {
     'floor-drop': 'Floor Drop',
     'economy-heist': 'Economy Heist',
     'order-rush': 'Order Rush TKJ',
+    'port-sorter': 'Port Sorter',
 };
 
 /**

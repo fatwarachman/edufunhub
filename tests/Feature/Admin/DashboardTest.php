@@ -76,7 +76,7 @@ it('shows the number of games in the catalog on the dashboard', function () {
         ->get('/admin/dashboard')
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('gameCatalog.total', $games->count())
-            ->where('gameCatalog.total', 13)
+            ->where('gameCatalog.total', 14)
             ->where('gameCatalog.multiplayer', $games->where('multiplayer', true)->count())
             ->where('gameCatalog.awards_points', $games->where('awards_points', true)->count())
             ->where('gameCatalog.categories', count(config('game-catalog.categories')))

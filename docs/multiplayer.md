@@ -67,6 +67,7 @@ Setiap hasil game ruang/duel membawa ringkasan `match` yang sama untuk semua pem
 | Misi Bendera | 5 | kesulitan × 40 + benar × 5 (+30 tanpa gagal) | 255 |
 | Sky Quiz | 5 | benar × 10 (+20 selesai, +20 sempurna) | 145 |
 | Kereta Pengetahuan | 5 | benar × 10 (+20 selesai, +20 sempurna) | 145 |
+| Pilah Port & Protokol (solo) | 5 | paket benar × 10, 30 paket (+20 selesai, +20 sempurna) | 3190 |
 | Duel Kuis Kelas | 5 | benar × 10 (+20 menang / +10 seri) | 75 |
 | Ular Tangga | 5 | benar × 10 (+20 menang) | 150 |
 | Teka-Teki Silang | 5 | kata × (5 + 5 × level) (+20 juara) | 5 + kata × poin per kata + 20 |

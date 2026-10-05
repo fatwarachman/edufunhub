@@ -1,0 +1,86 @@
+<?php
+
+/**
+ * Built-in Port Sorter sets. Mirrors Go portsorter.BuiltinSets so the
+ * seeded bank and the service fallback stay identical.
+ *
+ * @return list<array{key: string, title_id: string, title_en: string, description_id: string, description_en: string, bins: list<array<string, string>>, items: list<array<string, mixed>>}>
+ */
+return [
+    [
+        'key' => 'ports-basic',
+        'title_id' => 'Port Jaringan Dasar',
+        'title_en' => 'Basic network ports',
+        'description_id' => 'Pilah port standar ke 4 protokol: web, DNS, remote, dan mail.',
+        'description_en' => 'Sort standard ports into 4 protocols: web, DNS, remote and mail.',
+        'bins' => [
+            ['key' => 'web', 'name_id' => 'HTTP/WEB', 'name_en' => 'HTTP/WEB', 'color' => '#2563eb'],
+            ['key' => 'dns', 'name_id' => 'DNS', 'name_en' => 'DNS', 'color' => '#c2410c'],
+            ['key' => 'remote', 'name_id' => 'SSH/REMOTE', 'name_en' => 'SSH/REMOTE', 'color' => '#7c3aed'],
+            ['key' => 'mail', 'name_id' => 'MAIL', 'name_en' => 'MAIL', 'color' => '#be185d'],
+        ],
+        'items' => [
+            ['label' => '80', 'hint_id' => 'HTTP', 'hint_en' => 'HTTP', 'bin' => 'web', 'level' => 1],
+            ['label' => '443', 'hint_id' => 'HTTPS', 'hint_en' => 'HTTPS', 'bin' => 'web', 'level' => 1],
+            ['label' => '53', 'hint_id' => 'DNS', 'hint_en' => 'DNS', 'bin' => 'dns', 'level' => 1],
+            ['label' => '22', 'hint_id' => 'SSH', 'hint_en' => 'SSH', 'bin' => 'remote', 'level' => 1],
+            ['label' => '21', 'hint_id' => 'FTP', 'hint_en' => 'FTP', 'bin' => 'remote', 'level' => 1],
+            ['label' => '3306', 'hint_id' => 'MySQL', 'hint_en' => 'MySQL', 'bin' => 'remote', 'level' => 1],
+            ['label' => '25', 'hint_id' => 'SMTP', 'hint_en' => 'SMTP', 'bin' => 'mail', 'level' => 1],
+            ['label' => '8080', 'hint_id' => 'HTTP Alt', 'hint_en' => 'HTTP Alt', 'bin' => 'web', 'level' => 3],
+            ['label' => '23', 'hint_id' => 'Telnet', 'hint_en' => 'Telnet', 'bin' => 'remote', 'level' => 3],
+            ['label' => '110', 'hint_id' => 'POP3', 'hint_en' => 'POP3', 'bin' => 'mail', 'level' => 3],
+            ['label' => '143', 'hint_id' => 'IMAP', 'hint_en' => 'IMAP', 'bin' => 'mail', 'level' => 3],
+            ['label' => '3389', 'hint_id' => 'RDP', 'hint_en' => 'RDP', 'bin' => 'remote', 'level' => 5],
+            ['label' => '853', 'hint_id' => 'DNS over TLS', 'hint_en' => 'DNS over TLS', 'bin' => 'dns', 'level' => 5],
+            ['label' => '587', 'hint_id' => 'SMTP Submission', 'hint_en' => 'SMTP Submission', 'bin' => 'mail', 'level' => 5],
+            ['label' => '993', 'hint_id' => 'IMAPS', 'hint_en' => 'IMAPS', 'bin' => 'mail', 'level' => 5],
+            ['label' => '995', 'hint_id' => 'POP3S', 'hint_en' => 'POP3S', 'bin' => 'mail', 'level' => 5],
+        ],
+    ],
+    [
+        'key' => 'ports-services',
+        'title_id' => 'Port Layanan Lengkap',
+        'title_en' => 'Service ports (full)',
+        'description_id' => '6 keranjang: web, DNS, remote, file, mail, dan database.',
+        'description_en' => '6 bins: web, DNS, remote, file, mail and database.',
+        'bins' => [
+            ['key' => 'web', 'name_id' => 'WEB', 'name_en' => 'WEB', 'color' => '#2563eb'],
+            ['key' => 'dns', 'name_id' => 'DNS', 'name_en' => 'DNS', 'color' => '#c2410c'],
+            ['key' => 'remote', 'name_id' => 'REMOTE', 'name_en' => 'REMOTE', 'color' => '#7c3aed'],
+            ['key' => 'file', 'name_id' => 'FILE', 'name_en' => 'FILE', 'color' => '#0f766e'],
+            ['key' => 'mail', 'name_id' => 'MAIL', 'name_en' => 'MAIL', 'color' => '#be185d'],
+            ['key' => 'database', 'name_id' => 'DATABASE', 'name_en' => 'DATABASE', 'color' => '#4d7c0f'],
+        ],
+        'items' => [
+            ['label' => '80', 'hint_id' => 'HTTP', 'hint_en' => 'HTTP', 'bin' => 'web', 'level' => 1],
+            ['label' => '443', 'hint_id' => 'HTTPS', 'hint_en' => 'HTTPS', 'bin' => 'web', 'level' => 1],
+            ['label' => '53', 'hint_id' => 'DNS', 'hint_en' => 'DNS', 'bin' => 'dns', 'level' => 1],
+            ['label' => '22', 'hint_id' => 'SSH', 'hint_en' => 'SSH', 'bin' => 'remote', 'level' => 1],
+            ['label' => '21', 'hint_id' => 'FTP', 'hint_en' => 'FTP', 'bin' => 'file', 'level' => 1],
+            ['label' => '25', 'hint_id' => 'SMTP', 'hint_en' => 'SMTP', 'bin' => 'mail', 'level' => 1],
+            ['label' => '3306', 'hint_id' => 'MySQL', 'hint_en' => 'MySQL', 'bin' => 'database', 'level' => 1],
+            ['label' => '8080', 'hint_id' => 'HTTP Alt', 'hint_en' => 'HTTP Alt', 'bin' => 'web', 'level' => 2],
+            ['label' => '23', 'hint_id' => 'Telnet', 'hint_en' => 'Telnet', 'bin' => 'remote', 'level' => 2],
+            ['label' => '20', 'hint_id' => 'FTP Data', 'hint_en' => 'FTP Data', 'bin' => 'file', 'level' => 2],
+            ['label' => '110', 'hint_id' => 'POP3', 'hint_en' => 'POP3', 'bin' => 'mail', 'level' => 2],
+            ['label' => '5432', 'hint_id' => 'PostgreSQL', 'hint_en' => 'PostgreSQL', 'bin' => 'database', 'level' => 2],
+            ['label' => '143', 'hint_id' => 'IMAP', 'hint_en' => 'IMAP', 'bin' => 'mail', 'level' => 3],
+            ['label' => '3389', 'hint_id' => 'RDP', 'hint_en' => 'RDP', 'bin' => 'remote', 'level' => 3],
+            ['label' => '69', 'hint_id' => 'TFTP', 'hint_en' => 'TFTP', 'bin' => 'file', 'level' => 3],
+            ['label' => '1433', 'hint_id' => 'SQL Server', 'hint_en' => 'SQL Server', 'bin' => 'database', 'level' => 3],
+            ['label' => '8443', 'hint_id' => 'HTTPS Alt', 'hint_en' => 'HTTPS Alt', 'bin' => 'web', 'level' => 4],
+            ['label' => '853', 'hint_id' => 'DNS over TLS', 'hint_en' => 'DNS over TLS', 'bin' => 'dns', 'level' => 4],
+            ['label' => '5900', 'hint_id' => 'VNC', 'hint_en' => 'VNC', 'bin' => 'remote', 'level' => 4],
+            ['label' => '445', 'hint_id' => 'SMB', 'hint_en' => 'SMB', 'bin' => 'file', 'level' => 4],
+            ['label' => '587', 'hint_id' => 'SMTP Submission', 'hint_en' => 'SMTP Submission', 'bin' => 'mail', 'level' => 4],
+            ['label' => '27017', 'hint_id' => 'MongoDB', 'hint_en' => 'MongoDB', 'bin' => 'database', 'level' => 4],
+            ['label' => '993', 'hint_id' => 'IMAPS', 'hint_en' => 'IMAPS', 'bin' => 'mail', 'level' => 5],
+            ['label' => '995', 'hint_id' => 'POP3S', 'hint_en' => 'POP3S', 'bin' => 'mail', 'level' => 5],
+            ['label' => '6379', 'hint_id' => 'Redis', 'hint_en' => 'Redis', 'bin' => 'database', 'level' => 5],
+            ['label' => '989', 'hint_id' => 'FTPS Data', 'hint_en' => 'FTPS Data', 'bin' => 'file', 'level' => 5],
+            ['label' => '990', 'hint_id' => 'FTPS', 'hint_en' => 'FTPS', 'bin' => 'file', 'level' => 6],
+            ['label' => '1521', 'hint_id' => 'Oracle DB', 'hint_en' => 'Oracle DB', 'bin' => 'database', 'level' => 6],
+        ],
+    ],
+];

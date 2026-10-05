@@ -9,8 +9,8 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-dataset('game pages', ['/games/flag-quest', '/games/sky-quiz', '/games/snakes-and-ladders', '/games/quiz-duel', '/games/knowledge-train', '/games/market-math', '/games/number-garden', '/games/explore-indonesia', '/games/mini-lab']);
-dataset('game tokens', ['/games/flag-quest/token', '/games/sky-quiz/token', '/games/quiz-duel/token', '/games/knowledge-train/token', '/games/market-math/token', '/games/mini-lab/token']);
+dataset('game pages', ['/games/flag-quest', '/games/sky-quiz', '/games/snakes-and-ladders', '/games/quiz-duel', '/games/knowledge-train', '/games/market-math', '/games/number-garden', '/games/explore-indonesia', '/games/mini-lab', '/games/port-sorter']);
+dataset('game tokens', ['/games/flag-quest/token', '/games/sky-quiz/token', '/games/quiz-duel/token', '/games/knowledge-train/token', '/games/market-math/token', '/games/mini-lab/token', '/games/port-sorter/token']);
 
 test('players without details are sent to the portal notice instead of a game', function (string $path, ?array $profile): void {
     $user = User::factory()->create();

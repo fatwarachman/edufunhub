@@ -6,6 +6,7 @@ return [
     'public_sky_ws_url' => env('GAME_SERVICE_PUBLIC_SKY_WS_URL', '/game-ws/sky'),
     'public_duel_ws_url' => env('GAME_SERVICE_PUBLIC_DUEL_WS_URL', '/game-ws/duel'),
     'public_train_ws_url' => env('GAME_SERVICE_PUBLIC_TRAIN_WS_URL', '/game-ws/train'),
+    'public_port_sorter_ws_url' => env('GAME_SERVICE_PUBLIC_PORT_SORTER_WS_URL', '/game-ws/port-sorter'),
     'public_snakes_ws_url' => env('GAME_SERVICE_PUBLIC_SNAKES_WS_URL', '/game-ws/snakes'),
     'public_crossword_ws_url' => env('GAME_SERVICE_PUBLIC_CROSSWORD_WS_URL', '/game-ws/crossword'),
     // Room quiz games (market-math, number-garden, explore-indonesia, mini-lab): base + '/'.$game.

@@ -10,6 +10,7 @@ import {
     Layers,
     type LucideIcon,
     Map as MapIcon,
+    Network,
     Plane,
     ShoppingCart,
     Swords,
@@ -33,6 +34,7 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
     layers: Layers,
     vault: Vault,
     cable: Cable,
+    network: Network,
 };
 
 export function gameIcon(icon: string): LucideIcon {

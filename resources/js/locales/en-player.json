@@ -75,7 +75,8 @@
         "miniLab": "Mini Lab",
         "floorDrop": "Floor Drop",
         "economyHeist": "Economy Heist",
-        "orderRush": "Order Rush TKJ"
+        "orderRush": "Order Rush TKJ",
+        "portSorter": "Port Sorter"
     },
     "flagQuest": {
         "title": "Flag Quest",
@@ -293,7 +294,8 @@
             "miniLab": "Run mini science experiments and predict the result: states of matter, magnets, circuits, acids and Newton's laws.",
             "floorDrop": "Trivia battle royale for 2–100 players. Answer right so your tile stays; the last one standing wins.",
             "economyHeist": "Self-paced gold quiz for 2–60 players. Answer right, open mystery chests, steal or swap gold and raise shields!",
-            "orderRush": "Race to order UTP cables, fibre cores, OSI layers, DHCP and TCP steps for networking students. Streaks earn sabotage power-ups!"
+            "orderRush": "Race to order UTP cables, fibre cores, OSI layers, DHCP and TCP steps for networking students. Streaks earn sabotage power-ups!",
+            "portSorter": "Sort network packets into the right bin before they drop! Topics and bins are set by teachers: ports & protocols, services and more."
         },
         "detailsFirst": "Complete details first",
         "detailsNoticeTitle": "Complete your participant details first!",
@@ -764,18 +766,6 @@
                         "Co-op Fortress mode: the whole class builds one fortress wall together. Answer quizzes to earn a turn dropping a patch block while monsters keep pounding the wall; the neater the stacking, the stronger the defence."
                     ],
                     "fun": "The thrill of striking back and surviving to be the last one standing; Word & Formula trains the brain right on the board, and Co-op is low-toxicity, great for primary classes that need teamwork."
-                },
-                "portSorter": {
-                    "title": "Port Sorter / Ports & Protocols",
-                    "inspiration": "IT knowledge · sorting mechanics",
-                    "concept": "Sort network packets into the right protocol bin before they hit the ground.",
-                    "gameplay": [
-                        "Packets labelled with port numbers fall from the top: 80, 443, 22, 53, 21, 25, 3306.",
-                        "Four protocol bins sit at the bottom: HTTP/WEB, DNS, SSH/REMOTE and MAIL.",
-                        "Swipe each packet left or right into the matching bin before it lands.",
-                        "Packets fall faster and faster over time."
-                    ],
-                    "fun": "One finger, quick reflexes and no tricky maths, so networking students memorise the standard ports by heart."
                 },
                 "osiPingPong": {
                     "title": "Ping Pong Network / OSI Layer Match",
@@ -1579,5 +1569,57 @@
         "accuracy": "Accuracy",
         "avgTime": "Average",
         "hit": "Hit by sabotage"
+    },
+    "portSorter": {
+        "title": "Port Sorter",
+        "points": "{{count}} points",
+        "score": "Score {{score}}",
+        "lives": "Lives {{lives}}/{{max}}",
+        "round": "Packet {{round}}/{{total}}",
+        "level": "Level {{level}}/{{max}}",
+        "streak": "Streak ×{{count}}",
+        "start": "Start sorting!",
+        "playAgain": "Play again",
+        "pause": "Pause",
+        "resume": "Resume",
+        "mute": "Mute sound",
+        "unmute": "Unmute sound",
+        "left": "Move the packet left",
+        "right": "Move the packet right",
+        "hint": "Slide the packet into the matching bin before it hits the ground.",
+        "canvasLabel": "Packet Sorter arena. Left and right arrows, A and D, or keys 1 to 9 move the packet, P pauses. On touch screens, swipe or tap a bin column.",
+        "packetLabel": "Falling packet: {{label}}.",
+        "packetCaption": "PACKET",
+        "connection": {
+            "connecting": "Connecting",
+            "online": "Connected",
+            "reconnecting": "Reconnecting",
+            "offline": "Server unavailable",
+            "grade_required": "Grade required"
+        },
+        "overlay": {
+            "readyTitle": "{{name}}, ready to route?",
+            "rules": "{{packets}} packets fall one at a time above {{bins}} bins. Slide each packet into the right bin before it hits the ground. Speed rises every 5 packets. A wrong bin costs a life.",
+            "pausedTitle": "Traffic paused",
+            "unavailable": "The game server is not available yet. Please try again later.",
+            "doneTitle": "Every packet delivered!",
+            "crashedTitle": "Out of lives — the network jammed",
+            "congratsTitle": "Great job, {{name}}! You route like a pro!",
+            "pickTopic": "Pick a topic"
+        },
+        "feedback": {
+            "correct": "Correct! {{item}} goes to {{bin}}. +{{score}} score",
+            "wrong": "Wrong bin. {{item}} belongs in {{bin}}.",
+            "missed": "Packet lost. {{item}} belongs in {{bin}}."
+        },
+        "result": {
+            "summary": "{{correct}}/{{total}} packets right • best streak {{streak}} • score {{score}}",
+            "earned": "+{{points}} points added to your account",
+            "noPoints": "No extra points this time — keep practising!",
+            "review": "To review"
+        },
+        "errors": {
+            "generic": "The server rejected that action."
+        }
     }
 }
