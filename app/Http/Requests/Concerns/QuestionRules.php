@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Concerns;
 
 use App\Models\Question;
+use App\Models\Subject;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -42,7 +43,7 @@ trait QuestionRules
 
         return [
             'type' => ['required', Rule::in(Question::TYPES)],
-            'subject' => ['required', Rule::in(Question::SUBJECTS)],
+            'subject' => ['required', Rule::in(Subject::activeKeys())],
             'prompt_id' => ['required', 'string', 'min:3', 'max:500'],
             'prompt_en' => ['nullable', 'string', 'max:500'],
             'options' => $isChoice ? ['required', 'array', 'min:3', 'max:6'] : ['nullable'],

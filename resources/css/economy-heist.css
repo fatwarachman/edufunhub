@@ -1,0 +1,309 @@
+/* Economy Heist: mystery chests, animated gold board and action ticker. */
+
+.eh-chest {
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.eh-chest:not(:disabled):hover {
+    transform: translateY(-4px) rotate(-1.5deg);
+}
+
+.eh-chest:not(:disabled):active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 #1f2a44;
+}
+
+.eh-chest[data-state='picked'] {
+    animation: eh-pop 0.45s ease-out;
+}
+
+.eh-chest[data-state='other'] {
+    opacity: 0.55;
+    filter: saturate(0.6);
+}
+
+.eh-chest-lid {
+    transform-box: fill-box;
+    transform-origin: 0% 100%;
+    transition: transform 0.35s ease;
+}
+
+.eh-chest[data-state='picked'] .eh-chest-lid,
+.eh-chest[data-state='other'] .eh-chest-lid {
+    transform: translateY(-4px) rotate(-10deg);
+}
+
+.eh-chest-idle {
+    animation: eh-wobble 2.4s ease-in-out infinite;
+}
+
+.eh-chest-idle:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.eh-chest-idle:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+.eh-board-row {
+    transition:
+        transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+        background-color 0.3s ease;
+    will-change: transform;
+}
+
+.eh-gold {
+    font-variant-numeric: tabular-nums;
+}
+
+.eh-gold[data-flash='up'] {
+    animation: eh-flash-up 0.8s ease-out;
+}
+
+.eh-gold[data-flash='down'] {
+    animation: eh-flash-down 0.8s ease-out;
+}
+
+.eh-feed-item {
+    animation: eh-slide-in 0.35s ease-out;
+}
+
+.eh-reveal {
+    animation: eh-pop 0.4s ease-out;
+}
+
+.eh-shake {
+    animation: eh-shake 0.4s linear;
+}
+
+.eh-countdown {
+    transition: width 0.1s linear;
+}
+
+@keyframes eh-wobble {
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+    45% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(-3deg);
+    }
+    55% {
+        transform: rotate(3deg);
+    }
+    60% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes eh-pop {
+    0% {
+        transform: scale(0.85);
+        opacity: 0.4;
+    }
+    60% {
+        transform: scale(1.06);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes eh-slide-in {
+    from {
+        transform: translateX(16px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes eh-flash-up {
+    0% {
+        color: #15803d;
+        transform: scale(1.18);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes eh-flash-down {
+    0% {
+        color: #be123c;
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes eh-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-6px);
+    }
+    75% {
+        transform: translateX(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .eh-chest,
+    .eh-chest-lid,
+    .eh-board-row,
+    .eh-countdown {
+        transition: none;
+    }
+
+    .eh-chest-idle,
+    .eh-chest[data-state='picked'],
+    .eh-gold[data-flash],
+    .eh-feed-item,
+    .eh-reveal,
+    .eh-shake {
+        animation: none;
+    }
+}
+
+/* How-to-play walkthrough (auto-playing illustrated scenes). */
+.eh-howto-scene {
+    animation: eh-scene-in 0.45s ease-out;
+}
+
+.eh-howto-progress {
+    width: 0;
+    animation-name: eh-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+.eh-howto-pop {
+    animation: eh-pop 0.4s ease-out both;
+}
+
+.eh-howto-rise {
+    animation: eh-rise 0.45s ease-out both;
+}
+
+.eh-howto-tap {
+    animation: eh-tap 0.5s ease-in-out 1s both;
+}
+
+.eh-howto-pick {
+    animation: eh-pick 0.6s ease-out 1.2s both;
+}
+
+.eh-howto-open .eh-chest-lid {
+    animation: eh-lid 0.5s ease-out 1.5s both;
+}
+
+.eh-howto-coin {
+    animation: eh-coin 1.6s ease-in-out 0.8s infinite;
+}
+
+.eh-howto-shield {
+    animation: eh-pop 0.5s ease-out 3s both;
+}
+
+@keyframes eh-scene-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes eh-progress {
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes eh-rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes eh-tap {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 4px #ffd93d;
+    }
+}
+
+@keyframes eh-pick {
+    0% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px) scale(1.06);
+        box-shadow: 0 0 0 4px #ffd93d;
+    }
+    100% {
+        transform: translateY(0) scale(1.04);
+        box-shadow: 0 0 0 4px #ffd93d;
+    }
+}
+
+@keyframes eh-lid {
+    to {
+        transform: translateY(-4px) rotate(-10deg);
+    }
+}
+
+@keyframes eh-coin {
+    0% {
+        left: 100%;
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        left: 0;
+        transform: translateX(0);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .eh-howto-scene,
+    .eh-howto-pop,
+    .eh-howto-rise,
+    .eh-howto-tap,
+    .eh-howto-pick,
+    .eh-howto-open .eh-chest-lid,
+    .eh-howto-coin,
+    .eh-howto-shield {
+        animation: none;
+    }
+}

@@ -49,9 +49,9 @@ export default function CrosswordWordForm({
     const submit = (event: FormEvent) => {
         event.preventDefault();
         if (word) {
-            form.put(`/admin/crossword-words/${word.id}`);
+            form.put(`/admin/games/crossword/words/${word.id}`);
         } else {
-            form.post('/admin/crossword-words');
+            form.post('/admin/games/crossword/words');
         }
     };
 
@@ -61,11 +61,11 @@ export default function CrosswordWordForm({
             <div className="flex w-full flex-col gap-6">
                 <div>
                     <Link
-                        href={`/admin/crossword-words?level=${data.level}`}
+                        href={`/admin/games/crossword/words?level=${data.level}`}
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        Crossword Words
+                        Crossword word bank
                     </Link>
                     <h1 className="mt-2 text-2xl font-bold text-foreground">
                         {word ? `Edit ${word.answer}` : 'New word'}
@@ -172,7 +172,7 @@ export default function CrosswordWordForm({
                         />
                         <div className="flex justify-end gap-3 border-t border-border pt-5">
                             <Link
-                                href={`/admin/crossword-words?level=${data.level}`}
+                                href={`/admin/games/crossword/words?level=${data.level}`}
                                 className="inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                             >
                                 Cancel

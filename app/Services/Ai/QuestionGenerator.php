@@ -5,6 +5,7 @@ namespace App\Services\Ai;
 use App\Ai\Agents\QuestionWriter;
 use App\Models\Question;
 use App\Models\QuestionGeneration;
+use App\Models\Subject;
 use Illuminate\Support\Str;
 use JsonException;
 use RuntimeException;
@@ -17,15 +18,6 @@ use TypeError;
 class QuestionGenerator
 {
     /** @var array<string, string> */
-    public const SUBJECT_NAMES = [
-        'math' => 'Matematika (mathematics)',
-        'science' => 'IPA (natural science)',
-        'language' => 'Bahasa Indonesia',
-        'social' => 'IPS (social studies: history, geography, economy)',
-        'english' => 'Bahasa Inggris (English as a foreign language)',
-        'civics' => 'PPKn / Pancasila (civics)',
-    ];
-
     public function __construct(private OpenAiCompatibleClient $client, private AiSettings $settings) {}
 
     /**
@@ -92,7 +84,7 @@ class QuestionGenerator
             ->implode("\n");
 
         $gradeLabel = $grade === Question::KINDERGARTEN ? 'TK (kindergarten, age 4-6)' : "kelas {$grade} (grade {$grade})";
-        $prompt = "Write {$count} new multiple choice questions.\nSubject: ".self::SUBJECT_NAMES[$subject]."\nGrade: {$gradeLabel}\n"
+        $prompt = "Write {$count} new multiple choice questions.\nSubject: ".Subject::aiDescription($subject)."\nGrade: {$gradeLabel}\n"
             .($avoid !== '' ? "Avoid these existing questions:\n{$avoid}\n" : '');
 
         try {

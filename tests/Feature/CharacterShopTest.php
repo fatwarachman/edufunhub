@@ -160,8 +160,8 @@ it('shows equipped items on the leaderboard', function (): void {
     PlayerProfile::query()->where('user_id', $user->id)->update(['grade' => 4]);
 
     $this->get('/portal')->assertInertia(fn (Assert $page) => $page
-        ->where('leaderboard.0.points', 500)
-        ->where('leaderboard.0.character.items.hat.style', 'crown'));
+        ->where('leaderboards.all.entries.0.points', 500)
+        ->where('leaderboards.all.entries.0.character.items.hat.style', 'crown'));
 });
 
 describe('admin', function (): void {

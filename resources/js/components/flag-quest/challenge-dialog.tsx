@@ -2,6 +2,7 @@ import SnakesChallenge from '@/components/flag-quest/snakes-challenge';
 import { useTranslations } from '@/hooks/use-translations';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import type { ChallengeState } from '@/lib/flag-quest/world';
+import { useSubjectName } from '@/lib/subjects';
 import { CheckCircle2, LogOut, Timer, XCircle } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 
@@ -39,6 +40,7 @@ export default function ChallengeDialog({
     onSound,
 }: Props) {
     const { t } = useTranslations();
+    const subjectName = useSubjectName();
     const perStep = useCountdown(challenge, 'deadline_ms');
     const overall = useCountdown(challenge, 'ends_ms');
     const [pendingFor, setPendingFor] = useState<number | null>(null);
@@ -87,9 +89,7 @@ export default function ChallengeDialog({
     const questionView = challenge.question ? (
         <section className="flex flex-col gap-3">
             <p className="text-xs font-bold text-[#6c5ce7] uppercase">
-                {t(`flagQuest.subjects.${challenge.question.subject}`, {
-                    defaultValue: challenge.question.subject,
-                })}
+                {subjectName(challenge.question.subject)}
             </p>
             <p className="text-lg leading-snug font-bold break-words sm:text-xl">
                 {challenge.question.prompt}

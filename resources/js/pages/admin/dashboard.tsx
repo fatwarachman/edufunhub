@@ -512,7 +512,7 @@ export default function Dashboard(props: DashboardProps) {
 
                     <Panel
                         title="Games"
-                        description="All-time plays and success rate"
+                        description="Top 5 most played games · all-time plays and success rate"
                         icon={Gamepad2}
                         actions={
                             superadmin ? (

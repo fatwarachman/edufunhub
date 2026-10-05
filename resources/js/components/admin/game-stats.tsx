@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { usePage } from '@inertiajs/react';
 import { type ReactNode } from 'react';
 
 export const GAME_LABELS: Record<string, string> = {
@@ -13,16 +14,22 @@ export const GAME_LABELS: Record<string, string> = {
     'explore-indonesia': 'Explore Indonesia',
     'mini-lab': 'Mini Lab',
     'floor-drop': 'Floor Drop',
+    'economy-heist': 'Economy Heist',
+    'order-rush': 'Order Rush TKJ',
 };
 
-export const SUBJECT_LABELS: Record<string, string> = {
-    math: 'Math',
-    science: 'Science',
-    language: 'Bahasa Indonesia',
-    social: 'Social Studies',
-    english: 'English',
-    civics: 'Civics',
-};
+/**
+ * Admin subject labels (every subject, hidden ones too) from the shared
+ * `subjectLabels` prop, so subjects added in /admin/subjects show by name.
+ */
+export function useSubjectLabel(): (
+    subject: string | null | undefined,
+) => string {
+    const labels =
+        usePage<{ subjectLabels?: Record<string, string> }>().props
+            .subjectLabels ?? {};
+    return (subject) => (subject ? (labels[subject] ?? subject) : '');
+}
 
 export const LEVEL_LABELS: Record<string, string> = {
     sd: 'Elementary (SD, grade 1–6)',

@@ -40,6 +40,7 @@ services:
       GAME_RESULT_URL: ${GAME_RESULT_URL:-http://edufunhub-app:8000/api/internal/game-results}
       GAME_QUESTION_BANK_URL: ${GAME_QUESTION_BANK_URL:-http://edufunhub-app:8000/api/internal/question-bank}
       GAME_CROSSWORD_BANK_URL: ${GAME_CROSSWORD_BANK_URL:-http://edufunhub-app:8000/api/internal/crossword-bank}
+      GAME_SEQUENCE_BANK_URL: ${GAME_SEQUENCE_BANK_URL:-http://edufunhub-app:8000/api/internal/sequence-bank}
       GAME_ALLOWED_ORIGINS: ${GAME_ALLOWED_ORIGINS:-edufunhub.com,*.edufunhub.com,172.16.200.23:*,localhost:*,127.0.0.1:*}
     expose:
       - "8090"

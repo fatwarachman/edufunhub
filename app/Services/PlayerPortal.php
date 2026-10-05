@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\GameAccess;
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\PointLedger;
@@ -13,15 +14,35 @@ use Illuminate\Support\Collection;
  */
 class PlayerPortal
 {
+    /** Window (days) used for the "most played" ranking on the portal. */
+    public const POPULARITY_DAYS = 30;
+
+    /** Ranks that get a "most played" badge; games with equal plays share a rank. */
+    public const POPULAR_BADGES = 3;
+
     /**
+     * @param  array<string, int>  $plays  Play counts per game key (see popularity()).
      * @return list<array{key: string, titleKey: string, games: list<array<string, mixed>>}>
      */
-    public function catalog(?int $grade = null): array
+    public function catalog(?int $grade = null, array $plays = []): array
     {
+        $played = collect($plays)->filter(fn (int $count): bool => $count > 0);
+        $rankOf = function (string $key) use ($played): ?int {
+            if (! $played->has($key)) {
+                return null;
+            }
+
+            $rank = $played->filter(fn (int $count): bool => $count > $played[$key])->count() + 1;
+
+            return $rank <= self::POPULAR_BADGES ? $rank : null;
+        };
+
         return collect(config('game-catalog.categories'))->map(fn (array $category): array => [
             'key' => $category['key'],
             'titleKey' => $category['titleKey'],
             'games' => collect($category['games'])->map(fn (array $game): array => [
+                'plays' => (int) ($plays[$game['key']] ?? 0),
+                'popularRank' => $rankOf($game['key']),
                 'key' => $game['key'],
                 'titleKey' => $game['titleKey'],
                 'descriptionKey' => $game['descriptionKey'] ?? null,
@@ -38,6 +59,22 @@ class PlayerPortal
                     && $grade <= ($game['max_grade'] ?? 12),
             ])->values()->all(),
         ])->values()->all();
+    }
+
+    /**
+     * How often each game was opened in the last N days (page opens, deduplicated per session by RecordGameAccess).
+     *
+     * @return array<string, int>
+     */
+    public function popularity(int $days = self::POPULARITY_DAYS): array
+    {
+        return GameAccess::query()
+            ->where('accessed_at', '>=', now()->subDays($days))
+            ->selectRaw('game_key, COUNT(*) as plays')
+            ->groupBy('game_key')
+            ->pluck('plays', 'game_key')
+            ->map(fn (mixed $count): int => (int) $count)
+            ->all();
     }
 
     /**
@@ -87,18 +124,45 @@ class PlayerPortal
         return (int) $user->pointLedgers()->sum('points');
     }
 
+    /** @var array<string, int|null> Leaderboard periods and their window in days (null = all time). */
+    public const LEADERBOARD_PERIODS = ['week' => 7, 'month' => 30, 'all' => null];
+
     /**
-     * Top players by total points. Only active players with points are ranked.
+     * Leaderboards for every period, each with the top players and the viewer's own standing.
      *
-     * @return list<array{rank: int, name: string, points: int, isMe: bool, character: array<string, mixed>}>
+     * @return array<string, array{entries: list<array{rank: int, userId: int, name: string, points: int, isMe: bool, character: array<string, mixed>}>, me: array{rank: int, points: int}|null}>
      */
-    public function leaderboard(User $viewer, int $limit = 10): array
+    public function leaderboards(User $viewer, int $limit = 10): array
     {
+        $boards = [];
+
+        foreach (self::LEADERBOARD_PERIODS as $period => $days) {
+            $boards[$period] = [
+                'entries' => $this->leaderboard($viewer, $limit, $days),
+                'me' => $this->standing($viewer, $days),
+            ];
+        }
+
+        return $boards;
+    }
+
+    /**
+     * Top players by points earned, optionally within the last N days. Only active players with points are ranked.
+     *
+     * @return list<array{rank: int, userId: int, name: string, points: int, isMe: bool, character: array<string, mixed>}>
+     */
+    public function leaderboard(User $viewer, int $limit = 10, ?int $days = null): array
+    {
+        $earned = function ($query) use ($days): void {
+            $query->where('points', '>', 0)
+                ->when($days !== null, fn ($query) => $query->where('created_at', '>=', now()->subDays($days)));
+        };
+
         /** @var Collection<int, User> $users */
         $users = User::query()
             ->whereNull('disabled_at')
-            ->whereHas('pointLedgers', fn ($query) => $query->where('points', '>', 0))
-            ->withSum(['pointLedgers as total_points' => fn ($query) => $query->where('points', '>', 0)], 'points')
+            ->whereHas('pointLedgers', $earned)
+            ->withSum(['pointLedgers as total_points' => $earned], 'points')
             ->with('playerProfile')
             ->orderByDesc('total_points')
             ->orderBy('id')
@@ -112,12 +176,43 @@ class PlayerPortal
 
             return [
                 'rank' => $index + 1,
+                'userId' => $user->id,
                 'name' => $profile->nickname ?: $user->name,
                 'points' => (int) $user->total_points,
                 'isMe' => $user->is($viewer),
                 'character' => $looks[$user->id] ?? ['color' => $profile->color, 'accessory' => $profile->accessory],
             ];
         })->all();
+    }
+
+    /**
+     * The viewer's rank and earned points within the period, or null when they earned nothing in it.
+     *
+     * @return array{rank: int, points: int}|null
+     */
+    public function standing(User $viewer, ?int $days = null): ?array
+    {
+        $since = $days !== null ? now()->subDays($days) : null;
+        $points = (int) $viewer->pointLedgers()
+            ->where('points', '>', 0)
+            ->when($since, fn ($query) => $query->where('created_at', '>=', $since))
+            ->sum('points');
+
+        if ($points === 0 || $viewer->disabled_at !== null) {
+            return null;
+        }
+
+        $ahead = PointLedger::query()
+            ->where('points', '>', 0)
+            ->when($since, fn ($query) => $query->where('created_at', '>=', $since))
+            ->whereIn('user_id', User::query()->select('id')->whereNull('disabled_at')->whereKeyNot($viewer->id))
+            ->groupBy('user_id')
+            ->havingRaw('SUM(points) > ?', [$points])
+            ->select('user_id')
+            ->get()
+            ->count();
+
+        return ['rank' => $ahead + 1, 'points' => $points];
     }
 
     /**

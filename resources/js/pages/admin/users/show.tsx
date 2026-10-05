@@ -16,7 +16,7 @@ import {
     gameLabel,
     Panel,
     rateTone,
-    SUBJECT_LABELS,
+    useSubjectLabel,
 } from '@/components/admin/game-stats';
 import { MatchCard, type MatchRow } from '@/components/admin/match-history';
 import { BadgeMedal, type BadgeProgress } from '@/components/badges';
@@ -140,6 +140,7 @@ interface Props {
         points: number;
         best: number;
         accuracy: number | null;
+        play_seconds: number;
         last_played_at: string;
     }[];
     daily: { date: string; plays: number; points: number }[];
@@ -271,6 +272,7 @@ function stringify(value: unknown): string {
 }
 
 export default function ShowUser(props: Props) {
+    const subjectLabel = useSubjectLabel();
     const { user, stats } = props;
     const profile = user.player_profile;
     const [tab, setTab] = useState<Tab>('games');
@@ -772,6 +774,13 @@ export default function ShowUser(props: Props) {
                                                     <span>
                                                         best {game.best}
                                                     </span>
+                                                    <span className="inline-flex items-center gap-1">
+                                                        <Clock className="size-3" />
+                                                        {formatDuration(
+                                                            game.play_seconds ||
+                                                                null,
+                                                        )}
+                                                    </span>
                                                     <span>
                                                         {timeAgo(
                                                             game.last_played_at,
@@ -802,9 +811,9 @@ export default function ShowUser(props: Props) {
                                             >
                                                 <div className="flex items-center justify-between text-sm">
                                                     <span className="font-medium text-foreground">
-                                                        {SUBJECT_LABELS[
-                                                            row.subject
-                                                        ] ?? row.subject}
+                                                        {subjectLabel(
+                                                            row.subject,
+                                                        )}
                                                     </span>
                                                     <span className="text-xs text-muted-foreground">
                                                         {row.answered} answered

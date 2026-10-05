@@ -1,5 +1,6 @@
 import { type GameMenuCategory, type GameMenuGame } from '@/types';
 import {
+    Cable,
     Dice5,
     Flag,
     FlaskConical,
@@ -13,6 +14,7 @@ import {
     ShoppingCart,
     Swords,
     TrainFront,
+    Vault,
 } from 'lucide-react';
 
 /** Icon per catalog `icon` key (config/game-catalog.php). */
@@ -29,6 +31,8 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
     map: MapIcon,
     flask: FlaskConical,
     layers: Layers,
+    vault: Vault,
+    cable: Cable,
 };
 
 export function gameIcon(icon: string): LucideIcon {

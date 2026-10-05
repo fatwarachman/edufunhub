@@ -30,6 +30,7 @@ import {
     SKY_RULES,
     type SkyRoundState,
 } from '@/lib/sky-quiz';
+import { useSubjectName } from '@/lib/subjects';
 import { type SharedData } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
@@ -312,6 +313,7 @@ export default function SkyQuiz({
     wsUrl,
 }: SkyQuizProps) {
     const { t, i18n } = useTranslations();
+    const subjectName = useSubjectName();
     const [subjectChoice, setSubjectChoice] = useState<GameSubject>(() =>
         typeof window === 'undefined' ? 'mix' : rememberedSubject(),
     );
@@ -1044,11 +1046,7 @@ export default function SkyQuiz({
             ? Math.min(round.round, total)
             : Math.min((round?.round ?? 0) + 1, total);
     const question = shown ?? round?.question;
-    const subject = question
-        ? t(`flagQuest.subjects.${question.subject}`, {
-              defaultValue: question.subject,
-          })
-        : t('sky.mission');
+    const subject = question ? subjectName(question.subject) : t('sky.mission');
     const totalPoints = Math.max(points, expectedPoints ?? points);
     const history = round?.history ?? [];
     const answered = Math.min(history.length, total);

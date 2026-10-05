@@ -4,6 +4,7 @@ use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\Question;
 use App\Models\Role;
+use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -72,16 +73,20 @@ test('game list shows plays, players and success rate per catalog game', functio
 
     $this->actingAs($this->superadmin)->get('/admin/games')->assertInertia(fn (Assert $page) => $page
         ->component('admin/games/index')
-        ->has('games', 11)
+        ->has('games', 13)
         ->where('games.4.key', 'floor-drop')
         ->where('games.4.tracked', true)
-        ->where('games.7.key', 'market-math')
-        ->where('games.7.tracked', true)
-        ->where('games.10.key', 'mini-lab')
-        ->where('games.6.key', 'knowledge-train')
-        ->where('games.6.tracked', true)
-        ->where('games.5.key', 'crossword')
-        ->where('games.5.tracked', false)
+        ->where('games.5.key', 'economy-heist')
+        ->where('games.5.tracked', true)
+        ->where('games.6.key', 'order-rush')
+        ->where('games.6.tracked', false)
+        ->where('games.9.key', 'market-math')
+        ->where('games.9.tracked', true)
+        ->where('games.12.key', 'mini-lab')
+        ->where('games.8.key', 'knowledge-train')
+        ->where('games.8.tracked', true)
+        ->where('games.7.key', 'crossword')
+        ->where('games.7.tracked', false)
         ->where('games.1.key', 'snakes-and-ladders')
         ->where('games.1.tracked', true)
         ->where('games.3.key', 'quiz-duel')
@@ -255,7 +260,7 @@ test('question bank opens on a subject overview with per-grade counts', function
         ->component('admin/questions/index')
         ->where('mode', 'subjects')
         ->where('questions', null)
-        ->has('subjectStats', count(Question::SUBJECTS))
+        ->has('subjectStats', count(Subject::keys()))
         ->where('subjectStats.1.subject', 'science')
         ->where('subjectStats.1.total', $science->count())
         ->where('subjectStats.1.bands.0', $science->where('band', 0)->count())

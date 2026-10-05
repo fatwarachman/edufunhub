@@ -7,6 +7,7 @@ use App\Http\Requests\Teacher\ImportTeacherQuestionsRequest;
 use App\Http\Requests\Teacher\TeacherQuestionRequest;
 use App\Models\Question;
 use App\Models\QuestionCompensationRate;
+use App\Models\Subject;
 use App\Services\TeacherQuestionImporter;
 use App\Services\TeacherQuestionStats;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,7 +32,7 @@ class TeacherQuestionController extends Controller
         $filters = [
             'search' => mb_substr(trim((string) $request->query('search')), 0, 100) ?: null,
             'grade' => is_numeric($request->query('grade')) && in_array((int) $request->query('grade'), Question::GRADES, true) ? (int) $request->query('grade') : null,
-            'subject' => in_array($request->query('subject'), Question::SUBJECTS, true) ? (string) $request->query('subject') : null,
+            'subject' => in_array($request->query('subject'), Subject::keys(), true) ? (string) $request->query('subject') : null,
         ];
 
         $questions = Question::query()
@@ -150,7 +151,7 @@ class TeacherQuestionController extends Controller
         return [
             'games' => Question::GAMES,
             'choiceOnlyGames' => Question::CHOICE_ONLY_GAMES,
-            'subjects' => Question::SUBJECTS,
+            'subjects' => Subject::activeKeys(),
             'grades' => Question::GRADES,
         ];
     }

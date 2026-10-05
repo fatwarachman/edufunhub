@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\GameHistory;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -67,17 +68,34 @@ it('allows superadmins to access the dashboard and see user metrics', function (
 it('shows the number of games in the catalog on the dashboard', function () {
     $games = collect(config('game-catalog.categories'))->flatMap(fn (array $category) => $category['games']);
     $player = User::factory()->withPlayerDetails()->create();
-    App\Models\GameHistory::factory()->create(['user_id' => $player->id, 'game_key' => 'sky-quiz', 'played_at' => now()->subDay()]);
-    App\Models\GameHistory::factory()->create(['user_id' => $player->id, 'game_key' => 'sky-quiz', 'played_at' => now()->subDays(2)]);
-    App\Models\GameHistory::factory()->create(['user_id' => $player->id, 'game_key' => 'quiz-duel', 'played_at' => now()->subDays(20)]);
+    GameHistory::factory()->create(['user_id' => $player->id, 'game_key' => 'sky-quiz', 'played_at' => now()->subDay()]);
+    GameHistory::factory()->create(['user_id' => $player->id, 'game_key' => 'sky-quiz', 'played_at' => now()->subDays(2)]);
+    GameHistory::factory()->create(['user_id' => $player->id, 'game_key' => 'quiz-duel', 'played_at' => now()->subDays(20)]);
 
     $this->actingAs(User::factory()->create(['is_superadmin' => true]))
         ->get('/admin/dashboard')
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('gameCatalog.total', $games->count())
-            ->where('gameCatalog.total', 11)
+            ->where('gameCatalog.total', 13)
             ->where('gameCatalog.multiplayer', $games->where('multiplayer', true)->count())
             ->where('gameCatalog.awards_points', $games->where('awards_points', true)->count())
             ->where('gameCatalog.categories', count(config('game-catalog.categories')))
             ->where('gameCatalog.played_7d', 1));
+});
+
+it('lists only the five most played games on the dashboard', function () {
+    $player = User::factory()->withPlayerDetails()->create();
+    $plays = ['crossword' => 6, 'sky-quiz' => 5, 'flag-quest' => 4, 'quiz-duel' => 3, 'mini-lab' => 2, 'market-math' => 1];
+    foreach ($plays as $game => $count) {
+        GameHistory::factory()->count($count)->create(['user_id' => $player->id, 'game_key' => $game]);
+    }
+
+    $this->actingAs(User::factory()->create(['is_superadmin' => true]))
+        ->get('/admin/dashboard')
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('games', 5)
+            ->where('games.0.key', 'crossword')
+            ->where('games.0.plays', 6)
+            ->where('games.4.key', 'mini-lab')
+            ->where('games.4.plays', 2));
 });

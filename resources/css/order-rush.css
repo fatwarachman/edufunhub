@@ -1,0 +1,226 @@
+/* Order Rush (TKJ): cable pieces, LAN tester LEDs, packet animation, race track. */
+
+.or-piece {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition:
+        transform 0.08s ease,
+        box-shadow 0.08s ease;
+}
+
+.or-piece:not(:disabled):active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 #1f2a44;
+}
+
+.or-cable {
+    background: var(--or-core);
+}
+
+.or-cable[data-striped='true'] {
+    background: repeating-linear-gradient(
+        135deg,
+        var(--or-core) 0 9px,
+        var(--or-stripe) 9px 18px
+    );
+}
+
+.or-slot[data-error='true'] {
+    animation: or-shake 0.42s ease-in-out;
+    box-shadow:
+        0 0 0 3px #e11d48,
+        3px 3px 0 #1f2a44;
+}
+
+.or-led {
+    transition:
+        background-color 0.06s linear,
+        box-shadow 0.06s linear;
+}
+
+.or-led[data-state='off'] {
+    background: #475569;
+    color: #f1f5f9;
+}
+
+.or-led[data-state='run'] {
+    background: #facc15;
+    box-shadow: 0 0 10px #facc15;
+}
+
+.or-led[data-state='ok'] {
+    background: #22c55e;
+    box-shadow: 0 0 12px #22c55e;
+}
+
+.or-led[data-state='bad'] {
+    background: #ef4444;
+    box-shadow: 0 0 14px #ef4444;
+    animation: or-blink 0.3s steps(2) 3;
+}
+
+.or-tester[data-result='bad'] {
+    animation: or-shake 0.42s ease-in-out;
+}
+
+.or-packet {
+    animation: or-dive var(--or-dive, 0.9s) cubic-bezier(0.4, 0, 0.2, 1)
+        forwards;
+}
+
+.or-packet[data-result='bad'] {
+    animation: or-dive-fail var(--or-dive, 0.9s) ease-in forwards;
+}
+
+.or-track-avatar {
+    transition: left 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.or-track-avatar[data-hit='true'] {
+    animation: or-zap 0.5s ease-in-out 3;
+}
+
+.or-fiber {
+    background:
+        linear-gradient(90deg, transparent 0 calc(100% - 2px), #0f766e33 0) 0
+            0 / calc(100% / var(--or-nodes, 10)) 100%,
+        linear-gradient(180deg, #99f6e4, #14b8a6 45%, #0f766e);
+}
+
+.or-fiber-pulse {
+    background: linear-gradient(90deg, transparent, #ffffffcc, transparent);
+    animation: or-pulse 1.6s linear infinite;
+}
+
+.or-marquee {
+    animation: or-marquee var(--or-marquee, 18s) linear infinite;
+}
+
+.or-freeze {
+    background:
+        radial-gradient(circle at 20% 20%, #ffffff99, transparent 40%),
+        linear-gradient(135deg, #bae6fdcc, #e0f2fecc);
+    backdrop-filter: blur(2px);
+}
+
+.or-tangle {
+    background-image:
+        repeating-radial-gradient(
+            circle at 30% 40%,
+            transparent 0 14px,
+            #f9731655 14px 17px
+        ),
+        repeating-radial-gradient(
+            circle at 70% 60%,
+            transparent 0 18px,
+            #2563eb44 18px 21px
+        );
+}
+
+.or-combo {
+    animation: or-pop 0.5s ease-out;
+}
+
+@keyframes or-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    20% {
+        transform: translateX(-6px);
+    }
+    40% {
+        transform: translateX(6px);
+    }
+    60% {
+        transform: translateX(-4px);
+    }
+    80% {
+        transform: translateX(4px);
+    }
+}
+
+@keyframes or-blink {
+    50% {
+        opacity: 0.35;
+    }
+}
+
+@keyframes or-dive {
+    from {
+        top: 0%;
+    }
+    to {
+        top: calc(100% - 1.75rem);
+    }
+}
+
+@keyframes or-dive-fail {
+    from {
+        top: 0%;
+    }
+    to {
+        top: var(--or-stop, 50%);
+    }
+}
+
+@keyframes or-zap {
+    0%,
+    100% {
+        filter: none;
+    }
+    50% {
+        filter: drop-shadow(0 0 6px #facc15) hue-rotate(40deg);
+    }
+}
+
+@keyframes or-pulse {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(400%);
+    }
+}
+
+@keyframes or-marquee {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes or-pop {
+    0% {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .or-slot[data-error='true'],
+    .or-tester[data-result='bad'],
+    .or-track-avatar,
+    .or-track-avatar[data-hit='true'],
+    .or-fiber-pulse,
+    .or-marquee,
+    .or-combo,
+    .or-led[data-state='bad'] {
+        animation: none;
+        transition: none;
+    }
+    .or-packet,
+    .or-packet[data-result='bad'] {
+        animation-duration: 0.01s;
+    }
+}

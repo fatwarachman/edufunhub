@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"edufunhub/game/internal/crossword"
+	"edufunhub/game/internal/orderrush"
 	"edufunhub/game/internal/questions"
 	"edufunhub/game/internal/server"
 )
@@ -59,8 +60,14 @@ func main() {
 	go srv.RunCrosswords(ctx, time.Second)
 	go srv.RunMinigames(ctx, 250*time.Millisecond)
 	go srv.RunFloorDrop(ctx, time.Second)
+	go srv.RunHeist(ctx, time.Second)
+	go srv.RunOrderRush(ctx, time.Second)
 	if bankURL := os.Getenv("GAME_QUESTION_BANK_URL"); bankURL != "" {
 		syncer := &questions.Syncer{URL: bankURL, Secret: []byte(secret), Logger: logger}
+		go syncer.Run(ctx, time.Minute)
+	}
+	if seqURL := os.Getenv("GAME_SEQUENCE_BANK_URL"); seqURL != "" {
+		syncer := &orderrush.Syncer{URL: seqURL, Secret: []byte(secret), Logger: logger}
 		go syncer.Run(ctx, time.Minute)
 	}
 	if wordsURL := os.Getenv("GAME_CROSSWORD_BANK_URL"); wordsURL != "" {

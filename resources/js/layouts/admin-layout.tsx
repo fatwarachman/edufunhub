@@ -7,13 +7,15 @@ import { Link, router, usePage } from '@inertiajs/react';
 import {
     Activity,
     BellRing,
+    BookMarked,
     Bot,
+    Cable,
     ChartColumnBig,
     ChevronLeft,
     ChevronRight,
+    Clock,
     Coins,
     Gauge,
-    Grid3x3,
     KeyRound,
     ListChecks,
     Lock,
@@ -31,6 +33,7 @@ import {
     UserCog,
     Users,
     UsersRound,
+    Volume2,
     X,
 } from 'lucide-react';
 import {
@@ -61,6 +64,12 @@ const navItems: NavItem[] = [
         superadminOnly: true,
     },
     {
+        title: 'Playing Time',
+        href: '/admin/playing-time',
+        icon: Clock,
+        superadminOnly: true,
+    },
+    {
         title: 'Game Statistics',
         href: '/admin/games',
         icon: ChartColumnBig,
@@ -79,9 +88,27 @@ const navItems: NavItem[] = [
         superadminOnly: true,
     },
     {
+        title: 'Subjects',
+        href: '/admin/subjects',
+        icon: BookMarked,
+        superadminOnly: true,
+    },
+    {
+        title: 'Sequence Bank',
+        href: '/admin/sequence-sets',
+        icon: Cable,
+        superadminOnly: true,
+    },
+    {
         title: 'Point Rules',
         href: '/admin/point-rules',
         icon: Coins,
+        superadminOnly: true,
+    },
+    {
+        title: 'Sound Settings',
+        href: '/admin/sound-settings',
+        icon: Volume2,
         superadminOnly: true,
     },
     {
@@ -94,12 +121,6 @@ const navItems: NavItem[] = [
         title: 'AI Settings',
         href: '/admin/ai-settings',
         icon: Bot,
-        superadminOnly: true,
-    },
-    {
-        title: 'Crossword Words',
-        href: '/admin/crossword-words',
-        icon: Grid3x3,
         superadminOnly: true,
     },
     {

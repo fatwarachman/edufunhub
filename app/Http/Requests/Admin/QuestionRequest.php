@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Question;
+use App\Models\Subject;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -38,7 +39,7 @@ class QuestionRequest extends FormRequest
         return [
             'type' => ['required', Rule::in(Question::TYPES)],
             'band' => ['required', 'integer', 'between:0,3'],
-            'subject' => ['required', Rule::in(Question::SUBJECTS)],
+            'subject' => ['required', Rule::in($this->allowedSubjects())],
             'prompt_id' => ['required', 'string', 'min:3', 'max:500'],
             'prompt_en' => ['nullable', 'string', 'max:500'],
             'options' => $isChoice ? ['required', 'array', 'min:3', 'max:6'] : ['nullable'],
@@ -79,5 +80,18 @@ class QuestionRequest extends FormRequest
             'answer.max' => __('Choose a correct answer from the options.'),
             'games.required' => __('Distribute the question to at least one game.'),
         ];
+    }
+
+    /**
+     * Active subjects, plus the current one when editing a question whose
+     * subject was later hidden (so it can still be saved unchanged).
+     *
+     * @return list<string>
+     */
+    private function allowedSubjects(): array
+    {
+        $current = $this->route('question')?->subject;
+
+        return array_values(array_unique([...Subject::activeKeys(), ...($current ? [$current] : [])]));
     }
 }

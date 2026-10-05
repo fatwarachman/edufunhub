@@ -5,11 +5,35 @@ import { gradeShortLabel } from '@/lib/grade';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import { Coins, Gamepad2, LogIn, Play, Sparkles } from 'lucide-react';
+import {
+    Blocks,
+    CarFront,
+    ChefHat,
+    Coins,
+    FlaskConical,
+    Gamepad2,
+    LogIn,
+    type LucideIcon,
+    Network,
+    PaintBucket,
+    Play,
+    Router,
+    Sparkles,
+    Swords,
+} from 'lucide-react';
 import { useState } from 'react';
 
-/** Ideas announced on the game list but not playable yet. */
-const UPCOMING = ['market', 'garden', 'archipelago', 'lab'] as const;
+/** Games announced as coming soon (classroom multiplayer and IT knowledge). */
+const UPCOMING: { key: string; icon: LucideIcon; accent: string }[] = [
+    { key: 'monsterCafe', icon: ChefHat, accent: 'bg-[#FF9E44]' },
+    { key: 'saboteurLab', icon: FlaskConical, accent: 'bg-[#7ED957]' },
+    { key: 'kartRacer', icon: CarFront, accent: 'bg-[#FF6584]' },
+    { key: 'bossDefense', icon: Swords, accent: 'bg-[#8C7CF0]' },
+    { key: 'pixelPainter', icon: PaintBucket, accent: 'bg-[#4FC3F7]' },
+    { key: 'tetrisQuiz', icon: Blocks, accent: 'bg-[#FFD93D]' },
+    { key: 'portSorter', icon: Network, accent: 'bg-[#5EEAD4]' },
+    { key: 'osiPingPong', icon: Router, accent: 'bg-[#F9A8D4]' },
+];
 
 export default function GameList() {
     const { t } = useTranslations();
@@ -229,27 +253,105 @@ export default function GameList() {
                         >
                             <h2
                                 id="category-upcoming"
-                                className="mb-5 flex items-center gap-3 font-display text-2xl font-black text-[#1f2a44]"
+                                className="flex items-center gap-3 font-display text-2xl font-black text-[#1f2a44]"
                             >
                                 <Sparkles className="size-6 text-[#FF9E44]" />
                                 {t('gameList.upcoming.title')}
+                                <span className="rounded-full border-2 border-[#1f2a44] bg-white px-2.5 py-0.5 text-sm">
+                                    {UPCOMING.length}
+                                </span>
                             </h2>
-                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                                {UPCOMING.map((key) => (
-                                    <div
-                                        key={key}
-                                        className="rounded-2xl border-3 border-dashed border-[#1f2a44]/40 bg-white/60 p-5"
-                                    >
-                                        <p className="font-display text-lg font-black text-[#1f2a44]">
-                                            {t(
-                                                `gameList.upcoming.${key}.title`,
-                                            )}
-                                        </p>
-                                        <p className="mt-1 text-sm font-semibold text-slate-600">
-                                            {t(`gameList.upcoming.${key}.desc`)}
-                                        </p>
-                                    </div>
-                                ))}
+                            <p className="mt-2 mb-5 max-w-3xl text-sm font-bold text-slate-600">
+                                {t('gameList.upcoming.intro')}
+                            </p>
+                            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                                {UPCOMING.map(({ key, icon: Icon, accent }) => {
+                                    const base = `gameList.upcoming.games.${key}`;
+                                    const gameplay = t(`${base}.gameplay`, {
+                                        returnObjects: true,
+                                    }) as string[];
+                                    return (
+                                        <article
+                                            key={key}
+                                            className="flex flex-col rounded-3xl border-3 border-[#1f2a44] bg-white p-6 shadow-[5px_5px_0px_#1f2a44]"
+                                            data-testid={`gamelist-upcoming-${key}`}
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <span
+                                                    className={cn(
+                                                        'flex size-12 shrink-0 items-center justify-center rounded-2xl border-3 border-[#1f2a44] text-[#1f2a44]',
+                                                        accent,
+                                                    )}
+                                                >
+                                                    <Icon
+                                                        className="size-6"
+                                                        aria-hidden
+                                                    />
+                                                </span>
+                                                <span className="rounded-full border-2 border-[#1f2a44] bg-[#FFF176] px-2.5 py-0.5 text-xs font-black tracking-wide text-[#1f2a44] uppercase">
+                                                    {t(
+                                                        'gameList.upcoming.badge',
+                                                    )}
+                                                </span>
+                                            </div>
+                                            <h3 className="mt-4 font-display text-xl font-black text-[#1f2a44]">
+                                                {t(`${base}.title`)}
+                                            </h3>
+                                            <p className="mt-0.5 text-xs font-black tracking-wide text-[#C2185B] uppercase">
+                                                {t(`${base}.inspiration`)}
+                                            </p>
+                                            <dl className="mt-4 flex flex-1 flex-col gap-3 text-sm">
+                                                <div>
+                                                    <dt className="font-black text-[#1f2a44]">
+                                                        {t(
+                                                            'gameList.upcoming.conceptLabel',
+                                                        )}
+                                                    </dt>
+                                                    <dd className="mt-0.5 font-semibold text-slate-600">
+                                                        {t(`${base}.concept`)}
+                                                    </dd>
+                                                </div>
+                                                <div>
+                                                    <dt className="font-black text-[#1f2a44]">
+                                                        {t(
+                                                            'gameList.upcoming.gameplayLabel',
+                                                        )}
+                                                    </dt>
+                                                    <dd className="mt-1">
+                                                        <ul className="flex list-disc flex-col gap-1 pl-5 font-semibold text-slate-600 marker:text-[#FF9E44]">
+                                                            {Array.isArray(
+                                                                gameplay,
+                                                            ) &&
+                                                                gameplay.map(
+                                                                    (line) => (
+                                                                        <li
+                                                                            key={
+                                                                                line
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                line
+                                                                            }
+                                                                        </li>
+                                                                    ),
+                                                                )}
+                                                        </ul>
+                                                    </dd>
+                                                </div>
+                                                <div className="mt-auto rounded-2xl border-2 border-dashed border-[#1f2a44]/30 bg-[#FFF9E6] p-3">
+                                                    <dt className="font-black text-[#1f2a44]">
+                                                        {t(
+                                                            'gameList.upcoming.funLabel',
+                                                        )}
+                                                    </dt>
+                                                    <dd className="mt-0.5 font-semibold text-slate-600">
+                                                        {t(`${base}.fun`)}
+                                                    </dd>
+                                                </div>
+                                            </dl>
+                                        </article>
+                                    );
+                                })}
                             </div>
                         </section>
                     )}

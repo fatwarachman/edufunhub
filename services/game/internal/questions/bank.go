@@ -122,6 +122,7 @@ func Parse(body []byte) (*Bank, error) {
 		Version   string        `json:"version"`
 		Questions []Item        `json:"questions"`
 		Points    *points.Rules `json:"points"`
+		Subjects  []string      `json:"subjects"`
 	}
 	if err := json.Unmarshal(body, &payload); err != nil {
 		return nil, err
@@ -134,6 +135,9 @@ func Parse(body []byte) (*Bank, error) {
 	}
 	if err := Validate(payload.Questions); err != nil {
 		return nil, err
+	}
+	if payload.Subjects != nil {
+		UseSubjects(payload.Subjects)
 	}
 	return &Bank{Version: payload.Version, items: payload.Questions}, nil
 }
@@ -156,7 +160,7 @@ func Use(b *Bank) {
 // builtin is the bundled bank used before the first sync and as a fallback.
 var builtin = func() *Bank {
 	items := []Item{}
-	both := []string{"flag-quest", "sky-quiz", "quiz-duel", "knowledge-train", "snakes-and-ladders", "market-math", "number-garden", "explore-indonesia", "mini-lab", "floor-drop"}
+	both := []string{"flag-quest", "sky-quiz", "quiz-duel", "knowledge-train", "snakes-and-ladders", "market-math", "number-garden", "explore-indonesia", "mini-lab", "floor-drop", "economy-heist"}
 	for band, list := range choiceBank {
 		for i, q := range list {
 			items = append(items, Item{Key: fmt.Sprintf("mc-%d-%d", band, i), Type: TypeChoice, Band: band, Subject: q.subject, Prompt: q.prompt, Options: q.options, Answer: q.answer, Hint: q.hint, Games: both})

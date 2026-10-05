@@ -1,19 +1,49 @@
 package questions
 
-import "sync"
+import (
+	"regexp"
+	"sync"
+	"sync/atomic"
+)
 
-// Subjects players can pick before a game. Mix ("" or "mix") draws from all.
-var Subjects = []string{"math", "science", "language", "social", "english", "civics"}
+// BuiltinSubjects are the subjects shipped with the app. Laravel sends the
+// current list (built-in plus admin-added) with every bank sync.
+var BuiltinSubjects = []string{"math", "science", "language", "social", "english", "civics"}
 
 // Mix is the explicit "all subjects" choice sent by clients.
 const Mix = "mix"
 
+// subjectKey mirrors Laravel's Subject::KEY_PATTERN.
+var subjectKey = regexp.MustCompile(`^[a-z][a-z0-9-]{1,29}$`)
+
+var subjects atomic.Pointer[map[string]bool]
+
+func init() { UseSubjects(BuiltinSubjects) }
+
+// UseSubjects replaces the subjects players can pick. Invalid keys and "mix"
+// are ignored; an empty list keeps the built-in subjects.
+func UseSubjects(keys []string) {
+	set := map[string]bool{}
+	for _, k := range keys {
+		if k != Mix && subjectKey.MatchString(k) {
+			set[k] = true
+		}
+	}
+	if len(set) == 0 {
+		for _, k := range BuiltinSubjects {
+			set[k] = true
+		}
+	}
+	subjects.Store(&set)
+}
+
+// KnownSubject reports whether key is a subject players can pick now.
+func KnownSubject(key string) bool { return (*subjects.Load())[key] }
+
 // NormSubject returns a known subject or "" for the mix.
 func NormSubject(s string) string {
-	for _, known := range Subjects {
-		if s == known {
-			return s
-		}
+	if KnownSubject(s) {
+		return s
 	}
 	return ""
 }

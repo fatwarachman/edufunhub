@@ -25,13 +25,11 @@ class Question extends Model
 
     public const TYPES = [self::TYPE_CHOICE, self::TYPE_TRUE_FALSE];
 
-    public const SUBJECTS = ['math', 'science', 'language', 'social', 'english', 'civics'];
-
     /** Games whose Go runtime draws from the bank. */
-    public const GAMES = ['flag-quest', 'sky-quiz', 'quiz-duel', 'knowledge-train', 'snakes-and-ladders', 'market-math', 'number-garden', 'explore-indonesia', 'mini-lab', 'floor-drop'];
+    public const GAMES = ['flag-quest', 'sky-quiz', 'quiz-duel', 'knowledge-train', 'snakes-and-ladders', 'market-math', 'number-garden', 'explore-indonesia', 'mini-lab', 'floor-drop', 'economy-heist'];
 
     /** Games that only use multiple choice questions. */
-    public const CHOICE_ONLY_GAMES = ['sky-quiz', 'quiz-duel', 'knowledge-train', 'snakes-and-ladders', 'market-math', 'number-garden', 'explore-indonesia', 'mini-lab', 'floor-drop'];
+    public const CHOICE_ONLY_GAMES = ['sky-quiz', 'quiz-duel', 'knowledge-train', 'snakes-and-ladders', 'market-math', 'number-garden', 'explore-indonesia', 'mini-lab', 'floor-drop', 'economy-heist'];
 
     /** Where a question came from: built-in bank, admin panel, teacher portal or teacher import. */
     public const SOURCES = ['system', 'admin', 'teacher', 'import', 'ai'];
@@ -73,6 +71,12 @@ class Question extends Model
             'times_answered' => 'integer',
             'times_correct' => 'integer',
         ];
+    }
+
+    /** @return BelongsTo<Subject, $this> */
+    public function subjectRecord(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class, 'subject', 'key');
     }
 
     /** @return HasMany<QuestionAnswer, $this> */

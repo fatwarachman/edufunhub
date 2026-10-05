@@ -1,10 +1,10 @@
 import { AiBadge, FlashMessages } from '@/components/admin/admin-kit';
 import {
-    Panel,
-    SUBJECT_LABELS,
     fieldClass,
     formatDateTime,
     gameLabel,
+    Panel,
+    useSubjectLabel,
 } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
@@ -64,6 +64,7 @@ export default function GenerateQuestions({
     generations,
     errors: pageErrors,
 }: Props) {
+    const subjectLabel = useSubjectLabel();
     const form = useForm({
         scope: 'custom' as 'all' | 'custom',
         subjects: [] as string[],
@@ -213,7 +214,7 @@ export default function GenerateQuestions({
                                             }
                                             testId={`gen-subject-${subject}`}
                                         >
-                                            {SUBJECT_LABELS[subject] ?? subject}
+                                            {subjectLabel(subject)}
                                         </Chip>
                                     ))}
                                 </ChipGroup>
@@ -376,6 +377,7 @@ export default function GenerateQuestions({
 }
 
 function GenerationRow({ generation: g }: { generation: Generation }) {
+    const subjectLabel = useSubjectLabel();
     const progress =
         g.total_jobs > 0 ? Math.round((g.done_jobs / g.total_jobs) * 100) : 0;
     const live = g.status === 'queued' || g.status === 'running';
@@ -407,9 +409,7 @@ function GenerationRow({ generation: g }: { generation: Generation }) {
                 </span>
             </div>
             <p className="text-xs text-muted-foreground">
-                {g.subjects
-                    .map((subject) => SUBJECT_LABELS[subject] ?? subject)
-                    .join(', ')}{' '}
+                {g.subjects.map((subject) => subjectLabel(subject)).join(', ')}{' '}
                 · {g.grades.map(gradeLabel).join(', ')} · {g.per_combination}{' '}
                 each · {g.activate ? 'active' : 'inactive for review'}
             </p>

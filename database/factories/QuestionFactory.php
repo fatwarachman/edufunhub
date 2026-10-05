@@ -20,7 +20,7 @@ class QuestionFactory extends Factory
             'key' => 'q-'.fake()->unique()->numberBetween(1000, 999999),
             'type' => Question::TYPE_CHOICE,
             'band' => fake()->numberBetween(0, 3),
-            'subject' => fake()->randomElement(Question::SUBJECTS),
+            'subject' => fake()->randomElement(['math', 'science', 'language', 'social', 'english', 'civics']),
             'prompt_id' => fake()->sentence().'?',
             'prompt_en' => fake()->sentence().'?',
             'options' => [

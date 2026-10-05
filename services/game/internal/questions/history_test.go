@@ -100,3 +100,24 @@ func TestBankPointsAndRules(t *testing.T) {
 		t.Fatal("points above the cap must be rejected")
 	}
 }
+
+func TestSubjectsFollowTheSyncedList(t *testing.T) {
+	t.Cleanup(func() { UseSubjects(BuiltinSubjects) })
+	if NormSubject("music") != "" {
+		t.Fatal("unknown subject must be the mix")
+	}
+	body := []byte(`{"version":"v-subjects","subjects":["math","music","mix","BAD key"],"questions":[{"key":"m1","type":"choice","band":1,"subject":"music","prompt":{"id":"Not do?","en":""},"options":[{"id":"do"},{"id":"re"},{"id":"mi"}],"answer":0,"games":["sky-quiz"]}]}`)
+	if _, err := Parse(body); err != nil {
+		t.Fatal(err)
+	}
+	if NormSubject("music") != "music" || NormSubject("math") != "math" {
+		t.Fatal("synced subjects must be pickable")
+	}
+	if NormSubject("science") != "" || NormSubject("mix") != "" || NormSubject("BAD key") != "" {
+		t.Fatal("subjects outside the synced list, mix and invalid keys are the mix")
+	}
+	UseSubjects(nil)
+	if NormSubject("science") != "science" {
+		t.Fatal("an empty list restores the built-in subjects")
+	}
+}

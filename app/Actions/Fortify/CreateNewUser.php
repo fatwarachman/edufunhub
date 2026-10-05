@@ -45,6 +45,7 @@ class CreateNewUser implements CreatesNewUsers
                 'name' => $input['name'],
                 'email' => $input['email'],
                 'password' => $input['password'],
+                'locale' => app()->getLocale(),
             ]);
             $user->assignParticipantRole();
             $user->playerProfile()->create([

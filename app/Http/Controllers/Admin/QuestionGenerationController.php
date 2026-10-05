@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\GenerateQuestionsRequest;
 use App\Jobs\GenerateQuestions;
 use App\Models\Question;
 use App\Models\QuestionGeneration;
+use App\Models\Subject;
 use App\Services\Ai\AiSettings;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -25,7 +26,7 @@ class QuestionGenerationController extends Controller
     {
         return Inertia::render('admin/questions/generate', [
             'ai' => ['configured' => $settings->configured(), 'model' => $settings->model()],
-            'subjects' => Question::SUBJECTS,
+            'subjects' => Subject::activeKeys(),
             'grades' => Question::GRADES,
             'games' => Question::GAMES,
             'maxPerCombination' => QuestionGeneration::MAX_PER_COMBINATION,

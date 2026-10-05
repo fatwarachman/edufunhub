@@ -21,6 +21,7 @@ import {
     Coins,
     Crown,
     Glasses,
+    LayoutGrid,
     Lock,
     RotateCcw,
     Shield,
@@ -69,6 +70,8 @@ const SLOT_ICONS: Record<ItemSlot, typeof Crown> = {
 
 const ink = 'border-[2.5px] border-[#151b2e]';
 
+type SlotFilter = ItemSlot | 'all';
+
 export default function Character({
     character,
     equipped,
@@ -91,7 +94,7 @@ export default function Character({
             options.slots.map((slot) => [slot, equipped[slot] ?? null]),
         ) as Record<ItemSlot, number | null>,
     });
-    const [slot, setSlot] = useState<ItemSlot>('hat');
+    const [slot, setSlot] = useState<SlotFilter>('all');
     const [trying, setTrying] = useState<ShopItem | null>(null);
     const [buying, setBuying] = useState<ShopItem | null>(null);
     const [purchasing, setPurchasing] = useState(false);
@@ -128,7 +131,7 @@ export default function Character({
         },
     });
 
-    const changeSlot = (next: ItemSlot) => {
+    const changeSlot = (next: SlotFilter) => {
         setTrying(null);
         setSlot(next);
     };
@@ -170,7 +173,14 @@ export default function Character({
         );
     };
 
-    const slotItems = items.filter((item) => item.slot === slot);
+    const slotItems =
+        slot === 'all'
+            ? [...items].sort(
+                  (a, b) =>
+                      options.slots.indexOf(a.slot) -
+                      options.slots.indexOf(b.slot),
+              )
+            : items.filter((item) => item.slot === slot);
     const equippedError = Object.entries(form.errors).find(([key]) =>
         key.startsWith('equipped'),
     )?.[1];
@@ -363,29 +373,36 @@ export default function Character({
                             aria-label={t('shop.title')}
                             className="-mx-1 flex gap-2 overflow-x-auto px-1 pt-0.5 pb-2"
                         >
-                            {options.slots.map((s) => {
-                                const Icon = SLOT_ICONS[s];
-                                return (
-                                    <button
-                                        key={s}
-                                        type="button"
-                                        role="tab"
-                                        aria-selected={slot === s}
-                                        onClick={() => changeSlot(s)}
-                                        data-testid={`shop-tab-${s}`}
-                                        className={cn(
-                                            ink,
-                                            'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3.5 text-sm font-bold transition-colors',
-                                            slot === s
-                                                ? 'bg-[#151b2e] text-white'
-                                                : 'bg-white hover:bg-[#fff3c4]',
-                                        )}
-                                    >
-                                        <Icon className="size-4" />
-                                        {t(`shop.slots.${s}`)}
-                                    </button>
-                                );
-                            })}
+                            {(['all', ...options.slots] as SlotFilter[]).map(
+                                (s) => {
+                                    const Icon =
+                                        s === 'all'
+                                            ? LayoutGrid
+                                            : SLOT_ICONS[s];
+                                    return (
+                                        <button
+                                            key={s}
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={slot === s}
+                                            onClick={() => changeSlot(s)}
+                                            data-testid={`shop-tab-${s}`}
+                                            className={cn(
+                                                ink,
+                                                'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3.5 text-sm font-bold transition-colors',
+                                                slot === s
+                                                    ? 'bg-[#151b2e] text-white'
+                                                    : 'bg-white hover:bg-[#fff3c4]',
+                                            )}
+                                        >
+                                            <Icon className="size-4" />
+                                            {s === 'all'
+                                                ? t('shop.allItems')
+                                                : t(`shop.slots.${s}`)}
+                                        </button>
+                                    );
+                                },
+                            )}
                         </div>
 
                         <InputError message={errors.item ?? equippedError} />
@@ -394,33 +411,40 @@ export default function Character({
                             className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4"
                             data-testid="shop-items"
                         >
-                            <ItemCard
-                                name={t('shop.none')}
-                                active={form.data.equipped[slot] === null}
-                                onSelect={() => wear(slot, null)}
-                                testId={`shop-item-none-${slot}`}
-                                preview={
-                                    <div className="flex size-full items-center justify-center">
-                                        <X className="size-8 text-[#3d4460]" />
-                                    </div>
-                                }
-                                badge={
-                                    form.data.equipped[slot] === null ? (
-                                        <Badge tone="ink">
-                                            {t('shop.wearing')}
-                                        </Badge>
-                                    ) : null
-                                }
-                            />
+                            {slot !== 'all' && (
+                                <ItemCard
+                                    name={t('shop.none')}
+                                    active={form.data.equipped[slot] === null}
+                                    onSelect={() => wear(slot, null)}
+                                    testId={`shop-item-none-${slot}`}
+                                    preview={
+                                        <div className="flex size-full items-center justify-center">
+                                            <X className="size-8 text-[#3d4460]" />
+                                        </div>
+                                    }
+                                    badge={
+                                        form.data.equipped[slot] === null ? (
+                                            <Badge tone="ink">
+                                                {t('shop.wearing')}
+                                            </Badge>
+                                        ) : null
+                                    }
+                                />
+                            )}
                             {slotItems.map((item) => {
                                 const has = ownsItem(item);
                                 const wearing =
-                                    form.data.equipped[slot] === item.id;
+                                    form.data.equipped[item.slot] === item.id;
                                 const short = item.price - balance;
                                 return (
                                     <ItemCard
                                         key={item.id}
                                         name={item.name}
+                                        caption={
+                                            slot === 'all'
+                                                ? t(`shop.slots.${item.slot}`)
+                                                : null
+                                        }
                                         sponsor={item.sponsor ?? null}
                                         active={
                                             wearing || trying?.id === item.id
@@ -428,7 +452,7 @@ export default function Character({
                                         testId={`shop-item-${item.key}`}
                                         onSelect={() =>
                                             has
-                                                ? wear(slot, item.id)
+                                                ? wear(item.slot, item.id)
                                                 : setTrying(item)
                                         }
                                         preview={
@@ -674,6 +698,7 @@ function Badge({
 
 function ItemCard({
     name,
+    caption = null,
     sponsor = null,
     active,
     onSelect,
@@ -683,6 +708,7 @@ function ItemCard({
     testId,
 }: {
     name: string;
+    caption?: string | null;
     sponsor?: AdSponsor | null;
     active: boolean;
     onSelect: () => void;
@@ -711,15 +737,21 @@ function ItemCard({
                 <div className="aspect-square w-full overflow-hidden rounded-xl bg-[#d8c7a4]/50">
                     {preview}
                 </div>
-                <div className="flex min-h-6 flex-wrap items-start justify-between gap-1.5">
-                    <span className="min-w-0 text-sm leading-tight font-bold break-words">
-                        {name}
+                {caption && (
+                    <span className="-mb-1 text-[11px] font-bold tracking-wide text-[#3d4460] uppercase">
+                        {caption}
                     </span>
-                    {badge}
-                </div>
+                )}
+                <span
+                    className="line-clamp-2 min-h-[2.5em] text-sm leading-tight font-bold break-words"
+                    title={name}
+                >
+                    {name}
+                </span>
+                {badge && <span className="flex">{badge}</span>}
             </button>
             {sponsor && <SponsorChip sponsor={sponsor} />}
-            {action}
+            {action && <div className="mt-auto">{action}</div>}
         </div>
     );
 }

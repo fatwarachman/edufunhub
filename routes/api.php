@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\CrosswordBankController;
 use App\Http\Controllers\Api\GameResultController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\QuestionBankController;
+use App\Http\Controllers\Api\SequenceBankController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,10 @@ Route::get('/internal/question-bank', QuestionBankController::class)
 Route::get('/internal/crossword-bank', CrosswordBankController::class)
     ->middleware('throttle:120,1')
     ->name('api.internal.crossword-bank');
+
+Route::get('/internal/sequence-bank', SequenceBankController::class)
+    ->middleware('throttle:120,1')
+    ->name('api.internal.sequence-bank');
 
 Route::get('/user', function (Request $request) {
     return $request->user();

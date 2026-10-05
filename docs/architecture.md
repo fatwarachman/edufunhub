@@ -90,6 +90,25 @@ Pesan Go → client: `welcome`, `correct{x,y}`, `challenge`, `gates`, `raise`, `
 Aturan server-side: kecepatan gerak dibatasi, collision air/gerbang/props, jawaban tidak pernah dikirim ke client
 sebelum dijawab, poin dihitung di Go (maks 250), hasil idempotent via `event_id` unik.
 
+### Mata pelajaran (subjects)
+
+Daftar mata pelajaran ada di tabel `subjects` (model `App\Models\Subject`), bukan di kode. Super admin
+mengelolanya di `/admin/subjects`: tambah, ubah nama/ikon/warna, sembunyikan, urutkan, dan hapus
+(hanya mapel buatan admin yang belum punya soal). Enam mapel bawaan (`math`, `science`, `language`,
+`social`, `english`, `civics`) berstatus `is_system`, jadi tidak bisa dihapus, hanya disembunyikan.
+
+- Kunci (`key`) dibuat dari nama, pola `^[a-z][a-z0-9-]{1,29}$`, tidak bisa diubah setelah dibuat, dan
+  `mix`/`all` dicadangkan. Soal menyimpan kunci ini di `questions.subject`.
+- Validasi soal (admin, guru, impor CSV, generator AI) memakai `Subject::activeKeys()`. Soal lama dengan
+  mapel yang disembunyikan tetap bisa disimpan tanpa mengganti mapelnya.
+- Mapel aktif dibagikan ke semua halaman lewat shared prop `subjects` (`{key, name{id,en}, icon, color}`).
+  `SubjectPicker` dan label soal di game membacanya (`resources/js/lib/subjects.tsx`), jadi mapel baru
+  langsung muncul di semua game. Admin memakai `subjectLabels` untuk label mapel yang disembunyikan juga.
+- `GET /api/internal/question-bank` mengirim `subjects` (kunci aktif) dan ikut menghitung `version`. Go
+  (`questions.UseSubjects`) mengganti daftar mapel yang bisa dipilih saat sinkron (paling lambat 1 menit).
+  Mapel tanpa soal untuk kelas pemain otomatis memakai campuran dan menampilkan catatan fallback.
+- Kolom `ai_hint` dipakai sebagai deskripsi mapel untuk generator soal AI.
+
 ## Chat service (`services/chat`)
 
 Chat antar pemain berjalan di container Go terpisah, `edufunhub-chat` (`docker compose build chat`, port internal 8091). Laravel tetap pemilik data: keanggotaan, penyimpanan pesan, notifikasi lonceng. Go hanya mengantar event secara live. Go tidak menyimpan riwayat, dan klien melakukan resync dari Laravel setiap kali tersambung ulang.

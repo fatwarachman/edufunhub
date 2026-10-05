@@ -1,7 +1,7 @@
 # Standar game multiplayer dan poin
 
 **Status:** Accepted (2026-10-04)
-Berlaku untuk semua game baru. Game lama yang sudah memakai standar ini: Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang, Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini.
+Berlaku untuk semua game baru. Game lama yang sudah memakai standar ini: Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang, Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini, Lantai Runtuh, Peti Emas Misteri, Order Rush TKJ.
 
 ## 1. Undangan (PIN + link)
 
@@ -71,6 +71,9 @@ Setiap hasil game ruang/duel membawa ringkasan `match` yang sama untuk semua pem
 | Ular Tangga | 5 | benar × 10 (+20 menang) | 150 |
 | Teka-Teki Silang | 5 | kata × (5 + 5 × level) (+20 juara) | 5 + kata × poin per kata + 20 |
 | Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini | 5 | benar × 10 (+20 juara / lulus solo ≥ 70%) | 950 |
+| Lantai Runtuh | 5 | benar × 10 (+20 juara) | 2150 |
+| Peti Emas Misteri | 5 | benar × 10, maks. 40 jawaban (+20 juara emas) | 4150 |
+| Order Rush TKJ | 5 | modul benar × 10, maks. 40 (+20 juara) | 4150 |
 
 ### Game kuis ruang (`internal/minigames`)
 
@@ -132,6 +135,119 @@ Kontrak WebSocket `GET /game-ws/floor-drop?token=…&locale=id|en`:
 | server → klien | `player_eliminated` | `{user_ids, reason}` (putus/keluar) |
 | server → klien | `podium_result` | `{podium[3], ranking[], you}` |
 | server → klien | `error` | `{code}` → `room.errors.*` |
+
+### Peti Emas Misteri / Economy Heist (`internal/heist`)
+
+Kuis emas mandiri (referensi Blooket Gold Quest / Gimkit) untuk 2–60 pemain
+per ruangan. Pola sama dengan Lantai Runtuh: setiap ruangan berjalan di
+goroutine sendiri, koneksi hanya mengirim intent lewat channel perintah, dan
+host memakai token terpisah (`economy-heist-host`).
+
+- **Kondisi menang (host):** `TIME_LIMIT` (3/5/7/10/15 menit, emas terbanyak
+  menang) atau `GOLD_TARGET` (1.000–25.000 emas, pertama mencapai target
+  menang; batas aman 20 menit). Host juga bisa mengakhiri lebih awal.
+- **Alur pemain (asinkron):** setiap pemain punya aliran soal sendiri sesuai
+  kelasnya. Benar → 3 peti misteri (isi diundi server *sebelum* dipilih, ketiga
+  isi ditampilkan setelah dibuka). Salah → cooldown 3 detik tanpa peti.
+  Pemain yang terlambat boleh masuk saat permainan berjalan (mulai 0 emas).
+- **Isi peti (bobot %):** `ADD_GOLD` +50/+100/+250 atau +10/+25/+50% (50),
+  `LOSE_GOLD` −10…−25% (14), `SHIELD` (10), `STEAL_PERCENT` 10…25% (15),
+  `SWAP_GOLD` (7), `BANKRUPT_BOMB` −50% (4). Tanpa lawan, curi/tukar diganti
+  +100 emas. Persentase gain minimal `2 × persen` emas.
+- **Curi/tukar:** pemain memilih target dalam 20 detik (`execute_heist_target`).
+  Perisai target menahan serangan sekali lalu pecah (`BLOCKED`), tidak ada emas
+  yang berpindah; penyerang dan korban sama-sama diberi tahu.
+- **Ledger atomik:** `heist.Ledger` (mutex) membaca-memeriksa-memindah saldo
+  dalam satu critical section: saldo tidak pernah negatif, transfer tidak
+  menciptakan emas (uji `TestLedgerConcurrentTransfers`,
+  `TestDoubleSpendSameVictim`, `-race`). Batas saldo 10.000.000.
+- **Avatar:** `join_room` membawa `avatar`; Go memakai claim `character` dari
+  token bertanda tangan bila ada (klien tidak bisa memalsukan avatar orang
+  lain), lalu meneruskannya di roster, leaderboard, feed aksi, dan podium.
+  `player_id` yang tidak sama dengan token ditolak (`invalid_player`).
+- **Hasil:** peringkat berdasarkan emas akhir; `match.players[].score` = emas.
+  `event_id` `eh-{user}-room-{nanos}`, misi `room`, maks. 60 pemain,
+  `points.Cap(40) = 4150`.
+
+Kontrak WebSocket `GET /game-ws/economy-heist?token=…&locale=id|en`:
+
+| Arah | Pesan | Isi |
+| --- | --- | --- |
+| klien → server | `create_room`, `start_game`, `end_game` | host saja |
+| klien → server | `configure` | host, `{win: TIME_LIMIT\|GOLD_TARGET, value}` |
+| klien → server | `set_subject` | host, `{subject}` |
+| klien → server | `join_room` | `{room_code, player_id, username, avatar}` |
+| klien → server | `submit_answer` | `{question_id, answer_index}` |
+| klien → server | `select_chest` | `{chest_index}` (0–2) |
+| klien → server | `execute_heist_target` | `{target_player_id}` |
+| klien → server | `leave_room`, `sync`, `locale`, `ping` | |
+| server → klien | `state_sync` | snapshot (fase, roster, kondisi menang, leaderboard, feed, `you`, podium) |
+| server → klien | `player_sync`, `question` | state pribadi pemain / soal berikutnya |
+| server → klien | `answer_result` | `{question_id, correct, correct_index, cooldown_ms?}` |
+| server → klien | `chest_result` | `{type, value, unit, requires_target, chest_index, chests[3], gold, delta}` |
+| server → klien | `balance_update` | `{player_id, gold, delta, reason}` |
+| server → klien | `action_broadcast` | `{source_player, action, target_player?, amount, blocked}` |
+| server → klien | `leaderboard_sync` | `{leaderboard[], remaining_ms}` (maks. 4×/detik) |
+| server → klien | `heist_expired` | waktu memilih target habis |
+| server → klien | `podium_result` | `{podium[3], ranking[], you}` |
+| server → klien | `error` | `{code}` → `room.errors.*` |
+
+### Order Rush / Sequence Masters TKJ (`internal/orderrush`)
+
+Balapan menyusun urutan (tap-to-order) materi TKJ untuk 2–60 pemain per
+ruangan. Pola sama dengan Peti Emas Misteri: satu goroutine per ruangan,
+koneksi hanya mengirim intent lewat channel, host memakai token terpisah
+(`order-rush-host`).
+
+- **Mode (host):** `RACE` (pertama menyelesaikan 5/10/15/20 modul; batas aman
+  15 menit) atau `TIME_ATTACK` (3/4/5 menit, skor terbanyak). Host memilih
+  materi (set urutan); kosong = semua materi diacak.
+- **Bank urutan:** `sequence_sets` (admin `/admin/sequence-sets`), disinkron Go
+  tiap menit lewat `GET /api/internal/sequence-bank` (HMAC). Bawaan: UTP T568B,
+  UTP T568A, Fiber 12 core, OSI atas-bawah, OSI bawah-atas, PDU, DHCP DORA, TCP
+  3-way handshake, troubleshooting. Item disimpan dalam urutan benar; Go
+  membagikan kepingan dengan id acak per modul dan **tidak pernah** mengirim
+  urutan benar ke klien.
+- **Validasi (authoritative):** `submit_sequence` harus permutasi lengkap dari
+  kepingan modul (panjang, id, tanpa duplikat), kalau tidak `invalid_order`
+  tanpa dihitung salah. `FirstMismatch` membandingkan sampai panjang terpendek
+  sehingga panjang array apa pun aman (tanpa panic). Salah → `error_slot_index`
+  pertama, streak putus. Waktu = jam server saat diterima; `client_duration_ms`
+  diabaikan.
+- **Skor:** 100 + bonus kecepatan linear sampai +100 bila < 5 detik. Setiap 3
+  benar beruntun → power-up acak (maks. 3 disimpan): `TANGLE` (acak kepingan
+  lawan 3 detik), `FREEZE` (blokir input lawan 1,5 detik), `SHIELD` (tahan 1
+  serangan). Tanpa target → pemimpin yang diserang.
+- **Race condition:** skor, streak, inventori, perisai dan efek sabotase ada di
+  `orderrush.Scoreboard` (mutex). Pemakaian power-up membaca-mengecek-mengurangi
+  inventori penyerang dan perisai target dalam satu critical section
+  (`TestConcurrentSabotageOneShield`, `TestConcurrentSubmitsScoreOnce`, `-race`).
+- **Avatar:** claim `character` token (fallback `avatar` di `join_room`) dikirim
+  di roster, `race_progress_broadcast`, feed sabotase, dan podium.
+- **Hasil:** `event_id` `or-{user}-room-{nanos}`, misi `room`, maks. 60 pemain,
+  `points.Cap(40) = 4150`. `match.players[].score` = skor balapan, `accuracy` =
+  benar / jumlah submit. Tambahan `sequence_stats[]` per set
+  (`attempts, solved, wrong, total_ms, slot_errors[]`) disimpan ke
+  `sequence_attempts` untuk analitik "urutan paling sering salah" (slot mana).
+
+Kontrak WebSocket `GET /game-ws/order-rush?token=…&locale=id|en`:
+
+| Arah | Pesan | Isi |
+| --- | --- | --- |
+| klien → server | `create_room`, `start_game`, `end_game` | host saja |
+| klien → server | `configure` | host, `{mode: RACE\|TIME_ATTACK, value, sets[]}` |
+| klien → server | `join_room` | `{room_code, player_id, username, avatar}` |
+| klien → server | `submit_sequence` | `{question_id, submitted_order[], client_duration_ms}` |
+| klien → server | `use_powerup` | `{powerup_type, target_player_id?}` |
+| klien → server | `leave_room`, `sync`, `locale`, `ping` | |
+| server → klien | `state_sync` | snapshot (fase `LOBBY\|RACE_ACTIVE\|GAME_OVER`, katalog set, leaderboard, feed, `you` + modul aktif) |
+| server → klien | `sequence_validated` | `{is_correct, error_slot_index, earned_score, speed_bonus, streak, score, step, next_question?, powerup_granted?}` |
+| server → klien | `sabotage_received` | `{attacker_name, attacker, type, duration_ms, blocked}` |
+| server → klien | `powerup_result` | `{type, blocked, inventory, target_player?}` |
+| server → klien | `action_broadcast` | feed sabotase (host semua, pemain yang terlibat) |
+| server → klien | `race_progress_broadcast` | `{leaderboard[{id, username, avatar, score, step, streak}], remaining_ms}` (maks. 4×/detik) |
+| server → klien | `podium_result` | `{podium[3], ranking[] (akurasi, rata-rata waktu), you}` |
+| server → klien | `error` | `{code, for}` → `room.errors.*` |
 
 ## 3. Poin vs saldo toko
 

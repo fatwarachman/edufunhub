@@ -44,7 +44,7 @@ it('serves the active bank to the signed game service only', function (): void {
 });
 
 it('lists words with per-level health and filters', function (): void {
-    $this->actingAs($this->admin)->get('/admin/crossword-words?level=3&search=klorofil')->assertOk()->assertInertia(fn (Assert $page) => $page
+    $this->actingAs($this->admin)->get('/admin/games/crossword/words?level=3&search=klorofil')->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('admin/crossword-words/index')
         ->has('levels', 4)
         ->where('levels.0.size', 9)
@@ -54,9 +54,9 @@ it('lists words with per-level health and filters', function (): void {
 });
 
 it('adds a word: answer is cleaned to A-Z capitals', function (): void {
-    $this->actingAs($this->admin)->post('/admin/crossword-words', [
+    $this->actingAs($this->admin)->post('/admin/games/crossword/words', [
         'level' => 2, 'answer' => 'tata surya', 'clue_id' => 'Matahari dan planet-planetnya', 'clue_en' => 'The Sun and its planets', 'is_active' => true,
-    ])->assertRedirect('/admin/crossword-words?level=2');
+    ])->assertRedirect('/admin/games/crossword/words?level=2');
 
     $word = CrosswordWord::query()->where('answer', 'TATASURYA')->firstOrFail();
     expect($word->level)->toBe(2)->and($word->created_by)->toBe($this->admin->id)->and($word->key)->toStartWith('cw-');
@@ -64,7 +64,7 @@ it('adds a word: answer is cleaned to A-Z capitals', function (): void {
 });
 
 it('validates words', function (array $override, string $field): void {
-    $this->actingAs($this->admin)->post('/admin/crossword-words', array_replace([
+    $this->actingAs($this->admin)->post('/admin/games/crossword/words', array_replace([
         'level' => 1, 'answer' => 'KUCING', 'clue_id' => 'Hewan peliharaan yang mengeong', 'is_active' => true,
     ], $override))->assertSessionHasErrors($field);
 })->with([
@@ -77,7 +77,7 @@ it('validates words', function (array $override, string $field): void {
 ]);
 
 it('allows the same word on another level', function (): void {
-    $this->actingAs($this->admin)->post('/admin/crossword-words', [
+    $this->actingAs($this->admin)->post('/admin/games/crossword/words', [
         'level' => 2, 'answer' => 'SAPI', 'clue_id' => 'Hewan ruminansia penghasil daging', 'is_active' => true,
     ])->assertSessionHasNoErrors();
 });
@@ -85,15 +85,15 @@ it('allows the same word on another level', function (): void {
 it('edits, hides and deletes words', function (): void {
     $word = CrosswordWord::factory()->create(['level' => 1, 'answer' => 'KUCING']);
 
-    $this->actingAs($this->admin)->put("/admin/crossword-words/{$word->id}", [
+    $this->actingAs($this->admin)->put("/admin/games/crossword/words/{$word->id}", [
         'level' => 1, 'answer' => 'KUCING', 'clue_id' => 'Hewan yang mengeong', 'is_active' => true,
     ])->assertSessionHasNoErrors();
     expect($word->fresh()->clue_id)->toBe('Hewan yang mengeong');
 
-    $this->patch("/admin/crossword-words/{$word->id}/toggle")->assertSessionHasNoErrors();
+    $this->patch("/admin/games/crossword/words/{$word->id}/toggle")->assertSessionHasNoErrors();
     expect($word->fresh()->is_active)->toBeFalse();
 
-    $this->delete("/admin/crossword-words/{$word->id}")->assertRedirect();
+    $this->delete("/admin/games/crossword/words/{$word->id}")->assertRedirect();
     expect(CrosswordWord::query()->find($word->id))->toBeNull();
 });
 
@@ -103,14 +103,26 @@ it('refuses to leave a level without enough active words', function (): void {
     CrosswordWord::query()->whereKey($words->slice($minimum)->pluck('id'))->update(['is_active' => false]);
     $last = $words->first();
 
-    $this->actingAs($this->admin)->patch("/admin/crossword-words/{$last->id}/toggle")->assertSessionHasErrors('word');
-    $this->delete("/admin/crossword-words/{$last->id}")->assertSessionHasErrors('word');
-    $this->put("/admin/crossword-words/{$last->id}", [...$last->only(['answer', 'clue_id']), 'level' => 2, 'is_active' => true])->assertSessionHasErrors('word');
+    $this->actingAs($this->admin)->patch("/admin/games/crossword/words/{$last->id}/toggle")->assertSessionHasErrors('word');
+    $this->delete("/admin/games/crossword/words/{$last->id}")->assertSessionHasErrors('word');
+    $this->put("/admin/games/crossword/words/{$last->id}", [...$last->only(['answer', 'clue_id']), 'level' => 2, 'is_active' => true])->assertSessionHasErrors('word');
 
     expect(CrosswordWord::query()->active()->where('level', 1)->count())->toBe($minimum);
 });
 
 it('is only for super admins', function (): void {
-    $this->actingAs(User::factory()->create())->get('/admin/crossword-words')->assertForbidden();
-    $this->post('/admin/crossword-words', ['level' => 1, 'answer' => 'KUDA', 'clue_id' => 'Hewan tunggangan'])->assertForbidden();
+    $this->actingAs(User::factory()->create())->get('/admin/games/crossword/words')->assertForbidden();
+    $this->post('/admin/games/crossword/words', ['level' => 1, 'answer' => 'KUDA', 'clue_id' => 'Hewan tunggangan'])->assertForbidden();
+});
+
+it('moves the word bank under the crossword game page and redirects old links', function (): void {
+    $word = CrosswordWord::query()->firstOrFail();
+
+    $this->actingAs($this->admin)->get('/admin/crossword-words?level=2')->assertRedirect('/admin/games/crossword/words?level=2')->assertStatus(301);
+    $this->get('/admin/crossword-words/create')->assertRedirect('/admin/games/crossword/words/create');
+    $this->get("/admin/crossword-words/{$word->id}/edit")->assertRedirect("/admin/games/crossword/words/{$word->id}/edit");
+
+    $this->get('/admin/games/crossword/words/create')->assertOk()->assertInertia(fn (Assert $page) => $page->component('admin/crossword-words/form'));
+    $this->get("/admin/games/crossword/words/{$word->id}/edit")->assertOk()->assertInertia(fn (Assert $page) => $page->where('word.id', $word->id));
+    $this->get('/admin/games/crossword')->assertOk()->assertInertia(fn (Assert $page) => $page->component('admin/games/show')->where('game.key', 'crossword'));
 });

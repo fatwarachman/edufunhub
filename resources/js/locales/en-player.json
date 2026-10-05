@@ -73,7 +73,9 @@
         "numberGarden": "Number & Letter Garden",
         "exploreIndonesia": "Explore Indonesia",
         "miniLab": "Mini Lab",
-        "floorDrop": "Floor Drop"
+        "floorDrop": "Floor Drop",
+        "economyHeist": "Economy Heist",
+        "orderRush": "Order Rush TKJ"
     },
     "flagQuest": {
         "title": "Flag Quest",
@@ -256,12 +258,24 @@
         "recommended": "Fits your grade",
         "earnsPoints": "Earns points",
         "practice": "Practice",
+        "mostPlayed": "Most played #{{rank}}",
+        "plays": "Played {{formatted}}× in {{days}} days",
+        "playsNone": "Not played in the last {{days}} days",
         "gradeRange": "Grades {{min}}–{{max}}",
         "play": "Play now",
         "setGradeFirst": "Set your grade first",
         "pointsRule": "Only games labelled \"Earns points\" are verified by the server and add points. Practice games do not add points.",
         "leaderboard": "Leaderboard",
         "leaderboardEmpty": "No players with points yet. Be the first!",
+        "leaderboardEmptyPeriod": "Nobody has earned points in this period yet. Play now and take first place!",
+        "leaderboardMe": "Your position: #{{rank}}",
+        "leaderboardNotRanked": "You have no points in this period yet. Play games labelled \"Earns points\" to join the leaderboard.",
+        "leaderboardPeriod": {
+            "label": "Leaderboard period",
+            "week": "This week",
+            "month": "This month",
+            "all": "All time"
+        },
         "you": "you",
         "recent": "Recent results",
         "allHistory": "See full history",
@@ -277,12 +291,20 @@
             "numberGarden": "Tend the garden by counting flowers, continuing number patterns and guessing letters. From kindergarten to high school.",
             "exploreIndonesia": "Tour Indonesia's provinces: capitals, islands, dishes, dances and traditional houses. Play solo or with friends.",
             "miniLab": "Run mini science experiments and predict the result: states of matter, magnets, circuits, acids and Newton's laws.",
-            "floorDrop": "Trivia battle royale for 2–100 players. Answer right so your tile stays; the last one standing wins."
+            "floorDrop": "Trivia battle royale for 2–100 players. Answer right so your tile stays; the last one standing wins.",
+            "economyHeist": "Self-paced gold quiz for 2–60 players. Answer right, open mystery chests, steal or swap gold and raise shields!",
+            "orderRush": "Race to order UTP cables, fibre cores, OSI layers, DHCP and TCP steps for networking students. Streaks earn sabotage power-ups!"
         },
         "detailsFirst": "Complete details first",
         "detailsNoticeTitle": "Complete your participant details first!",
         "detailsNoticeBody": "Before you can play, fill in your date of birth and last school. It only takes a moment.",
-        "detailsNoticeAction": "Fill in"
+        "detailsNoticeAction": "Fill in",
+        "playerMenu": {
+            "open": "Open menu for {{name}}",
+            "summary": "Rank #{{rank}} · {{points}} points",
+            "chat": "Chat",
+            "chatError": "Could not open the chat. Please try again."
+        }
     },
     "nav": {
         "label": "Main navigation",
@@ -305,7 +327,8 @@
         "loginToPlay": "Sign in to play",
         "menu": "Menu",
         "admin": "Admin",
-        "chat": "Chat"
+        "chat": "Chat",
+        "clock": "Current time {{time}}"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -662,21 +685,109 @@
         "play": "Play now",
         "upcoming": {
             "title": "Coming soon",
-            "market": {
-                "title": "Market Math",
-                "desc": "Run a market stall: totals, change, discounts and percentages."
-            },
-            "garden": {
-                "title": "Number & Letter Garden",
-                "desc": "Numbers, letters, colours and shapes for kindergarten to grade 2."
-            },
-            "archipelago": {
-                "title": "Explore Indonesia",
-                "desc": "Map of Indonesia: provinces, capitals, culture and heroes."
-            },
-            "lab": {
-                "title": "Mini Lab",
-                "desc": "Simple science experiments: circuits, colours and the water cycle."
+            "intro": "Classroom multiplayer games we are building now. All are played together on the projector and students' devices.",
+            "badge": "Coming soon",
+            "conceptLabel": "Concept",
+            "gameplayLabel": "Gameplay",
+            "funLabel": "Why it's fun",
+            "games": {
+                "monsterCafe": {
+                    "title": "Monster Café / Pizza Frenzy",
+                    "inspiration": "Overcooked / Diner Dash mechanics",
+                    "concept": "Students are chefs in a monster restaurant.",
+                    "gameplay": [
+                        "Monster customers place food orders; every ingredient is the answer to a quiz question.",
+                        "Answer correctly to earn an ingredient, such as cheese, bread or sauce.",
+                        "Assemble the ingredients into a burger or pizza before the monster gets angry (patience timer).",
+                        "Watch out for burnt orders and ingredient-stealing rats, and use the pie power-up to blur another student's screen for 2 seconds."
+                    ],
+                    "fun": "Frantic, funny cartoon food and a fast pace with no downtime."
+                },
+                "saboteurLab": {
+                    "title": "Saboteur Lab / Impostor Protocol",
+                    "inspiration": "Among Us / Mafia mechanics",
+                    "concept": "A team of school scientists repairs a leaking lab reactor.",
+                    "gameplay": [
+                        "Most students are Scientists: answering quizzes repairs reactor modules.",
+                        "1–2 random students are secret Saboteurs: they answer wrong on purpose or plant viruses in modules.",
+                        "Every 3 minutes an emergency vote on the projector asks the class to find the saboteur."
+                    ],
+                    "fun": "Social intrigue and friendly accusations get even quiet students talking."
+                },
+                "kartRacer": {
+                    "title": "Kart Racer / Turbo Trivia",
+                    "inspiration": "Mario Kart mechanics",
+                    "concept": "Students' avatars race go-karts on a live track on the projector.",
+                    "gameplay": [
+                        "Answer correctly and fast to get a nitro boost.",
+                        "Every correct answer gives a random Item Box.",
+                        "Banana Peel: drop it on the track; anyone who hits it spins out for 3 seconds.",
+                        "Missile: fire at the student in first place.",
+                        "Lightning: shrinks every rival kart and slows it down briefly.",
+                        "Shield: protects your own kart."
+                    ],
+                    "fun": "The leaderboard becomes a live visual race. First place is always the missile target, so comebacks happen naturally."
+                },
+                "bossDefense": {
+                    "title": "Dungeon Crawl / Boss Defense",
+                    "inspiration": "Co-op RPG / mini Genshin mechanics",
+                    "concept": "The whole class fights a multi-level dungeon monster.",
+                    "gameplay": [
+                        "Students pick a role when joining: Attacker (big damage), Healer (restores class HP) or Tank (absorbs boss attacks).",
+                        "Every quiz answer generates Mana/Energy to cast the role's skills.",
+                        "The monster attacks periodically; if Healers answer too late, team HP drops.",
+                        "A Quick Time Event on the main screen: every student must answer within 5 seconds to cancel the boss's ultimate attack."
+                    ],
+                    "fun": "Quizzes become a team battle. Students who are less confident academically still matter as support or healer."
+                },
+                "pixelPainter": {
+                    "title": "Pixel Painter / Turf War",
+                    "inspiration": "Splatoon mechanics",
+                    "concept": "A battle to paint a giant canvas between 2–4 colour teams.",
+                    "gameplay": [
+                        "The main screen is a giant black-and-white pixel art grid.",
+                        "Every correct answer gives paint ammo in the team colour.",
+                        "Students tap screen coordinates to shoot paint at rival areas.",
+                        "The team with the largest colour share when time runs out wins."
+                    ],
+                    "fun": "Highly visual, contributions show up instantly on the projector, competitive yet relaxed."
+                },
+                "tetrisQuiz": {
+                    "title": "Tetris Quiz / Block Battle",
+                    "inspiration": "Tetris mechanics · spatial logic + academic quiz",
+                    "concept": "Stack Tetris blocks while answering quizzes. Comes with three game modes.",
+                    "gameplay": [
+                        "Battle Royale mode (Tetris 99 style): every student plays their own board with a short quiz beside it. Correct answers earn a straight I-piece or send grey garbage lines to rivals until their board overflows (KO).",
+                        "Wrong or slow answers make blocks fall 2× faster for 5 seconds and leave an opening for rivals to attack.",
+                        "The projector shows 30–50 live mini-boards, with garbage lines visibly flying from one student to another.",
+                        "Word & Formula mode: blocks carry letters, numbers or formula parts. Placing them to form a correct word (Indonesian/English) or a correct sum (e.g. 4 + 5) blasts the row for bonus combo points.",
+                        "Co-op Fortress mode: the whole class builds one fortress wall together. Answer quizzes to earn a turn dropping a patch block while monsters keep pounding the wall; the neater the stacking, the stronger the defence."
+                    ],
+                    "fun": "The thrill of striking back and surviving to be the last one standing; Word & Formula trains the brain right on the board, and Co-op is low-toxicity, great for primary classes that need teamwork."
+                },
+                "portSorter": {
+                    "title": "Port Sorter / Ports & Protocols",
+                    "inspiration": "IT knowledge · sorting mechanics",
+                    "concept": "Sort network packets into the right protocol bin before they hit the ground.",
+                    "gameplay": [
+                        "Packets labelled with port numbers fall from the top: 80, 443, 22, 53, 21, 25, 3306.",
+                        "Four protocol bins sit at the bottom: HTTP/WEB, DNS, SSH/REMOTE and MAIL.",
+                        "Swipe each packet left or right into the matching bin before it lands.",
+                        "Packets fall faster and faster over time."
+                    ],
+                    "fun": "One finger, quick reflexes and no tricky maths, so networking students memorise the standard ports by heart."
+                },
+                "osiPingPong": {
+                    "title": "Ping Pong Network / OSI Layer Match",
+                    "inspiration": "IT knowledge · ping pong mechanics",
+                    "concept": "A ping pong duel where you return the ball by naming the right OSI layer.",
+                    "gameplay": [
+                        "A device or term appears on screen: Router, Switch, Hub, UTP cable, HTTP, MAC address, IP address.",
+                        "Tap the matching layer: Layer 1 (Physical), Layer 2 (Data Link), Layer 3 (Network) or Layer 7 (Application).",
+                        "A correct answer bounces the ball back to your opponent; a wrong one concedes a goal."
+                    ],
+                    "fun": "Four big buttons and fast reactions turn memorising the 7 OSI layers into a match instead of a rigid lesson."
+                }
             }
         }
     },
@@ -842,7 +953,19 @@
             "answers_locked": "Answer time is over.",
             "eliminated": "You are out and now spectating.",
             "room_closed": "The room is closed.",
-            "busy": "The server is busy, try again."
+            "busy": "The server is busy, try again.",
+            "wrong_stage": "Finish the current step first.",
+            "stale_question": "That question has passed.",
+            "invalid_chest": "Invalid chest.",
+            "invalid_target": "Invalid target.",
+            "invalid_config": "Invalid setting.",
+            "invalid_player": "This account does not match the session.",
+            "invalid_order": "The order is incomplete or invalid.",
+            "frozen": "Your screen is frozen!",
+            "invalid_powerup": "Unknown power-up.",
+            "no_powerup": "You don't have that power-up.",
+            "shield_active": "Your shield is already up.",
+            "target_busy": "The target is busy."
         },
         "copyPinLabel": "Copy PIN",
         "copyLinkLabel": "Copy link"
@@ -923,6 +1046,7 @@
             "pink": "Pink",
             "teal": "Teal"
         },
+        "allItems": "All",
         "slots": {
             "hat": "Hat",
             "face": "Face",
@@ -1204,5 +1328,256 @@
         "endGame": "End game",
         "endNow": "Yes, end now",
         "endConfirm": "Players keep the points they earned."
+    },
+    "economyHeist": {
+        "title": "Economy Heist",
+        "tagline": "Answer right, open chests, steal your friends' gold!",
+        "chooseRole": "Choose your role",
+        "hostTitle": "Host screen",
+        "hostBody": "For the teacher or classroom projector. Create a room, set the win condition and watch the gold leaderboard.",
+        "playerTitle": "Player",
+        "playerBody": "Join with the host's PIN. Answer at your own pace and collect gold.",
+        "openHost": "Open host screen",
+        "openPlayer": "Join as a player",
+        "switchRole": "Switch role",
+        "createRoom": "Create room",
+        "hostIntro": "You are the host. Players join from their own devices (2–60 players).",
+        "playerIntro": "Hi {{name}}! Enter the PIN from the host screen to join.",
+        "rules": "Answer at your own pace. Right = pick 1 of 3 mystery chests: more gold, a shield, steal or swap gold with a friend. Wrong = wait 3 seconds. Beware the bankrupt bomb!",
+        "winCondition": "Win condition",
+        "winTime": "Time limit",
+        "winGold": "Gold target",
+        "minutes": "{{count}} min",
+        "goldAmount": "{{amount}} gold",
+        "targetLabel": "First to {{amount}} gold wins",
+        "timeLabel": "Most gold after {{count}} minutes wins",
+        "joined": "Players joined",
+        "waitingPlayers": "Waiting for players…",
+        "start": "Start game",
+        "needPlayers": "Needs at least {{min}} players",
+        "waitingStart": "You're in! Wait for the host to start.",
+        "playersCount": "{{count}} players",
+        "hostOffline": "Host screen disconnected",
+        "closeRoom": "Close room",
+        "leave": "Leave",
+        "roomClosed": "The host closed the room.",
+        "endGame": "End game",
+        "endNow": "Yes, end now",
+        "endConfirm": "The podium shows right away and points are paid.",
+        "again": "Play again",
+        "timeLeft": "Time left",
+        "goalProgress": "Target {{amount}}",
+        "leaderboard": "Gold board",
+        "feed": "Latest events",
+        "feedEmpty": "Nothing yet. Answer the first question!",
+        "gold": "{{amount}} gold",
+        "you": "You",
+        "shieldOn": "Shield on",
+        "shieldOff": "No shield",
+        "question": "Question {{number}}",
+        "pickAnswer": "Pick your answer",
+        "correct": "Correct! Pick a chest.",
+        "wrong": "Not quite. Hold on…",
+        "cooldown": "Next question in {{seconds}}s",
+        "chooseChest": "Pick a mystery chest",
+        "chest": "Chest {{number}}",
+        "opening": "Opening chest…",
+        "continue": "Continue",
+        "nextQuestion": "Next question",
+        "chooseTarget": "Pick your target",
+        "chooseSwapTarget": "Pick a friend to swap gold with",
+        "targetHint": "A rival's shield blocks your attack once.",
+        "targetTime": "{{seconds}}s left",
+        "targetExpired": "Time to choose ran out. Chance lost!",
+        "rank": "#{{rank}}",
+        "noRivals": "No rivals to pick yet.",
+        "outcomes": {
+            "ADD_GOLD": "Gold gain",
+            "LOSE_GOLD": "Gold loss",
+            "SHIELD": "Shield",
+            "STEAL_PERCENT": "Steal gold",
+            "SWAP_GOLD": "Swap gold",
+            "BANKRUPT_BOMB": "Bankrupt bomb"
+        },
+        "outcomeValue": {
+            "flat": "+{{value}}",
+            "percent": "+{{value}}%",
+            "lose": "-{{value}}%",
+            "steal": "{{value}}%",
+            "swap": "100%",
+            "shield": "1x"
+        },
+        "outcomeBody": {
+            "ADD_GOLD": "You gained {{amount}} gold!",
+            "LOSE_GOLD": "Ouch, you lost {{amount}} gold.",
+            "SHIELD": "Shield up! The next attack will be blocked.",
+            "STEAL_PERCENT": "Pick a friend to steal {{value}}% of their gold.",
+            "SWAP_GOLD": "Pick a friend to swap all gold with.",
+            "BANKRUPT_BOMB": "Boom! Half your gold is gone ({{amount}})."
+        },
+        "actions": {
+            "ADD_GOLD": "{{source}} got {{amount}} gold",
+            "LOSE_GOLD": "{{source}} lost {{amount}} gold",
+            "SHIELD": "{{source}} raised a shield",
+            "STEAL_PERCENT": "{{source}} stole {{amount}} gold from {{target}}",
+            "SWAP_GOLD": "{{source}} swapped gold with {{target}}",
+            "BLOCKED": "{{target}}'s shield blocked {{source}}!",
+            "BANKRUPT_BOMB": "{{source}} hit a bankrupt bomb (-{{amount}})"
+        },
+        "blockedAttacker": "Blocked by shield!",
+        "blockedBody": "{{name}}'s shield broke, no gold moved.",
+        "stolenFrom": "{{name}} stole {{amount}} of your gold!",
+        "swappedBy": "{{name}} swapped gold with you!",
+        "shieldSaved": "Your shield blocked {{name}}!",
+        "podium": "Podium",
+        "winner": "{{name}} wins with {{gold}} gold!",
+        "ranking": "Final ranking",
+        "youWon": "You are the gold champion!",
+        "yourRank": "Your rank #{{rank}} of {{total}}",
+        "earned": "+{{points}} points",
+        "finalGold": "{{amount}} final gold",
+        "stats": "{{correct}} correct · {{steals}} steals · {{swaps}} swaps",
+        "waitingHost": "Wait for the host to start a new round.",
+        "connectionLost": "Connection lost. Reconnecting…",
+        "offline": "Offline",
+        "leftGame": "Left",
+        "howTo": {
+            "title": "How to play",
+            "step": "Step {{current}}/{{total}}",
+            "prev": "Previous",
+            "next": "Next",
+            "play": "Play",
+            "pause": "Pause",
+            "replay": "Replay",
+            "goTo": "Go to step {{number}}",
+            "demoJoined": "Friends joined",
+            "demoRight": "Right = chest",
+            "demoWrong": "Wrong = wait 3s",
+            "demoShield": "A shield blocks one attack, then breaks.",
+            "scenes": {
+                "join": {
+                    "title": "1. Join with the PIN",
+                    "body": "The teacher opens the host screen and shares a 6-digit PIN or link. You join from your phone or laptop with your own avatar."
+                },
+                "answer": {
+                    "title": "2. Answer at your own pace",
+                    "body": "No waiting for friends. A right answer opens mystery chests; a wrong answer makes you wait 3 seconds."
+                },
+                "chest": {
+                    "title": "3. Pick 1 of 3 chests",
+                    "body": "The server rolls the chests before you pick. After opening, you also see what the other two held."
+                },
+                "outcomes": {
+                    "title": "4. Know the chests",
+                    "body": "Gain gold, raise a shield, steal or swap gold with a friend. Careful: some chests lose gold and the bankrupt bomb cuts it in half!"
+                },
+                "heist": {
+                    "title": "5. Steal or swap gold",
+                    "body": "Got a steal/swap chest? Pick a friend within 20 seconds. If they have a shield, your attack is blocked and the shield breaks."
+                },
+                "win": {
+                    "title": "6. Become the gold champion",
+                    "body": "The host picks a time limit (most gold wins) or a gold target (first to reach it wins). The podium shows the top 3."
+                }
+            }
+        }
+    },
+    "orderRush": {
+        "title": "Order Rush TKJ",
+        "tagline": "Race to order network cables & protocols",
+        "chooseRole": "Who are you?",
+        "hostTitle": "Teacher screen (projector)",
+        "hostBody": "Open a room, pick the mode and topics, then show the race track on the projector.",
+        "playerTitle": "Player (student phone)",
+        "playerBody": "Join with the PIN and order cables or protocols as fast as you can.",
+        "openHost": "Open teacher screen",
+        "openPlayer": "Play as student",
+        "switchRole": "Switch role",
+        "createRoom": "Create room",
+        "hostIntro": "Create an Order Rush room and share the PIN with students.",
+        "playerIntro": "Hi {{name}}! Enter the teacher's PIN to join the race.",
+        "rules": "Tap pieces to fill slots 1..N, then press TEST. Correct = 100 points + speed bonus (< 5 s). 3 correct in a row = power-up: Tangle, Freeze or Shield.",
+        "roomClosed": "The room was closed.",
+        "leave": "Leave room",
+        "closeRoom": "Close room",
+        "waitingStart": "Waiting for the teacher to start…",
+        "waitingPlayers": "No students yet. Share the PIN!",
+        "joined": "Students joined",
+        "playersCount": "{{count}} players",
+        "raceLabel": "Race: {{count}} modules",
+        "timeLabel": "Time Attack: {{count}} minutes",
+        "mode": "Game mode",
+        "modeRace": "Race",
+        "modeTime": "Time Attack",
+        "modulesCount": "{{count}} modules",
+        "minutes": "{{count}} min",
+        "categories": "Sequence topics",
+        "allCategories": "All topics shuffled (none selected).",
+        "someCategories": "{{count}} topics selected.",
+        "start": "Start race",
+        "needPlayers": "Needs at least {{min}} students",
+        "again": "Play again",
+        "endGame": "End game",
+        "endNow": "Yes, end now",
+        "endConfirm": "Tap again to end the game.",
+        "timeLeft": "Time left",
+        "leaderProgress": "Leader {{step}}/{{total}}",
+        "track": "Backbone track",
+        "laneLabel": "{{name}}: {{step}} modules, {{score}} points",
+        "morePlayers": "+{{count}} more players",
+        "trackHintCable": "Avatars advance on every correct order",
+        "trackHintRace": "Finish at node {{count}}",
+        "trackHintTime": "Position follows the top score",
+        "feedTitle": "Sabotage feed",
+        "feedEmpty": "No sabotage yet.",
+        "feed": {
+            "TANGLE": "{{source}} sent a Tangled Cable to {{target}}!",
+            "FREEZE": "{{source}} froze {{target}}'s screen!",
+            "SHIELD": "{{source}} raised a Shield!",
+            "blocked": "{{target}}'s Shield blocked {{source}}!"
+        },
+        "power": {
+            "TANGLE": "Tangle",
+            "FREEZE": "Freeze",
+            "SHIELD": "Shield"
+        },
+        "powerUps": "Power-ups",
+        "noPowerUps": "Get {{count}} correct in a row to earn a power-up.",
+        "pickTarget": "Pick a target:",
+        "targetLeader": "Hit the leader",
+        "powerGranted": "Got {{power}}!",
+        "combo": "COMBO {{count}}×!",
+        "shieldOn": "Shield up",
+        "progress": "Module {{step}}/{{total}}",
+        "solved": "{{count}} modules solved",
+        "streak": "Streak {{count}}",
+        "loading": "Preparing module…",
+        "slotsLabel": "Sequence slots",
+        "poolLabel": "Pieces",
+        "slotEmpty": "Slot {{slot}} empty",
+        "slotFilled": "Slot {{slot}}: {{label}}. Tap to put it back.",
+        "autoSubmit": "Auto-submit when full",
+        "test": "TEST / VALIDATE",
+        "lanTester": "LAN Tester",
+        "testerReady": "Ready to test",
+        "testing": "Testing…",
+        "testerOk": "All pins connected!",
+        "testerBad": "Pin {{pin}} is wrong!",
+        "layerBad": "Position {{slot}} is wrong!",
+        "frozenBy": "Screen frozen by {{name}}!",
+        "tangledBy": "Cables tangled by {{name}}!",
+        "winner": "Winner: {{name}}!",
+        "podium": "Podium",
+        "youWon": "You won!",
+        "yourRank": "Rank {{rank}} of {{total}}",
+        "earned": "+{{points}} points",
+        "stats": "{{modules}} modules · {{accuracy}}% accuracy · streak {{streak}}",
+        "waitingHost": "Wait for the teacher to start the next round.",
+        "player": "Player",
+        "score": "Score",
+        "modules": "Modules",
+        "accuracy": "Accuracy",
+        "avgTime": "Average",
+        "hit": "Hit by sabotage"
     }
 }

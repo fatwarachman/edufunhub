@@ -1,52 +1,32 @@
 import { useTranslations } from '@/hooks/use-translations';
+import { SubjectIcon, useSubjectName, useSubjects } from '@/lib/subjects';
 import { cn } from '@/lib/utils';
-import {
-    BookOpenText,
-    Calculator,
-    FlaskConical,
-    Globe2,
-    Landmark,
-    Languages,
-    Shuffle,
-    type LucideIcon,
-} from 'lucide-react';
+import { Shuffle } from 'lucide-react';
 
-/** Question subjects a game can be limited to; `mix` draws from all. */
-export const GAME_SUBJECTS = [
-    'mix',
-    'math',
-    'science',
-    'language',
-    'social',
-    'english',
-    'civics',
-] as const;
+/** The "all subjects" choice; every other value is a subject key. */
+export const MIX_SUBJECT = 'mix';
 
-export type GameSubject = (typeof GAME_SUBJECTS)[number];
-
-const ICONS: Record<GameSubject, LucideIcon> = {
-    mix: Shuffle,
-    math: Calculator,
-    science: FlaskConical,
-    language: BookOpenText,
-    social: Globe2,
-    english: Languages,
-    civics: Landmark,
-};
+/** `mix` or a subject key from the admin-managed catalog. */
+export type GameSubject = string;
 
 const STORAGE_KEY = 'edufunhub.subject';
+const KEY_PATTERN = /^[a-z][a-z0-9-]{1,29}$/;
 
+/** Whether a value looks like a subject choice (mix or a subject key). */
 export function isGameSubject(value: unknown): value is GameSubject {
-    return GAME_SUBJECTS.includes(value as GameSubject);
+    return (
+        typeof value === 'string' &&
+        (value === MIX_SUBJECT || KEY_PATTERN.test(value))
+    );
 }
 
 /** Last subject the player picked on this device (defaults to the mix). */
 export function rememberedSubject(): GameSubject {
     try {
         const saved = window.localStorage.getItem(STORAGE_KEY);
-        return isGameSubject(saved) ? saved : 'mix';
+        return isGameSubject(saved) ? saved : MIX_SUBJECT;
     } catch {
-        return 'mix';
+        return MIX_SUBJECT;
     }
 }
 
@@ -60,7 +40,8 @@ export function rememberSubject(subject: GameSubject): void {
 
 /**
  * Subject choice shown before every game starts. In rooms only the host
- * changes it; everyone else sees the host's choice.
+ * changes it; everyone else sees the host's choice. Subjects come from the
+ * admin catalog, so new subjects appear without a code change.
  */
 export function SubjectPicker({
     value,
@@ -76,11 +57,25 @@ export function SubjectPicker({
     className?: string;
 }) {
     const { t } = useTranslations();
+    const subjects = useSubjects();
+    const subjectName = useSubjectName();
+    const known =
+        value === MIX_SUBJECT || subjects.some((s) => s.key === value);
+    const selectedValue = known ? value : MIX_SUBJECT;
+    const choices = [
+        { key: MIX_SUBJECT, label: t('subjects.mix'), icon: null },
+        ...subjects.map((subject) => ({
+            key: subject.key,
+            label: subjectName(subject.key),
+            icon: subject.icon,
+        })),
+    ];
+
     return (
         <fieldset
             className={cn('text-left', className)}
             data-testid="subject-picker"
-            data-subject={value}
+            data-subject={selectedValue}
         >
             <legend className="mb-2 text-xs font-black text-slate-500 uppercase">
                 {t('subjects.label')}
@@ -93,32 +88,40 @@ export function SubjectPicker({
                         : 'grid-cols-2 sm:grid-cols-3',
                 )}
             >
-                {GAME_SUBJECTS.map((subject) => {
-                    const Icon = ICONS[subject];
-                    const selected = value === subject;
+                {choices.map(({ key, label, icon }) => {
+                    const selected = selectedValue === key;
                     return (
                         <button
-                            key={subject}
+                            key={key}
                             type="button"
                             disabled={disabled}
                             aria-pressed={selected}
                             onClick={() => {
-                                rememberSubject(subject);
-                                onChange(subject);
+                                rememberSubject(key);
+                                onChange(key);
                             }}
-                            data-testid={`subject-${subject}`}
+                            data-testid={`subject-${key}`}
                             className={cn(
                                 'flex min-h-12 items-center gap-2 rounded-2xl border-2 border-[#1f2a44] px-3 py-2 text-left font-display text-sm leading-tight font-black transition-colors disabled:cursor-default',
-                                subject === 'mix' && 'col-span-2 sm:col-span-1',
+                                key === MIX_SUBJECT &&
+                                    'col-span-2 sm:col-span-1',
                                 selected
                                     ? 'bg-[#1f2a44] text-white shadow-[3px_3px_0px_#FF9E44]'
                                     : 'bg-white text-[#1f2a44] enabled:hover:bg-[#FFF9E6] disabled:opacity-60',
                             )}
                         >
-                            <Icon className="size-4 shrink-0" />
-                            <span className="min-w-0">
-                                {t(`subjects.${subject}`)}
-                            </span>
+                            {icon === null ? (
+                                <Shuffle
+                                    className="size-4 shrink-0"
+                                    aria-hidden="true"
+                                />
+                            ) : (
+                                <SubjectIcon
+                                    icon={icon}
+                                    className="size-4 shrink-0"
+                                />
+                            )}
+                            <span className="min-w-0 break-words">{label}</span>
                         </button>
                     );
                 })}
@@ -144,7 +147,8 @@ export function SubjectFallbackNote({
     className?: string;
 }) {
     const { t } = useTranslations();
-    if (!isGameSubject(subject) || subject === 'mix') {
+    const subjectName = useSubjectName();
+    if (!isGameSubject(subject) || subject === MIX_SUBJECT) {
         return null;
     }
     return (
@@ -156,7 +160,7 @@ export function SubjectFallbackNote({
                 className,
             )}
         >
-            {t('subjects.fallback', { subject: t(`subjects.${subject}`) })}
+            {t('subjects.fallback', { subject: subjectName(subject) })}
         </p>
     );
 }

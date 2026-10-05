@@ -71,6 +71,7 @@ class SocialiteController extends Controller
                     'name' => $name,
                     'email' => $socialUser->getEmail(),
                     'password' => bcrypt(Str::random(16)),
+                    'locale' => app()->getLocale(),
                 ]);
 
                 $user->markEmailAsVerified();

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Models\Question;
 use App\Models\QuestionGeneration;
+use App\Models\Subject;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,7 @@ class GenerateQuestionsRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'subjects' => $this->input('scope') === 'all' ? Question::SUBJECTS : $this->input('subjects'),
+            'subjects' => $this->input('scope') === 'all' ? Subject::activeKeys() : $this->input('subjects'),
             'grades' => $this->input('scope') === 'all' ? Question::GRADES : $this->input('grades'),
             'activate' => $this->boolean('activate'),
         ]);
@@ -29,7 +30,7 @@ class GenerateQuestionsRequest extends FormRequest
         return [
             'scope' => ['required', Rule::in(['all', 'custom'])],
             'subjects' => ['required', 'array', 'min:1'],
-            'subjects.*' => ['required', 'distinct', Rule::in(Question::SUBJECTS)],
+            'subjects.*' => ['required', 'distinct', Rule::in(Subject::activeKeys())],
             'grades' => ['required', 'array', 'min:1'],
             'grades.*' => ['required', 'integer', 'distinct', Rule::in(Question::GRADES)],
             'per_combination' => ['required', 'integer', 'between:1,'.QuestionGeneration::MAX_PER_COMBINATION],

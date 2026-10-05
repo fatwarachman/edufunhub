@@ -86,6 +86,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => $request->password,
             'email_verified_at' => now(),
+            'locale' => config('app.locale'),
         ]);
 
         if ($request->filled('roles')) {

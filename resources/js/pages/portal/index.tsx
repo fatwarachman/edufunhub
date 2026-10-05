@@ -2,24 +2,57 @@ import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
 import { NavButton } from '@/components/site-nav';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { gameIcon } from '@/lib/games';
 import { gradeLabel, hasGrade } from '@/lib/grade';
+import { router } from '@inertiajs/react';
 import {
     CircleAlert,
     Coins,
     Crown,
+    Flame,
     Gamepad2,
     GraduationCap,
     History,
     IdCard,
+    Loader2,
     Medal,
+    MessageCircle,
     Play,
     Sparkles,
     Star,
+    Users,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+
+type LeaderboardPeriod = 'week' | 'month' | 'all';
+
+interface LeaderboardData {
+    entries: {
+        rank: number;
+        userId: number;
+        name: string;
+        points: number;
+        isMe: boolean;
+        character: { color: string; accessory: string };
+    }[];
+    me: { rank: number; points: number } | null;
+}
+
+const LEADERBOARD_PERIODS: LeaderboardPeriod[] = ['week', 'month', 'all'];
+
+/** Podium colours for the top three ranks. */
+const PODIUM: Record<number, string> = {
+    1: 'bg-[#ffd93d]',
+    2: 'bg-[#c9d3e3]',
+    3: 'bg-[#f4c095]',
+};
 
 interface PortalGame {
     key: string;
@@ -33,6 +66,8 @@ interface PortalGame {
     awardsPoints: boolean;
     requiresGrade: boolean;
     recommended: boolean;
+    plays: number;
+    popularRank: number | null;
 }
 
 interface PortalProps {
@@ -52,13 +87,8 @@ interface PortalProps {
     };
     rank: number | null;
     categories: { key: string; titleKey: string; games: PortalGame[] }[];
-    leaderboard: {
-        rank: number;
-        name: string;
-        points: number;
-        isMe: boolean;
-        character: { color: string; accessory: string };
-    }[];
+    popularityDays: number;
+    leaderboards: Record<LeaderboardPeriod, LeaderboardData>;
     recent: {
         id: number;
         game_key: string;
@@ -74,7 +104,8 @@ export default function Portal({
     progress,
     rank,
     categories,
-    leaderboard,
+    popularityDays,
+    leaderboards,
     recent,
 }: PortalProps) {
     const { t, i18n } = useTranslations();
@@ -280,6 +311,46 @@ export default function Portal({
                                             <h3 className="text-xl font-bold">
                                                 {t(game.titleKey)}
                                             </h3>
+                                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                {game.popularRank !== null && (
+                                                    <span
+                                                        className="inline-flex items-center gap-1 rounded-full border-2 border-[#151b2e] bg-[#ffe1e6] px-2 py-0.5 text-[11px] font-bold text-[#9b1c3a]"
+                                                        data-testid={`portal-popular-${game.key}`}
+                                                    >
+                                                        <Flame className="size-3" />
+                                                        {t(
+                                                            'portal.mostPlayed',
+                                                            {
+                                                                rank: game.popularRank,
+                                                            },
+                                                        )}
+                                                    </span>
+                                                )}
+                                                <span
+                                                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#151b2e]/75"
+                                                    data-testid={`portal-plays-${game.key}`}
+                                                >
+                                                    <Users
+                                                        className="size-3.5"
+                                                        aria-hidden
+                                                    />
+                                                    {game.plays > 0
+                                                        ? t('portal.plays', {
+                                                              count: game.plays,
+                                                              formatted:
+                                                                  numberFormat.format(
+                                                                      game.plays,
+                                                                  ),
+                                                              days: popularityDays,
+                                                          })
+                                                        : t(
+                                                              'portal.playsNone',
+                                                              {
+                                                                  days: popularityDays,
+                                                              },
+                                                          )}
+                                                </span>
+                                            </div>
                                             {game.descriptionKey && (
                                                 <p className="text-sm text-muted-foreground">
                                                     {t(game.descriptionKey)}
@@ -321,61 +392,10 @@ export default function Portal({
                 </section>
 
                 <aside className="flex min-w-0 flex-col gap-7">
-                    <section
-                        className="auth-card flex flex-col gap-4 !p-5"
-                        aria-labelledby="portal-leaderboard-title"
-                    >
-                        <h2
-                            id="portal-leaderboard-title"
-                            className="flex items-center gap-2 text-xl font-bold"
-                        >
-                            <Crown className="size-5 text-[#f5a623]" />
-                            {t('portal.leaderboard')}
-                        </h2>
-                        {leaderboard.length === 0 ? (
-                            <p className="rounded-xl border-2 border-dashed border-[#151b2e]/25 px-4 py-6 text-center text-sm text-muted-foreground">
-                                {t('portal.leaderboardEmpty')}
-                            </p>
-                        ) : (
-                            <ol
-                                className="flex flex-col gap-2"
-                                data-testid="portal-leaderboard"
-                            >
-                                {leaderboard.map((row) => (
-                                    <li
-                                        key={row.rank}
-                                        className={`flex items-center gap-3 rounded-xl border-2 border-[#151b2e] px-2.5 py-1.5 ${
-                                            row.isMe
-                                                ? 'bg-[#fff0cf]'
-                                                : 'bg-white'
-                                        }`}
-                                    >
-                                        <span className="w-6 text-center text-sm font-bold tabular-nums">
-                                            {row.rank}
-                                        </span>
-                                        <PlayerCharacter
-                                            character={row.character}
-                                            size={36}
-                                            backdrop={false}
-                                            className="shrink-0"
-                                        />
-                                        <span className="min-w-0 flex-1 truncate text-sm font-bold">
-                                            {row.name}
-                                            {row.isMe && (
-                                                <span className="font-semibold text-muted-foreground">
-                                                    {' '}
-                                                    ({t('portal.you')})
-                                                </span>
-                                            )}
-                                        </span>
-                                        <span className="text-sm font-bold tabular-nums">
-                                            {numberFormat.format(row.points)}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ol>
-                        )}
-                    </section>
+                    <Leaderboard
+                        boards={leaderboards}
+                        numberFormat={numberFormat}
+                    />
 
                     <section
                         className="auth-card flex flex-col gap-4 !p-5"
@@ -435,6 +455,260 @@ export default function Portal({
                 </aside>
             </div>
         </PlayerLayout>
+    );
+}
+
+function Leaderboard({
+    boards,
+    numberFormat,
+}: {
+    boards: Record<LeaderboardPeriod, LeaderboardData>;
+    numberFormat: Intl.NumberFormat;
+}) {
+    const { t } = useTranslations();
+    const [period, setPeriod] = useState<LeaderboardPeriod>('week');
+    const board = boards[period];
+    const meListed = board.entries.some((row) => row.isMe);
+
+    return (
+        <section
+            className="auth-card flex flex-col gap-4 !p-5"
+            aria-labelledby="portal-leaderboard-title"
+            data-testid="portal-leaderboard-card"
+        >
+            <h2
+                id="portal-leaderboard-title"
+                className="flex items-center gap-2 text-xl font-bold"
+            >
+                <Crown className="size-5 text-[#f5a623]" />
+                {t('portal.leaderboard')}
+            </h2>
+            <div
+                className="grid grid-cols-[1fr_1fr_1.35fr] gap-1 rounded-[1.25rem] border-2 border-[#151b2e] bg-white p-1"
+                role="tablist"
+                aria-label={t('portal.leaderboardPeriod.label')}
+            >
+                {LEADERBOARD_PERIODS.map((key) => (
+                    <button
+                        key={key}
+                        type="button"
+                        role="tab"
+                        id={`leaderboard-tab-${key}`}
+                        aria-selected={period === key}
+                        aria-controls="leaderboard-panel"
+                        onClick={() => setPeriod(key)}
+                        data-testid={`portal-leaderboard-tab-${key}`}
+                        className={`min-h-9 min-w-0 rounded-full px-1 text-[11px] leading-tight font-bold transition-colors sm:text-xs ${
+                            period === key
+                                ? 'bg-[#151b2e] text-white'
+                                : 'text-[#151b2e] hover:bg-[#fff0cf]'
+                        }`}
+                    >
+                        {t(`portal.leaderboardPeriod.${key}`)}
+                    </button>
+                ))}
+            </div>
+            <div
+                id="leaderboard-panel"
+                role="tabpanel"
+                aria-labelledby={`leaderboard-tab-${period}`}
+                className="flex flex-col gap-2"
+            >
+                {board.entries.length === 0 ? (
+                    <p className="rounded-xl border-2 border-dashed border-[#151b2e]/25 px-4 py-6 text-center text-sm text-[#151b2e]/75">
+                        {t(
+                            period === 'all'
+                                ? 'portal.leaderboardEmpty'
+                                : 'portal.leaderboardEmptyPeriod',
+                        )}
+                    </p>
+                ) : (
+                    <ol
+                        className="flex flex-col gap-2"
+                        data-testid="portal-leaderboard"
+                    >
+                        {board.entries.map((row) => (
+                            <li
+                                key={row.rank}
+                                className={`flex items-center gap-3 rounded-xl border-2 border-[#151b2e] px-2.5 py-1.5 ${
+                                    row.isMe
+                                        ? 'bg-[#fff0cf] ring-2 ring-[#f5a623]'
+                                        : 'bg-white'
+                                }`}
+                            >
+                                <span
+                                    className={`grid size-7 shrink-0 place-items-center rounded-full text-sm font-bold tabular-nums ${
+                                        PODIUM[row.rank]
+                                            ? `border-2 border-[#151b2e] ${PODIUM[row.rank]}`
+                                            : 'border-2 border-[#151b2e]/25'
+                                    }`}
+                                    aria-label={t('portal.rank', {
+                                        rank: row.rank,
+                                    })}
+                                >
+                                    {row.rank}
+                                </span>
+                                <PlayerCharacter
+                                    character={row.character}
+                                    size={36}
+                                    backdrop={false}
+                                    className="shrink-0"
+                                />
+                                {row.isMe ? (
+                                    <span className="min-w-0 flex-1 truncate text-sm font-bold">
+                                        {row.name}
+                                        <span className="font-semibold text-[#151b2e]/80">
+                                            {' '}
+                                            ({t('portal.you')})
+                                        </span>
+                                    </span>
+                                ) : (
+                                    <PlayerMenu
+                                        userId={row.userId}
+                                        name={row.name}
+                                        rank={row.rank}
+                                        points={numberFormat.format(row.points)}
+                                    />
+                                )}
+                                <span className="text-sm font-bold tabular-nums">
+                                    {numberFormat.format(row.points)}
+                                </span>
+                            </li>
+                        ))}
+                    </ol>
+                )}
+                {board.me && !meListed && (
+                    <p
+                        className="flex items-center justify-between gap-3 rounded-xl border-2 border-dashed border-[#151b2e] bg-[#fff0cf] px-3 py-2 text-sm font-bold"
+                        data-testid="portal-leaderboard-me"
+                    >
+                        <span>
+                            {t('portal.leaderboardMe', {
+                                rank: numberFormat.format(board.me.rank),
+                            })}
+                        </span>
+                        <span className="tabular-nums">
+                            {numberFormat.format(board.me.points)}
+                        </span>
+                    </p>
+                )}
+                {!board.me && board.entries.length > 0 && (
+                    <p className="text-center text-xs font-semibold text-[#151b2e]/75">
+                        {t('portal.leaderboardNotRanked')}
+                    </p>
+                )}
+            </div>
+        </section>
+    );
+}
+
+/**
+ * Clickable leaderboard name: opens a small menu with the player's rank and
+ * a "Chat" action that starts (or reopens) a direct chat with them.
+ */
+function PlayerMenu({
+    userId,
+    name,
+    rank,
+    points,
+}: {
+    userId: number;
+    name: string;
+    rank: number;
+    points: string;
+}) {
+    const { t } = useTranslations();
+    const [open, setOpen] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const startChat = async () => {
+        setBusy(true);
+        setError(null);
+        try {
+            const res = await fetch('/chat/direct', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN':
+                        document.querySelector<HTMLMetaElement>(
+                            'meta[name="csrf-token"]',
+                        )?.content ?? '',
+                },
+                body: JSON.stringify({ user_id: userId }),
+            });
+            const data = (await res.json().catch(() => ({}))) as {
+                conversation?: { id: number };
+                message?: string;
+            };
+            if (!res.ok || !data.conversation) {
+                setError(data.message ?? t('portal.playerMenu.chatError'));
+                return;
+            }
+            setOpen(false);
+            router.visit(`/chat?c=${data.conversation.id}`);
+        } catch {
+            setError(t('portal.playerMenu.chatError'));
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    return (
+        <Popover
+            open={open}
+            onOpenChange={(next) => {
+                setOpen(next);
+                setError(null);
+            }}
+        >
+            <PopoverTrigger asChild>
+                <button
+                    type="button"
+                    className="min-w-0 flex-1 truncate rounded-md text-left text-sm font-bold underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7]"
+                    aria-label={t('portal.playerMenu.open', { name })}
+                    data-testid={`portal-leaderboard-player-${userId}`}
+                >
+                    {name}
+                </button>
+            </PopoverTrigger>
+            <PopoverContent
+                align="start"
+                sideOffset={6}
+                className="w-60 rounded-2xl border-[3px] border-[#151b2e] bg-white p-3 text-[#151b2e] shadow-[4px_4px_0_#151b2e]"
+                data-testid="portal-player-menu"
+            >
+                <p className="truncate text-sm font-bold">{name}</p>
+                <p className="text-xs font-semibold text-[#151b2e]/75">
+                    {t('portal.playerMenu.summary', { rank, points })}
+                </p>
+                <button
+                    type="button"
+                    onClick={startChat}
+                    disabled={busy}
+                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border-[2.5px] border-[#151b2e] bg-[#ffd93d] px-3 text-sm font-bold shadow-[2px_2px_0_#151b2e] transition-colors hover:bg-[#ffe680] disabled:opacity-60"
+                    data-testid="portal-player-chat"
+                >
+                    {busy ? (
+                        <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                        <MessageCircle className="size-4" />
+                    )}
+                    {t('portal.playerMenu.chat')}
+                </button>
+                {error && (
+                    <p
+                        className="mt-2 text-xs font-bold text-[#c0262d]"
+                        role="alert"
+                    >
+                        {error}
+                    </p>
+                )}
+            </PopoverContent>
+        </Popover>
     );
 }
 

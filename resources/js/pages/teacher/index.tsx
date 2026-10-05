@@ -11,6 +11,7 @@ import {
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { GRADE_LEVELS, gradeLabel } from '@/lib/grade';
+import { useSubjectName } from '@/lib/subjects';
 import { Link, router } from '@inertiajs/react';
 import {
     BookOpenCheck,
@@ -357,6 +358,7 @@ function QuestionList({
     grades: number[];
 }) {
     const { t, i18n } = useTranslations();
+    const subjectName = useSubjectName();
     const format = useTeacherFormat();
     const [search, setSearch] = useState(filters.search ?? '');
     const hasFilters = Boolean(
@@ -459,7 +461,7 @@ function QuestionList({
                     <option value="">{t('teacher.list.allSubjects')}</option>
                     {subjects.map((subject) => (
                         <option key={subject} value={subject}>
-                            {t(`teacher.subjects.${subject}`)}
+                            {subjectName(subject)}
                         </option>
                     ))}
                 </select>
@@ -501,9 +503,7 @@ function QuestionList({
                                 <div className="flex min-w-0 flex-col gap-2">
                                     <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
                                         <span className="rounded-full border-2 border-[#151b2e] bg-[#fff0cf] px-2 py-0.5">
-                                            {t(
-                                                `teacher.subjects.${question.subject}`,
-                                            )}
+                                            {subjectName(question.subject)}
                                         </span>
                                         <span className="rounded-full border-2 border-[#151b2e] bg-white px-2 py-0.5">
                                             {question.type === 'choice'

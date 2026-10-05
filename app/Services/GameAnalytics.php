@@ -84,7 +84,7 @@ class GameAnalytics
 
         $totals = $base()
             ->selectRaw('COUNT(*) as plays, COUNT(DISTINCT user_id) as players, SUM(points) as points, AVG(points) as avg_points')
-            ->selectRaw('SUM(correct) as correct, SUM(wrong) as wrong, AVG(duration_seconds) as avg_duration')
+            ->selectRaw('SUM(correct) as correct, SUM(wrong) as wrong, AVG(duration_seconds) as avg_duration, SUM(duration_seconds) as total_duration')
             ->selectRaw($this->passedExpression().' as passed, SUM(CASE WHEN correct IS NOT NULL THEN 1 ELSE 0 END) as scored')
             ->first();
 
@@ -97,6 +97,7 @@ class GameAnalytics
                 'points' => (int) $totals->points,
                 'avg_points' => round((float) $totals->avg_points, 1),
                 'avg_duration' => $totals->avg_duration !== null ? (int) round((float) $totals->avg_duration) : null,
+                'total_duration' => (int) $totals->total_duration,
                 'accuracy' => $this->percent((int) $totals->correct, $answered),
                 'success_rate' => $this->percent((int) $totals->passed, (int) $totals->scored),
                 'plays_per_player' => (int) $totals->players > 0 ? round($totals->plays / $totals->players, 1) : 0,

@@ -72,7 +72,9 @@
         "numberGarden": "Taman Angka & Huruf",
         "exploreIndonesia": "Jelajah Indonesia",
         "miniLab": "Lab Mini",
-        "floorDrop": "Lantai Runtuh"
+        "floorDrop": "Lantai Runtuh",
+        "economyHeist": "Peti Emas Misteri",
+        "orderRush": "Order Rush TKJ"
     },
     "flagQuest": {
         "title": "Misi Bendera",
@@ -255,12 +257,24 @@
         "recommended": "Cocok untuk kelasmu",
         "earnsPoints": "Dapat poin",
         "practice": "Latihan",
+        "mostPlayed": "Terpopuler #{{rank}}",
+        "plays": "Dimainkan {{formatted}}× dalam {{days}} hari",
+        "playsNone": "Belum dimainkan dalam {{days}} hari",
         "gradeRange": "Kelas {{min}}–{{max}}",
         "play": "Main sekarang",
         "setGradeFirst": "Atur kelas dulu",
         "pointsRule": "Hanya permainan berlabel \"Dapat poin\" yang hasilnya diverifikasi server dan menambah poin. Permainan latihan tidak menambah poin.",
         "leaderboard": "Papan peringkat",
         "leaderboardEmpty": "Belum ada pemain dengan poin. Jadilah yang pertama!",
+        "leaderboardEmptyPeriod": "Belum ada yang mendapat poin di periode ini. Main sekarang dan rebut posisi pertama!",
+        "leaderboardMe": "Posisimu: #{{rank}}",
+        "leaderboardNotRanked": "Kamu belum punya poin di periode ini. Mainkan game berlabel \"Dapat poin\" untuk masuk papan peringkat.",
+        "leaderboardPeriod": {
+            "label": "Periode papan peringkat",
+            "week": "Minggu ini",
+            "month": "Bulan ini",
+            "all": "Sepanjang masa"
+        },
         "you": "kamu",
         "recent": "Hasil terakhir",
         "allHistory": "Lihat semua riwayat",
@@ -276,12 +290,20 @@
             "numberGarden": "Rawat taman dengan menghitung bunga, melanjutkan pola angka, dan menebak huruf. Cocok dari TK sampai SMA.",
             "exploreIndonesia": "Keliling provinsi Indonesia: ibu kota, pulau, makanan khas, tarian, dan rumah adat. Main sendiri atau bersama teman.",
             "miniLab": "Lakukan percobaan sains mini dan tebak hasilnya: wujud benda, magnet, listrik, asam basa, hingga hukum Newton.",
-            "floorDrop": "Battle royale kuis untuk 2–100 pemain. Jawab benar agar ubinmu tidak runtuh; terakhir bertahan jadi juara."
+            "floorDrop": "Battle royale kuis untuk 2–100 pemain. Jawab benar agar ubinmu tidak runtuh; terakhir bertahan jadi juara.",
+            "economyHeist": "Kuis emas mandiri untuk 2–60 pemain. Jawab benar, buka peti misteri, curi atau tukar emas, dan pasang perisai!",
+            "orderRush": "Balapan menyusun urutan kabel UTP, core fiber, OSI, DHCP dan TCP untuk siswa TKJ. Benar beruntun dapat power-up sabotase!"
         },
         "detailsFirst": "Isi data peserta dulu",
         "detailsNoticeTitle": "Lengkapi data peserta dulu, ya!",
         "detailsNoticeBody": "Sebelum bisa bermain, isi tanggal lahir dan sekolah terakhir kamu. Hanya butuh sebentar.",
-        "detailsNoticeAction": "Isi data"
+        "detailsNoticeAction": "Isi data",
+        "playerMenu": {
+            "open": "Buka menu {{name}}",
+            "summary": "Peringkat #{{rank}} · {{points}} poin",
+            "chat": "Chat",
+            "chatError": "Chat belum bisa dibuka. Coba lagi."
+        }
     },
     "nav": {
         "label": "Navigasi utama",
@@ -304,7 +326,8 @@
         "loginToPlay": "Masuk untuk main",
         "menu": "Menu",
         "admin": "Admin",
-        "chat": "Chat"
+        "chat": "Chat",
+        "clock": "Jam sekarang {{time}}"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -661,21 +684,109 @@
         "play": "Mainkan sekarang",
         "upcoming": {
             "title": "Segera hadir",
-            "market": {
-                "title": "Pasar Hitung",
-                "desc": "Jadi pedagang: hitung belanja, kembalian, diskon, dan persen."
-            },
-            "garden": {
-                "title": "Kebun Angka & Huruf",
-                "desc": "Mengenal angka, huruf, warna, dan bentuk untuk TK–kelas 2."
-            },
-            "archipelago": {
-                "title": "Jelajah Nusantara",
-                "desc": "Peta Indonesia: provinsi, ibu kota, budaya, dan pahlawan."
-            },
-            "lab": {
-                "title": "Lab Mini",
-                "desc": "Percobaan sains sederhana: listrik, warna, dan siklus air."
+            "intro": "Game multiplayer kelas yang sedang kami buat. Semua dimainkan bersama lewat proyektor dan perangkat murid.",
+            "badge": "Segera hadir",
+            "conceptLabel": "Konsep",
+            "gameplayLabel": "Mekanik permainan",
+            "funLabel": "Kenapa seru",
+            "games": {
+                "monsterCafe": {
+                    "title": "Monster Café / Pizza Frenzy",
+                    "inspiration": "Mekanik Overcooked / Diner Dash",
+                    "concept": "Murid jadi koki di restoran monster.",
+                    "gameplay": [
+                        "Pelanggan monster minta pesanan makanan; tiap bahan makanan adalah jawaban dari soal kuis.",
+                        "Jawab kuis dengan benar untuk mendapat bahan, misalnya keju, roti, atau saus.",
+                        "Rakit bahan menjadi burger atau pizza sebelum monster marah (timer kesabaran).",
+                        "Ada orderan gosong, tikus pencuri bahan, dan power-up lempar pie ke meja murid lain untuk mengaburkan layar mereka selama 2 detik."
+                    ],
+                    "fun": "Panik, visual makanan kartun lucu, ritme cepat tanpa jeda."
+                },
+                "saboteurLab": {
+                    "title": "Saboteur Lab / Impostor Protocol",
+                    "inspiration": "Mekanik Among Us / Mafia",
+                    "concept": "Tim ilmuwan sekolah memperbaiki reaktor laboratorium yang bocor.",
+                    "gameplay": [
+                        "Mayoritas murid menjadi Ilmuwan: jawab kuis untuk memperbaiki modul reaktor.",
+                        "1–2 murid acak menjadi Penyabot rahasia: sengaja menjawab salah atau memasang virus ke modul.",
+                        "Tiap 3 menit ada voting darurat di layar proyektor untuk menebak siapa penyabotnya."
+                    ],
+                    "fun": "Ada intrik sosial dan saling tuduh yang sehat, sehingga murid pendiam pun ikut heboh berdiskusi."
+                },
+                "kartRacer": {
+                    "title": "Kart Racer / Turbo Trivia",
+                    "inspiration": "Mekanik Mario Kart",
+                    "concept": "Balapan gokart avatar murid di sirkuit live pada proyektor.",
+                    "gameplay": [
+                        "Jawab soal dengan benar dan cepat untuk nitro yang membuat mobil melaju kencang.",
+                        "Tiap jawaban benar memberi Item Box acak.",
+                        "Kulit Pisang: dipasang di aspal, lawan yang menginjaknya tergelincir 3 detik.",
+                        "Rudal: menembak murid peringkat 1 di depan.",
+                        "Petir: memperkecil semua mobil lawan sehingga melambat sejenak.",
+                        "Tameng: melindungi mobil sendiri."
+                    ],
+                    "fun": "Leaderboard bukan sekadar angka, melainkan balapan visual live. Posisi 1 selalu jadi incaran rudal, jadi comeback selalu mungkin."
+                },
+                "bossDefense": {
+                    "title": "Dungeon Crawl / Boss Defense",
+                    "inspiration": "Mekanik RPG co-op / Genshin mini",
+                    "concept": "Satu kelas melawan monster dungeon bertingkat.",
+                    "gameplay": [
+                        "Murid memilih peran saat masuk: Attacker (damage besar), Healer (mengisi darah kelas), atau Tanker (menahan serangan bos).",
+                        "Setiap soal kuis menghasilkan Mana/Energi untuk mengeluarkan skill peran masing-masing.",
+                        "Monster menyerang secara berkala; jika Healer terlambat menjawab, HP tim turun.",
+                        "Fase Quick Time Event di layar utama: semua murid wajib menjawab serempak dalam 5 detik untuk membatalkan jurus pamungkas bos."
+                    ],
+                    "fun": "Kuis berubah jadi pertempuran tim. Murid yang kurang kuat akademik tetap berguna lewat peran support atau healer."
+                },
+                "pixelPainter": {
+                    "title": "Pixel Painter / Turf War",
+                    "inspiration": "Mekanik Splatoon",
+                    "concept": "Pertarungan mewarnai kanvas raksasa antara 2–4 tim warna.",
+                    "gameplay": [
+                        "Layar utama berupa kanvas grid pixel art hitam putih raksasa.",
+                        "Tiap jawaban benar memberi amunisi cat warna tim.",
+                        "Murid mengetuk koordinat layar untuk menembakkan cat ke area lawan.",
+                        "Tim dengan persentase warna paling dominan saat waktu habis menang."
+                    ],
+                    "fun": "Sangat visual, kontribusi langsung terlihat di layar proyektor, kompetitif tapi santai."
+                },
+                "tetrisQuiz": {
+                    "title": "Tetris Kuis / Block Battle",
+                    "inspiration": "Mekanik Tetris · logika spasial + kuis akademik",
+                    "concept": "Susun balok Tetris sambil menjawab kuis. Tersedia tiga mode permainan.",
+                    "gameplay": [
+                        "Mode Battle Royale (ala Tetris 99): tiap murid main board sendiri dengan soal kuis singkat di sampingnya. Jawab benar dapat balok I lurus atau mengirim garis sampah abu-abu ke board lawan sampai mereka tumpah (KO).",
+                        "Jawab salah atau lambat: balok jatuh 2× lebih cepat selama 5 detik, dan lawan dapat celah menyerang.",
+                        "Layar proyektor menampilkan 30–50 mini-board murid secara live, lengkap dengan animasi garis sampah yang terbang antar-murid.",
+                        "Mode Kata & Rumus: balok berisi huruf, angka, atau elemen rumus. Susunan yang membentuk kata benar (Indonesia/Inggris) atau hitungan benar (misal 4 + 5) meledakkan baris untuk kombo poin.",
+                        "Mode Benteng Co-op: sekelas membangun satu tembok benteng bersama. Jawab kuis untuk dapat giliran menjatuhkan balok penambal, sementara monster terus memukul tembok; makin rapi susunannya, makin kuat bentengnya."
+                    ],
+                    "fun": "Sensasi balas serangan dan bertahan sampai jadi juara terakhir; mode Kata & Rumus mengasah otak langsung di board, dan mode Co-op minim toxic untuk kelas SD yang butuh kekompakan."
+                },
+                "portSorter": {
+                    "title": "Port Sorter / Pilah Port & Protokol",
+                    "inspiration": "Pengetahuan IT · mekanik pilah barang",
+                    "concept": "Pilah paket jaringan ke keranjang protokol yang tepat sebelum jatuh ke tanah.",
+                    "gameplay": [
+                        "Paket berisi nomor port jatuh dari atas: 80, 443, 22, 53, 21, 25, 3306.",
+                        "Di bawah ada 4 keranjang protokol: HTTP/WEB, DNS, SSH/REMOTE, dan MAIL.",
+                        "Geser (swipe) paket ke kiri atau kanan menuju keranjang yang pas sebelum menyentuh tanah.",
+                        "Makin lama, paket turun makin cepat."
+                    ],
+                    "fun": "Cukup satu jari dan refleks cepat tanpa hitungan rumit, sehingga anak TKJ langsung hafal port standar di luar kepala."
+                },
+                "osiPingPong": {
+                    "title": "Ping Pong Network / OSI Layer Match",
+                    "inspiration": "Pengetahuan IT · mekanik ping pong",
+                    "concept": "Adu ping pong dengan menebak layer OSI dari perangkat atau istilah jaringan.",
+                    "gameplay": [
+                        "Layar menampilkan perangkat atau istilah: Router, Switch, Hub, Kabel UTP, HTTP, MAC Address, IP Address.",
+                        "Ketuk tombol layer yang sesuai: Layer 1 (Physical), Layer 2 (Data Link), Layer 3 (Network), atau Layer 7 (Application).",
+                        "Jawaban benar memantulkan bola kembali ke lawan; jawaban salah berarti kebobolan gol."
+                    ],
+                    "fun": "Empat tombol besar dan reaksi cepat membuat hafalan 7 layer OSI terasa seperti pertandingan, bukan pelajaran kaku."
+                }
             }
         }
     },
@@ -841,7 +952,19 @@
             "answers_locked": "Waktu menjawab sudah habis.",
             "eliminated": "Kamu sudah tersingkir, sekarang mode penonton.",
             "room_closed": "Ruangan sudah ditutup.",
-            "busy": "Server sedang sibuk, coba lagi."
+            "busy": "Server sedang sibuk, coba lagi.",
+            "wrong_stage": "Selesaikan langkah sekarang dulu.",
+            "stale_question": "Soal itu sudah lewat.",
+            "invalid_chest": "Peti tidak valid.",
+            "invalid_target": "Target tidak valid.",
+            "invalid_config": "Pengaturan tidak valid.",
+            "invalid_player": "Akun tidak cocok dengan sesi ini.",
+            "invalid_order": "Urutan tidak lengkap atau tidak valid.",
+            "frozen": "Layarmu sedang dibekukan!",
+            "invalid_powerup": "Power-up tidak dikenal.",
+            "no_powerup": "Kamu tidak punya power-up itu.",
+            "shield_active": "Shield sudah aktif.",
+            "target_busy": "Target sedang sibuk."
         },
         "copyPinLabel": "Salin PIN",
         "copyLinkLabel": "Salin link"
@@ -922,6 +1045,7 @@
             "pink": "Merah muda",
             "teal": "Toska"
         },
+        "allItems": "Semua",
         "slots": {
             "hat": "Topi",
             "face": "Wajah",
@@ -1203,5 +1327,256 @@
         "endGame": "Akhiri permainan",
         "endNow": "Ya, akhiri sekarang",
         "endConfirm": "Pemain dapat poin sesuai capaian."
+    },
+    "economyHeist": {
+        "title": "Peti Emas Misteri",
+        "tagline": "Jawab benar, buka peti, curi emas temanmu!",
+        "chooseRole": "Pilih peranmu",
+        "hostTitle": "Layar Host",
+        "hostBody": "Untuk guru atau proyektor kelas. Buat ruangan, atur kondisi menang, lalu tonton papan peringkat emas.",
+        "playerTitle": "Pemain",
+        "playerBody": "Masuk dengan PIN dari host. Jawab soal sesuai kecepatanmu sendiri dan kumpulkan emas.",
+        "openHost": "Buka layar host",
+        "openPlayer": "Masuk sebagai pemain",
+        "switchRole": "Ganti peran",
+        "createRoom": "Buat ruangan",
+        "hostIntro": "Kamu jadi host. Pemain bergabung dari perangkat masing-masing (2–60 pemain).",
+        "playerIntro": "Halo {{name}}! Masukkan PIN dari layar host untuk bergabung.",
+        "rules": "Jawab soal sesuai kecepatanmu. Benar = pilih 1 dari 3 peti misteri: tambah emas, perisai, curi, atau tukar emas dengan teman. Salah = tunggu 3 detik. Hati-hati bom bangkrut!",
+        "winCondition": "Kondisi menang",
+        "winTime": "Batas waktu",
+        "winGold": "Target emas",
+        "minutes": "{{count}} menit",
+        "goldAmount": "{{amount}} emas",
+        "targetLabel": "Pertama mencapai {{amount}} emas menang",
+        "timeLabel": "Emas terbanyak setelah {{count}} menit menang",
+        "joined": "Pemain bergabung",
+        "waitingPlayers": "Menunggu pemain bergabung…",
+        "start": "Mulai permainan",
+        "needPlayers": "Butuh minimal {{min}} pemain",
+        "waitingStart": "Kamu sudah masuk! Tunggu host memulai permainan.",
+        "playersCount": "{{count}} pemain",
+        "hostOffline": "Layar host terputus",
+        "closeRoom": "Tutup ruangan",
+        "leave": "Keluar",
+        "roomClosed": "Ruangan ditutup oleh host.",
+        "endGame": "Akhiri permainan",
+        "endNow": "Ya, akhiri sekarang",
+        "endConfirm": "Podium langsung ditampilkan dan poin dibagikan.",
+        "again": "Main lagi",
+        "timeLeft": "Sisa waktu",
+        "goalProgress": "Target {{amount}}",
+        "leaderboard": "Papan emas",
+        "feed": "Kejadian terbaru",
+        "feedEmpty": "Belum ada kejadian. Ayo jawab soal pertama!",
+        "gold": "{{amount}} emas",
+        "you": "Kamu",
+        "shieldOn": "Perisai aktif",
+        "shieldOff": "Tanpa perisai",
+        "question": "Soal {{number}}",
+        "pickAnswer": "Pilih jawabanmu",
+        "correct": "Benar! Pilih satu peti.",
+        "wrong": "Belum tepat. Tunggu sebentar…",
+        "cooldown": "Soal berikutnya dalam {{seconds}} dtk",
+        "chooseChest": "Pilih satu peti misteri",
+        "chest": "Peti {{number}}",
+        "opening": "Membuka peti…",
+        "continue": "Lanjut",
+        "nextQuestion": "Soal berikutnya",
+        "chooseTarget": "Pilih korbanmu",
+        "chooseSwapTarget": "Pilih teman untuk tukar emas",
+        "targetHint": "Perisai lawan akan menahan seranganmu sekali.",
+        "targetTime": "{{seconds}} dtk lagi",
+        "targetExpired": "Waktu memilih habis. Kesempatan hilang!",
+        "rank": "#{{rank}}",
+        "noRivals": "Belum ada lawan untuk dipilih.",
+        "outcomes": {
+            "ADD_GOLD": "Tambah emas",
+            "LOSE_GOLD": "Kehilangan emas",
+            "SHIELD": "Perisai",
+            "STEAL_PERCENT": "Curi emas",
+            "SWAP_GOLD": "Tukar emas",
+            "BANKRUPT_BOMB": "Bom bangkrut"
+        },
+        "outcomeValue": {
+            "flat": "+{{value}}",
+            "percent": "+{{value}}%",
+            "lose": "-{{value}}%",
+            "steal": "{{value}}%",
+            "swap": "100%",
+            "shield": "1x"
+        },
+        "outcomeBody": {
+            "ADD_GOLD": "Emasmu bertambah {{amount}}!",
+            "LOSE_GOLD": "Aduh, emasmu berkurang {{amount}}.",
+            "SHIELD": "Perisai aktif! Serangan berikutnya akan ditahan.",
+            "STEAL_PERCENT": "Pilih teman untuk dicuri {{value}}% emasnya.",
+            "SWAP_GOLD": "Pilih teman untuk menukar seluruh emas.",
+            "BANKRUPT_BOMB": "Boom! Setengah emasmu hilang ({{amount}})."
+        },
+        "actions": {
+            "ADD_GOLD": "{{source}} dapat {{amount}} emas",
+            "LOSE_GOLD": "{{source}} kehilangan {{amount}} emas",
+            "SHIELD": "{{source}} memasang perisai",
+            "STEAL_PERCENT": "{{source}} mencuri {{amount}} emas dari {{target}}",
+            "SWAP_GOLD": "{{source}} menukar emas dengan {{target}}",
+            "BLOCKED": "Perisai {{target}} menahan serangan {{source}}!",
+            "BANKRUPT_BOMB": "{{source}} kena bom bangkrut (-{{amount}})"
+        },
+        "blockedAttacker": "Diblokir perisai!",
+        "blockedBody": "Perisai {{name}} pecah, tidak ada emas yang berpindah.",
+        "stolenFrom": "{{name}} mencuri {{amount}} emasmu!",
+        "swappedBy": "{{name}} menukar emas denganmu!",
+        "shieldSaved": "Perisaimu menahan serangan {{name}}!",
+        "podium": "Podium",
+        "winner": "{{name}} juara dengan {{gold}} emas!",
+        "ranking": "Peringkat akhir",
+        "youWon": "Kamu juara emas!",
+        "yourRank": "Peringkatmu #{{rank}} dari {{total}}",
+        "earned": "+{{points}} poin",
+        "finalGold": "{{amount}} emas akhir",
+        "stats": "{{correct}} benar · {{steals}} curian · {{swaps}} tukar",
+        "waitingHost": "Tunggu host memulai ronde baru.",
+        "connectionLost": "Koneksi terputus. Menyambung ulang…",
+        "offline": "Terputus",
+        "leftGame": "Keluar",
+        "howTo": {
+            "title": "Cara bermain",
+            "step": "Langkah {{current}}/{{total}}",
+            "prev": "Sebelumnya",
+            "next": "Berikutnya",
+            "play": "Putar",
+            "pause": "Jeda",
+            "replay": "Putar ulang",
+            "goTo": "Ke langkah {{number}}",
+            "demoJoined": "Teman sudah masuk",
+            "demoRight": "Benar = peti",
+            "demoWrong": "Salah = tunggu 3 dtk",
+            "demoShield": "Perisai menahan serangan sekali, lalu pecah.",
+            "scenes": {
+                "join": {
+                    "title": "1. Masuk dengan PIN",
+                    "body": "Guru membuka layar host dan membagikan PIN 6 digit atau link. Kamu masuk dari HP atau laptop dengan avatarmu sendiri."
+                },
+                "answer": {
+                    "title": "2. Jawab soal sesuai kecepatanmu",
+                    "body": "Tidak perlu menunggu teman. Jawaban benar membuka peti misteri, jawaban salah membuatmu menunggu 3 detik."
+                },
+                "chest": {
+                    "title": "3. Pilih 1 dari 3 peti",
+                    "body": "Isi peti sudah diundi server sebelum kamu memilih. Setelah dibuka, kamu bisa melihat isi kedua peti lainnya."
+                },
+                "outcomes": {
+                    "title": "4. Kenali isi peti",
+                    "body": "Tambah emas, perisai, curi atau tukar emas dengan teman. Hati-hati: ada peti yang mengurangi emas dan bom bangkrut yang memotong setengahnya!"
+                },
+                "heist": {
+                    "title": "5. Curi atau tukar emas",
+                    "body": "Dapat peti curi/tukar? Pilih teman dalam 20 detik. Kalau dia punya perisai, seranganmu ditahan dan perisainya pecah."
+                },
+                "win": {
+                    "title": "6. Jadi juara emas",
+                    "body": "Host memilih batas waktu (emas terbanyak menang) atau target emas (yang pertama mencapai target menang). Podium menampilkan 3 juara teratas."
+                }
+            }
+        }
+    },
+    "orderRush": {
+        "title": "Order Rush TKJ",
+        "tagline": "Balapan urutan kabel & protokol jaringan",
+        "chooseRole": "Mau jadi apa?",
+        "hostTitle": "Layar Guru (Proyektor)",
+        "hostBody": "Buat ruang, pilih mode & materi, lalu tampilkan lintasan balap di proyektor.",
+        "playerTitle": "Pemain (HP Siswa)",
+        "playerBody": "Masuk dengan PIN, susun urutan kabel atau protokol secepat mungkin.",
+        "openHost": "Buka layar guru",
+        "openPlayer": "Main sebagai siswa",
+        "switchRole": "Ganti peran",
+        "createRoom": "Buat ruang",
+        "hostIntro": "Buat ruang Order Rush lalu bagikan PIN ke siswa.",
+        "playerIntro": "Halo {{name}}! Masukkan PIN dari guru untuk ikut balapan.",
+        "rules": "Ketuk kepingan untuk mengisi slot 1..N, lalu tekan TEST. Benar = 100 poin + bonus kecepatan (< 5 detik). 3 benar beruntun = power-up: Kabel Kusut, Freeze, atau Shield.",
+        "roomClosed": "Ruang sudah ditutup.",
+        "leave": "Keluar ruang",
+        "closeRoom": "Tutup ruang",
+        "waitingStart": "Menunggu guru memulai…",
+        "waitingPlayers": "Belum ada siswa. Bagikan PIN-nya!",
+        "joined": "Siswa yang bergabung",
+        "playersCount": "{{count}} pemain",
+        "raceLabel": "Race: {{count}} modul",
+        "timeLabel": "Time Attack: {{count}} menit",
+        "mode": "Mode permainan",
+        "modeRace": "Race",
+        "modeTime": "Time Attack",
+        "modulesCount": "{{count}} modul",
+        "minutes": "{{count}} menit",
+        "categories": "Materi urutan",
+        "allCategories": "Semua materi diacak (tidak ada yang dipilih).",
+        "someCategories": "{{count}} materi dipilih.",
+        "start": "Mulai balapan",
+        "needPlayers": "Butuh minimal {{min}} siswa",
+        "again": "Main lagi",
+        "endGame": "Akhiri permainan",
+        "endNow": "Ya, akhiri sekarang",
+        "endConfirm": "Ketuk sekali lagi untuk mengakhiri.",
+        "timeLeft": "Sisa waktu",
+        "leaderProgress": "Pemimpin {{step}}/{{total}}",
+        "track": "Lintasan Backbone",
+        "laneLabel": "{{name}}: {{step}} modul, {{score}} poin",
+        "morePlayers": "+{{count}} pemain lain",
+        "trackHintCable": "Avatar maju tiap urutan benar",
+        "trackHintRace": "Finish di node ke-{{count}}",
+        "trackHintTime": "Posisi mengikuti skor tertinggi",
+        "feedTitle": "Aksi sabotase",
+        "feedEmpty": "Belum ada sabotase.",
+        "feed": {
+            "TANGLE": "{{source}} mengirim Kabel Kusut ke {{target}}!",
+            "FREEZE": "{{source}} membekukan layar {{target}}!",
+            "SHIELD": "{{source}} memasang Shield!",
+            "blocked": "Shield {{target}} menahan serangan {{source}}!"
+        },
+        "power": {
+            "TANGLE": "Kabel Kusut",
+            "FREEZE": "Freeze",
+            "SHIELD": "Shield"
+        },
+        "powerUps": "Power-up",
+        "noPowerUps": "Benar {{count}}× beruntun untuk dapat power-up.",
+        "pickTarget": "Pilih target:",
+        "targetLeader": "Serang pemimpin",
+        "powerGranted": "Dapat power-up {{power}}!",
+        "combo": "KOMBO {{count}}×!",
+        "shieldOn": "Shield aktif",
+        "progress": "Modul {{step}}/{{total}}",
+        "solved": "{{count}} modul benar",
+        "streak": "Beruntun {{count}}",
+        "loading": "Menyiapkan modul…",
+        "slotsLabel": "Slot urutan",
+        "poolLabel": "Kepingan",
+        "slotEmpty": "Slot {{slot}} kosong",
+        "slotFilled": "Slot {{slot}}: {{label}}. Ketuk untuk mengembalikan.",
+        "autoSubmit": "Kirim otomatis saat penuh",
+        "test": "TEST / VALIDASI",
+        "lanTester": "LAN Tester",
+        "testerReady": "Siap menguji",
+        "testing": "Menguji…",
+        "testerOk": "Semua pin tersambung!",
+        "testerBad": "Pin {{pin}} salah!",
+        "layerBad": "Urutan {{slot}} salah!",
+        "frozenBy": "Layar dibekukan oleh {{name}}!",
+        "tangledBy": "Kabel dikusutkan oleh {{name}}!",
+        "winner": "Juara: {{name}}!",
+        "podium": "Podium",
+        "youWon": "Kamu juara 1!",
+        "yourRank": "Peringkat {{rank}} dari {{total}}",
+        "earned": "+{{points}} poin",
+        "stats": "{{modules}} modul · akurasi {{accuracy}}% · beruntun {{streak}}",
+        "waitingHost": "Tunggu guru memulai ronde berikutnya.",
+        "player": "Pemain",
+        "score": "Skor",
+        "modules": "Modul",
+        "accuracy": "Akurasi",
+        "avgTime": "Rata-rata",
+        "hit": "Terkena sabotase"
     }
 }

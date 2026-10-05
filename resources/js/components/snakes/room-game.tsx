@@ -31,6 +31,7 @@ import {
 import { useTranslations } from '@/hooks/use-translations';
 import { AdMoment } from '@/lib/ads';
 import { walkPath } from '@/lib/snakes-board';
+import { useSubjectName } from '@/lib/subjects';
 import { Coins, DoorOpen, GraduationCap, Shuffle, Trophy } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -77,6 +78,7 @@ export function RoomGame({
     muted?: boolean;
 }) {
     const { t, i18n } = useTranslations();
+    const subjectName = useSubjectName();
     const [state, setState] = useState<Received | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [log, setLog] = useState<string[]>([]);
@@ -570,10 +572,7 @@ export function RoomGame({
                         skinIndex={turn}
                         character={current.character}
                         question={{
-                            subject: t(
-                                `flagQuest.subjects.${state.question.subject}`,
-                                { defaultValue: state.question.subject },
-                            ),
+                            subject: subjectName(state.question.subject),
                             text: state.question.text,
                             options: state.question.options,
                         }}
