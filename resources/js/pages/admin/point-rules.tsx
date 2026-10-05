@@ -112,7 +112,7 @@ export default function PointRules({
                             form.{' '}
                             <Link
                                 href="/admin/questions?source=bonus"
-                                className="font-medium underline underline-offset-2"
+                                className="link"
                             >
                                 {bonusQuestions} bonus questions
                             </Link>

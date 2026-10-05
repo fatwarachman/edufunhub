@@ -46,7 +46,9 @@ export function ChangelogWidget() {
     const handleOpen = (value: boolean) => {
         setOpen(value);
         if (value && hasUnread) {
-            axios.post('/changelog-widget/mark-read').then(() => setHasUnread(false));
+            axios
+                .post('/changelog-widget/mark-read')
+                .then(() => setHasUnread(false));
         }
     };
 
@@ -116,10 +118,7 @@ export function ChangelogWidget() {
                     )}
                 </div>
                 <div className="border-t px-4 py-2">
-                    <a
-                        href="/changelog"
-                        className="text-xs text-primary hover:underline"
-                    >
+                    <a href="/changelog" className="link text-xs">
                         View full changelog →
                     </a>
                 </div>

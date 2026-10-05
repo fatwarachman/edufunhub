@@ -90,16 +90,13 @@ export default function TwoFactorChallenge() {
                     <button
                         type="button"
                         onClick={() => setRecovery((value) => !value)}
-                        className="text-sm font-semibold underline"
+                        className="link text-sm"
                     >
                         {recovery
                             ? t('twoFactor.useCode')
                             : t('twoFactor.useRecovery')}
                     </button>
-                    <Link
-                        href="/login"
-                        className="text-center text-sm font-semibold underline"
-                    >
+                    <Link href="/login" className="link text-center text-sm">
                         {t('twoFactor.back')}
                     </Link>
                 </div>

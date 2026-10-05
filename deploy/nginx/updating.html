@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>EduFunHub sedang diperbarui</title>
+<style>
+    :root { color-scheme: light dark; }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #fdf8ec; color: #1f2a44; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 420px; width: 100%; margin-right: 6px; background: #fff; border: 3px solid #1f2a44; border-radius: 24px; box-shadow: 6px 6px 0 #1f2a44; padding: 28px 24px; text-align: center; }
+    .mark { display: inline-grid; place-items: center; width: 56px; height: 56px; border: 3px solid #1f2a44; border-radius: 18px; background: #ffc94d; box-shadow: 3px 3px 0 #1f2a44; }
+    .spin { width: 26px; height: 26px; border: 4px solid #1f2a44; border-right-color: transparent; border-radius: 50%; animation: spin 0.9s linear infinite; }
+    h1 { margin: 18px 0 6px; font-size: 22px; }
+    p { margin: 0 0 6px; color: #3d4460; }
+    small { display: block; margin-top: 14px; color: #4a5272; }
+    button { margin-top: 18px; min-height: 44px; padding: 0 20px; border: 3px solid #1f2a44; border-radius: 14px; background: #1f2a44; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+    @media (prefers-color-scheme: dark) {
+        body { background: #10162a; color: #eef1f8; }
+        main { background: #1a2238; border-color: #8c98bd; box-shadow: 6px 6px 0 #000; }
+        p, small { color: #c5cbe0; }
+        button { background: #ffc94d; color: #1f2a44; border-color: #ffc94d; }
+    }
+</style>
+</head>
+<body>
+<main role="status" aria-live="polite">
+    <span class="mark"><span class="spin" aria-hidden="true"></span></span>
+    <h1>Sebentar ya, EduFunHub sedang diperbarui</h1>
+    <p>Halaman akan terbuka lagi otomatis dalam beberapa detik.</p>
+    <p lang="en">We are updating EduFunHub. This page reloads automatically.</p>
+    <button type="button" onclick="location.reload()">Muat ulang sekarang</button>
+    <small id="count"></small>
+</main>
+<script>
+    (function () {
+        var left = 5;
+        var el = document.getElementById('count');
+        function tick() {
+            el.textContent = 'Mencoba lagi dalam ' + left + ' detik…';
+            if (left-- <= 0) { location.reload(); return; }
+            setTimeout(tick, 1000);
+        }
+        tick();
+    })();
+</script>
+</body>
+</html>

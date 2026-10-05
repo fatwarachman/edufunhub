@@ -1134,7 +1134,7 @@ function PanelLink({ href, children }: { href: string; children: ReactNode }) {
     return (
         <Link
             href={href}
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            className="inline-flex items-center gap-1 link text-xs"
         >
             {children}
             <ArrowRight className="size-3" />

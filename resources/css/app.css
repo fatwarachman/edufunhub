@@ -7,6 +7,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Inline text links: one readable style in light and dark mode. */
+@utility link {
+    color: var(--link);
+    font-weight: 600;
+    text-decoration-line: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in oklch, var(--link) 65%, transparent);
+    border-radius: 2px;
+    transition:
+        color 150ms ease,
+        text-decoration-color 150ms ease;
+
+    &:hover {
+        text-decoration-color: currentColor;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: 2px;
+    }
+}
+
 /* EduFunHub playful fonts */
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
 
@@ -33,6 +56,7 @@
     --color-popover-foreground: var(--popover-foreground);
 
     --color-primary: var(--primary);
+    --color-link: var(--link);
     --color-primary-foreground: var(--primary-foreground);
 
     --color-secondary: var(--secondary);
@@ -96,6 +120,7 @@
     --border: oklch(0.9 0.03 90);
     --input: oklch(0.91 0.03 90);
     --ring: oklch(0.6 0.18 48);
+    --link: oklch(0.45 0.19 262); /* ink blue, 7:1 on cream */
     --radius: 0.75rem;
     --chart-1: oklch(0.6 0.18 48); /* orange */
     --chart-2: oklch(0.52 0.23 305); /* purple */
@@ -133,6 +158,7 @@
     --border: oklch(0.28 0.04 250);
     --input: oklch(0.28 0.04 250);
     --ring: oklch(0.8 0.16 60);
+    --link: oklch(0.82 0.11 245); /* light sky blue on navy */
     --chart-1: oklch(0.72 0.2 48);
     --chart-2: oklch(0.68 0.2 305);
     --chart-3: oklch(0.72 0.13 192);
