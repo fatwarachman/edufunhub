@@ -19,12 +19,12 @@ class RolePermissionSeeder extends Seeder
     {
         // ── 1. Modules ──────────────────────────────────────────────
         $moduleDefinitions = [
-            'User Management'     => ['icon' => 'users',       'description' => 'Manage system users'],
-            'Role Management'     => ['icon' => 'shield',      'description' => 'Manage roles and permissions'],
-            'Game Management'     => ['icon' => 'gamepad-2',   'description' => 'Manage educational games'],
-            'Content Management'  => ['icon' => 'file-text',   'description' => 'Manage content and quizzes'],
-            'System Settings'     => ['icon' => 'settings',    'description' => 'Configure system settings'],
-            'Activity Log'        => ['icon' => 'activity',    'description' => 'View system activity logs'],
+            'User Management' => ['icon' => 'users',       'description' => 'Manage system users'],
+            'Role Management' => ['icon' => 'shield',      'description' => 'Manage roles and permissions'],
+            'Game Management' => ['icon' => 'gamepad-2',   'description' => 'Manage educational games'],
+            'Content Management' => ['icon' => 'file-text',   'description' => 'Manage content and quizzes'],
+            'System Settings' => ['icon' => 'settings',    'description' => 'Configure system settings'],
+            'Activity Log' => ['icon' => 'activity',    'description' => 'View system activity logs'],
         ];
 
         $actions = ['view', 'create', 'edit', 'delete'];
@@ -35,27 +35,37 @@ class RolePermissionSeeder extends Seeder
             $module = Module::updateOrCreate(
                 ['slug' => Str::slug($moduleName)],
                 [
-                    'name'        => $moduleName,
-                    'icon'        => $meta['icon'],
+                    'name' => $moduleName,
+                    'icon' => $meta['icon'],
                     'description' => $meta['description'],
-                    'is_active'   => true,
+                    'is_active' => true,
                 ]
             );
 
             foreach ($actions as $action) {
-                $slug = Str::slug($moduleName) . '-' . $action;
+                $slug = Str::slug($moduleName).'-'.$action;
                 $permission = Permission::updateOrCreate(
                     ['slug' => $slug],
                     [
-                        'name'        => ucfirst($action) . ' ' . $moduleName,
-                        'module_id'   => $module->id,
-                        'description' => ucfirst($action) . ' ' . strtolower($moduleName),
+                        'name' => ucfirst($action).' '.$moduleName,
+                        'module_id' => $module->id,
+                        'description' => ucfirst($action).' '.strtolower($moduleName),
                     ]
                 );
 
                 $permissionModelBySlug[$slug] = $permission;
             }
         }
+
+        // Login as (impersonate) another user. Super Admin only by default.
+        $permissionModelBySlug['user-impersonate'] = Permission::updateOrCreate(
+            ['slug' => 'user-impersonate'],
+            [
+                'name' => 'Impersonate User Management',
+                'module_id' => Module::query()->where('slug', 'user-management')->value('id'),
+                'description' => 'Log in as another user (login as)',
+            ]
+        );
 
         // ── 2. Roles ────────────────────────────────────────────────
         $allPermissionIds = collect($permissionModelBySlug)->pluck('id');
@@ -73,7 +83,7 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'Admin', 'description' => 'Administrative access', 'is_system' => true]
         );
         $adminPermissions = collect($permissionModelBySlug)
-            ->reject(fn (Permission $p) => in_array($p->slug, ['system-settings-delete', 'activity-log-delete'], true))
+            ->reject(fn (Permission $p) => in_array($p->slug, ['system-settings-delete', 'activity-log-delete', 'user-impersonate'], true))
             ->pluck('id');
         $adminRole->permissions()->sync($adminPermissions);
 
@@ -105,11 +115,11 @@ class RolePermissionSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'admin@edufunhub.com'],
             [
-                'name'              => 'Admin',
-                'password'          => Hash::make('Admin@123456'),
+                'name' => 'Admin',
+                'password' => Hash::make('Admin@123456'),
                 'email_verified_at' => now(),
-                'is_superadmin'     => true,
-                'onboarded_at'      => now(),
+                'is_superadmin' => true,
+                'onboarded_at' => now(),
             ]
         );
 

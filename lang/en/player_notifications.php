@@ -5,6 +5,10 @@ return [
         'title' => '+:points points!',
         'body' => 'You earned :points points from :game.',
     ],
+    'badge' => [
+        'title' => 'New badge: :badge!',
+        'body' => 'You earned the :badge badge. See your badge collection on the dashboard.',
+    ],
     'level' => [
         'title' => 'Level :level reached!',
         'body' => 'Great job! Keep playing and collecting points.',

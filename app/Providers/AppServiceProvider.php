@@ -109,6 +109,13 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Chat: short bursts are fine, floods are not.
+        RateLimiter::for('chat', function (Request $request) {
+            $key = 'chat:'.($request->user()?->id ?: $request->ip());
+
+            return [Limit::perMinute(30)->by($key), Limit::perSecond(3)->by($key.':burst')];
+        });
+
         self::registerFeatureFlags();
     }
 }

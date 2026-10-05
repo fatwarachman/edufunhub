@@ -52,6 +52,10 @@ export interface AdminUser extends User {
     status?: 'active' | 'inactive' | 'suspended';
     last_seen_at?: string | null;
     signed_up_with_google?: boolean;
+    is_superadmin?: boolean;
+    ads_disabled?: boolean;
+    badges?: import('@/components/badges').EarnedBadge[];
+    disabled_at?: string | null;
 }
 
 export interface PaginatedData<T> {

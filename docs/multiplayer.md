@@ -1,7 +1,7 @@
 # Standar game multiplayer dan poin
 
 **Status:** Accepted (2026-10-04)
-Berlaku untuk semua game baru. Game lama yang sudah memakai standar ini: Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang.
+Berlaku untuk semua game baru. Game lama yang sudah memakai standar ini: Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang, Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini.
 
 ## 1. Undangan (PIN + link)
 
@@ -53,6 +53,7 @@ Setiap hasil game ruang/duel membawa ringkasan `match` yang sama untuk semua pem
 - [ ] Katalog: `multiplayer`, `awards_points` → `true`.
 - [ ] `StoreGameResultRequest::GAMES`: pola `event_id`, misi, `max_points`.
 - [ ] Halaman memakai `RoomEntry` / `RoomLobby` / `useRoomPin`.
+- [ ] Karakter pemain = avatar portal. Controller mengirim `player.character` (`PlayerProfile::look()`) dan token membawa claim `character`. Go meneruskannya sebagai `players[].character` (maks 2 KB, opaque). Render pakai `PlayerAvatar`; kursi tanpa akun (perangkat sama, robot) memakai look bawaan per kursi.
 
 ## 2. Poin: setiap permainan menambah poin
 
@@ -69,9 +70,94 @@ Setiap hasil game ruang/duel membawa ringkasan `match` yang sama untuk semua pem
 | Duel Kuis Kelas | 5 | benar × 10 (+20 menang / +10 seri) | 75 |
 | Ular Tangga | 5 | benar × 10 (+20 menang) | 150 |
 | Teka-Teki Silang | 5 | kata × (5 + 5 × level) (+20 juara) | 5 + kata × poin per kata + 20 |
+| Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini | 5 | benar × 10 (+20 juara / lulus solo ≥ 70%) | 950 |
+
+### Game kuis ruang (`internal/minigames`)
+
+Empat game memakai satu referee bersama: `market-math`, `number-garden`, `explore-indonesia`, `mini-lab`.
+- WebSocket `GET /ws/{game}` (gateway `/game-ws/{game}`), token `POST /games/{game}/token`, halaman `games/mini-game`.
+- 8 soal per permainan, semua kursi menjawab soal yang sama. Waktu jawab mengikuti kelas terendah. Jawaban benar lebih cepat mendapat skor lebih tinggi.
+- Soal dibuat server sesuai jenjang (belanja/kembalian/diskon, pola angka/huruf, provinsi/budaya, percobaan sains). Soal bank admin yang didistribusikan ke game ini ikut dicampur.
+- Pesan client → Go: `create`, `join{pin}`, `leave`, `start`, `answer{option}`, `locale`, `ping`. State: `mini_state`.
+- `event_id`: `{mm|ng|ei|ml}-{user}-room-{nanos}`, misi `room`.
+
+### Lantai Runtuh / Floor Drop (`internal/floordrop`)
+
+Battle royale kuis untuk 2–100 pemain per ruangan. Berbeda dari `lobby.Hub`
+(satu mutex untuk semua ruangan), setiap ruangan Floor Drop berjalan di
+goroutine sendiri dan memegang state-nya sendiri. Goroutine koneksi hanya
+mengirim perintah lewat channel dan membaca "gerbang jawaban" atomik
+(`round_id`, deadline, open), sehingga jawaban terlambat ditolak di
+penerimaan sebelum masuk antrean ruangan. Waktu jawaban selalu jam server
+saat pesan diterima; timestamp klien tidak pernah dibaca.
+
+- **Peran:** layar host (guru/proyektor) memakai token `floor-drop-host`
+  (`POST /games/floor-drop/token?role=host`), pemain memakai token
+  `floor-drop`. Host tidak bisa menjawab; pemain tidak bisa memulai.
+- **State machine:** `LOBBY → ROUND_SUMMARY (siap) → QUESTION_ACTIVE →
+  LOCK_ANSWERS → REVEAL_DROP → ROUND_SUMMARY → … → GAME_OVER`.
+- **Eliminasi:** salah atau tidak menjawab = tersingkir (jadi penonton).
+  Waktu ronde berikutnya 90% ronde sebelumnya (min. 4 detik; kelas 0–2 mulai
+  15 detik, lainnya 10 detik). Jika semua yang tersisa salah di ronde yang
+  sama (*sudden death*), peringkat ditentukan jawaban tercepat di ronde itu.
+  Game selesai saat ≤1 pemain tersisa atau setelah 20 ronde.
+- **Reconnect:** koneksi putus diberi jendela 5 detik; lewat itu pemain
+  tersingkir dengan alasan `disconnected`. Host yang keluar menutup ruangan
+  dan pemain dibayar sesuai capaian (`points.Abandoned`).
+- **Hasil:** peringkat akhir, lama bertahan (`survival_ms`) dan akurasi
+  dikirim ke `/api/internal/game-results` (HMAC `X-Game-Signature`) dan
+  disimpan di `game_match_players.survival_ms|accuracy`. Batas poin
+  `points.Cap(20) = 2150`, maks. 100 pemain per match.
+- **Presisi timer:** loop ruangan bangun tepat di deadline fase (bukan
+  polling). Uji beban 100 pemain (`TestHundredPlayersTickVariance`, `-race`)
+  mensyaratkan keterlambatan bangun < 50 ms; terukur ~1 ms. Benchmark
+  `BenchmarkRoundHundredPlayers`: ~1,2 ms untuk 100 jawaban.
+
+Kontrak WebSocket `GET /game-ws/floor-drop?token=…&locale=id|en`:
+
+| Arah | Pesan | Isi |
+| --- | --- | --- |
+| klien → server | `create_room` | host saja |
+| klien → server | `join_room` | `{pin}` |
+| klien → server | `start_game` | host saja (juga "main lagi") |
+| klien → server | `set_subject` | host, `{subject}` |
+| klien → server | `submit_answer` | `{round_id, choice_index}` |
+| klien → server | `leave_room`, `sync`, `locale`, `ping` | |
+| server → klien | `state_sync` | snapshot penuh (fase, pemain, `you`, soal, podium) |
+| server → klien | `question_start` | `{round_id, round, time_limit, remaining_ms, question, options, alive}` |
+| server → klien | `answer_ack`, `answer_progress` | konfirmasi & `{answered, alive}` (maks. 4×/detik) |
+| server → klien | `lock_answers` | `{choices, tiles}` posisi pemain per ubin |
+| server → klien | `tile_drop` | `{correct_index, eliminated_user_ids, survivors, sudden_death, hint}` |
+| server → klien | `round_summary` | `{survivors, next_time_limit}` |
+| server → klien | `player_eliminated` | `{user_ids, reason}` (putus/keluar) |
+| server → klien | `podium_result` | `{podium[3], ranking[], you}` |
+| server → klien | `error` | `{code}` → `room.errors.*` |
 
 ## 3. Poin vs saldo toko
 
 - **Poin terkumpul** = jumlah ledger positif. Dipakai untuk level dan peringkat; tidak pernah turun.
 - **Saldo** = jumlah seluruh ledger. Membeli item karakter menulis ledger negatif (`shop:{item}`), jadi saldo turun tetapi level/peringkat tetap.
+
+## 4. Iklan sponsor (`config/ads.php`, `AdServer`)
+
+Iklan adalah sumber pendapatan. Superadmin mengelolanya di `/admin/ads`: pengiklan, kampanye (durasi, nilai kontrak, batas tayang total/harian, bobot, target game dan kelas), materi iklan (logo per ukuran, moto, jingle, item karakter sponsor), dan laporan harian per penempatan/game.
+
+**Fondasi untuk setiap game (wajib):**
+
+| Bagian | Cara pasang |
+|---|---|
+| Data | Route halaman game memakai `RecordGameAccess::class.':<key>'`. Middleware ini mengirim prop Inertia `ads` (penempatan => materi) dan `adGame`. Tidak perlu kode backend tambahan. |
+| Strip header | `<GameAdStrip />` sebagai anak pertama `<main>`. |
+| Hasil / samping / hitung mundur / papan | `<AdSlot placement="arena.result" />`, `arena.sidebar`, `arena.loading`, `arena.board`. |
+| Jingle | `useAdMoments(phase, { muted, won })` (phase `idle`/`playing`/`done`), atau `<AdMoment moment="start" />` / `"win"` di UI bermain/pemenang. Mengikuti tombol mute game. |
+| Item karakter | Materi tipe `item` menautkan `character_items.advertiser_id`; toko menampilkan chip "Disponsori …". |
+
+- Penempatan yang kosong tidak merender apa pun.
+- Setiap iklan diberi label "Sponsor".
+- Tayangan dihitung bila ≥50% terlihat. Klik dan putar jingle dicatat lewat token `serve` bertanda tangan (HMAC dari `APP_KEY`, berlaku 6 jam, terikat ke user), satu kali per serve, ke `ad_events` dan `ad_daily_stats`.
+- URL klik hanya https dan tidak dikirim ke browser (diarahkan lewat `/ads/click`).
+- Media disimpan di disk `public` (`ads/*`) dan disajikan lewat `/ads/media/*` dengan `nosniff`. SVG ditolak.
+- **Statis atau dinamis:** tiap penempatan diatur di *Admin → Advertising → Delivery settings*. Mode statis menampilkan satu materi per tampilan halaman. Mode berganti (*rotating*) memutar hingga N materi setiap X detik; rotasi berhenti saat kursor di atas iklan, saat tab tersembunyi, atau bila pemain memilih *reduced motion*. Jingle dan item toko selalu statis.
+- **Mematikan iklan:** saklar global (`settings.ads.enabled`) menyembunyikan semua ruang iklan, label sponsor, dan jingle. Per user lewat kolom `users.ads_disabled` (menu *Hide ads* di daftar user atau di Delivery settings). Keduanya dicek di `AdServer::showsAdsTo()`.
+- **Analitik kampanye:** jangkauan (pemain unik), frekuensi rata-rata dan sebarannya, CTR per penempatan/game/materi, perangkat, kelas, dan jam tayang. Data berasal dari `ad_events` (kolom `device`, `grade`) dan `ad_daily_stats`.
 

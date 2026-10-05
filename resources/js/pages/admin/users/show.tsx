@@ -18,7 +18,8 @@ import {
     rateTone,
     SUBJECT_LABELS,
 } from '@/components/admin/game-stats';
-import { type MatchRow, MatchCard } from '@/components/admin/match-history';
+import { MatchCard, type MatchRow } from '@/components/admin/match-history';
+import { BadgeMedal, type BadgeProgress } from '@/components/badges';
 import PlayerCharacter from '@/components/player-character';
 import AdminLayout from '@/layouts/admin-layout';
 import { type CharacterLook } from '@/lib/character/draw-character';
@@ -111,6 +112,10 @@ interface PlayRow {
 
 interface Props {
     user: UserDetail;
+    badges: {
+        stats: Record<string, number>;
+        badges: (BadgeProgress & { name: string; description: string })[];
+    };
     stats: {
         plays: number;
         game_points: number;
@@ -890,6 +895,8 @@ export default function ShowUser(props: Props) {
                     </div>
                 </div>
 
+                <BadgePanel badges={props.badges} />
+
                 <MatchProgress history={props.matchHistory} />
 
                 {/* Logs */}
@@ -1606,5 +1613,86 @@ function MatchProgress({ history }: { history: Props['matchHistory'] }) {
                 </div>
             )}
         </Panel>
+    );
+}
+
+const BADGE_STATS: { key: string; label: string; percent?: boolean }[] = [
+    { key: 'plays', label: 'Plays' },
+    { key: 'completed', label: 'Challenges completed' },
+    { key: 'success_rate', label: 'Success rate', percent: true },
+    { key: 'games', label: 'Different games' },
+    { key: 'active_days', label: 'Active days' },
+    { key: 'wins', label: 'Wins' },
+    { key: 'streak', label: 'Day streak' },
+];
+
+function BadgePanel({ badges }: { badges: Props['badges'] }) {
+    const earned = badges.badges.filter((badge) => badge.earned);
+
+    return (
+        <section
+            className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm"
+            data-testid="admin-user-badges"
+        >
+            <header className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <h3 className="font-semibold text-foreground">Badges</h3>
+                    <p className="text-sm text-muted-foreground">
+                        Earned from how often the player plays and how many
+                        challenges they complete.
+                    </p>
+                </div>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-foreground tabular-nums">
+                    {earned.length} / {badges.badges.length} earned
+                </span>
+            </header>
+            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4 2xl:grid-cols-7">
+                {BADGE_STATS.map((stat) => (
+                    <div
+                        key={stat.key}
+                        className="flex min-w-0 flex-col gap-0.5 rounded-xl bg-muted/50 px-3 py-2"
+                    >
+                        <dt className="text-xs leading-tight text-muted-foreground">
+                            {stat.label}
+                        </dt>
+                        <dd className="text-lg font-semibold text-foreground tabular-nums">
+                            {badges.stats[stat.key] ?? 0}
+                            {stat.percent ? '%' : ''}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
+            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-5">
+                {badges.badges.map((badge) => (
+                    <li
+                        key={badge.key}
+                        className="flex min-w-0 items-center gap-3 rounded-xl border border-border px-3 py-2.5"
+                        title={badge.description}
+                    >
+                        <BadgeMedal
+                            badge={badge}
+                            size="md"
+                            locked={!badge.earned}
+                        />
+                        <div className="flex min-w-0 flex-col">
+                            <span
+                                className={
+                                    badge.earned
+                                        ? 'truncate text-sm font-semibold text-foreground'
+                                        : 'truncate text-sm font-semibold text-muted-foreground'
+                                }
+                            >
+                                {badge.name}
+                            </span>
+                            <span className="text-xs text-foreground/70 tabular-nums">
+                                {badge.earned && badge.earned_at
+                                    ? formatDate(badge.earned_at)
+                                    : `${badge.progress}% progress`}
+                            </span>
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </section>
     );
 }

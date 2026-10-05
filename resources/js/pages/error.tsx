@@ -48,12 +48,12 @@ export default function ErrorPage({ status }: ErrorPageProps) {
                 />
             </Head>
             <header className="auth-header">
-                <a href="/" className="auth-brand" aria-label="EduFunHub">
+                <a href="/" className="auth-brand" aria-label="edufunhub.com">
                     <span className="auth-brand-mark">
                         <Gamepad2 className="size-6" />
                     </span>
                     <span>
-                        EduFun<span>Hub</span>
+                        edufun<span>hub</span>.com
                     </span>
                 </a>
             </header>

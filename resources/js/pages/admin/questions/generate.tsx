@@ -108,7 +108,7 @@ export default function GenerateQuestions({
     return (
         <AdminLayout>
             <Head title="Generate questions" />
-            <div className="flex max-w-5xl flex-col gap-6">
+            <div className="flex w-full flex-col gap-6">
                 <div>
                     <Link
                         href="/admin/questions"

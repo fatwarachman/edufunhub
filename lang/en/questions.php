@@ -13,6 +13,15 @@ return [
     'grades_required' => 'Choose at least one grade.',
     'grades_invalid' => 'Grades must be kindergarten (TK) or 1 to 12.',
     'prompt_required' => 'Write a question of at least 3 characters.',
+    'bulk' => [
+        'activate' => ':count question(s) activated.',
+        'deactivate' => ':count question(s) deactivated.',
+        'delete' => ':count question(s) deleted.',
+        'invalid_action' => 'Unknown bulk action.',
+        'none_selected' => 'Select at least one question.',
+        'too_many' => 'At most :max questions per bulk action.',
+        'missing' => 'Some selected questions no longer exist. Reload the page.',
+    ],
     'import' => [
         'file_required' => 'Choose a CSV file to upload.',
         'file_too_large' => 'The file may not be larger than 2 MB.',

@@ -164,7 +164,7 @@ export default function QuestionForm({
             <Head title={editing ? 'Edit question' : 'Add question'} />
             <form
                 onSubmit={submit}
-                className="flex max-w-4xl flex-col gap-6"
+                className="flex w-full flex-col gap-6"
                 noValidate
             >
                 <div className="flex flex-col gap-2">

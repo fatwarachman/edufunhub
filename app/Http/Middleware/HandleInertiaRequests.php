@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Announcement;
 use App\Models\SeoMetadata;
+use App\Services\Chat\ChatService;
 use App\Services\FeatureService;
 use App\Services\PlayerNotifications;
 use App\Services\PlayerPortal;
@@ -80,7 +81,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'email' => $user->email,
                     'email_verified_at' => $user->email_verified_at,
-                    'is_superadmin' => $user->is_superadmin,
+                    'is_superadmin' => (bool) $user->is_superadmin,
                     'is_teacher' => $user->isTeacher(),
                     'locale' => $user->locale,
                     'onboarded_at' => $user->onboarded_at,
@@ -97,6 +98,7 @@ class HandleInertiaRequests extends Middleware
                 'is_impersonating' => $request->session()->has('impersonated_by'),
             ],
             'unreadNotifications' => fn (): int => $user ? app(PlayerNotifications::class)->unreadCount($user) : 0,
+            'unreadChats' => fn (): int => $user ? app(ChatService::class)->unreadTotal($user) : 0,
             'show_experience_survey' => $showExperienceSurvey,
             'locale' => $locale,
             'currentWorkspace' => $currentWorkspace ? [

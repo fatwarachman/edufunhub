@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notification;
  */
 class PlayerNotification extends Notification
 {
-    public const KINDS = ['points', 'level', 'item', 'teacher', 'admin'];
+    public const KINDS = ['points', 'level', 'item', 'teacher', 'admin', 'chat', 'badge'];
 
     /**
      * @param  array<string, scalar|null>  $params
@@ -25,6 +25,7 @@ class PlayerNotification extends Notification
         public ?string $body = null,
         public ?string $url = null,
         public ?int $broadcastId = null,
+        public ?int $conversationId = null,
     ) {}
 
     /** @return list<string> */
@@ -49,6 +50,8 @@ class PlayerNotification extends Notification
             'body' => $this->body,
             'url' => $this->url,
             'broadcast_id' => $this->broadcastId,
+            'conversation_id' => $this->conversationId,
+            'count' => $this->conversationId !== null ? 1 : null,
         ], fn ($value): bool => $value !== null && $value !== []);
     }
 

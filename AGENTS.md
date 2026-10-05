@@ -14,6 +14,7 @@
 - Ini aturan pengembangan; bukan pernyataan bahwa service Go sudah tersedia. Jangan membuat atau deploy container tanpa permintaan.
 - Rujukan: `docs/architecture.md` dan `DEVELOPER.md`.
 - Game multiplayer wajib memakai standar undangan PIN + link (`internal/lobby`, `GameInviteController`, `components/multiplayer/room.tsx`) dan aturan poin `internal/points` (setiap permainan selesai menambah poin akun). Rujukan: `docs/multiplayer.md`.
+- Setiap game wajib memasang fondasi iklan sponsor: route halaman memakai `RecordGameAccess`, halaman merender `<GameAdStrip />`, `<AdSlot placement="arena.result" />` (dan slot lain yang muat), serta jingle via `useAdMoments`/`AdMoment`. Rujukan: `docs/multiplayer.md` bagian 4.
 
 <laravel-boost-guidelines>
 === foundation rules ===

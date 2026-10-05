@@ -58,7 +58,7 @@ export default function CrosswordWordForm({
     return (
         <AdminLayout>
             <Head title={word ? `Edit ${word.answer}` : 'New word'} />
-            <div className="flex max-w-3xl flex-col gap-6">
+            <div className="flex w-full flex-col gap-6">
                 <div>
                     <Link
                         href={`/admin/crossword-words?level=${data.level}`}

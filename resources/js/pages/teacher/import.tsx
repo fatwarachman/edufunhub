@@ -57,7 +57,7 @@ export default function TeacherImport({ maxRows }: ImportProps) {
 
     return (
         <PlayerLayout title={t('teacher.importPage.title')}>
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+            <div className="flex w-full flex-col gap-6">
                 <div className="flex flex-col items-start gap-3">
                     <BackButton
                         href="/teacher/questions"

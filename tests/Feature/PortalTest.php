@@ -69,7 +69,7 @@ test('portal lists every catalog game with play urls and point rules', function 
         ->where('player.character.color', 'teal')
         ->where('player.character.accessory', 'cap')
         ->where('player.character.nickname', 'Andika')
-        ->has('categories', 5)
+        ->has('categories', 6)
         ->where('categories.0.games.0.key', 'flag-quest')
         ->where('categories.0.games.0.url', '/games/flag-quest')
         ->where('categories.0.games.0.awardsPoints', true)

@@ -187,7 +187,10 @@ describe('player notifications', function (): void {
 
         postNoticeResult($user, ['points' => 50]);
 
-        expect($user->notifications()->count())->toBe(1);
+        $kinds = $user->notifications()->get()->pluck('data.kind');
+
+        expect($kinds->reject(fn (string $kind): bool => $kind === 'badge')->values()->all())->toBe(['points'])
+            ->and($kinds->all())->toContain('badge');
     });
 
     it('does not notify for games without points', function (): void {
@@ -195,7 +198,7 @@ describe('player notifications', function (): void {
 
         postNoticeResult($user, ['points' => 0, 'correct' => 0, 'wrong' => 3]);
 
-        expect($user->notifications()->count())->toBe(0);
+        expect($user->notifications()->get()->pluck('data.kind')->reject(fn (string $kind): bool => $kind === 'badge')->count())->toBe(0);
     });
 
     it('notifies the player when the teacher role changes', function (): void {

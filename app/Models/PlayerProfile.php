@@ -54,6 +54,17 @@ class PlayerProfile extends Model
         return [...app(CharacterShop::class)->look($this), 'nickname' => $this->nickname];
     }
 
+    /**
+     * Drawable look without the nickname: shared with every game and the Go
+     * service so in-game characters match the portal avatar.
+     *
+     * @return array{color: string, accessory: string, gender: string, skin: string, hair: string, items: array<string, array{style: string, color: ?string}>}
+     */
+    public function look(): array
+    {
+        return app(CharacterShop::class)->look($this);
+    }
+
     /** Age in whole years from birth date, or null when unknown. */
     protected function age(): Attribute
     {

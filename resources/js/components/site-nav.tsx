@@ -13,6 +13,8 @@ import {
     LogOut,
     type LucideIcon,
     Menu,
+    MessageCircle,
+    ShieldCheck,
     Trophy,
     UserPlus,
     UserRound,
@@ -34,6 +36,8 @@ interface NavButtonProps {
     external?: boolean;
     className?: string;
     testId?: string;
+    /** Small count bubble on the icon (e.g. unread chats). */
+    badge?: number;
     children?: ReactNode;
 }
 
@@ -66,11 +70,17 @@ export function NavButton({
     external,
     className,
     testId,
+    badge,
     children,
 }: NavButtonProps) {
     const content = (
         <>
             {Icon && <Icon aria-hidden="true" />}
+            {badge ? (
+                <span className="edu-notice-badge" data-testid="nav-badge">
+                    {badge > 9 ? '9+' : badge}
+                </span>
+            ) : null}
             {iconOnly ? null : (
                 <span className="edu-nav-label">{children ?? label}</span>
             )}
@@ -135,12 +145,20 @@ const PLAYER_ITEMS: NavItem[] = [
     { href: '/gamelist', labelKey: 'nav.games', icon: Gamepad2 },
     { href: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
     { href: '/character', labelKey: 'nav.character', icon: UserRound },
+    { href: '/chat', labelKey: 'nav.chat', icon: MessageCircle },
 ];
 
 const TEACHER_ITEM: NavItem = {
     href: '/teacher/questions',
     labelKey: 'nav.teacher',
     icon: BookOpenCheck,
+};
+
+/** Superadmins only: jump from the player site to the admin dashboard. */
+const ADMIN_ITEM: NavItem = {
+    href: '/admin/dashboard',
+    labelKey: 'nav.admin',
+    icon: ShieldCheck,
 };
 
 const GUEST_ITEMS: NavItem[] = [
@@ -173,10 +191,14 @@ export function SiteNav({
     const { props, url } = usePage<SharedData>();
     const signedIn = Boolean(props.auth?.user);
     const isTeacher = Boolean(props.auth?.user?.is_teacher);
+    const isSuperadmin = Boolean(props.auth?.user?.is_superadmin);
+    const unreadChats = Number(props.unreadChats ?? 0);
     const items = signedIn
-        ? isTeacher
-            ? [...PLAYER_ITEMS, TEACHER_ITEM]
-            : PLAYER_ITEMS
+        ? [
+              ...PLAYER_ITEMS,
+              ...(isTeacher ? [TEACHER_ITEM] : []),
+              ...(isSuperadmin ? [ADMIN_ITEM] : []),
+          ]
         : GUEST_ITEMS;
 
     const links = items.map((item) =>
@@ -194,6 +216,14 @@ export function SiteNav({
                 active={isActive(url, item.href)}
                 external={item.external}
                 className={item.mobileHide ? 'edu-nav-mobile-hide' : undefined}
+                testId={
+                    item === ADMIN_ITEM
+                        ? 'nav-admin'
+                        : item.href === '/chat'
+                          ? 'nav-chat'
+                          : undefined
+                }
+                badge={item.href === '/chat' ? unreadChats : undefined}
             />
         ),
     );
@@ -236,7 +266,12 @@ export function SiteNav({
             {signedIn && <NotificationBell />}
             <div className="edu-nav-links">{account}</div>
             {compact && (
-                <MobileMenu items={items} signedIn={signedIn} url={url} />
+                <MobileMenu
+                    items={items}
+                    signedIn={signedIn}
+                    url={url}
+                    unreadChats={unreadChats}
+                />
             )}
         </nav>
     );
@@ -251,10 +286,12 @@ function MobileMenu({
     items,
     signedIn,
     url,
+    unreadChats = 0,
 }: {
     items: NavItem[];
     signedIn: boolean;
     url: string;
+    unreadChats?: number;
 }) {
     const { t } = useTranslations();
     const [open, setOpen] = useState(false);
@@ -313,6 +350,11 @@ function MobileMenu({
                 data-testid="nav-more"
             >
                 {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+                {!open && unreadChats > 0 && (
+                    <span className="edu-notice-badge">
+                        {unreadChats > 9 ? '9+' : unreadChats}
+                    </span>
+                )}
             </button>
             <div
                 id={panelId}
@@ -331,6 +373,11 @@ function MobileMenu({
                                 <span className="edu-game-menu-title">
                                     {t(item.labelKey)}
                                 </span>
+                                {item.href === '/chat' && unreadChats > 0 && (
+                                    <span className="edu-nav-more-count">
+                                        {unreadChats > 99 ? '99+' : unreadChats}
+                                    </span>
+                                )}
                             </>
                         );
                         const current = isActive(url, item.href)

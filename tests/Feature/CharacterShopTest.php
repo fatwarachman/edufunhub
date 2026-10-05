@@ -183,7 +183,8 @@ describe('admin', function (): void {
             ->has('items', CharacterItem::query()->count())
             ->where('items', fn ($items) => collect($items)->firstWhere('key', 'battle-axe')['owners'] === 1
                 && collect($items)->firstWhere('key', 'battle-axe')['wearing'] === 1
-                && collect($items)->firstWhere('key', 'cap')['owners'] === null));
+                && collect($items)->firstWhere('key', 'cap')['owners'] === null
+                && collect($items)->every(fn ($item) => array_key_exists('updated_at', $item) && array_key_exists('sort_order', $item))));
 
         $this->get('/admin/character-items?slot=weapon')->assertInertia(fn (Assert $page) => $page
             ->where('items', fn ($items) => collect($items)->every(fn ($item) => $item['slot'] === 'weapon')));

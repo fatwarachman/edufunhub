@@ -97,6 +97,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'disabled_at' => 'datetime',
             'password' => 'hashed',
             'is_superadmin' => 'boolean',
+            'ads_disabled' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
             'onboarded_at' => 'datetime',
             'notification_preferences' => 'array',
@@ -136,6 +137,12 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /** @return HasMany<GameHistory, $this> */
+    /** @return HasMany<UserBadge, $this> */
+    public function badges(): HasMany
+    {
+        return $this->hasMany(UserBadge::class);
+    }
+
     public function gameHistories(): HasMany
     {
         return $this->hasMany(GameHistory::class);

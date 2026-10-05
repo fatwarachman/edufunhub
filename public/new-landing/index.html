@@ -46,6 +46,8 @@ button{cursor:pointer;font:inherit;border:0;background:0}
 
 /* ============= HEADER ============= */
 .site-header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:3px solid var(--ink);backdrop-filter:blur(12px)}
+/* Mobile menu scrolls inside the sticky header instead of growing past the viewport. */
+#mobile-nav{max-height:calc(100dvh - 75px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .site-header .container{display:flex;align-items:center;justify-content:space-between;height:72px}
 .logo{display:flex;align-items:center;gap:12px}
 .logo-mark{width:44px;height:44px;background:var(--amber);border:3px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink);transition:transform .2s}
@@ -457,7 +459,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/><path d="M8 8V6a4 4 0 018 0v2"/></svg>
       </div>
       <div>
-        <div class="logo-text">EduFun<span>Hub</span></div>
+        <div class="logo-text">edufun<span>hub</span>.com</div>
         <div class="logo-tag">Bermain · Belajar · Berprestasi</div>
       </div>
     </a>
@@ -491,10 +493,31 @@ button{cursor:pointer;font:inherit;border:0;background:0}
             <div class="nav-dropdown-icon" style="background:#ffd6e0"><svg viewBox="0 0 24 24"><path d="M4 4l10 10M14 4L4 14"/><path d="M15 15l5 5M9 15l-5 5"/></svg></div>
             <div><div class="dd-label">Duel Kuis Kelas</div><div class="dd-desc">Adu cepat 1 lawan 1</div></div>
           </a>
+          <a href="/games/floor-drop" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#dbeafe"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></div>
+            <div><div class="dd-label">Lantai Runtuh</div><div class="dd-desc">Battle royale kuis 100 pemain</div></div>
+          </a>
           <div class="nav-dropdown-group">Arkade edukasi</div>
           <a href="/games/knowledge-train" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#c9f5e5"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12M9 21l-2-4M15 21l2-4"/></svg></div>
             <div><div class="dd-label">Kereta Pengetahuan</div><div class="dd-desc">Pilih rel jawaban benar</div></div>
+          </a>
+          <div class="nav-dropdown-group">Jelajah &amp; eksperimen</div>
+          <a href="/games/market-math" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#ffedd5"><svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h9.6a1 1 0 0 0 1-.8L21 7H6"/></svg></div>
+            <div><div class="dd-label">Pasar Matematika</div><div class="dd-desc">Belanja sambil berhitung</div></div>
+          </a>
+          <a href="/games/number-garden" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#dcfce7"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3"/><path d="M12 12v10M8 18c2 0 4-1 4-3M16 16c-2 0-4-1-4-3"/></svg></div>
+            <div><div class="dd-label">Taman Angka &amp; Huruf</div><div class="dd-desc">Hitung bunga &amp; tebak huruf</div></div>
+          </a>
+          <a href="/games/explore-indonesia" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#ffe4e6"><svg viewBox="0 0 24 24"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg></div>
+            <div><div class="dd-label">Jelajah Indonesia</div><div class="dd-desc">Provinsi, budaya &amp; ibu kota</div></div>
+          </a>
+          <a href="/games/mini-lab" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#ede9fe"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4 20a1 1 0 0 0 1 1.5h14A1 1 0 0 0 20 20l-6-11V3"/></svg></div>
+            <div><div class="dd-label">Lab Mini</div><div class="dd-desc">Percobaan sains mini</div></div>
           </a>
           <div class="nav-dropdown-group">Permainan papan</div>
           <a href="/games/snakes-and-ladders" class="nav-dropdown-item">
@@ -527,8 +550,14 @@ button{cursor:pointer;font:inherit;border:0;background:0}
     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Kuis edukasi</div>
     <a href="/games/sky-quiz" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Sukhoi Sky Quiz</a>
     <a href="/games/quiz-duel" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Duel Kuis Kelas</a>
+    <a href="/games/floor-drop" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Lantai Runtuh</a>
     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Arkade edukasi</div>
     <a href="/games/knowledge-train" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Kereta Pengetahuan</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Jelajah &amp; eksperimen</div>
+    <a href="/games/market-math" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Pasar Matematika</a>
+    <a href="/games/number-garden" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Taman Angka &amp; Huruf</a>
+    <a href="/games/explore-indonesia" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Jelajah Indonesia</a>
+    <a href="/games/mini-lab" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Lab Mini</a>
     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Permainan papan</div>
     <a href="/games/snakes-and-ladders" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Ular Tangga</a>
     <div style="height:1px;background:rgba(21,27,46,.08);margin:4px 0"></div>
@@ -1414,7 +1443,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
     <div class="footer-top" style="display:grid;gap:32px;grid-template-columns:1fr">
       <div class="footer-brand">
         <div style="font-family:var(--display-font);font-weight:700;font-size:22px;color:var(--cream);letter-spacing:-.5px">
-          Edu<span style="color:var(--amber)">Fun</span>Hub
+          edu<span style="color:var(--amber)">fun</span>hub.com
         </div>
         <p style="margin-top:10px;font-size:13px;color:rgba(250,247,239,.45);line-height:1.6;max-width:280px">
           Platform belajar via game edukatif berbasis poin, arena duel, dan leaderboard sekolah nasional.

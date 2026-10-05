@@ -99,7 +99,7 @@ export default function AiSettings({
     return (
         <AdminLayout>
             <Head title="AI Settings" />
-            <div className="flex max-w-5xl flex-col gap-6">
+            <div className="flex w-full flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                         <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">

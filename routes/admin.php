@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\AdController;
 use App\Http\Controllers\Admin\AiSettingsController;
 use App\Http\Controllers\Admin\CharacterItemController;
 use App\Http\Controllers\Admin\CompensationController;
 use App\Http\Controllers\Admin\CrosswordWordController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GameStatisticsController;
+use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\LeaderboardController;
 use App\Http\Controllers\Admin\MatchHistoryController;
 use App\Http\Controllers\Admin\PermissionController;
@@ -45,6 +47,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
         Route::resource('users', UserController::class);
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::patch('/users/{user}/teacher', [UserController::class, 'toggleTeacher'])->middleware(EnsureSuperadmin::class)->name('users.teacher');
+        Route::post('/impersonate/{user}', [ImpersonationController::class, 'impersonate'])->whereNumber('user')->middleware('throttle:20,1')->name('impersonate');
 
         // Roles CRUD
         Route::resource('roles', RoleController::class)->except(['show']);
@@ -63,6 +66,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::get('/user-statistics', [UserStatisticsController::class, 'index'])->name('user-statistics.index');
             Route::get('/questions/generate', [QuestionGenerationController::class, 'index'])->name('questions.generate');
             Route::post('/questions/generate', [QuestionGenerationController::class, 'store'])->name('questions.generate.store');
+            Route::post('/questions/bulk', [QuestionController::class, 'bulk'])->middleware('throttle:30,1')->name('questions.bulk');
             Route::patch('/questions/{question}/toggle', [QuestionController::class, 'toggle'])->name('questions.toggle');
             Route::get('/notifications', [PlayerNotificationController::class, 'index'])->name('notifications.index');
             Route::post('/notifications', [PlayerNotificationController::class, 'store'])->middleware('throttle:20,1')->name('notifications.store');
@@ -82,6 +86,30 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::resource('crossword-words', CrosswordWordController::class)->except(['show']);
             Route::patch('/character-items/{character_item}/toggle', [CharacterItemController::class, 'toggle'])->name('character-items.toggle');
             Route::resource('character-items', CharacterItemController::class)->except(['show']);
+
+            // Advertising (revenue): advertisers, campaigns, creatives, reports.
+            Route::prefix('ads')->name('ads.')->group(function () {
+                Route::get('/', [AdController::class, 'index'])->name('index');
+                Route::patch('/settings/global', [AdController::class, 'toggleGlobal'])->name('settings.global');
+                Route::put('/settings/placements', [AdController::class, 'updatePlacements'])->name('settings.placements');
+                Route::get('/settings/users', [AdController::class, 'searchUsers'])->middleware('throttle:60,1')->name('settings.users');
+                Route::patch('/users/{user}', [AdController::class, 'toggleUser'])->name('users.toggle');
+                Route::get('/advertisers/create', [AdController::class, 'createAdvertiser'])->name('advertisers.create');
+                Route::post('/advertisers', [AdController::class, 'storeAdvertiser'])->name('advertisers.store');
+                Route::get('/advertisers/{advertiser}/edit', [AdController::class, 'editAdvertiser'])->name('advertisers.edit');
+                Route::post('/advertisers/{advertiser}', [AdController::class, 'updateAdvertiser'])->name('advertisers.update');
+                Route::delete('/advertisers/{advertiser}', [AdController::class, 'destroyAdvertiser'])->name('advertisers.destroy');
+                Route::get('/campaigns/create', [AdController::class, 'createCampaign'])->name('campaigns.create');
+                Route::post('/campaigns', [AdController::class, 'storeCampaign'])->name('campaigns.store');
+                Route::get('/campaigns/{campaign}', [AdController::class, 'showCampaign'])->name('campaigns.show');
+                Route::get('/campaigns/{campaign}/edit', [AdController::class, 'editCampaign'])->name('campaigns.edit');
+                Route::put('/campaigns/{campaign}', [AdController::class, 'updateCampaign'])->name('campaigns.update');
+                Route::patch('/campaigns/{campaign}/status', [AdController::class, 'statusCampaign'])->name('campaigns.status');
+                Route::delete('/campaigns/{campaign}', [AdController::class, 'destroyCampaign'])->name('campaigns.destroy');
+                Route::post('/campaigns/{campaign}/creatives', [AdController::class, 'storeCreative'])->name('creatives.store');
+                Route::post('/campaigns/{campaign}/creatives/{creative}', [AdController::class, 'updateCreative'])->name('creatives.update');
+                Route::delete('/campaigns/{campaign}/creatives/{creative}', [AdController::class, 'destroyCreative'])->name('creatives.destroy');
+            });
         });
 
         // Settings

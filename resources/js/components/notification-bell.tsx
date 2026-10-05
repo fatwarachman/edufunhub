@@ -6,7 +6,9 @@ import {
     CheckCheck,
     Coins,
     GraduationCap,
+    Medal,
     Megaphone,
+    MessageCircle,
     Package,
     TrendingUp,
     X,
@@ -16,11 +18,13 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 export interface PlayerNotice {
     id: string;
-    kind: 'points' | 'level' | 'item' | 'teacher' | 'admin';
+    kind: 'points' | 'level' | 'item' | 'teacher' | 'admin' | 'chat' | 'badge';
     title: string;
     body: string;
     url: string | null;
     read: boolean;
+    /** Unread messages folded into one chat notification. */
+    count?: number;
     created_at: string | null;
 }
 
@@ -40,6 +44,8 @@ const KIND_ICON: Record<PlayerNotice['kind'], LucideIcon> = {
     item: Package,
     teacher: GraduationCap,
     admin: Megaphone,
+    chat: MessageCircle,
+    badge: Medal,
 };
 
 const KIND_TONE: Record<PlayerNotice['kind'], string> = {
@@ -48,6 +54,8 @@ const KIND_TONE: Record<PlayerNotice['kind'], string> = {
     item: '#ff9ecf',
     teacher: '#8fb8ff',
     admin: '#ff8a5c',
+    chat: '#7dd3fc',
+    badge: '#c4a7ff',
 };
 
 function csrfToken(): string {
@@ -330,6 +338,16 @@ export function NotificationBell() {
                                     <span className="edu-notice-text">
                                         <span className="edu-notice-title">
                                             {notice.title}
+                                            {(notice.count ?? 1) > 1 && (
+                                                <span className="edu-notice-count">
+                                                    {t(
+                                                        'notifications.messages',
+                                                        {
+                                                            count: notice.count,
+                                                        },
+                                                    )}
+                                                </span>
+                                            )}
                                         </span>
                                         <span className="edu-notice-body">
                                             {notice.body}

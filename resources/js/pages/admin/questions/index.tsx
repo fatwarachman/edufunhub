@@ -32,13 +32,16 @@ import {
     Pencil,
     Plus,
     Power,
+    PowerOff,
     RotateCcw,
     Scale,
     Search,
     Sparkles,
     Trash2,
 } from 'lucide-react';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+
+type BulkAction = 'activate' | 'deactivate' | 'delete';
 
 interface QuestionRow {
     id: number;
@@ -368,11 +371,50 @@ function QuestionList({
     const [search, setSearch] = useState(filters.search ?? '');
     const [deleteTarget, setDeleteTarget] = useState<QuestionRow | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [selected, setSelected] = useState<Set<number>>(() => new Set());
+    const [bulkConfirm, setBulkConfirm] = useState(false);
+    const [bulkBusy, setBulkBusy] = useState<BulkAction | null>(null);
     const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
     const firstRender = useRef(true);
     const subject =
         filters.subject && filters.subject !== 'all' ? filters.subject : null;
     const stat = subjectStats.find((row) => row.subject === subject);
+    const visibleIds = useMemo(
+        () => questions?.data.map((question) => question.id) ?? [],
+        [questions],
+    );
+    const selectedVisible = visibleIds.filter((id) => selected.has(id));
+    const allSelected =
+        visibleIds.length > 0 && selectedVisible.length === visibleIds.length;
+
+    const toggleOne = (id: number) =>
+        setSelected((current) => {
+            const next = new Set(current);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    const toggleAll = () =>
+        setSelected(allSelected ? new Set() : new Set(visibleIds));
+    const runBulk = (action: BulkAction) => {
+        if (selectedVisible.length === 0) return;
+        setBulkBusy(action);
+        router.post(
+            '/admin/questions/bulk',
+            { action, ids: selectedVisible },
+            {
+                preserveScroll: true,
+                onSuccess: () => setSelected(new Set()),
+                onFinish: () => {
+                    setBulkBusy(null);
+                    setBulkConfirm(false);
+                },
+            },
+        );
+    };
 
     const apply = (changes: Filters) => {
         const query = Object.fromEntries(
@@ -595,6 +637,69 @@ function QuestionList({
             </div>
 
             <div className="rounded-2xl border border-border bg-card shadow-sm">
+                {questions.data.length > 0 && (
+                    <div
+                        className="sticky top-0 z-10 flex flex-wrap items-center gap-2 rounded-t-2xl border-b border-border bg-card/95 px-4 py-2.5 backdrop-blur"
+                        data-testid="questions-bulk-bar"
+                    >
+                        <label className="inline-flex min-h-9 cursor-pointer items-center gap-2.5 text-sm font-medium text-foreground">
+                            <input
+                                type="checkbox"
+                                checked={allSelected}
+                                ref={(element) => {
+                                    if (element) {
+                                        element.indeterminate =
+                                            selectedVisible.length > 0 &&
+                                            !allSelected;
+                                    }
+                                }}
+                                onChange={toggleAll}
+                                className="size-4 rounded border-border accent-primary"
+                                aria-label="Select all questions on this page"
+                                data-testid="questions-select-all"
+                            />
+                            {selectedVisible.length > 0
+                                ? `${formatNumber(selectedVisible.length)} selected`
+                                : `Select all (${formatNumber(visibleIds.length)})`}
+                        </label>
+                        <div className="ml-auto flex flex-wrap items-center gap-2">
+                            <BulkButton
+                                icon={Power}
+                                label="Activate"
+                                tone="success"
+                                busy={bulkBusy === 'activate'}
+                                disabled={
+                                    selectedVisible.length === 0 ||
+                                    bulkBusy !== null
+                                }
+                                onClick={() => runBulk('activate')}
+                                testId="questions-bulk-activate"
+                            />
+                            <BulkButton
+                                icon={PowerOff}
+                                label="Deactivate"
+                                busy={bulkBusy === 'deactivate'}
+                                disabled={
+                                    selectedVisible.length === 0 ||
+                                    bulkBusy !== null
+                                }
+                                onClick={() => runBulk('deactivate')}
+                                testId="questions-bulk-deactivate"
+                            />
+                            <BulkButton
+                                icon={Trash2}
+                                label="Delete"
+                                tone="danger"
+                                disabled={
+                                    selectedVisible.length === 0 ||
+                                    bulkBusy !== null
+                                }
+                                onClick={() => setBulkConfirm(true)}
+                                testId="questions-bulk-delete"
+                            />
+                        </div>
+                    </div>
+                )}
                 {questions.data.length === 0 ? (
                     <EmptyState
                         icon={ListChecks}
@@ -607,10 +712,20 @@ function QuestionList({
                             <li
                                 key={question.id}
                                 className={cn(
-                                    'flex gap-4 p-4',
+                                    'flex gap-3 p-4 sm:gap-4',
                                     !question.is_active && 'opacity-60',
+                                    selected.has(question.id) &&
+                                        'bg-primary/5 opacity-100',
                                 )}
                             >
+                                <input
+                                    type="checkbox"
+                                    checked={selected.has(question.id)}
+                                    onChange={() => toggleOne(question.id)}
+                                    className="mt-1 size-4 shrink-0 rounded border-border accent-primary"
+                                    aria-label={`Select question ${question.key}`}
+                                    data-testid="question-select"
+                                />
                                 <div
                                     className={cn(
                                         'flex w-20 shrink-0 flex-col items-center justify-center rounded-xl px-2 py-2 text-center',
@@ -762,7 +877,7 @@ function QuestionList({
                 )}
             </div>
 
-            {questions.total > 0 && (
+            {questions.total > 0 && questions.last_page > 1 && (
                 <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
                     <span>
                         Showing {questions.from}–{questions.to} of{' '}
@@ -779,6 +894,57 @@ function QuestionList({
                             label="Next"
                             icon={ChevronRight}
                         />
+                    </div>
+                </div>
+            )}
+
+            {bulkConfirm && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="bulk-delete-title"
+                    data-testid="questions-bulk-confirm"
+                >
+                    <div
+                        className="fixed inset-0 bg-black/50"
+                        onClick={() => !bulkBusy && setBulkConfirm(false)}
+                    />
+                    <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl dark:border-white/15 dark:shadow-[0_0_24px_rgba(255,255,255,0.06)]">
+                        <h3
+                            id="bulk-delete-title"
+                            className="text-lg font-semibold text-foreground"
+                        >
+                            Delete {formatNumber(selectedVisible.length)}{' '}
+                            questions?
+                        </h3>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            The selected questions and their recorded answers
+                            will be removed. Deactivate them instead to keep
+                            their statistics.
+                        </p>
+                        <div className="mt-6 flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setBulkConfirm(false)}
+                                disabled={bulkBusy !== null}
+                                className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                disabled={bulkBusy !== null}
+                                onClick={() => runBulk('delete')}
+                                className="inline-flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-white hover:bg-destructive/90 disabled:opacity-50"
+                                data-testid="questions-bulk-confirm-delete"
+                            >
+                                {bulkBusy === 'delete' && (
+                                    <Loader2 className="size-4 animate-spin" />
+                                )}
+                                Delete
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -844,6 +1010,49 @@ function QuestionList({
                 </div>
             )}
         </div>
+    );
+}
+
+function BulkButton({
+    icon: Icon,
+    label,
+    onClick,
+    disabled,
+    busy,
+    tone = 'default',
+    testId,
+}: {
+    icon: React.ElementType;
+    label: string;
+    onClick: () => void;
+    disabled: boolean;
+    busy?: boolean;
+    tone?: 'default' | 'success' | 'danger';
+    testId: string;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            disabled={disabled}
+            data-testid={testId}
+            className={cn(
+                'inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50',
+                tone === 'default' &&
+                    'border-border bg-background text-foreground hover:bg-muted',
+                tone === 'success' &&
+                    'border-green-300 bg-green-50 text-green-700 hover:bg-green-100 dark:border-green-800 dark:bg-green-950/40 dark:text-green-300 dark:hover:bg-green-950/70',
+                tone === 'danger' &&
+                    'border-red-300 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-950/70',
+            )}
+        >
+            {busy ? (
+                <Loader2 className="size-4 animate-spin" />
+            ) : (
+                <Icon className="size-4" />
+            )}
+            {label}
+        </button>
     );
 }
 

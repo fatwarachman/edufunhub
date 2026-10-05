@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BulkQuestionRequest;
 use App\Http\Requests\Admin\QuestionRequest;
 use App\Models\Question;
 use App\Services\PointRules;
@@ -80,7 +81,7 @@ class QuestionController extends Controller
      */
     private function questionList(array $filters): LengthAwarePaginator
     {
-        return Question::query()
+        $query = Question::query()
             ->with('author:id,name')
             ->when($filters['search'] ?? null, fn (Builder $q, string $search) => $q->where(fn (Builder $q) => $q
                 ->where('prompt_id', 'like', '%'.addcslashes($search, '%_\\').'%')
@@ -97,8 +98,13 @@ class QuestionController extends Controller
             ->when(($filters['sort'] ?? null) === 'hardest', fn (Builder $q) => $q->where('times_answered', '>', 0)->orderByRaw('times_correct * 1.0 / times_answered asc'))
             ->when(($filters['sort'] ?? null) === 'most_answered', fn (Builder $q) => $q->orderByDesc('times_answered'))
             ->orderBy('band')
-            ->orderBy('id')
-            ->paginate(20)
+            ->orderBy('id');
+
+        // AI-created questions are reviewed in one go: show all of them on one page.
+        $perPage = ($filters['source'] ?? null) === 'ai' ? max(1, (clone $query)->count()) : 20;
+
+        return $query
+            ->paginate($perPage)
             ->withQueryString()
             ->through(fn (Question $question): array => [
                 ...$question->only(['id', 'key', 'type', 'band', 'grades', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
@@ -186,6 +192,28 @@ class QuestionController extends Controller
         activity()->causedBy($request->user())->performedOn($question)->log($question->is_active ? 'Activated question' : 'Deactivated question');
 
         return back()->with('success', $question->is_active ? __('Question activated.') : __('Question deactivated.'));
+    }
+
+    /**
+     * Activate, deactivate or delete many questions at once.
+     */
+    public function bulk(BulkQuestionRequest $request): RedirectResponse
+    {
+        $data = $request->validated();
+        $questions = Question::query()->whereKey($data['ids']);
+        $count = (clone $questions)->count();
+
+        match ($data['action']) {
+            'activate' => $questions->update(['is_active' => true, 'updated_by' => $request->user()->id]),
+            'deactivate' => $questions->update(['is_active' => false, 'updated_by' => $request->user()->id]),
+            'delete' => $questions->get()->each->delete(),
+        };
+
+        activity()->causedBy($request->user())
+            ->withProperties(['action' => $data['action'], 'ids' => $data['ids']])
+            ->log('Bulk '.$data['action'].' questions');
+
+        return back()->with('success', __('questions.bulk.'.$data['action'], ['count' => $count]));
     }
 
     public function destroy(Request $request, Question $question): RedirectResponse

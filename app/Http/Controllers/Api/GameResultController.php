@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\MiniGameController;
 use App\Http\Requests\StoreGameResultRequest;
 use App\Models\GameHistory;
 use App\Models\Question;
@@ -10,6 +11,7 @@ use App\Models\QuestionAnswer;
 use App\Models\QuestionCompensationRate;
 use App\Models\User;
 use App\Services\MatchRecorder;
+use App\Services\PlayerBadges;
 use App\Services\PlayerNotifications;
 use App\Services\PlayerPortal;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 
 class GameResultController extends Controller
 {
-    public function store(StoreGameResultRequest $request, MatchRecorder $matches, PlayerPortal $portal, PlayerNotifications $notifications): JsonResponse
+    public function store(StoreGameResultRequest $request, MatchRecorder $matches, PlayerPortal $portal, PlayerNotifications $notifications, PlayerBadges $badges): JsonResponse
     {
         $data = $request->validated();
         $user = User::query()->findOrFail($data['user_id']);
@@ -67,6 +69,8 @@ class GameResultController extends Controller
             (int) $data['points'],
             $totalBefore,
         );
+
+        $badges->evaluate($user);
 
         return response()->json(['status' => 'recorded'], 201);
     }
@@ -133,8 +137,16 @@ class GameResultController extends Controller
             return __('snakes.history_name', [], $locale);
         }
 
+        if ($gameKey === 'floor-drop') {
+            return __('floor_drop.history_name', [], $locale);
+        }
+
         if ($gameKey === 'crossword') {
             return __('crossword.history_name', ['level' => substr($mission, strlen('level-'))], $locale);
+        }
+
+        if (in_array($gameKey, MiniGameController::GAMES, true)) {
+            return __('minigames.'.$gameKey, [], $locale);
         }
 
         return __('flag_quest.history_name', [

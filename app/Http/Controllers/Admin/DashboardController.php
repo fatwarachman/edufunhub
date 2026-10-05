@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\GameHistory;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DeviceAnalytics;
+use App\Services\GameAnalytics;
 use App\Services\UserAnalytics;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,7 +19,7 @@ class DashboardController extends Controller
     /**
      * Render the admin dashboard: platform KPIs, game activity, player demographics and recent activity.
      */
-    public function index(UserAnalytics $analytics, DeviceAnalytics $devices): Response
+    public function index(UserAnalytics $analytics, DeviceAnalytics $devices, GameAnalytics $games): Response
     {
         $newUsers30d = User::query()->where('created_at', '>=', now()->subDays(30))->count();
         $previous30d = User::query()->whereBetween('created_at', [now()->subDays(60), now()->subDays(30)])->count();
@@ -33,6 +35,7 @@ class DashboardController extends Controller
                 'new_users_30d' => $newUsers30d,
                 'user_growth_percent' => $previous30d > 0 ? round(($newUsers30d - $previous30d) / $previous30d * 100, 1) : null,
             ],
+            'gameCatalog' => $this->gameCatalog($games),
             'sparklines' => [
                 'new_users' => collect(range(6, 0))->map(fn (int $ago): int => User::query()->whereDate('created_at', now()->subDays($ago)->toDateString())->count())->all(),
             ],
@@ -53,5 +56,32 @@ class DashboardController extends Controller
                     'created_at' => $activity->created_at?->toIso8601String(),
                 ])->all(),
         ]);
+    }
+
+    /**
+     * Game catalog size for the dashboard card: total, multiplayer, point
+     * games, categories and how many distinct games were played in 7 days.
+     *
+     * @return array{total: int, multiplayer: int, awards_points: int, categories: int, by_category: list<array{key: string, count: int, accent: string}>, played_7d: int}
+     */
+    private function gameCatalog(GameAnalytics $games): array
+    {
+        $categories = collect(config('game-catalog.categories'));
+        $all = $categories->flatMap(fn (array $category): array => $category['games']);
+        $keys = $games->catalogGames()->pluck('key');
+
+        return [
+            'total' => $all->count(),
+            'multiplayer' => $all->where('multiplayer', true)->count(),
+            'awards_points' => $all->where('awards_points', true)->count(),
+            'categories' => $categories->count(),
+            'by_category' => $categories->map(fn (array $category): array => [
+                'key' => (string) $category['key'],
+                'count' => count($category['games']),
+                'accent' => (string) ($category['games'][0]['accent'] ?? '#f5a623'),
+            ])->values()->all(),
+            'played_7d' => GameHistory::query()->where('played_at', '>=', now()->subDays(7))
+                ->whereIn('game_key', $keys)->distinct()->count('game_key'),
+        ];
     }
 }

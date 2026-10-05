@@ -18,6 +18,7 @@ import {
     ListChecks,
     Lock,
     LogOut,
+    Megaphone,
     Menu,
     Moon,
     Server,
@@ -105,6 +106,12 @@ const navItems: NavItem[] = [
         title: 'Character Items',
         href: '/admin/character-items',
         icon: ShoppingBag,
+        superadminOnly: true,
+    },
+    {
+        title: 'Advertising',
+        href: '/admin/ads',
+        icon: Megaphone,
         superadminOnly: true,
     },
     {

@@ -37,6 +37,7 @@ import {
     GraduationCap,
     ListChecks,
     Medal,
+    Puzzle,
     Radio,
     School,
     Sparkles,
@@ -80,8 +81,18 @@ interface Kpis {
     schools: number;
 }
 
+interface GameCatalogSummary {
+    total: number;
+    multiplayer: number;
+    awards_points: number;
+    categories: number;
+    by_category: { key: string; count: number; accent: string }[];
+    played_7d: number;
+}
+
 interface DashboardProps {
     kpis: Kpis;
+    gameCatalog: GameCatalogSummary;
     devices: DeviceSummary;
     daily: {
         date: string;
@@ -178,7 +189,7 @@ function greeting(): string {
 
 export default function Dashboard(props: DashboardProps) {
     const { auth } = usePage<SharedData>().props;
-    const { kpis, daily } = props;
+    const { kpis, daily, gameCatalog } = props;
     const superadmin = Boolean(auth.user.is_superadmin);
     const [metric, setMetric] = useState<Metric>('plays');
     const active = METRICS.find((m) => m.key === metric)!;
@@ -275,7 +286,51 @@ export default function Dashboard(props: DashboardProps) {
                 </section>
 
                 {/* KPI row */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+                    <KpiCard
+                        label="Games"
+                        value={formatNumber(gameCatalog.total)}
+                        icon={Puzzle}
+                        accent="var(--color-bubble-pink)"
+                        visual={
+                            <div
+                                className="flex h-full w-full flex-col justify-center gap-1.5"
+                                title={gameCatalog.by_category
+                                    .map((c) => `${c.key}: ${c.count}`)
+                                    .join(' · ')}
+                            >
+                                <span className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full">
+                                    {gameCatalog.by_category.map((category) => (
+                                        <span
+                                            key={category.key}
+                                            style={{
+                                                flex: category.count,
+                                                background: category.accent,
+                                            }}
+                                        />
+                                    ))}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground">
+                                    Games per category
+                                </span>
+                            </div>
+                        }
+                        footer={
+                            <span
+                                className="inline-flex min-w-0 items-center gap-1 text-xs"
+                                data-testid="kpi-games"
+                            >
+                                <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 font-semibold text-foreground tabular-nums">
+                                    {gameCatalog.played_7d} played · 7d
+                                </span>
+                                <span className="truncate text-muted-foreground">
+                                    {gameCatalog.categories} categories ·{' '}
+                                    {gameCatalog.multiplayer} multiplayer
+                                </span>
+                            </span>
+                        }
+                        href={superadmin ? '/admin/games' : undefined}
+                    />
                     <KpiCard
                         label="Registered users"
                         value={formatNumber(kpis.users)}

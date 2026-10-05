@@ -37,6 +37,8 @@ button{cursor:pointer;font:inherit;border:0;background:0}
 
 /* ============= HEADER ============= */
 .site-header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:3px solid var(--ink);backdrop-filter:blur(12px)}
+/* Mobile menu scrolls inside the sticky header instead of growing past the viewport. */
+#mobile-nav{max-height:calc(100dvh - 75px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .site-header .container{display:flex;align-items:center;justify-content:space-between;height:72px}
 .logo{display:flex;align-items:center;gap:12px}
 .logo-mark{width:44px;height:44px;background:var(--amber);border:3px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink);transition:transform .2s}
@@ -196,7 +198,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/><path d="M8 8V6a4 4 0 018 0v2"/></svg>
       </div>
       <div>
-        <div class="logo-text">EduFun<span>Hub</span></div>
+        <div class="logo-text">edufun<span>hub</span>.com</div>
         <div class="logo-tag">Bermain · Belajar · Berprestasi</div>
       </div>
     </a>
@@ -587,7 +589,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
   <div class="container">
     <div class="footer-top">
       <div class="footer-brand">
-        <div class="logo-text" style="color:var(--cream)">EduFun<span style="color:var(--coral)">Hub</span></div>
+        <div class="logo-text" style="color:var(--cream)">edufun<span style="color:var(--coral)">hub</span>.com</div>
         <p>Portal edukasi gamifikasi untuk semua jenjang. Bermain, belajar, dan berprestasi bersama — 100% gratis selamanya.</p>
       </div>
       <div class="footer-col">
