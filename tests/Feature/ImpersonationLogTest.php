@@ -30,7 +30,6 @@ test('leaving impersonation updates the audit log ended_at', function () {
 
     // First simulate starting the impersonation
     $this->actingAs($superadmin)
-        ->withSession(['impersonated_by' => $superadmin->id])
         ->post(route('admin.impersonate', $targetUser));
 
     $log = ImpersonationLog::first();
@@ -39,8 +38,8 @@ test('leaving impersonation updates the audit log ended_at', function () {
     Carbon::setTestNow(now()->addMinutes(5));
 
     // Now leave impersonation
-    $response = $this->actingAs($targetUser)->post(route('admin.impersonate.leave'));
-    $response->assertRedirect(route('admin.dashboard'));
+    $response = $this->post(route('admin.impersonate.leave'));
+    $response->assertRedirect(route('admin.users.index'));
 
     $log->refresh();
 

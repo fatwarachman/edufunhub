@@ -1,0 +1,191 @@
+/* Sponsor creatives rendered by <AdSlot>. Always labelled "Sponsor" and kept
+   visually separate from gameplay controls. */
+.edu-ad {
+    --edu-ad-bg: #ffffff;
+    --edu-ad-ink: #151b2e;
+    position: relative;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+    border: 1.5px solid rgb(21 27 46 / 0.25);
+    border-radius: 16px;
+    background: var(--edu-ad-bg);
+    color: var(--edu-ad-ink);
+    text-decoration: none;
+    font-family: Quicksand, system-ui, sans-serif;
+    transition: border-color 150ms ease;
+}
+a.edu-ad:hover {
+    border-color: rgb(21 27 46 / 0.6);
+}
+a.edu-ad:focus-visible {
+    outline: 3px solid #6c5ce7;
+    outline-offset: 2px;
+}
+.edu-ad-label {
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: #151b2e;
+    padding: 3px 10px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+.edu-ad-logo {
+    display: block;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+.edu-ad-text {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 1px;
+}
+.edu-ad-motto {
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+.edu-ad-brand {
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0.85;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.edu-ad--strip {
+    width: 100%;
+    min-height: 52px;
+    justify-content: center;
+    padding: 6px 12px;
+}
+.edu-ad--strip .edu-ad-label {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+}
+@media (max-width: 639px) {
+    .edu-ad--strip {
+        justify-content: flex-start;
+        padding-left: 12px;
+    }
+    .edu-ad--strip .edu-ad-label {
+        position: static;
+        transform: none;
+    }
+}
+.edu-ad--strip .edu-ad-logo {
+    height: 40px;
+    max-width: min(320px, 45%);
+}
+.edu-ad--card {
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    text-align: center;
+}
+.edu-ad--card .edu-ad-label {
+    align-self: flex-start;
+}
+.edu-ad--card .edu-ad-logo {
+    width: 100%;
+    max-width: 280px;
+    max-height: 220px;
+}
+.edu-ad--card .edu-ad-text {
+    align-items: center;
+}
+.edu-ad--badge {
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    width: 96px;
+    padding: 6px;
+    border-radius: 14px;
+}
+.edu-ad--badge .edu-ad-logo {
+    width: 80px;
+    height: 80px;
+}
+.edu-ad--badge .edu-ad-label {
+    font-size: 10px;
+    padding: 1px 6px;
+}
+.edu-ad--badge .edu-ad-brand {
+    max-width: 84px;
+    text-align: center;
+}
+.edu-ad-sponsor-chip {
+    display: inline-flex;
+    max-width: 100%;
+    align-items: center;
+    gap: 4px;
+    border-radius: 999px;
+    border: 1.5px solid #151b2e;
+    background: #fff3c4;
+    padding: 1px 8px 1px 2px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #151b2e;
+}
+.edu-ad-sponsor-chip img {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #fff;
+    object-fit: contain;
+}
+.edu-ad-sponsor-chip span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+    .edu-ad {
+        transition: none;
+    }
+}
+
+.edu-ad-rotator {
+    position: relative;
+    min-width: 0;
+}
+.edu-ad-fade {
+    animation: edu-ad-fade 320ms ease both;
+}
+@keyframes edu-ad-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.edu-ad-dots {
+    position: absolute;
+    right: 10px;
+    bottom: 6px;
+    display: flex;
+    gap: 4px;
+    pointer-events: none;
+}
+.edu-ad-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgb(21 27 46 / 0.2);
+}
+.edu-ad-dots span.is-on {
+    background: #151b2e;
+}
+@media (prefers-reduced-motion: reduce) {
+    .edu-ad-fade {
+        animation: none;
+    }
+}

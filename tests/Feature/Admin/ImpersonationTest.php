@@ -40,7 +40,7 @@ it('allows leaving impersonation and restores original user', function () {
     $this->actingAs($target)
         ->withSession(['impersonated_by' => $superadmin->id])
         ->post(route('admin.impersonate.leave'))
-        ->assertRedirect(route('admin.dashboard'))
+        ->assertRedirect(route('admin.users.index'))
         ->assertSessionMissing('impersonated_by');
 
     // Verify authentication was swapped back natively
