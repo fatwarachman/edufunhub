@@ -20,6 +20,9 @@ var (
 	ErrClaims    = errors.New("invalid token claims")
 )
 
+// MaxCharacterBytes caps the avatar look carried in a token.
+const MaxCharacterBytes = 2048
+
 // Claims describe the authenticated player and the game they may start.
 type Claims struct {
 	Subject   int64  `json:"sub"`
@@ -27,9 +30,12 @@ type Claims struct {
 	Grade     int    `json:"grade"`
 	Color     string `json:"color"`
 	Accessory string `json:"accessory"`
-	Game      string `json:"game"`
-	Expires   int64  `json:"exp"`
-	Nonce     string `json:"nonce"`
+	// Character is the portal avatar look (colour, gender, skin, hair, shop
+	// items). Go treats it as opaque and only echoes it to room players.
+	Character json.RawMessage `json:"character,omitempty"`
+	Game      string          `json:"game"`
+	Expires   int64           `json:"exp"`
+	Nonce     string          `json:"nonce"`
 }
 
 // Sign creates a token. Used by tests and tooling; Laravel issues production tokens.
@@ -78,5 +84,8 @@ func Verify(token string, secret []byte, game string, now time.Time) (Claims, er
 		return claims, ErrClaims
 	}
 	claims.Name = name
+	if len(claims.Character) > MaxCharacterBytes || (len(claims.Character) > 0 && claims.Character[0] != '{') {
+		claims.Character = nil
+	}
 	return claims, nil
 }

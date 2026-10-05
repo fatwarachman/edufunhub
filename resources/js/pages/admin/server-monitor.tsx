@@ -83,6 +83,11 @@ const GAME_NAMES: Record<string, string> = {
     'knowledge-train': 'Knowledge Train',
     'snakes-and-ladders': 'Snakes & Ladders (rooms)',
     crossword: 'Crossword (rooms)',
+    'market-math': 'Market Math (rooms)',
+    'number-garden': 'Number & Letter Garden (rooms)',
+    'explore-indonesia': 'Explore Indonesia (rooms)',
+    'mini-lab': 'Mini Lab (rooms)',
+    'floor-drop': 'Floor Drop (rooms)',
 };
 
 function formatBytes(bytes: number | null | undefined): string {

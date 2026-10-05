@@ -25,6 +25,11 @@ export const GAME_COLORS: Record<string, string> = {
     'snakes-and-ladders': 'var(--color-bubble-orange)',
     'quiz-duel': 'var(--color-bubble-pink)',
     crossword: '#0ea5e9',
+    'market-math': '#f97316',
+    'number-garden': '#22c55e',
+    'explore-indonesia': '#e11d48',
+    'mini-lab': '#8b5cf6',
+    'floor-drop': '#2563eb',
     'knowledge-train': 'var(--color-bubble-purple)',
 };
 
@@ -154,6 +159,7 @@ export function KpiCard({
     accent,
     footer,
     spark,
+    visual,
     href,
 }: {
     label: string;
@@ -162,6 +168,8 @@ export function KpiCard({
     accent: string;
     footer?: ReactNode;
     spark?: { data: Record<string, number | string>[]; dataKey: string };
+    /** Custom graphic shown in the sparkline slot (same h-12 height). */
+    visual?: ReactNode;
     href?: string;
 }) {
     const body = (
@@ -191,6 +199,11 @@ export function KpiCard({
                     dataKey={spark.dataKey}
                     color={accent}
                 />
+            )}
+            {!spark && visual && (
+                <div className="h-12 w-full" aria-hidden="true">
+                    {visual}
+                </div>
             )}
             {footer && (
                 <div className="mt-auto flex min-h-6 items-center">

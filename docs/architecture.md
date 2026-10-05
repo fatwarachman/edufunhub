@@ -90,6 +90,24 @@ Pesan Go → client: `welcome`, `correct{x,y}`, `challenge`, `gates`, `raise`, `
 Aturan server-side: kecepatan gerak dibatasi, collision air/gerbang/props, jawaban tidak pernah dikirim ke client
 sebelum dijawab, poin dihitung di Go (maks 250), hasil idempotent via `event_id` unik.
 
+## Chat service (`services/chat`)
+
+Chat antar pemain berjalan di container Go terpisah, `edufunhub-chat` (`docker compose build chat`, port internal 8091). Laravel tetap pemilik data: keanggotaan, penyimpanan pesan, notifikasi lonceng. Go hanya mengantar event secara live. Go tidak menyimpan riwayat, dan klien melakukan resync dari Laravel setiap kali tersambung ulang.
+
+| Arah | Endpoint | Auth |
+|---|---|---|
+| Browser → Laravel | `GET /chat`, `/chat/inbox`, `/chat/conversations/{id}`, `POST …/messages`, `/chat/direct`, `/chat/groups`, `PATCH /chat/groups/{id}`, `POST …/leave`, `…/read` | sesi web + CSRF; bukan anggota → 404 |
+| Browser → Laravel | `POST /chat/token` | sesi web; token `base64url(json{sub,aud:"chat",exp,nonce}) "." base64url(HMAC)` |
+| Browser → Go | `GET /chat-ws/ws?token=…` (WebSocket via gateway) | token di atas; `aud` wajib `chat` sehingga token game tidak bisa dipakai |
+| Laravel → Go | `POST http://edufunhub-chat:8091/internal/publish` `{users:[ids], event:{…}}` (jaringan docker saja, tidak diekspos gateway) | `X-Chat-Timestamp` + `X-Chat-Signature = hex(HMAC(ts + "." + body))`, toleransi 300 dtk |
+
+- Secret: `CHAT_SERVICE_SECRET`. Jika kosong, fallback ke `GAME_SERVICE_SECRET`.
+- Pesan baru: Laravel menyimpan pesan, lalu publish `{t:"message", message}` ke semua anggota.
+- Notifikasi: penerima mendapat satu notifikasi lonceng `kind=chat` per percakapan. Notifikasi ini diperbarui (`count`) selama belum dibaca, dan hilang saat percakapan dibuka.
+- Jika Go mati, pesan tetap tersimpan dan notifikasi tetap masuk. Halaman chat beralih ke polling setiap 10 detik.
+- Batas: pesan maksimal 1000 karakter; 30 pesan/menit dan 3 pesan/detik per pengguna. Grup maksimal 30 anggota. Hanya pembuat grup yang bisa mengganti nama grup; kepemilikan pindah otomatis bila pembuat keluar.
+- Go membatasi 8 socket per pengguna. Klien yang lambat (buffer 64 event) diputus.
+
 ## Open questions
 
 - Lokasi service Go: repository/package terpisah atau monorepo `services/game`.

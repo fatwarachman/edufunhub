@@ -85,6 +85,24 @@ services:
     networks:
       - edufunhub-net
 
+  # Go chat service (separate container): live delivery of player chat.
+  # Laravel stores messages and posts each one to /internal/publish.
+  chat:
+    build:
+      context: ./services/chat
+      dockerfile: Dockerfile
+    image: edufunhub-chat:latest
+    container_name: edufunhub-chat
+    restart: unless-stopped
+    environment:
+      CHAT_ADDR: ":8091"
+      CHAT_SERVICE_SECRET: ${CHAT_SERVICE_SECRET:-${GAME_SERVICE_SECRET:?GAME_SERVICE_SECRET is required}}
+      CHAT_ALLOWED_ORIGINS: ${CHAT_ALLOWED_ORIGINS:-*}
+    expose:
+      - "8091"
+    networks:
+      - edufunhub-net
+
   gateway:
     image: nginx:alpine
     pull_policy: never
@@ -101,6 +119,8 @@ services:
       dashboard:
         condition: service_healthy
       game:
+        condition: service_healthy
+      chat:
         condition: service_healthy
     networks:
       - edufunhub-net

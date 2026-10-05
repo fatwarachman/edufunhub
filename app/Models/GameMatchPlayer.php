@@ -11,13 +11,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class GameMatchPlayer extends Model
 {
     /** @var list<string> */
-    protected $fillable = ['game_match_id', 'user_id', 'game_history_id', 'seat', 'name', 'grade', 'is_local', 'is_bot', 'left_early', 'rank', 'score', 'correct', 'wrong'];
+    protected $fillable = ['game_match_id', 'user_id', 'game_history_id', 'seat', 'name', 'grade', 'is_local', 'is_bot', 'left_early', 'rank', 'score', 'correct', 'wrong', 'survival_ms', 'accuracy'];
 
     /** @return array<string, string> */
     protected function casts(): array
     {
         return [
             'seat' => 'integer',
+            'survival_ms' => 'integer',
+            'accuracy' => 'float',
             'grade' => 'integer',
             'is_local' => 'boolean',
             'is_bot' => 'boolean',

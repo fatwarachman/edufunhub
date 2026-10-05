@@ -8,6 +8,11 @@ export const GAME_LABELS: Record<string, string> = {
     'quiz-duel': 'Class Quiz Duel',
     'knowledge-train': 'Knowledge Train',
     crossword: 'Crossword',
+    'market-math': 'Market Math',
+    'number-garden': 'Number & Letter Garden',
+    'explore-indonesia': 'Explore Indonesia',
+    'mini-lab': 'Mini Lab',
+    'floor-drop': 'Floor Drop',
 };
 
 export const SUBJECT_LABELS: Record<string, string> = {

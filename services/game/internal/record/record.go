@@ -29,6 +29,9 @@ type Player struct {
 	Correct int    `json:"correct"`
 	Wrong   int    `json:"wrong"`
 	Rank    int    `json:"rank"`
+	// SurvivalMs and Accuracy (percent) are reported by elimination games.
+	SurvivalMs int64    `json:"survival_ms,omitempty"`
+	Accuracy   *float64 `json:"accuracy,omitempty"`
 }
 
 // Word is a crossword answer shown in the match and whether anyone solved it.

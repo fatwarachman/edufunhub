@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Services\CharacterShop;
+use App\Services\PlayerBadges;
 use App\Services\PlayerPortal;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,7 +13,7 @@ use Inertia\Response;
 
 class UserDashboardController extends Controller
 {
-    public function __invoke(Request $request, PlayerPortal $portal, CharacterShop $shop): Response
+    public function __invoke(Request $request, PlayerPortal $portal, CharacterShop $shop, PlayerBadges $badges): Response
     {
         $user = $request->user();
         $profile = $user->playerProfile()->first() ?? new PlayerProfile;
@@ -31,6 +32,7 @@ class UserDashboardController extends Controller
             ],
             'categories' => $portal->catalog($profile->grade),
             'progress' => $portal->progress($points),
+            'badges' => $badges->summary($user),
             'history' => $history->getCollection()->map(fn (GameHistory $game): array => [
                 'id' => $game->id,
                 'game_name' => $game->game_name,

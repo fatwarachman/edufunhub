@@ -1,0 +1,375 @@
+import { tooltipStyle } from '@/components/admin/ads/shared';
+import { Panel, formatNumber, gameLabel } from '@/components/admin/game-stats';
+import {
+    BarChart3,
+    Clock,
+    Gauge,
+    GraduationCap,
+    MonitorSmartphone,
+    Users,
+} from 'lucide-react';
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from 'recharts';
+
+export interface AnalyticsRow {
+    impressions: number;
+    clicks: number;
+    plays: number;
+    ctr: number | null;
+}
+
+export interface CampaignAnalytics {
+    placements: (AnalyticsRow & { placement: string })[];
+    games: (AnalyticsRow & { game: string })[];
+    audience: {
+        reach: number;
+        frequency: number | null;
+        unique_clickers: number;
+        unique_listeners: number;
+        guest_impressions: number;
+    };
+    frequency_buckets: { bucket: string; users: number }[];
+    devices: (AnalyticsRow & { device: string })[];
+    grades: (AnalyticsRow & { grade: string })[];
+    hours: { hour: number; impressions: number }[];
+}
+
+const DEVICE_LABELS: Record<string, string> = {
+    mobile: 'Phone',
+    tablet: 'Tablet',
+    desktop: 'Desktop',
+    unknown: 'Unknown',
+};
+
+function pct(value: number | null): string {
+    return value === null ? '—' : `${value.toFixed(2)}%`;
+}
+
+/**
+ * Campaign analytics: reach and frequency, performance per placement and
+ * game with CTR, audience by device and grade, and delivery by hour.
+ */
+export function CampaignAnalyticsPanels({
+    analytics,
+    labelOf,
+    totals,
+}: {
+    analytics: CampaignAnalytics;
+    labelOf: (key: string) => string;
+    totals: { impressions: number; clicks: number; plays: number };
+}) {
+    const { audience } = analytics;
+    const clickRate =
+        audience.reach > 0
+            ? (audience.unique_clickers / audience.reach) * 100
+            : null;
+
+    return (
+        <div className="flex flex-col gap-6" data-testid="campaign-analytics">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                <Metric
+                    label="Reach (unique players)"
+                    value={formatNumber(audience.reach)}
+                    hint={`${formatNumber(audience.guest_impressions)} guest impressions`}
+                    testId="analytics-reach"
+                />
+                <Metric
+                    label="Avg. frequency"
+                    value={
+                        audience.frequency === null
+                            ? '—'
+                            : `${audience.frequency}×`
+                    }
+                    hint="Impressions per player"
+                    testId="analytics-frequency"
+                />
+                <Metric
+                    label="Unique clickers"
+                    value={formatNumber(audience.unique_clickers)}
+                    hint={`${pct(clickRate)} of reached players`}
+                />
+                <Metric
+                    label="Jingle listeners"
+                    value={formatNumber(audience.unique_listeners)}
+                    hint={`${formatNumber(totals.plays)} plays in total`}
+                />
+                <Metric
+                    label="Click-through rate"
+                    value={pct(
+                        totals.impressions > 0
+                            ? (totals.clicks / totals.impressions) * 100
+                            : null,
+                    )}
+                    hint={`${formatNumber(totals.clicks)} clicks / ${formatNumber(totals.impressions)} impressions`}
+                    testId="analytics-ctr"
+                />
+            </div>
+
+            <div className="grid gap-6 xl:grid-cols-2">
+                <Panel
+                    title="Performance by placement"
+                    icon={BarChart3}
+                    className="min-w-0"
+                >
+                    <PerformanceTable
+                        rows={analytics.placements.map((r) => ({
+                            ...r,
+                            label: labelOf(r.placement),
+                        }))}
+                        testId="analytics-placements"
+                    />
+                </Panel>
+                <Panel
+                    title="Performance by game"
+                    icon={BarChart3}
+                    className="min-w-0"
+                >
+                    <PerformanceTable
+                        rows={analytics.games.map((r) => ({
+                            ...r,
+                            label: r.game
+                                ? gameLabel(r.game)
+                                : 'Character shop',
+                        }))}
+                        testId="analytics-games"
+                    />
+                </Panel>
+            </div>
+
+            <div className="grid items-start gap-6 xl:grid-cols-3">
+                <Panel
+                    title="Devices"
+                    description="Impressions by device class"
+                    icon={MonitorSmartphone}
+                >
+                    <ShareList
+                        rows={analytics.devices.map((r) => ({
+                            label: DEVICE_LABELS[r.device] ?? r.device,
+                            value: r.impressions,
+                            hint: `CTR ${pct(r.ctr)}`,
+                            unit: 'impressions',
+                        }))}
+                        testId="analytics-devices"
+                    />
+                </Panel>
+                <Panel
+                    title="Grades"
+                    description="Impressions by player grade"
+                    icon={GraduationCap}
+                >
+                    <ShareList
+                        rows={analytics.grades.map((r) => ({
+                            label: `Grade ${r.grade}`,
+                            value: r.impressions,
+                            hint: `CTR ${pct(r.ctr)}`,
+                            unit: 'impressions',
+                        }))}
+                        testId="analytics-grades"
+                    />
+                </Panel>
+                <Panel
+                    title="Frequency"
+                    description="How many times each player saw the campaign"
+                    icon={Users}
+                >
+                    <ShareList
+                        rows={analytics.frequency_buckets.map((r) => ({
+                            label: `${r.bucket} view${r.bucket === '1' ? '' : 's'}`,
+                            value: r.users,
+                            hint: '',
+                            unit: 'players',
+                        }))}
+                        testId="analytics-frequency-buckets"
+                    />
+                </Panel>
+            </div>
+
+            <Panel
+                title="Impressions by hour of day"
+                description="Server time"
+                icon={Clock}
+            >
+                <div className="h-48">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                            data={analytics.hours}
+                            margin={{ left: -20, right: 8, top: 8 }}
+                        >
+                            <CartesianGrid
+                                strokeDasharray="3 3"
+                                stroke="var(--border)"
+                            />
+                            <XAxis
+                                dataKey="hour"
+                                tickFormatter={(h: number) =>
+                                    `${String(h).padStart(2, '0')}`
+                                }
+                                tick={{
+                                    fill: 'var(--muted-foreground)',
+                                    fontSize: 11,
+                                }}
+                                interval={0}
+                            />
+                            <YAxis
+                                allowDecimals={false}
+                                tick={{
+                                    fill: 'var(--muted-foreground)',
+                                    fontSize: 11,
+                                }}
+                            />
+                            <Tooltip
+                                contentStyle={tooltipStyle}
+                                cursor={{ fill: 'var(--muted)' }}
+                                labelFormatter={(h) =>
+                                    `${String(h).padStart(2, '0')}:00`
+                                }
+                            />
+                            <Bar
+                                dataKey="impressions"
+                                name="Impressions"
+                                fill="var(--chart-1)"
+                                radius={[3, 3, 0, 0]}
+                            />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </Panel>
+        </div>
+    );
+}
+
+function Metric({
+    label,
+    value,
+    hint,
+    testId,
+}: {
+    label: string;
+    value: string;
+    hint: string;
+    testId?: string;
+}) {
+    return (
+        <div
+            className="flex flex-col gap-1 rounded-2xl border border-border bg-card p-4 shadow-sm"
+            data-testid={testId}
+        >
+            <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <Gauge className="size-3.5" />
+                {label}
+            </span>
+            <span className="text-xl font-bold text-foreground tabular-nums">
+                {value}
+            </span>
+            <span className="text-xs text-muted-foreground">{hint}</span>
+        </div>
+    );
+}
+
+function PerformanceTable({
+    rows,
+    testId,
+}: {
+    rows: (AnalyticsRow & { label: string })[];
+    testId: string;
+}) {
+    if (rows.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">No delivery yet.</p>
+        );
+    }
+    return (
+        <div className="-mx-5 -my-5 overflow-x-auto">
+            <table
+                className="w-full min-w-[480px] text-sm"
+                data-testid={testId}
+            >
+                <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
+                    <tr>
+                        <th className="px-5 py-2.5 font-medium">Name</th>
+                        <th className="px-3 py-2.5 text-right font-medium">
+                            Impressions
+                        </th>
+                        <th className="px-3 py-2.5 text-right font-medium">
+                            Clicks
+                        </th>
+                        <th className="px-3 py-2.5 text-right font-medium">
+                            CTR
+                        </th>
+                        <th className="px-5 py-2.5 text-right font-medium">
+                            Plays
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                    {rows.map((row) => (
+                        <tr key={row.label}>
+                            <td className="px-5 py-2 font-medium text-foreground">
+                                {row.label}
+                            </td>
+                            <td className="px-3 py-2 text-right tabular-nums">
+                                {formatNumber(row.impressions)}
+                            </td>
+                            <td className="px-3 py-2 text-right tabular-nums">
+                                {formatNumber(row.clicks)}
+                            </td>
+                            <td className="px-3 py-2 text-right tabular-nums">
+                                {pct(row.ctr)}
+                            </td>
+                            <td className="px-5 py-2 text-right tabular-nums">
+                                {formatNumber(row.plays)}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+function ShareList({
+    rows,
+    testId,
+}: {
+    rows: { label: string; value: number; hint: string; unit: string }[];
+    testId: string;
+}) {
+    const total = rows.reduce((sum, row) => sum + row.value, 0);
+    if (total === 0) {
+        return <p className="text-sm text-muted-foreground">No data yet.</p>;
+    }
+    return (
+        <ul className="flex flex-col gap-3" data-testid={testId}>
+            {rows.map((row) => {
+                const share = (row.value / total) * 100;
+                return (
+                    <li key={row.label} className="flex flex-col gap-1">
+                        <div className="flex justify-between gap-2 text-xs">
+                            <span className="font-medium text-foreground">
+                                {row.label}
+                            </span>
+                            <span className="text-muted-foreground tabular-nums">
+                                {formatNumber(row.value)} {row.unit} ·{' '}
+                                {share.toFixed(0)}%
+                                {row.hint && ` · ${row.hint}`}
+                            </span>
+                        </div>
+                        <span className="h-1.5 overflow-hidden rounded-full bg-muted-foreground/15">
+                            <span
+                                className="block h-full rounded-full bg-primary"
+                                style={{ width: `${share}%` }}
+                            />
+                        </span>
+                    </li>
+                );
+            })}
+        </ul>
+    );
+}

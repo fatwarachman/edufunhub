@@ -1,4 +1,5 @@
-import { MiniBlockAvatar } from '@/components/mini-block-avatar';
+import AdSlot from '@/components/ads/ad-slot';
+import GameAdStrip from '@/components/ads/game-ad-strip';
 import {
     ConnectionBadge,
     RoomEntry,
@@ -7,6 +8,7 @@ import {
     type RoomPayload,
     useRoomPin,
 } from '@/components/multiplayer/room';
+import { PlayerAvatar } from '@/components/player-avatar';
 import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +19,7 @@ import {
 } from '@/hooks/use-crossword-connection';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import { useTranslations } from '@/hooks/use-translations';
+import { useAdMoments } from '@/lib/ads';
 import { cn } from '@/lib/utils';
 import { Head } from '@inertiajs/react';
 import {
@@ -210,6 +213,13 @@ export default function Crossword({
     useRoomPin(online, state?.pin, pin, join);
 
     const playing = state?.phase === 'playing';
+    useAdMoments(
+        playing ? 'playing' : state?.phase === 'done' ? 'done' : 'idle',
+        {
+            muted,
+            won: state?.phase === 'done' && state.winner === state.you,
+        },
+    );
     const now = useNow(playing);
     const remaining = state
         ? (state.remaining_ms ?? 0) - (playing ? now - state.receivedAt : 0)
@@ -588,7 +598,7 @@ export default function Crossword({
                                                 data-testid="crossword-hint"
                                                 className="min-h-12 rounded-xl border-2 border-[#1f2a44] bg-white font-black"
                                             >
-                                                <Lightbulb className="mr-1 size-4" />
+                                                <Lightbulb className="size-4" />
                                                 {t('crossword.hint', {
                                                     count: me?.hints ?? 0,
                                                 })}
@@ -631,7 +641,7 @@ export default function Crossword({
                             data-testid="crossword-leave"
                             className="min-h-11 self-center text-xs font-bold text-slate-600"
                         >
-                            <DoorOpen className="mr-1.5 size-4" />
+                            <DoorOpen className="size-4" />
                             {t('room.leave')}
                         </Button>
                     )}
@@ -703,15 +713,19 @@ export default function Crossword({
                                     onClick={() => send({ t: 'leave' })}
                                     className="min-h-11 rounded-xl border-2 border-[#1f2a44] bg-white font-black"
                                 >
-                                    <DoorOpen className="mr-1.5 size-4" />
+                                    <DoorOpen className="size-4" />
                                     {t('crossword.result.leave')}
                                 </Button>
                             </div>
                         </div>
                     )}
+                    {state.phase === 'done' && (
+                        <AdSlot placement="arena.result" />
+                    )}
                 </div>
 
                 <div className="flex flex-col gap-4 lg:col-span-5">
+                    <AdSlot placement="arena.sidebar" />
                     <div className="rounded-3xl border-3 border-[#1f2a44] bg-white p-4 shadow-[4px_4px_0px_#1f2a44]">
                         <div className="flex items-center justify-between gap-2">
                             <span className="text-xs font-black text-slate-500 uppercase">
@@ -742,8 +756,11 @@ export default function Crossword({
                                             ],
                                     }}
                                 >
-                                    <div className="h-8 w-8 shrink-0">
-                                        <MiniBlockAvatar skinIndex={p.seat} />
+                                    <div className="size-10 shrink-0">
+                                        <PlayerAvatar
+                                            character={p.character}
+                                            seat={p.seat}
+                                        />
                                     </div>
                                     <span className="min-w-0 flex-1 truncate text-sm font-black">
                                         {p.name}
@@ -847,7 +864,7 @@ export default function Crossword({
                 <meta name="description" content={t('crossword.meta')} />
             </Head>
             <header className="sticky top-0 z-30 border-b-4 border-[#1f2a44] bg-[#f0f9ff]/95 backdrop-blur-md">
-                <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
+                <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
                             href={backHref}
@@ -892,7 +909,8 @@ export default function Crossword({
                     </div>
                 </div>
             </header>
-            <main className="mx-auto max-w-7xl px-3 py-5 sm:px-6 lg:px-8">
+            <main className="mx-auto flex flex-col gap-4 px-3 py-5 sm:px-6 lg:px-8">
+                <GameAdStrip />
                 {body}
             </main>
         </div>

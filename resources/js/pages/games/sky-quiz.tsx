@@ -1,3 +1,5 @@
+import AdSlot from '@/components/ads/ad-slot';
+import GameAdStrip from '@/components/ads/game-ad-strip';
 import { Joystick, type StickVector } from '@/components/games/joystick';
 import {
     type GameSubject,
@@ -5,6 +7,7 @@ import {
     SubjectFallbackNote,
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
+import { PlayerAvatar } from '@/components/player-avatar';
 import {
     BackButton,
     NavButton,
@@ -17,6 +20,8 @@ import {
     useSkyConnection,
 } from '@/hooks/use-sky-connection';
 import { useTranslations } from '@/hooks/use-translations';
+import { useAdMoments } from '@/lib/ads';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import { hasGrade, KINDERGARTEN } from '@/lib/grade';
 import {
     createLocalReferee,
@@ -50,6 +55,7 @@ interface SkyPlayer {
     grade: number | null;
     color: string;
     accessory: string;
+    character?: CharacterLook;
 }
 
 interface SkyQuizProps {
@@ -1051,6 +1057,10 @@ export default function SkyQuiz({
     const correctCount = result?.correct ?? round?.correct ?? 0;
     const percent = result?.percent ?? Math.floor((correctCount * 100) / total);
     const passed = result?.passed ?? hasPassed(correctCount, total);
+    useAdMoments(
+        screen === 'playing' ? 'playing' : screen === 'ended' ? 'done' : 'idle',
+        { muted: audio.muted, won: passed },
+    );
     const shieldsOut =
         result?.reason === 'shields' || (screen === 'ended' && shields === 0);
 
@@ -1088,7 +1098,8 @@ export default function SkyQuiz({
                 </div>
                 <SiteNav compact className="shrink-0" />
             </header>
-            <main className="mx-auto flex max-w-6xl flex-col gap-3 p-3 sm:p-5">
+            <main className="flex w-full flex-col gap-3 p-3 sm:p-5 lg:px-8">
+                <GameAdStrip />
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-bold">
                         {signedIn ? (
@@ -1097,7 +1108,11 @@ export default function SkyQuiz({
                                     className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-[#20364a] bg-white px-3"
                                     data-testid="sky-player"
                                 >
-                                    <GraduationCap className="size-4" />
+                                    <span className="-my-1 size-9 shrink-0">
+                                        <PlayerAvatar
+                                            character={player.character}
+                                        />
+                                    </span>
                                     <span className="truncate">
                                         {player.name} •{' '}
                                         {hasGrade(player.grade)
@@ -1300,108 +1315,151 @@ export default function SkyQuiz({
                         {message || t('sky.hint')}
                     </p>
                 </div>
-                <div className="relative mx-auto w-full max-w-[min(100%,calc((100dvh-300px)*1.5))] overflow-hidden rounded-2xl border-3 border-[#20364a] bg-[#174568] shadow-[5px_5px_0_#20364a] [@media(max-height:500px)_and_(orientation:landscape)]:max-w-[min(100%,calc(90dvh*1.5))]">
-                    <canvas
-                        ref={canvas}
-                        tabIndex={0}
-                        data-testid="sky-canvas"
-                        aria-label={t('sky.canvasLabel')}
-                        className="block aspect-[3/2] w-full touch-none outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
-                        onPointerDown={(e) => {
-                            e.currentTarget.setPointerCapture(e.pointerId);
-                            e.currentTarget.focus();
-                        }}
-                        onPointerMove={(e) => {
-                            if (
-                                screenRef.current !== 'playing' ||
-                                (e.pointerType !== 'mouse' && !e.buttons)
-                            )
-                                return;
-                            const rect =
-                                e.currentTarget.getBoundingClientRect();
-                            arena.current.targetX =
-                                ((e.clientX - rect.left) / rect.width) * WIDTH;
-                            arena.current.targetY =
-                                ((e.clientY - rect.top) / rect.height) * HEIGHT;
-                        }}
-                    >
-                        {t('sky.noCanvas')}
-                    </canvas>
-                    {screen !== 'playing' && screen !== 'ended' && (
-                        <div className="fixed inset-x-0 top-[70px] bottom-0 z-40 flex items-center justify-center bg-[#12283e]/70 p-3 backdrop-blur-sm sm:absolute sm:inset-0 sm:z-auto sm:p-4">
-                            <div
-                                className="flex max-h-full max-w-md flex-col gap-2 overflow-y-auto rounded-2xl border-2 border-[#20364a] bg-white p-3 text-center shadow-lg sm:gap-3 sm:p-5"
-                                data-testid="sky-intro"
-                            >
-                                <Plane className="mx-auto hidden size-9 text-[#287899] sm:block" />
-                                <h2 className="font-display text-xl font-bold">
-                                    {overlayTitle}
-                                </h2>
-                                {needsGrade ? (
-                                    <p className="text-sm">
-                                        {t('sky.overlay.needGrade')}
-                                    </p>
-                                ) : (
-                                    <p className="text-sm">
-                                        {online
-                                            ? t('sky.overlay.onlineRules', {
-                                                  rounds: SKY_RULES.rounds,
-                                                  grade: player?.grade ?? '',
-                                              })
-                                            : signedIn
-                                              ? t('sky.overlay.unavailable')
-                                              : t('sky.overlay.guestRules')}
-                                    </p>
-                                )}
-                                {online &&
-                                    !needsGrade &&
-                                    screen === 'ready' && (
-                                        <SubjectPicker
-                                            value={subjectChoice}
-                                            onChange={setSubjectChoice}
+                <div
+                    className="grid grid-cols-2 items-center gap-3 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-5"
+                    data-testid="sky-stage"
+                >
+                    <div className="relative col-span-2 mx-auto w-full max-w-[min(100%,calc((100dvh-300px)*1.5))] overflow-hidden rounded-2xl border-3 border-[#20364a] bg-[#174568] shadow-[5px_5px_0_#20364a] lg:col-span-1 lg:col-start-2 lg:row-start-1 [@media(max-height:500px)_and_(orientation:landscape)]:max-w-[min(100%,calc(90dvh*1.5))]">
+                        <canvas
+                            ref={canvas}
+                            tabIndex={0}
+                            data-testid="sky-canvas"
+                            aria-label={t('sky.canvasLabel')}
+                            className="block aspect-[3/2] w-full touch-none outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
+                            onPointerDown={(e) => {
+                                e.currentTarget.setPointerCapture(e.pointerId);
+                                e.currentTarget.focus();
+                            }}
+                            onPointerMove={(e) => {
+                                if (
+                                    screenRef.current !== 'playing' ||
+                                    (e.pointerType !== 'mouse' && !e.buttons)
+                                )
+                                    return;
+                                const rect =
+                                    e.currentTarget.getBoundingClientRect();
+                                arena.current.targetX =
+                                    ((e.clientX - rect.left) / rect.width) *
+                                    WIDTH;
+                                arena.current.targetY =
+                                    ((e.clientY - rect.top) / rect.height) *
+                                    HEIGHT;
+                            }}
+                        >
+                            {t('sky.noCanvas')}
+                        </canvas>
+                        {screen !== 'playing' && screen !== 'ended' && (
+                            <div className="fixed inset-x-0 top-[70px] bottom-0 z-40 flex items-center justify-center bg-[#12283e]/70 p-3 backdrop-blur-sm sm:absolute sm:inset-0 sm:z-auto sm:p-4">
+                                <div
+                                    className="flex max-h-full max-w-md flex-col gap-2 overflow-y-auto rounded-2xl border-2 border-[#20364a] bg-white p-3 text-center shadow-lg sm:gap-3 sm:p-5"
+                                    data-testid="sky-intro"
+                                >
+                                    <Plane className="mx-auto hidden size-9 text-[#287899] sm:block" />
+                                    <h2 className="font-display text-xl font-bold">
+                                        {overlayTitle}
+                                    </h2>
+                                    {needsGrade ? (
+                                        <p className="text-sm">
+                                            {t('sky.overlay.needGrade')}
+                                        </p>
+                                    ) : (
+                                        <p className="text-sm">
+                                            {online
+                                                ? t('sky.overlay.onlineRules', {
+                                                      rounds: SKY_RULES.rounds,
+                                                      grade:
+                                                          player?.grade ?? '',
+                                                  })
+                                                : signedIn
+                                                  ? t('sky.overlay.unavailable')
+                                                  : t('sky.overlay.guestRules')}
+                                        </p>
+                                    )}
+                                    {online &&
+                                        !needsGrade &&
+                                        screen === 'ready' && (
+                                            <SubjectPicker
+                                                value={subjectChoice}
+                                                onChange={setSubjectChoice}
+                                            />
+                                        )}
+                                    {needsGrade ? (
+                                        <NavButton
+                                            href="/dashboard#grade"
+                                            icon={GraduationCap}
+                                            label={t('sky.setGrade')}
+                                            variant="primary"
+                                            block
+                                        />
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={
+                                                screen === 'paused'
+                                                    ? togglePause
+                                                    : start
+                                            }
+                                            disabled={
+                                                !ready || (signedIn && !online)
+                                            }
+                                            className="flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-[#20364a] bg-[#fff176] px-4 py-3 font-black text-[#20364a] disabled:opacity-60"
+                                            data-testid="sky-start"
+                                        >
+                                            <Play className="size-5" />
+                                            {screen === 'paused'
+                                                ? t('sky.resume')
+                                                : !ready
+                                                  ? t('sky.connecting')
+                                                  : t('sky.start')}
+                                        </button>
+                                    )}
+                                    {!signedIn && (
+                                        <NavButton
+                                            href="/login"
+                                            icon={Trophy}
+                                            label={t('sky.loginForPoints')}
+                                            block
                                         />
                                     )}
-                                {needsGrade ? (
-                                    <NavButton
-                                        href="/dashboard#grade"
-                                        icon={GraduationCap}
-                                        label={t('sky.setGrade')}
-                                        variant="primary"
-                                        block
-                                    />
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={
-                                            screen === 'paused'
-                                                ? togglePause
-                                                : start
-                                        }
-                                        disabled={
-                                            !ready || (signedIn && !online)
-                                        }
-                                        className="flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-[#20364a] bg-[#fff176] px-4 py-3 font-black text-[#20364a] disabled:opacity-60"
-                                        data-testid="sky-start"
-                                    >
-                                        <Play className="size-5" />
-                                        {screen === 'paused'
-                                            ? t('sky.resume')
-                                            : !ready
-                                              ? t('sky.connecting')
-                                              : t('sky.start')}
-                                    </button>
-                                )}
-                                {!signedIn && (
-                                    <NavButton
-                                        href="/login"
-                                        icon={Trophy}
-                                        label={t('sky.loginForPoints')}
-                                        block
-                                    />
-                                )}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
+                    <Joystick
+                        vector={stick}
+                        disabled={screen !== 'playing'}
+                        label={t('sky.joystick')}
+                        className="col-start-1 row-start-2 justify-self-start lg:row-start-1 lg:justify-self-center"
+                    />
+                    <button
+                        type="button"
+                        disabled={screen !== 'playing'}
+                        onPointerDown={(e) => {
+                            e.currentTarget.setPointerCapture(e.pointerId);
+                            firing.current = true;
+                        }}
+                        onPointerUp={() => {
+                            firing.current = false;
+                        }}
+                        onPointerCancel={() => {
+                            firing.current = false;
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ')
+                                firing.current = true;
+                        }}
+                        onKeyUp={() => {
+                            firing.current = false;
+                        }}
+                        onBlur={() => {
+                            firing.current = false;
+                        }}
+                        className="col-start-2 row-start-2 flex size-[132px] shrink-0 touch-none flex-col items-center justify-center gap-1 justify-self-end rounded-full border-[3px] border-[#20364a] bg-[#ff9e44] font-black shadow-[3px_3px_0px_#20364a] select-none active:translate-y-0.5 active:shadow-[1px_1px_0px_#20364a] disabled:opacity-50 lg:col-start-3 lg:row-start-1 lg:justify-self-center"
+                        data-testid="sky-fire"
+                    >
+                        <Crosshair className="size-8" />
+                        <span>{t('sky.fire')}</span>
+                    </button>
                 </div>
 
                 {screen === 'ended' && (
@@ -1489,6 +1547,7 @@ export default function SkyQuiz({
                                 </p>
                             )}
                         </div>
+                        <AdSlot placement="arena.result" className="w-full" />
                         <div className="flex w-full max-w-sm flex-col gap-2">
                             <button
                                 type="button"
@@ -1518,54 +1577,14 @@ export default function SkyQuiz({
                         </div>
                     </section>
                 )}
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <Joystick
-                        vector={stick}
-                        disabled={screen !== 'playing'}
-                        label={t('sky.joystick')}
-                    />
-                    <p className="max-w-xl flex-1 text-xs font-semibold">
-                        <span className="[@media(pointer:coarse)]:hidden">
-                            {t(
-                                online
-                                    ? 'sky.footer.online'
-                                    : 'sky.footer.guest',
-                            )}
-                        </span>
-                        <span className="hidden [@media(pointer:coarse)]:inline">
-                            {t('sky.joystickHint')}
-                        </span>
-                    </p>
-                    <button
-                        type="button"
-                        disabled={screen !== 'playing'}
-                        onPointerDown={(e) => {
-                            e.currentTarget.setPointerCapture(e.pointerId);
-                            firing.current = true;
-                        }}
-                        onPointerUp={() => {
-                            firing.current = false;
-                        }}
-                        onPointerCancel={() => {
-                            firing.current = false;
-                        }}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ')
-                                firing.current = true;
-                        }}
-                        onKeyUp={() => {
-                            firing.current = false;
-                        }}
-                        onBlur={() => {
-                            firing.current = false;
-                        }}
-                        className="ml-auto flex size-[132px] shrink-0 touch-none flex-col items-center justify-center gap-1 rounded-full border-[3px] border-[#20364a] bg-[#ff9e44] font-black shadow-[3px_3px_0px_#20364a] select-none active:translate-y-0.5 active:shadow-[1px_1px_0px_#20364a] disabled:opacity-50"
-                        data-testid="sky-fire"
-                    >
-                        <Crosshair className="size-8" />
-                        <span>{t('sky.fire')}</span>
-                    </button>
-                </div>
+                <p className="text-xs font-semibold">
+                    <span className="[@media(pointer:coarse)]:hidden">
+                        {t(online ? 'sky.footer.online' : 'sky.footer.guest')}
+                    </span>
+                    <span className="hidden [@media(pointer:coarse)]:inline">
+                        {t('sky.joystickHint')}
+                    </span>
+                </p>
             </main>
         </div>
     );

@@ -6,6 +6,7 @@ use App\Http\Requests\BuyCharacterItemRequest;
 use App\Http\Requests\UpdateCharacterRequest;
 use App\Models\CharacterItem;
 use App\Models\PlayerProfile;
+use App\Services\Ads\AdServer;
 use App\Services\CharacterShop;
 use App\Services\PlayerNotifications;
 use App\Services\PlayerPortal;
@@ -20,13 +21,14 @@ use Inertia\Response;
  */
 class CharacterController extends Controller
 {
-    public function __construct(private CharacterShop $shop, private PlayerPortal $portal, private PlayerNotifications $notifications) {}
+    public function __construct(private CharacterShop $shop, private PlayerPortal $portal, private PlayerNotifications $notifications, private AdServer $ads) {}
 
     public function show(Request $request): Response
     {
         $user = $request->user();
         $profile = $user->playerProfile()->first() ?? new PlayerProfile;
         $locale = $user->locale === 'en' ? 'en' : 'id';
+        $sponsored = $this->ads->sponsoredItems($user);
 
         return Inertia::render('user/character', [
             'character' => $profile->character(),
@@ -41,6 +43,7 @@ class CharacterController extends Controller
                 'color' => $item->color,
                 'name' => $item->name($locale),
                 'price' => $item->price,
+                'sponsor' => $sponsored[$item->id] ?? null,
             ])->values(),
             'options' => [
                 'slots' => CharacterItem::SLOTS,

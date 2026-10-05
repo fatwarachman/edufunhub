@@ -63,3 +63,21 @@ it('allows superadmins to access the dashboard and see user metrics', function (
             ->has('recent_users')
     );
 });
+
+it('shows the number of games in the catalog on the dashboard', function () {
+    $games = collect(config('game-catalog.categories'))->flatMap(fn (array $category) => $category['games']);
+    $player = User::factory()->withPlayerDetails()->create();
+    App\Models\GameHistory::factory()->create(['user_id' => $player->id, 'game_key' => 'sky-quiz', 'played_at' => now()->subDay()]);
+    App\Models\GameHistory::factory()->create(['user_id' => $player->id, 'game_key' => 'sky-quiz', 'played_at' => now()->subDays(2)]);
+    App\Models\GameHistory::factory()->create(['user_id' => $player->id, 'game_key' => 'quiz-duel', 'played_at' => now()->subDays(20)]);
+
+    $this->actingAs(User::factory()->create(['is_superadmin' => true]))
+        ->get('/admin/dashboard')
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('gameCatalog.total', $games->count())
+            ->where('gameCatalog.total', 11)
+            ->where('gameCatalog.multiplayer', $games->where('multiplayer', true)->count())
+            ->where('gameCatalog.awards_points', $games->where('awards_points', true)->count())
+            ->where('gameCatalog.categories', count(config('game-catalog.categories')))
+            ->where('gameCatalog.played_7d', 1));
+});

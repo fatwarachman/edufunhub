@@ -5,6 +5,7 @@ import PlayerCharacter, {
 import { BackButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
+import { type AdSponsor, trackAd } from '@/lib/ads';
 import {
     CHARACTER_SHIRTS,
     type CharacterLook,
@@ -28,7 +29,8 @@ import {
     Sword,
     X,
 } from 'lucide-react';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import '../../../css/edu-ads.css';
 
 interface ShopItem {
     id: number;
@@ -38,6 +40,7 @@ interface ShopItem {
     color: string | null;
     name: string;
     price: number;
+    sponsor?: AdSponsor | null;
 }
 
 interface Props {
@@ -418,6 +421,7 @@ export default function Character({
                                     <ItemCard
                                         key={item.id}
                                         name={item.name}
+                                        sponsor={item.sponsor ?? null}
                                         active={
                                             wearing || trying?.id === item.id
                                         }
@@ -670,6 +674,7 @@ function Badge({
 
 function ItemCard({
     name,
+    sponsor = null,
     active,
     onSelect,
     preview,
@@ -678,6 +683,7 @@ function ItemCard({
     testId,
 }: {
     name: string;
+    sponsor?: AdSponsor | null;
     active: boolean;
     onSelect: () => void;
     preview: ReactNode;
@@ -712,7 +718,41 @@ function ItemCard({
                     {badge}
                 </div>
             </button>
+            {sponsor && <SponsorChip sponsor={sponsor} />}
             {action}
         </div>
+    );
+}
+
+function SponsorChip({ sponsor }: { sponsor: AdSponsor }) {
+    const { t } = useTranslations();
+    const ref = useRef<HTMLSpanElement | null>(null);
+
+    useEffect(() => {
+        const node = ref.current;
+        if (!node || typeof IntersectionObserver === 'undefined') return;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries.some((entry) => entry.intersectionRatio >= 0.5)) {
+                    trackAd(sponsor.serve, 'impression');
+                    observer.disconnect();
+                }
+            },
+            { threshold: [0.5] },
+        );
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [sponsor.serve]);
+
+    return (
+        <span
+            ref={ref}
+            className="edu-ad-sponsor-chip"
+            title={sponsor.motto ?? undefined}
+            data-testid="shop-sponsor"
+        >
+            {sponsor.logo_url && <img src={sponsor.logo_url} alt="" />}
+            <span>{t('ads.sponsoredBy', { brand: sponsor.advertiser })}</span>
+        </span>
     );
 }

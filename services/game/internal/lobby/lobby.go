@@ -552,6 +552,9 @@ func (h *Hub[S, P]) RoomPayload(r *Room[S, P], viewer int64, extra func(i int, s
 			"online": h.Online(r, i), "left": s.Left, "local": s.Local,
 			"controlled": r.Controls(viewer, i),
 		}
+		if len(s.Claims.Character) > 0 {
+			p["character"] = s.Claims.Character
+		}
 		if extra != nil {
 			for k, v := range extra(i, s) {
 				p[k] = v

@@ -4,6 +4,7 @@
  */
 .edu-nav-btn {
     --edu-ink: #151b2e;
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -144,6 +145,9 @@
     font-family: 'Instrument Sans', 'DM Sans', system-ui, sans-serif;
     text-align: left;
     animation: edu-game-menu-in 140ms ease-out;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
 }
 .edu-game-menu-panel[hidden] {
     display: none;
@@ -378,6 +382,8 @@
     padding: 6px;
     overflow-y: auto;
     list-style: none;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
 }
 .edu-notice-empty {
     margin: 0;
@@ -608,4 +614,47 @@
         position: relative;
         z-index: 56;
     }
+}
+
+/* Player avatar hop while a pawn walks on a board. */
+.edu-avatar-hop > * {
+    animation: edu-avatar-hop 310ms ease-in-out infinite;
+}
+@keyframes edu-avatar-hop {
+    50% {
+        transform: translateY(-14%);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .edu-avatar-hop > * {
+        animation: none;
+    }
+}
+
+.edu-notice-count {
+    margin-left: 6px;
+    border-radius: 999px;
+    background: #151b2e;
+    padding: 0 6px;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    vertical-align: 1px;
+}
+
+.edu-nav-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    box-shadow: none;
+    transform: none;
+}
+
+.edu-nav-more-count {
+    margin-left: auto;
+    border-radius: 999px;
+    background: #ff5470;
+    padding: 1px 8px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
 }

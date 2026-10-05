@@ -100,7 +100,7 @@ class PlayerNotifications
     }
 
     /**
-     * @return array{id: string, kind: string, title: string, body: string, url: ?string, read: bool, created_at: ?string}
+     * @return array{id: string, kind: string, title: string, body: string, url: ?string, read: bool, count: int, created_at: ?string}
      */
     public function present(DatabaseNotification $notification, string $locale): array
     {
@@ -125,6 +125,7 @@ class PlayerNotifications
             'body' => $body,
             'url' => is_string($url) && $this->isSafeUrl($url) ? $url : null,
             'read' => $notification->read_at !== null,
+            'count' => max(1, (int) ($data['count'] ?? 1)),
             'created_at' => $notification->created_at?->toIso8601String(),
         ];
     }

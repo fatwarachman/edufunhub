@@ -1,22 +1,37 @@
+import { BadgeChips } from '@/components/badges';
 import AdminLayout from '@/layouts/admin-layout';
 import { cn } from '@/lib/utils';
-import { type AdminUser, type PaginatedData, type PaginationLink, type Role } from '@/types/admin';
-import { Head, Link, router } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import {
+    type AdminUser,
+    type PaginatedData,
+    type PaginationLink,
+    type Role,
+} from '@/types/admin';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ChevronDown,
     ChevronLeft,
     ChevronRight,
     Edit,
     Eye,
-    Mail,
     Loader2,
+    LogIn,
+    Mail,
+    Megaphone,
     MoreHorizontal,
     Plus,
     Search,
     Trash2,
     UserX,
 } from 'lucide-react';
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import {
+    type ReactNode,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 
 function timeAgo(dateStr: string | null | undefined): string {
     if (!dateStr) return 'Never';
@@ -54,7 +69,7 @@ function SortHeader({
     return (
         <button
             onClick={() => onSort(column)}
-            className="flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground focus-visible:outline-none"
+            className="flex items-center gap-1 text-xs font-medium tracking-wider text-muted-foreground uppercase hover:text-foreground focus-visible:outline-none"
         >
             {children}
             {sort === column && (
@@ -73,10 +88,22 @@ function SignupBadge({ google }: { google: boolean }) {
     return google ? (
         <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2 py-0.5 text-xs font-medium text-foreground">
             <svg viewBox="0 0 24 24" className="size-3.5" aria-hidden="true">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09Z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.24 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z" />
-                <path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.96 10.96 0 0 0 12 1 11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z" />
+                <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09Z"
+                />
+                <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.24 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"
+                />
+                <path
+                    fill="#FBBC05"
+                    d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z"
+                />
+                <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.96 10.96 0 0 0 12 1 11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z"
+                />
             </svg>
             Google
         </span>
@@ -91,6 +118,8 @@ function SignupBadge({ google }: { google: boolean }) {
 interface UsersIndexProps {
     users: PaginatedData<AdminUser>;
     roles: Role[];
+    canImpersonate: boolean;
+    viewerIsSuperadmin: boolean;
     filters: {
         search?: string;
         role?: string;
@@ -107,6 +136,7 @@ function ConfirmDialog({
     title,
     message,
     confirmLabel = 'Delete',
+    tone = 'danger',
     processing,
 }: {
     open: boolean;
@@ -115,6 +145,7 @@ function ConfirmDialog({
     title: string;
     message: string;
     confirmLabel?: string;
+    tone?: 'danger' | 'primary';
     processing: boolean;
 }) {
     if (!open) return null;
@@ -123,12 +154,14 @@ function ConfirmDialog({
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="fixed inset-0 bg-black/50" onClick={onClose} />
             <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
-                <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+                <h3 className="text-lg font-semibold text-foreground">
+                    {title}
+                </h3>
                 <p className="mt-2 text-sm text-muted-foreground">{message}</p>
                 <div className="mt-6 flex items-center justify-end gap-3">
                     <button
                         onClick={onClose}
-                        className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         disabled={processing}
                     >
                         Cancel
@@ -136,9 +169,17 @@ function ConfirmDialog({
                     <button
                         onClick={onConfirm}
                         disabled={processing}
-                        className="flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                        className={cn(
+                            'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-50',
+                            tone === 'danger'
+                                ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                                : 'bg-primary text-primary-foreground hover:bg-primary/90',
+                        )}
+                        data-testid="confirm-dialog-confirm"
                     >
-                        {processing && <Loader2 className="size-4 animate-spin" />}
+                        {processing && (
+                            <Loader2 className="size-4 animate-spin" />
+                        )}
                         {confirmLabel}
                     </button>
                 </div>
@@ -147,7 +188,17 @@ function ConfirmDialog({
     );
 }
 
-function Pagination({ links, from, to, total }: { links: PaginationLink[]; from: number | null; to: number | null; total: number }) {
+function Pagination({
+    links,
+    from,
+    to,
+    total,
+}: {
+    links: PaginationLink[];
+    from: number | null;
+    to: number | null;
+    total: number;
+}) {
     if (total <= 0) return null;
 
     const prev = links.find((l) => l.label.includes('Previous'));
@@ -158,9 +209,18 @@ function Pagination({ links, from, to, total }: { links: PaginationLink[]; from:
             <p className="text-sm text-muted-foreground">
                 {from && to ? (
                     <>
-                        Showing <span className="font-medium text-foreground">{from}</span> to{' '}
-                        <span className="font-medium text-foreground">{to}</span> of{' '}
-                        <span className="font-medium text-foreground">{total}</span>
+                        Showing{' '}
+                        <span className="font-medium text-foreground">
+                            {from}
+                        </span>{' '}
+                        to{' '}
+                        <span className="font-medium text-foreground">
+                            {to}
+                        </span>{' '}
+                        of{' '}
+                        <span className="font-medium text-foreground">
+                            {total}
+                        </span>
                     </>
                 ) : (
                     'No results'
@@ -190,12 +250,43 @@ function Pagination({ links, from, to, total }: { links: PaginationLink[]; from:
     );
 }
 
-export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
+export default function UsersIndex({
+    users,
+    roles,
+    filters,
+    canImpersonate,
+    viewerIsSuperadmin,
+}: UsersIndexProps) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-    const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const [impersonateTarget, setImpersonateTarget] =
+        useState<AdminUser | null>(null);
+    const [impersonating, setImpersonating] = useState(false);
+    const { auth } = usePage<SharedData>().props;
+    const canLoginAs = (user: AdminUser) =>
+        canImpersonate &&
+        user.id !== auth.user.id &&
+        !user.disabled_at &&
+        (viewerIsSuperadmin || !user.is_superadmin);
+    const handleImpersonate = () => {
+        if (!impersonateTarget) return;
+        router.post(
+            `/admin/impersonate/${impersonateTarget.id}`,
+            {},
+            {
+                onStart: () => setImpersonating(true),
+                onFinish: () => {
+                    setImpersonating(false);
+                    setImpersonateTarget(null);
+                },
+            },
+        );
+    };
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+        undefined,
+    );
 
     const updateFilters = useCallback(
         (params: Record<string, string | undefined>) => {
@@ -209,7 +300,9 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
 
             // Remove empty values
             const cleaned = Object.fromEntries(
-                Object.entries(query).filter(([, v]) => v !== undefined && v !== ''),
+                Object.entries(query).filter(
+                    ([, v]) => v !== undefined && v !== '',
+                ),
             );
 
             router.get('/admin/users', cleaned, {
@@ -233,7 +326,9 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
 
     const handleSort = (column: string) => {
         const dir =
-            filters.sort === column && filters.direction === 'asc' ? 'desc' : 'asc';
+            filters.sort === column && filters.direction === 'asc'
+                ? 'desc'
+                : 'asc';
         updateFilters({ sort: column, direction: dir });
     };
 
@@ -257,14 +352,17 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                 {/* Header */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 className="font-display text-2xl font-bold text-foreground">Users</h2>
+                        <h2 className="font-display text-2xl font-bold text-foreground">
+                            Users
+                        </h2>
                         <p className="text-sm text-muted-foreground">
-                            {users.total} user{users.total !== 1 ? 's' : ''} total
+                            {users.total} user{users.total !== 1 ? 's' : ''}{' '}
+                            total
                         </p>
                     </div>
                     <Link
                         href="/admin/users/create"
-                        className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                         <Plus className="size-4" />
                         Add User
@@ -274,19 +372,21 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                 {/* Filters */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                         <input
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search users…"
-                            className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className="h-9 w-full rounded-lg border border-input bg-background pr-3 pl-9 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         />
                     </div>
                     <select
                         value={filters.role ?? ''}
-                        onChange={(e) => updateFilters({ role: e.target.value || undefined })}
-                        className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        onChange={(e) =>
+                            updateFilters({ role: e.target.value || undefined })
+                        }
+                        className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                         <option value="">All roles</option>
                         {roles.map((role) => (
@@ -298,8 +398,12 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                     <select
                         aria-label="Sign-up method"
                         value={filters.signup ?? ''}
-                        onChange={(e) => updateFilters({ signup: e.target.value || undefined })}
-                        className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        onChange={(e) =>
+                            updateFilters({
+                                signup: e.target.value || undefined,
+                            })
+                        }
+                        className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                         <option value="">All sign-up methods</option>
                         <option value="google">Google account</option>
@@ -312,7 +416,9 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                     {users.data.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <UserX className="mb-3 size-10 text-muted-foreground/30" />
-                            <p className="text-sm font-medium text-muted-foreground">No users found</p>
+                            <p className="text-sm font-medium text-muted-foreground">
+                                No users found
+                            </p>
                             <p className="text-xs text-muted-foreground/70">
                                 Try adjusting your search or filter
                             </p>
@@ -323,41 +429,64 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                 <thead>
                                     <tr className="border-b border-border">
                                         <th className="px-5 py-3 text-left">
-                                            <SortHeader column="name" sort={filters.sort} direction={filters.direction} onSort={handleSort}>Name</SortHeader>
+                                            <SortHeader
+                                                column="name"
+                                                sort={filters.sort}
+                                                direction={filters.direction}
+                                                onSort={handleSort}
+                                            >
+                                                Name
+                                            </SortHeader>
                                         </th>
                                         <th className="px-5 py-3 text-left">
-                                            <SortHeader column="email" sort={filters.sort} direction={filters.direction} onSort={handleSort}>Email</SortHeader>
+                                            <SortHeader
+                                                column="email"
+                                                sort={filters.sort}
+                                                direction={filters.direction}
+                                                onSort={handleSort}
+                                            >
+                                                Email
+                                            </SortHeader>
                                         </th>
                                         <th className="px-5 py-3 text-left">
-                                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                                                 Sign-up
                                             </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
-                                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                                                 Age
                                             </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
-                                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                                                 Last school
                                             </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
-                                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                                                 Roles
                                             </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
-                                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                                                 Status
                                             </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
-                                            <SortHeader column="created_at" sort={filters.sort} direction={filters.direction} onSort={handleSort}>Joined</SortHeader>
+                                            <SortHeader
+                                                column="created_at"
+                                                sort={filters.sort}
+                                                direction={filters.direction}
+                                                onSort={handleSort}
+                                            >
+                                                Joined
+                                            </SortHeader>
                                         </th>
                                         <th className="px-5 py-3 text-right">
-                                            <span className="sr-only">Actions</span>
+                                            <span className="sr-only">
+                                                Actions
+                                            </span>
                                         </th>
                                     </tr>
                                 </thead>
@@ -372,12 +501,16 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                                     <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                                                         {user.avatar_url ? (
                                                             <img
-                                                                src={user.avatar_url}
+                                                                src={
+                                                                    user.avatar_url
+                                                                }
                                                                 alt=""
                                                                 className="size-full rounded-full object-cover"
                                                             />
                                                         ) : (
-                                                            getInitialsFromName(user.name)
+                                                            getInitialsFromName(
+                                                                user.name,
+                                                            )
                                                         )}
                                                     </div>
                                                     <div className="min-w-0">
@@ -392,23 +525,54 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                                                 Superadmin
                                                             </span>
                                                         )}
+                                                        {(user.badges?.length ??
+                                                            0) > 0 && (
+                                                            <div className="mt-1">
+                                                                <BadgeChips
+                                                                    badges={
+                                                                        user.badges ??
+                                                                        []
+                                                                    }
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-5 py-3 text-muted-foreground">
-                                                {user.email}
+                                                <span className="flex flex-wrap items-center gap-1.5">
+                                                    {user.email}
+                                                    {user.ads_disabled && (
+                                                        <span
+                                                            className="inline-flex items-center rounded-full border border-border px-1.5 text-[11px] font-medium text-muted-foreground"
+                                                            title="Ads hidden for this user"
+                                                        >
+                                                            No ads
+                                                        </span>
+                                                    )}
+                                                </span>
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap">
-                                                <SignupBadge google={Boolean(user.signed_up_with_google)} />
+                                                <SignupBadge
+                                                    google={Boolean(
+                                                        user.signed_up_with_google,
+                                                    )}
+                                                />
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap text-foreground tabular-nums">
-                                                {user.player_profile?.age ?? '—'}
+                                                {user.player_profile?.age ??
+                                                    '—'}
                                             </td>
                                             <td
                                                 className="max-w-56 truncate px-5 py-3 text-foreground"
-                                                title={user.player_profile?.school_name ?? undefined}
+                                                title={
+                                                    user.player_profile
+                                                        ?.school_name ??
+                                                    undefined
+                                                }
                                             >
-                                                {user.player_profile?.school_name ?? '—'}
+                                                {user.player_profile
+                                                    ?.school_name ?? '—'}
                                             </td>
                                             <td className="px-5 py-3">
                                                 <div className="flex flex-wrap gap-1">
@@ -434,7 +598,8 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                                         'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
                                                         user.status === 'active'
                                                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                            : user.status === 'suspended'
+                                                            : user.status ===
+                                                                'suspended'
                                                               ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                                               : 'bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400',
                                                     )}
@@ -442,9 +607,11 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                                     <span
                                                         className={cn(
                                                             'size-1.5 rounded-full',
-                                                            user.status === 'active'
+                                                            user.status ===
+                                                                'active'
                                                                 ? 'bg-green-500'
-                                                                : user.status === 'suspended'
+                                                                : user.status ===
+                                                                    'suspended'
                                                                   ? 'bg-red-500'
                                                                   : 'bg-gray-400',
                                                         )}
@@ -461,25 +628,37 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             setOpenDropdown(
-                                                                openDropdown === user.id ? null : user.id,
+                                                                openDropdown ===
+                                                                    user.id
+                                                                    ? null
+                                                                    : user.id,
                                                             );
                                                         }}
-                                                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                                                         aria-label="Actions"
                                                     >
                                                         <MoreHorizontal className="size-4" />
                                                     </button>
-                                                    {openDropdown === user.id && (
+                                                    {openDropdown ===
+                                                        user.id && (
                                                         <>
                                                             <div
                                                                 className="fixed inset-0 z-40"
-                                                                onClick={() => setOpenDropdown(null)}
+                                                                onClick={() =>
+                                                                    setOpenDropdown(
+                                                                        null,
+                                                                    )
+                                                                }
                                                             />
-                                                            <div className="absolute right-0 top-full z-50 mt-1 w-40 rounded-lg border border-border bg-popover py-1 shadow-lg">
+                                                            <div className="absolute top-full right-0 z-50 mt-1 w-44 rounded-lg border border-border bg-popover py-1 shadow-lg">
                                                                 <Link
                                                                     href={`/admin/users/${user.id}`}
                                                                     className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-                                                                    onClick={() => setOpenDropdown(null)}
+                                                                    onClick={() =>
+                                                                        setOpenDropdown(
+                                                                            null,
+                                                                        )
+                                                                    }
                                                                 >
                                                                     <Eye className="size-4" />
                                                                     View
@@ -487,15 +666,68 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                                                 <Link
                                                                     href={`/admin/users/${user.id}/edit`}
                                                                     className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-                                                                    onClick={() => setOpenDropdown(null)}
+                                                                    onClick={() =>
+                                                                        setOpenDropdown(
+                                                                            null,
+                                                                        )
+                                                                    }
                                                                 >
                                                                     <Edit className="size-4" />
                                                                     Edit
                                                                 </Link>
+                                                                {viewerIsSuperadmin && (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setOpenDropdown(
+                                                                                null,
+                                                                            );
+                                                                            router.patch(
+                                                                                `/admin/ads/users/${user.id}`,
+                                                                                {
+                                                                                    ads_disabled:
+                                                                                        !user.ads_disabled,
+                                                                                },
+                                                                                {
+                                                                                    preserveScroll: true,
+                                                                                },
+                                                                            );
+                                                                        }}
+                                                                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+                                                                        data-testid={`user-ads-${user.id}`}
+                                                                    >
+                                                                        <Megaphone className="size-4" />
+                                                                        {user.ads_disabled
+                                                                            ? 'Show ads'
+                                                                            : 'Hide ads'}
+                                                                    </button>
+                                                                )}
+                                                                {canLoginAs(
+                                                                    user,
+                                                                ) && (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setOpenDropdown(
+                                                                                null,
+                                                                            );
+                                                                            setImpersonateTarget(
+                                                                                user,
+                                                                            );
+                                                                        }}
+                                                                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+                                                                        data-testid={`user-login-as-${user.id}`}
+                                                                    >
+                                                                        <LogIn className="size-4" />
+                                                                        Login as
+                                                                    </button>
+                                                                )}
                                                                 <button
                                                                     onClick={() => {
-                                                                        setOpenDropdown(null);
-                                                                        setDeleteTarget(user);
+                                                                        setOpenDropdown(
+                                                                            null,
+                                                                        );
+                                                                        setDeleteTarget(
+                                                                            user,
+                                                                        );
                                                                     }}
                                                                     className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent"
                                                                 >
@@ -520,7 +752,9 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                     {users.data.length === 0 ? (
                         <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card py-16 text-center">
                             <UserX className="mb-3 size-10 text-muted-foreground/30" />
-                            <p className="text-sm font-medium text-muted-foreground">No users found</p>
+                            <p className="text-sm font-medium text-muted-foreground">
+                                No users found
+                            </p>
                         </div>
                     ) : (
                         users.data.map((user) => (
@@ -548,14 +782,30 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                             >
                                                 {user.name}
                                             </Link>
-                                            <p className="text-xs text-muted-foreground">{user.email}</p>
-                                            <div className="mt-1">
-                                                <SignupBadge google={Boolean(user.signed_up_with_google)} />
+                                            <p className="text-xs text-muted-foreground">
+                                                {user.email}
+                                            </p>
+                                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                                                <SignupBadge
+                                                    google={Boolean(
+                                                        user.signed_up_with_google,
+                                                    )}
+                                                />
+                                                <BadgeChips
+                                                    badges={user.badges ?? []}
+                                                />
                                             </div>
-                                            {user.player_profile?.school_name && (
+                                            {user.player_profile
+                                                ?.school_name && (
                                                 <p className="text-xs text-muted-foreground">
-                                                    {user.player_profile.age !== null ? `${user.player_profile.age} y · ` : ''}
-                                                    {user.player_profile.school_name}
+                                                    {user.player_profile.age !==
+                                                    null
+                                                        ? `${user.player_profile.age} y · `
+                                                        : ''}
+                                                    {
+                                                        user.player_profile
+                                                            .school_name
+                                                    }
                                                 </p>
                                             )}
                                         </div>
@@ -607,8 +857,21 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                                         >
                                             <Edit className="size-4" />
                                         </Link>
+                                        {canLoginAs(user) && (
+                                            <button
+                                                onClick={() =>
+                                                    setImpersonateTarget(user)
+                                                }
+                                                className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                                aria-label={`Login as ${user.name}`}
+                                            >
+                                                <LogIn className="size-4" />
+                                            </button>
+                                        )}
                                         <button
-                                            onClick={() => setDeleteTarget(user)}
+                                            onClick={() =>
+                                                setDeleteTarget(user)
+                                            }
                                             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
                                             aria-label="Delete user"
                                         >
@@ -638,6 +901,17 @@ export default function UsersIndex({ users, roles, filters }: UsersIndexProps) {
                 title="Delete user"
                 message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
                 processing={deleting}
+            />
+
+            <ConfirmDialog
+                open={impersonateTarget !== null}
+                onClose={() => setImpersonateTarget(null)}
+                onConfirm={handleImpersonate}
+                title="Login as user"
+                message={`You will browse EduFunHub as "${impersonateTarget?.name}" (${impersonateTarget?.email}). Every action is recorded in the impersonation log. Use "Leave" in the red bar to return to your account.`}
+                confirmLabel="Login as"
+                tone="primary"
+                processing={impersonating}
             />
         </>
     );

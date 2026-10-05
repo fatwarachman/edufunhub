@@ -1,9 +1,12 @@
+import AdSlot from '@/components/ads/ad-slot';
+import GameAdStrip from '@/components/ads/game-ad-strip';
 import {
     type GameSubject,
     rememberedSubject,
     SubjectFallbackNote,
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
+import { PlayerAvatar } from '@/components/player-avatar';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import {
@@ -11,6 +14,8 @@ import {
     useTrainConnection,
 } from '@/hooks/use-train-connection';
 import { useTranslations } from '@/hooks/use-translations';
+import { useAdMoments } from '@/lib/ads';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import { hasGrade, KINDERGARTEN } from '@/lib/grade';
 import { cn } from '@/lib/utils';
 import { Head } from '@inertiajs/react';
@@ -38,6 +43,7 @@ interface TrainPlayer {
     grade: number | null;
     color: string;
     accessory: string;
+    character?: CharacterLook;
 }
 
 interface KnowledgeTrainProps {
@@ -194,6 +200,10 @@ export default function KnowledgeTrain({
     const phase = state?.phase ?? 'ready';
     const paused = Boolean(state?.paused);
     const playing = phase === 'question' && !paused;
+    useAdMoments(
+        phase === 'done' ? 'done' : phase === 'question' ? 'playing' : 'idle',
+        { muted, won: state?.result?.passed ?? false },
+    );
 
     useEffect(() => {
         if (phase !== 'done' || !state?.result) {
@@ -451,13 +461,16 @@ export default function KnowledgeTrain({
                 <SiteNav compact className="shrink-0" />
             </header>
 
-            <main className="mx-auto flex max-w-4xl flex-col gap-3 p-3 sm:p-5">
+            <main className="flex w-full flex-col gap-3 p-3 sm:p-5 lg:px-8">
+                <GameAdStrip />
                 <div className="flex flex-wrap items-center gap-2 text-sm font-bold">
                     <span
                         className="inline-flex min-h-11 min-w-0 items-center gap-2 rounded-xl border-2 border-[#20364a] bg-white px-3"
                         data-testid="train-player"
                     >
-                        <GraduationCap className="size-4 shrink-0" />
+                        <span className="-my-1 size-9 shrink-0">
+                            <PlayerAvatar character={player.character} />
+                        </span>
                         <span className="truncate">
                             {player.name} • {gradeLabel}
                         </span>
@@ -761,6 +774,7 @@ function Overlay({
                     </StartButton>
                     <NavButton href="/portal" label={t('nav.backToPortal')} />
                 </div>
+                <AdSlot placement="arena.result" className="w-full max-w-md" />
             </>
         );
     } else {

@@ -32,6 +32,11 @@ dataset('multiplayer games', [
     'snakes' => ['snakes-and-ladders', '/games/snakes-and-ladders'],
     'duel' => ['quiz-duel', '/games/quiz-duel'],
     'crossword' => ['crossword', '/games/crossword'],
+    'market math' => ['market-math', '/games/market-math'],
+    'number garden' => ['number-garden', '/games/number-garden'],
+    'explore indonesia' => ['explore-indonesia', '/games/explore-indonesia'],
+    'mini lab' => ['mini-lab', '/games/mini-lab'],
+    'floor drop' => ['floor-drop', '/games/floor-drop'],
 ]);
 
 it('marks every multiplayer game in the catalog', function (string $key): void {
@@ -93,6 +98,11 @@ it('records results for room games and adds them to the point total', function (
 })->with([
     'snakes, lost with no correct answers' => ['snakes-and-ladders', 'sl-%d-room-1790000000000', 'room', 5, 'Ular Tangga Edukasi'],
     'crossword level 3' => ['crossword', 'cw-%d-level-1790000000000', 'level-3', 50, 'Teka-Teki Silang — Level 3'],
+    'market math' => ['market-math', 'mm-%d-room-1790000000000', 'room', 45, 'Pasar Matematika'],
+    'number garden' => ['number-garden', 'ng-%d-room-1790000000000', 'room', 45, 'Taman Angka & Huruf'],
+    'explore indonesia' => ['explore-indonesia', 'ei-%d-room-1790000000000', 'room', 45, 'Jelajah Indonesia'],
+    'mini lab' => ['mini-lab', 'ml-%d-room-1790000000000', 'room', 45, 'Lab Mini'],
+    'floor drop' => ['floor-drop', 'fd-%d-room-1790000000000', 'room', 45, 'Lantai Runtuh'],
 ]);
 
 it('caps room game points and missions', function (array $override): void {
@@ -136,3 +146,45 @@ it('requires sign in for the crossword', function (): void {
     $this->get('/games/crossword')->assertRedirect('/login');
     $this->postJson('/games/crossword/token')->assertUnauthorized();
 });
+
+it('caps room quiz game points and event ids', function (string $game, array $override): void {
+    $user = User::factory()->create();
+    $prefix = ['market-math' => 'mm', 'number-garden' => 'ng', 'explore-indonesia' => 'ei', 'mini-lab' => 'ml'][$game];
+
+    postRoomResult(array_merge([
+        'event_id' => $prefix.'-'.$user->id.'-room-1790000000000',
+        'user_id' => $user->id,
+        'game_key' => $game,
+        'mission' => 'room',
+        'grade' => 3,
+        'points' => 10,
+        'correct' => 1,
+        'wrong' => 0,
+        'duration_seconds' => 60,
+        'completed_at' => now()->toIso8601String(),
+    ], $override))->assertUnprocessable();
+})->with(['market-math', 'number-garden', 'explore-indonesia', 'mini-lab'])->with([
+    'points above cap' => [['points' => 951]],
+    'foreign event id' => [['event_id' => 'cw-1-level-1']],
+    'unknown mission' => [['mission' => 'level-1']],
+]);
+
+it('serves room quiz games with a signed token for every grade', function (string $game): void {
+    $user = User::factory()->withPlayerDetails()->create();
+
+    $this->actingAs($user)->get("/games/{$game}")->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('games/mini-game')
+        ->where('game', $game)
+        ->where('wsUrl', "/game-ws/{$game}")
+        ->where('pin', null));
+
+    $token = $this->actingAs($user)->postJson("/games/{$game}/token")->assertOk()->json('token');
+    $claims = json_decode(base64_decode(strtr(explode('.', $token)[0], '-_', '+/')), true);
+
+    expect($claims['game'])->toBe($game)->and($claims['sub'])->toBe($user->id);
+})->with(['market-math', 'number-garden', 'explore-indonesia', 'mini-lab']);
+
+it('requires sign in for room quiz games', function (string $game): void {
+    $this->get("/games/{$game}")->assertRedirect('/login');
+    $this->postJson("/games/{$game}/token")->assertUnauthorized();
+})->with(['market-math', 'number-garden', 'explore-indonesia', 'mini-lab']);

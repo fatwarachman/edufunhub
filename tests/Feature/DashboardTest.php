@@ -22,7 +22,7 @@ test('unverified new player gets real empty dashboard without writes', function 
         ->where('character', ['color' => 'amber', 'accessory' => 'none', 'gender' => 'boy', 'skin' => 'light', 'hair' => 'brown', 'items' => [], 'nickname' => null])
         ->has('history', 0)
         ->where('grade', null)
-        ->has('categories', 5)
+        ->has('categories', 6)
         ->where('categories.0.titleKey', 'player.adventure')
         ->where('categories.0.games.0.url', '/games/flag-quest')
         ->where('categories.1.games.0.url', '/games/snakes-and-ladders')

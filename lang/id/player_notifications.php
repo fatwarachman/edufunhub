@@ -5,6 +5,10 @@ return [
         'title' => '+:points poin!',
         'body' => 'Kamu dapat :points poin dari :game.',
     ],
+    'badge' => [
+        'title' => 'Badge baru: :badge!',
+        'body' => 'Kamu mendapat badge :badge. Lihat koleksi badge-mu di beranda.',
+    ],
     'level' => [
         'title' => 'Naik ke level :level!',
         'body' => 'Hebat! Terus main dan kumpulkan poin.',

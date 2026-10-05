@@ -14,6 +14,7 @@ use App\Services\MatchHistory;
 use App\Services\PlayerNotifications;
 use App\Services\UserAnalytics;
 use Illuminate\Http\RedirectResponse;
+use App\Services\PlayerBadges;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,7 +24,7 @@ class UserController extends Controller
     /**
      * Paginated user list with search, role filter, and sort.
      */
-    public function index(Request $request): Response
+    public function index(Request $request, PlayerBadges $badges): Response
     {
         $query = User::query()
             ->with(['roles', 'playerProfile:id,user_id,birth_date,school_name'])
@@ -51,10 +52,17 @@ class UserController extends Controller
                 $q->orderByDesc('created_at');
             });
 
+        $users = $query->paginate(20)->withQueryString();
+        $earned = $badges->earnedFor($users->getCollection()->pluck('id')->all());
+        $users->getCollection()->each(fn (User $user) => $user->setAttribute('badges', $earned[$user->id] ?? []));
+
         return Inertia::render('admin/users/index', [
-            'users' => $query->paginate(20)->withQueryString(),
+            'users' => $users,
             'roles' => Role::query()->select('id', 'name', 'slug')->get(),
             'filters' => (object) $request->only(['search', 'role', 'signup', 'sort', 'direction']),
+            'canImpersonate' => $request->user()->hasPermission(ImpersonationController::PERMISSION)
+                && ! $request->session()->has('impersonated_by'),
+            'viewerIsSuperadmin' => (bool) $request->user()->is_superadmin,
         ]);
     }
 
@@ -121,7 +129,7 @@ class UserController extends Controller
     /**
      * Show user detail with roles and recent activity log.
      */
-    public function show(User $user, UserAnalytics $analytics, MatchHistory $matchHistory): Response
+    public function show(User $user, UserAnalytics $analytics, MatchHistory $matchHistory, PlayerBadges $badges): Response
     {
         $user->load(['roles', 'playerProfile', 'connectedAccounts:id,user_id,provider,created_at']);
 
@@ -145,6 +153,11 @@ class UserController extends Controller
             ],
             ...$analytics->userDetail($user),
             'activityLog' => $analytics->activityFor($user),
+            'badges' => collect($badges->summary($user))
+                ->map(fn ($value, string $key) => $key === 'badges'
+                    ? collect($value)->map(fn (array $badge): array => [...$badge, 'name' => __('badges.'.$badge['key'].'.name', [], 'en'), 'description' => __('badges.'.$badge['key'].'.description', [], 'en')])->all()
+                    : $value)
+                ->all(),
             'impersonationLogs' => ImpersonationLog::query()
                 ->with('impersonator:id,name')
                 ->where('impersonated_id', $user->id)

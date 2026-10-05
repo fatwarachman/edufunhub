@@ -21,7 +21,9 @@ import (
 	"edufunhub/game/internal/auth"
 	"edufunhub/game/internal/crossword"
 	"edufunhub/game/internal/duel"
+	"edufunhub/game/internal/floordrop"
 	"edufunhub/game/internal/lobby"
+	"edufunhub/game/internal/minigames"
 	"edufunhub/game/internal/session"
 	"edufunhub/game/internal/sky"
 	"edufunhub/game/internal/snakes"
@@ -36,6 +38,8 @@ type Config struct {
 	Now            func() time.Time
 	HTTPClient     *http.Client
 	Logger         *slog.Logger
+	// FloorDrop timings (zero = floordrop.Defaults).
+	FloorDrop floordrop.Config
 }
 
 type connection struct{ cancel context.CancelFunc }
@@ -57,6 +61,10 @@ type Server struct {
 	snakesSubs    map[int64]*snakesSub
 	crosswords    *crossword.Hub
 	crosswordSubs map[int64]*crosswordSub
+	minis         map[string]*minigames.Hub
+	miniSubs      map[string]map[int64]*miniSub
+	floor         *floordrop.Hub
+	floorConns    map[floorKey]*floordrop.Client
 	started       time.Time
 }
 
@@ -71,7 +79,10 @@ func New(cfg Config) *Server {
 	if cfg.Logger == nil {
 		cfg.Logger = slog.Default()
 	}
-	return &Server{
+	if cfg.FloorDrop.Tick == 0 {
+		cfg.FloorDrop = floordrop.Defaults
+	}
+	s := &Server{
 		cfg: cfg, sessions: map[int64]*session.Session{}, conns: map[int64]*connection{},
 		skies: map[int64]*sky.Session{}, skyConns: map[int64]*connection{},
 		trains: map[int64]*train.Session{}, trainConns: map[int64]*connection{},
@@ -79,8 +90,16 @@ func New(cfg Config) *Server {
 		duelRooms: lobby.New[struct{}, struct{}](uint64(cfg.Now().UnixNano())^0xd0e1, lobby.Config{Min: 2, Max: 2}),
 		snakes:    snakes.NewHub(uint64(cfg.Now().UnixNano()) ^ 0x51ed), snakesSubs: map[int64]*snakesSub{},
 		crosswords: crossword.NewHub(uint64(cfg.Now().UnixNano()) ^ 0xc055), crosswordSubs: map[int64]*crosswordSub{},
-		started: cfg.Now(),
+		minis: map[string]*minigames.Hub{}, miniSubs: map[string]map[int64]*miniSub{},
+		floor:      floordrop.NewHub(cfg.FloorDrop, uint64(cfg.Now().UnixNano())^0xf1d0),
+		floorConns: map[floorKey]*floordrop.Client{},
+		started:    cfg.Now(),
 	}
+	for i, key := range minigames.Keys {
+		s.minis[key] = minigames.NewHub(minigames.Specs[key], uint64(cfg.Now().UnixNano())^uint64(0x3a11+i))
+		s.miniSubs[key] = map[int64]*miniSub{}
+	}
+	return s
 }
 
 // Handler returns the HTTP routes.
@@ -96,6 +115,10 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /ws/train", s.serveTrain)
 	mux.HandleFunc("GET /ws/snakes", s.serveSnakes)
 	mux.HandleFunc("GET /ws/crossword", s.serveCrossword)
+	for _, key := range minigames.Keys {
+		mux.HandleFunc("GET /ws/"+key, s.serveMini(key))
+	}
+	mux.HandleFunc("GET /ws/floor-drop", s.serveFloorDrop)
 	mux.HandleFunc("GET /internal/stats", s.serveStats)
 	return mux
 }
@@ -287,6 +310,10 @@ func (s *Server) Prune(ttl time.Duration) {
 	s.reportSnakes()
 	s.crosswords.Prune(s.cfg.Now())
 	s.reportCrosswords()
+	for _, key := range minigames.Keys {
+		s.minis[key].Prune(s.cfg.Now())
+	}
+	s.reportMinis()
 }
 
 // serveSky runs the Sukhoi Sky Quiz referee over WebSocket.

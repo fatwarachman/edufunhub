@@ -13,6 +13,15 @@ return [
     'grades_required' => 'Pilih minimal satu kelas.',
     'grades_invalid' => 'Kelas harus TK atau 1 sampai 12.',
     'prompt_required' => 'Tulis pertanyaan minimal 3 karakter.',
+    'bulk' => [
+        'activate' => ':count soal diaktifkan.',
+        'deactivate' => ':count soal dinonaktifkan.',
+        'delete' => ':count soal dihapus.',
+        'invalid_action' => 'Aksi massal tidak dikenal.',
+        'none_selected' => 'Pilih minimal satu soal.',
+        'too_many' => 'Maksimal :max soal per aksi massal.',
+        'missing' => 'Sebagian soal yang dipilih sudah tidak ada. Muat ulang halaman.',
+    ],
     'import' => [
         'file_required' => 'Pilih file CSV untuk diunggah.',
         'file_too_large' => 'Ukuran file maksimal 2 MB.',

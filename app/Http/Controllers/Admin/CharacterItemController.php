@@ -37,6 +37,8 @@ class CharacterItemController extends Controller
                 'owners' => $item->isFree() ? null : (int) $item->owners_count,
                 'wearing' => $wearing[$item->id] ?? 0,
                 'points_spent' => (int) $item->points_spent,
+                'created_at' => $item->created_at?->toIso8601String(),
+                'updated_at' => $item->updated_at?->toIso8601String(),
             ]);
 
         return Inertia::render('admin/character-items/index', [

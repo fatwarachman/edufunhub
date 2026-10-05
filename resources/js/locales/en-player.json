@@ -50,7 +50,7 @@
             "tk": "Kindergarten"
         },
         "portal": "Portal",
-        "openPortal": "Open game portal",
+        "openPortal": "Open portal",
         "details": "Participant details",
         "detailsNote": "Complete your date of birth and last school.",
         "birthDate": "Date of birth",
@@ -67,7 +67,13 @@
         "train": "Knowledge Train",
         "arcade": "Learning arcade",
         "puzzle": "Brain teasers",
-        "crossword": "Crossword"
+        "crossword": "Crossword",
+        "explore": "Explore & experiment",
+        "marketMath": "Market Math",
+        "numberGarden": "Number & Letter Garden",
+        "exploreIndonesia": "Explore Indonesia",
+        "miniLab": "Mini Lab",
+        "floorDrop": "Floor Drop"
     },
     "flagQuest": {
         "title": "Flag Quest",
@@ -198,7 +204,7 @@
             "continue": "Continue",
             "back": "Back",
             "close": "Close",
-            "leave": "Leave challenge",
+            "leave": "Leave",
             "boardTitle": "SNAKES & LADDERS",
             "start": "START",
             "finish": "FINISH",
@@ -219,7 +225,7 @@
             "time": "Time",
             "flawless": "Flawless! +30 bonus",
             "saved": "Points are saved to your account automatically.",
-            "next": "Choose another mission"
+            "next": "Other mission"
         },
         "missions": {
             "lakeside": {
@@ -266,12 +272,17 @@
             "sky": "Fly the jet, collect correct answers, and shoot wrong ones. Questions follow your grade and results earn points.",
             "duel": "Race a classmate to answer the same questions live. Results are verified by the server and earn points.",
             "train": "Steer the train onto the rail with the right answer. Every correct answer adds a wagon and points.",
-            "crossword": "4-level crossword for every grade. Play solo or race with friends via PIN and link."
+            "crossword": "4-level crossword for every grade. Play solo or race with friends via PIN and link.",
+            "marketMath": "Shop at the market while doing maths: totals, change, discounts and best value. Play solo or race friends via PIN and link.",
+            "numberGarden": "Tend the garden by counting flowers, continuing number patterns and guessing letters. From kindergarten to high school.",
+            "exploreIndonesia": "Tour Indonesia's provinces: capitals, islands, dishes, dances and traditional houses. Play solo or with friends.",
+            "miniLab": "Run mini science experiments and predict the result: states of matter, magnets, circuits, acids and Newton's laws.",
+            "floorDrop": "Trivia battle royale for 2–100 players. Answer right so your tile stays; the last one standing wins."
         },
         "detailsFirst": "Complete details first",
         "detailsNoticeTitle": "Complete your participant details first!",
         "detailsNoticeBody": "Before you can play, fill in your date of birth and last school. It only takes a moment.",
-        "detailsNoticeAction": "Fill in now"
+        "detailsNoticeAction": "Fill in"
     },
     "nav": {
         "label": "Main navigation",
@@ -288,11 +299,13 @@
         "backToGames": "Back to games",
         "backToDashboard": "Back to home",
         "backToLogin": "Back to login",
-        "teacher": "Teacher room",
+        "teacher": "Teacher",
         "allGames": "See all games",
         "gradeRange": "Grades {{range}}",
         "loginToPlay": "Sign in to play",
-        "menu": "Menu"
+        "menu": "Menu",
+        "admin": "Admin",
+        "chat": "Chat"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -309,14 +322,14 @@
         "hint": "Fly into the CORRECT answer. Shoot WRONG answers and drones.",
         "pause": "Pause",
         "resume": "Resume",
-        "start": "Start flying",
+        "start": "Fly",
         "playAgain": "Play again",
         "connecting": "Connecting…",
         "fire": "Fire",
         "mute": "Mute sound",
         "unmute": "Unmute sound",
         "setGrade": "Set grade",
-        "loginForPoints": "Log in to earn points",
+        "loginForPoints": "Log in",
         "noCanvas": "Use a browser that supports Canvas to play.",
         "canvasLabel": "Sukhoi arena. Arrows or WASD to fly, space to shoot, P to pause. On touch screens, drag the jet and hold the fire button.",
         "connection": {
@@ -535,7 +548,7 @@
         "idle": {
             "title": "Ready to duel, {{name}}?",
             "rules": "You and a classmate answer the same {{rounds}} questions at the same time. Answer correctly and faster for a higher score. Results are verified by the server and earn points.",
-            "start": "Find an opponent",
+            "start": "Find rival",
             "needGrade": "Set your grade on the portal first so opponents and questions match your level.",
             "setGrade": "Set grade",
             "unavailable": "The game server is not available yet. Please try again later."
@@ -572,7 +585,7 @@
             "earned": "+{{points}} points added to your account",
             "noPoints": "No extra points this time — keep practising!",
             "again": "Duel again",
-            "back": "Back to portal"
+            "back": "Portal"
         },
         "errors": {
             "generic": "The server rejected that action.",
@@ -582,7 +595,7 @@
         "inviteTitle": "Duel a friend",
         "inviteIntro": "Create a duel room, then share the PIN or link with one friend. Grades may differ; questions follow the lower grade.",
         "randomTitle": "Random opponent",
-        "invite": "Invite a friend"
+        "invite": "Invite"
     },
     "train": {
         "title": "Knowledge Train",
@@ -676,12 +689,12 @@
             "on": "Sound on",
             "off": "Sound off"
         },
-        "restart": "Restart game",
+        "restart": "Restart",
         "mode": {
             "label": "How to play",
-            "local": "Practice (no account)",
-            "online": "Play & earn points",
-            "loginForOnline": "Sign in to play online",
+            "local": "Practice",
+            "online": "Play online",
+            "loginForOnline": "Log in",
             "onlineUnavailable": "The online game server is not available yet.",
             "guestNote": "Practice mode does not save points. Sign in to play and collect points."
         },
@@ -706,7 +719,7 @@
         },
         "dice": {
             "title": "Dice",
-            "roll": "Roll the dice",
+            "roll": "Roll",
             "rolling": "Rolling…",
             "moving": "Moving…",
             "waiting": "Waiting for {{name}}…",
@@ -770,7 +783,7 @@
             "offline": "Server unavailable",
             "grade_required": "Grade needed"
         },
-        "create": "Create a room",
+        "create": "New room",
         "or": "or",
         "pinLabel": "Room PIN",
         "pinPlaceholder": "6-digit PIN",
@@ -778,8 +791,8 @@
         "lobbyTitle": "Waiting room",
         "shareTitle": "Invite friends",
         "shareHint": "Share this PIN or link. Friends need to sign in to EduFunHub.",
-        "copyPin": "Copy PIN",
-        "copyLink": "Copy link",
+        "copyPin": "PIN",
+        "copyLink": "Link",
         "share": "Share",
         "copied": "Copied!",
         "shareText": "Play {{game}} with me on EduFunHub! PIN: {{pin}}",
@@ -793,13 +806,13 @@
         "localHint": "Takes turns on the host's device",
         "localPlaceholder": "Name of a player on this device",
         "localDefault": "Player {{number}}",
-        "addLocal": "Add a player on this device",
+        "addLocal": "Add player",
         "removeLocal": "Remove {{name}}",
-        "start": "Start game",
+        "start": "Start",
         "startSolo": "Play solo",
         "needMore": "Waiting for at least {{min}} players",
         "waitingHost": "Waiting for the host to start…",
-        "leave": "Leave room",
+        "leave": "Leave",
         "points": "+{{points}} points added to your account",
         "errors": {
             "room_not_found": "No room found with that PIN.",
@@ -822,8 +835,17 @@
             "not_local": "That player is not on this device.",
             "copy_failed": "Copy failed. Please copy it manually.",
             "unknown": "Something went wrong. Try again.",
-            "time_up": "Time is up."
-        }
+            "time_up": "Time is up.",
+            "already_answered": "You already answered.",
+            "host_only": "Only the host can do this.",
+            "player_only": "The host screen cannot answer.",
+            "answers_locked": "Answer time is over.",
+            "eliminated": "You are out and now spectating.",
+            "room_closed": "The room is closed.",
+            "busy": "The server is busy, try again."
+        },
+        "copyPinLabel": "Copy PIN",
+        "copyLinkLabel": "Copy link"
     },
     "crossword": {
         "title": "Crossword",
@@ -865,7 +887,7 @@
             "answers": "Answer key",
             "again": "Play again",
             "waitingHost": "Waiting for the host to play again…",
-            "leave": "Leave room",
+            "leave": "Leave",
             "timeUp": "Time's up! {{count}} words were not solved; the answers are revealed.",
             "draw": "It's a draw! No win bonus."
         },
@@ -951,7 +973,8 @@
         "loading": "Loading…",
         "new": "New",
         "close": "Close notification",
-        "justNow": "just now"
+        "justNow": "just now",
+        "messages": "{{count}} messages"
     },
     "vault": {
         "title": "Item Vault",
@@ -973,5 +996,213 @@
         "iosStep3": "Tap \"Add\"",
         "otherStep1": "Open the browser menu (⋮ or ⋯)",
         "otherStep2": "Choose \"Install app\" or \"Add to home screen\""
+    },
+    "mini": {
+        "intro": "Hi {{name}}! Play solo or invite friends via PIN and link. Everyone answers the same question; the fastest correct answer scores the most.",
+        "soloHint": "You can start right away on your own, or wait for friends to join.",
+        "rules": "{{rounds}} questions • correct answers add account points • solo play wins at ≥ 70% correct",
+        "unavailable": "The game service is unavailable right now. Please try again shortly.",
+        "round": "Question {{round}}/{{total}}",
+        "timeLeft": "{{seconds}}s",
+        "countdown": "Get ready…",
+        "answerLabel": "Answer {{letter}}: {{text}}",
+        "correct": "Correct! +{{score}} score",
+        "wrong": "Not quite.",
+        "timeout": "Time's up.",
+        "answer": "Answer: {{answer}}",
+        "waiting": "Waiting for the other players…",
+        "answered": "Answered",
+        "thinking": "Thinking…",
+        "score": "{{score}} score",
+        "points": "{{count}} points",
+        "you": "you",
+        "result": {
+            "title": "Game over!",
+            "win": "You won!",
+            "pass": "Great, you passed!",
+            "winner": "{{name}} wins!",
+            "draw": "It's a draw! No win bonus.",
+            "tryAgain": "Give it another go!",
+            "summary": "{{correct}} correct • {{wrong}} wrong • score {{score}}",
+            "earned": "+{{points}} points added to your account",
+            "again": "Play again",
+            "waitingHost": "Waiting for the host to start again…",
+            "leave": "Leave"
+        },
+        "games": {
+            "market-math": {
+                "title": "Market Math",
+                "tagline": "Shop smart, count fast"
+            },
+            "number-garden": {
+                "title": "Number & Letter Garden",
+                "tagline": "Count flowers, build words"
+            },
+            "explore-indonesia": {
+                "title": "Explore Indonesia",
+                "tagline": "Discover the archipelago's provinces"
+            },
+            "mini-lab": {
+                "title": "Mini Lab",
+                "tagline": "Try, observe, conclude"
+            }
+        }
+    },
+    "chat": {
+        "title": "Chat",
+        "subtitle": "Talk with friends and study groups",
+        "search": "Search chats",
+        "empty": "No chats yet. Start a new one!",
+        "new": "New chat",
+        "newGroup": "New group",
+        "pick": "Pick a chat to start talking.",
+        "back": "Back to chats",
+        "placeholder": "Write a message…",
+        "send": "Send",
+        "loadMore": "Load older messages",
+        "you": "You",
+        "members": "{{count}} members",
+        "online": "Live",
+        "offline": "Reconnecting…",
+        "failed": "Not sent. Try again.",
+        "retry": "Resend",
+        "peopleSearch": "Search a friend",
+        "peopleEmpty": "No matching players.",
+        "startChat": "Start chat",
+        "groupName": "Group name",
+        "groupNamePlaceholder": "e.g. Science group 4A",
+        "groupMembers": "Members",
+        "selected": "{{count}} selected",
+        "create": "Create group",
+        "cancel": "Cancel",
+        "close": "Close",
+        "info": "Group info",
+        "addMembers": "Add members",
+        "add": "Add",
+        "leave": "Leave group",
+        "leaveConfirm": "Leave this group? You will stop receiving its messages.",
+        "rename": "Rename",
+        "save": "Save",
+        "owner": "Creator",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "directLabel": "Private",
+        "groupLabel": "Group",
+        "limit": "{{count}}/{{max}}",
+        "unread": "{{count}} unread",
+        "typingHint": "Enter to send, Shift+Enter for a new line"
+    },
+    "ads": {
+        "sponsor": "Sponsor",
+        "sponsoredBy": "Sponsored by {{brand}}",
+        "jingleOff": "Mute sponsor jingles"
+    },
+    "impersonation": {
+        "as": "Logged in as {{name}}",
+        "leave": "Back to admin"
+    },
+    "badges": {
+        "title": "Badge Collection",
+        "intro": "Collect badges by playing often and completing challenges.",
+        "earned": "{{count}} of {{total}} badges",
+        "earnedOn": "Earned {{date}}",
+        "locked": "Not earned yet",
+        "progress": "{{value}}% towards this badge",
+        "tiers": {
+            "bronze": "Bronze",
+            "silver": "Silver",
+            "gold": "Gold",
+            "legend": "Legend"
+        },
+        "metrics": {
+            "plays": "Plays",
+            "completed": "Challenges completed",
+            "success_rate": "Success rate",
+            "games": "Different games",
+            "active_days": "Active days",
+            "wins": "Wins",
+            "streak": "Day streak"
+        },
+        "names": {
+            "starter": "Starter",
+            "cool": "Cool",
+            "diligent": "Diligent",
+            "creative": "Creative",
+            "champion": "Champion",
+            "on_fire": "On Fire",
+            "smart": "Smart",
+            "explorer": "Explorer",
+            "genius": "Genius",
+            "legend": "Legend"
+        }
+    },
+    "floorDrop": {
+        "title": "Floor Drop",
+        "tagline": "Trivia battle royale: answer right or your floor drops!",
+        "chooseRole": "Choose your role",
+        "hostTitle": "Host screen",
+        "hostBody": "For teachers or a classroom screen. Open a room, share the PIN and watch the floor drop.",
+        "playerTitle": "Player",
+        "playerBody": "Join with the PIN from the host and answer on your phone or laptop.",
+        "openHost": "Open host screen",
+        "openPlayer": "Join as player",
+        "switchRole": "Switch role",
+        "createRoom": "Create room",
+        "rules": "Each round has 4 answer tiles. Wrong tiles drop and players who answered wrong or not at all are out. Time shrinks 10% every round. Last one standing wins!",
+        "hostIntro": "You are the host. Players join from their own devices (2–100 players).",
+        "playerIntro": "Hi {{name}}! Enter the PIN from the host screen to join.",
+        "joined": "Players joined",
+        "waitingPlayers": "Waiting for players to join…",
+        "start": "Start game",
+        "needPlayers": "Needs at least {{min}} players",
+        "subject": "Subject",
+        "mix": "Mixed",
+        "waitingStart": "You are in! Wait for the host to start.",
+        "getReady": "Get ready…",
+        "round": "Round {{round}}",
+        "alive": "{{count}} standing",
+        "answered": "{{answered}}/{{alive}} answered",
+        "secondsLeft": "{{seconds}}s",
+        "locked": "Answers locked!",
+        "dropping": "The floor is dropping…",
+        "survivors": "{{count}} players still standing",
+        "nextFaster": "Next round: {{seconds}} seconds",
+        "suddenDeath": "Everyone missed! Ranked by fastest answer.",
+        "youSurvived": "You survived!",
+        "youFell": "You dropped!",
+        "reasons": {
+            "wrong": "Wrong answer",
+            "timeout": "Time ran out",
+            "disconnected": "Connection lost",
+            "left": "Left the game"
+        },
+        "spectator": "Spectator mode",
+        "spectatorBody": "Watch the players still standing until the end.",
+        "answerSent": "Answer sent! Wait for the drop…",
+        "pickAnswer": "Pick your answer tile",
+        "tile": "Tile {{letter}}: {{text}}",
+        "correctTile": "Correct tile",
+        "podium": "Podium",
+        "ranking": "Final ranking",
+        "rank": "#{{rank}}",
+        "survival": "Survived {{seconds}}s",
+        "accuracy": "Accuracy {{value}}%",
+        "yourRank": "You placed #{{rank}} of {{total}}",
+        "winner": "{{name}} wins!",
+        "youWon": "You are the last one standing!",
+        "earned": "+{{points}} points",
+        "again": "Play again",
+        "closeRoom": "Close room",
+        "leave": "Leave",
+        "waitingHost": "Wait for the host to start a new round.",
+        "roomClosed": "The host closed the room.",
+        "hostOffline": "Host screen disconnected",
+        "playersCount": "{{count}} players",
+        "eliminatedNow": "{{count}} out",
+        "you": "You",
+        "connectionLost": "Connection lost. Reconnect within 5 seconds to stay in…",
+        "endGame": "End game",
+        "endNow": "Yes, end now",
+        "endConfirm": "Players keep the points they earned."
     }
 }

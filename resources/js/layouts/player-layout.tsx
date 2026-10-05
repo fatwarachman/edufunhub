@@ -8,9 +8,12 @@ import '../../css/auth-landing.css';
 
 export default function PlayerLayout({
     title,
+    fill = false,
     children,
 }: {
     title: string;
+    /** Content fills the viewport height below the header (chat). */
+    fill?: boolean;
     children: ReactNode;
 }) {
     const { i18n } = useTranslations();
@@ -23,7 +26,11 @@ export default function PlayerLayout({
     }, [locale, i18n]);
 
     return (
-        <div className="auth-landing">
+        <div
+            className={
+                fill ? 'auth-landing flex h-dvh flex-col' : 'auth-landing'
+            }
+        >
             <Head title={title}>
                 <link
                     href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap"
@@ -34,18 +41,24 @@ export default function PlayerLayout({
                 <Link
                     href="/portal"
                     className="auth-brand"
-                    aria-label="EduFunHub"
+                    aria-label="edufunhub.com"
                 >
                     <span className="auth-brand-mark">
                         <Gamepad2 className="size-6" />
                     </span>
                     <span className="edu-brand-text">
-                        EduFun<span>Hub</span>
+                        edufun<span>hub</span>.com
                     </span>
                 </Link>
-                <SiteNav />
+                <SiteNav compact />
             </header>
-            <main className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-8 md:px-10 md:py-12">
+            <main
+                className={
+                    fill
+                        ? 'flex min-h-0 w-full flex-1 flex-col px-[clamp(12px,2vw,32px)] pt-4 pb-[max(20px,env(safe-area-inset-bottom))]'
+                        : 'flex w-full flex-col gap-8 px-[clamp(16px,2vw,32px)] py-6 md:py-8'
+                }
+            >
                 {children}
             </main>
         </div>

@@ -1,3 +1,5 @@
+import { BadgeCollection } from '@/components/badge-collection';
+import { type BadgeProgress } from '@/components/badges';
 import InputError from '@/components/input-error';
 import { InstallAppCard } from '@/components/install-app-card';
 import PlayerCharacter, {
@@ -33,6 +35,7 @@ interface DashboardProps {
         titleKey: string;
         games: { key: string; titleKey: string; url: string }[];
     }[];
+    badges: { stats: Record<string, number>; badges: BadgeProgress[] };
     history: {
         id: number;
         game_name: string;
@@ -54,6 +57,7 @@ export default function Dashboard({
     playerDetails,
     character,
     categories,
+    badges,
     history,
 }: DashboardProps) {
     const { t, i18n } = useTranslations();
@@ -125,6 +129,10 @@ export default function Dashboard({
                     </section>
                 </aside>
                 <div className="flex min-w-0 flex-col gap-8">
+                    <BadgeCollection
+                        badges={badges.badges}
+                        stats={badges.stats}
+                    />
                     <Vault items={vault} character={character} />
                     <section className="flex flex-col gap-4">
                         <h2 className="flex items-center gap-2 text-2xl font-bold">

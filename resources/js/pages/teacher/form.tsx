@@ -171,7 +171,7 @@ export default function TeacherQuestionForm({
         >
             <form
                 onSubmit={submit}
-                className="mx-auto flex w-full max-w-4xl flex-col gap-6"
+                className="flex w-full flex-col gap-6"
                 noValidate
             >
                 <div className="flex flex-col items-start gap-3">

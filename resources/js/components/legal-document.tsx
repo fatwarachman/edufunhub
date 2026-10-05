@@ -51,7 +51,7 @@ export function LegalDocument({ document }: { document: LegalDocumentKey }) {
             </Head>
 
             <header className="sticky top-0 z-40 border-b-4 border-[#1f2a44] bg-[#FFF9E6]/95 backdrop-blur-md">
-                <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+                <div className="mx-auto flex min-h-20 items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
                     <div className="flex min-w-0 items-center gap-3">
                         <BackButton
                             href="/"
@@ -60,14 +60,14 @@ export function LegalDocument({ document }: { document: LegalDocumentKey }) {
                             external
                         />
                         <span className="truncate font-display text-xl font-black text-[#1f2a44] sm:text-2xl">
-                            Edu<span className="text-[#FF9E44]">FunHub</span>
+                            edu<span className="text-[#FF9E44]">funhub</span>.com
                         </span>
                     </div>
                     <SiteNav compact />
                 </div>
             </header>
 
-            <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
+            <main className="w-full px-4 py-12 sm:px-6 lg:px-8">
                 <div className="flex flex-col items-start gap-4">
                     <div
                         className={`flex h-14 w-14 items-center justify-center rounded-2xl border-3 border-[#1f2a44] ${documents[document].accent} shadow-[3px_3px_0px_#1f2a44]`}

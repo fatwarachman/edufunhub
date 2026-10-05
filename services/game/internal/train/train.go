@@ -345,7 +345,7 @@ func (s *Session) stateLocked(feedback Message, now time.Time) Message {
 		"score":            s.score,
 		"correct":          s.correct,
 		"wrong":            s.wrong,
-		"player":           Message{"name": s.Claims.Name, "grade": s.Claims.Grade},
+		"player":           Message{"name": s.Claims.Name, "grade": s.Claims.Grade, "character": s.Claims.Character},
 		"paused":           !s.pausedAt.IsZero(),
 		"history":          append([]bool{}, s.history...),
 	}

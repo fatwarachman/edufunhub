@@ -2,10 +2,15 @@ import { type GameMenuCategory, type GameMenuGame } from '@/types';
 import {
     Dice5,
     Flag,
+    FlaskConical,
+    Flower2,
     Gamepad2,
     Grid3x3,
+    Layers,
     type LucideIcon,
+    Map as MapIcon,
     Plane,
+    ShoppingCart,
     Swords,
     TrainFront,
 } from 'lucide-react';
@@ -19,6 +24,11 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
     train: TrainFront,
     grid: Grid3x3,
     gamepad: Gamepad2,
+    cart: ShoppingCart,
+    flower: Flower2,
+    map: MapIcon,
+    flask: FlaskConical,
+    layers: Layers,
 };
 
 export function gameIcon(icon: string): LucideIcon {

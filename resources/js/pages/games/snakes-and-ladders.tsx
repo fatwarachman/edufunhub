@@ -1,3 +1,4 @@
+import GameAdStrip from '@/components/ads/game-ad-strip';
 import {
     BackButton,
     NavButton,
@@ -11,6 +12,7 @@ import {
 import { RoomGame } from '@/components/snakes/room-game';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import { useTranslations } from '@/hooks/use-translations';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import { hasGrade } from '@/lib/grade';
 import { cn } from '@/lib/utils';
 import { Head } from '@inertiajs/react';
@@ -25,7 +27,11 @@ import {
 import { useRef, useState } from 'react';
 
 interface SnakesProps {
-    player: { name: string; grade: number | null } | null;
+    player: {
+        name: string;
+        grade: number | null;
+        character?: CharacterLook;
+    } | null;
     online: boolean;
     wsUrl: string | null;
     pin: string | null;
@@ -65,7 +71,7 @@ export default function SnakesAndLaddersGame({
             </Head>
 
             <header className="sticky top-0 z-30 border-b-4 border-[#1f2a44] bg-[#FFF9E6]/95 backdrop-blur-md">
-                <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
+                <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
                             href={backHref}
@@ -126,7 +132,8 @@ export default function SnakesAndLaddersGame({
                 </div>
             </header>
 
-            <main className="mx-auto max-w-7xl px-3 py-3 sm:px-6 lg:px-8">
+            <main className="mx-auto px-3 py-3 sm:px-6 lg:px-8">
+                <GameAdStrip className="mb-4" />
                 <div
                     className="mb-4 flex flex-wrap items-center justify-center gap-2"
                     role="tablist"
@@ -165,7 +172,9 @@ export default function SnakesAndLaddersGame({
                         <LocalGame
                             ref={localGame}
                             firstName={player?.name ?? null}
+                            character={player?.character}
                             play={play}
+                            muted={muted}
                         />
                     </>
                 ) : !signedIn ? (
@@ -193,6 +202,7 @@ export default function SnakesAndLaddersGame({
                         initialPin={pin}
                         hasGrade={hasGrade(player.grade)}
                         play={play}
+                        muted={muted}
                     />
                 )}
             </main>

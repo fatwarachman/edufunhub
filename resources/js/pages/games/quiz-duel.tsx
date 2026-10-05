@@ -1,3 +1,5 @@
+import AdSlot from '@/components/ads/ad-slot';
+import GameAdStrip from '@/components/ads/game-ad-strip';
 import {
     RoomEntry,
     RoomLobby,
@@ -10,10 +12,13 @@ import {
     SubjectFallbackNote,
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
+import { PlayerAvatar } from '@/components/player-avatar';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { type DuelState, useDuelConnection } from '@/hooks/use-duel-connection';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import { useTranslations } from '@/hooks/use-translations';
+import { useAdMoments } from '@/lib/ads';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import { hasGrade, KINDERGARTEN } from '@/lib/grade';
 import { cn } from '@/lib/utils';
 import { Head } from '@inertiajs/react';
@@ -39,6 +44,7 @@ interface DuelPlayer {
     grade: number | null;
     color: string;
     accessory: string;
+    character?: CharacterLook;
 }
 
 interface QuizDuelProps {
@@ -122,6 +128,16 @@ export default function QuizDuel({
     );
 
     const phase = state?.phase ?? 'idle';
+    useAdMoments(
+        phase === 'done'
+            ? 'done'
+            : phase === 'countdown' ||
+                phase === 'question' ||
+                phase === 'reveal'
+              ? 'playing'
+              : 'idle',
+        { muted, won: state?.result?.outcome !== 'lose' },
+    );
     const question = state?.question;
     const reveal = state?.reveal;
     const you = state?.you;
@@ -234,13 +250,16 @@ export default function QuizDuel({
                 <SiteNav compact className="shrink-0" />
             </header>
 
-            <main className="mx-auto flex max-w-3xl flex-col gap-3 p-3 sm:gap-4 sm:p-5">
+            <main className="flex w-full flex-col gap-3 p-3 sm:gap-4 sm:p-5 lg:px-8">
+                <GameAdStrip />
                 <div className="flex flex-wrap items-center gap-2 text-sm font-bold">
                     <span
                         className="inline-flex min-h-11 min-w-0 items-center gap-2 rounded-xl border-2 border-[#20364a] bg-white px-3"
                         data-testid="duel-player"
                     >
-                        <GraduationCap className="size-4 shrink-0" />
+                        <span className="-my-1 size-9 shrink-0">
+                            <PlayerAvatar character={player.character} />
+                        </span>
                         <span className="truncate">
                             {player.name} • {gradeLabel}
                         </span>
@@ -433,6 +452,10 @@ export default function QuizDuel({
                             <p className="text-sm">
                                 {t('duel.countdown.ready')}
                             </p>
+                            <AdSlot
+                                placement="arena.loading"
+                                className="w-full max-w-sm"
+                            />
                         </Centered>
                     ) : phase === 'done' && state?.result ? (
                         <Result
@@ -622,6 +645,7 @@ function Scoreboard({
             <SideCard
                 label={youLabel}
                 name={you.name}
+                character={you.character}
                 score={you.score ?? 0}
                 history={you.history ?? []}
                 total={total}
@@ -633,6 +657,8 @@ function Scoreboard({
             <SideCard
                 label={opponent.bot ? botLabel : undefined}
                 name={opponent.name}
+                character={opponent.character}
+                seat={1}
                 score={opponent.score ?? 0}
                 history={opponent.history ?? []}
                 total={total}
@@ -648,6 +674,8 @@ function Scoreboard({
 function SideCard({
     label,
     name,
+    character,
+    seat = 0,
     score,
     history,
     total,
@@ -658,6 +686,8 @@ function SideCard({
 }: {
     label?: string;
     name: string;
+    character?: CharacterLook | null;
+    seat?: number;
     score: number;
     history: boolean[];
     total: number;
@@ -675,14 +705,31 @@ function SideCard({
                 offline && 'opacity-60',
             )}
         >
-            <span className="flex max-w-full items-center gap-1 truncate text-xs font-bold">
-                {bot && <Bot className="size-3.5 shrink-0" />}
-                <span className="truncate">
-                    {label ? `${label} · ${name}` : name}
+            <span
+                className={cn(
+                    'flex max-w-full items-center gap-2',
+                    alignEnd && 'flex-row-reverse',
+                )}
+            >
+                <span className="size-10 shrink-0">
+                    <PlayerAvatar character={character} seat={seat} />
                 </span>
-            </span>
-            <span className="font-display text-2xl leading-none font-bold tabular-nums">
-                {score}
+                <span
+                    className={cn(
+                        'flex min-w-0 flex-col',
+                        alignEnd && 'items-end',
+                    )}
+                >
+                    <span className="flex max-w-full items-center gap-1 text-xs font-bold">
+                        {bot && <Bot className="size-3.5 shrink-0" />}
+                        <span className="truncate">
+                            {label ? `${label} · ${name}` : name}
+                        </span>
+                    </span>
+                    <span className="font-display text-2xl leading-none font-bold tabular-nums">
+                        {score}
+                    </span>
+                </span>
             </span>
             <span className="flex gap-1" aria-hidden="true">
                 {Array.from({ length: total }, (_, i) => (
@@ -748,6 +795,7 @@ function Result({
                 </BigButton>
                 <NavButton href="/portal" label={t('duel.result.back')} />
             </div>
+            <AdSlot placement="arena.result" className="w-full max-w-md" />
         </Centered>
     );
 }

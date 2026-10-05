@@ -1,5 +1,5 @@
+import AdSlot from '@/components/ads/ad-slot';
 import { IllustratedSnakesBoard } from '@/components/illustrated-snakes-board';
-import { MiniBlockAvatar } from '@/components/mini-block-avatar';
 import {
     ConnectionBadge,
     RoomEntry,
@@ -13,6 +13,7 @@ import {
     SubjectFallbackNote,
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
+import { avatarTint, PlayerAvatar } from '@/components/player-avatar';
 import { NavButton } from '@/components/site-nav';
 import {
     BoardLegend,
@@ -21,7 +22,6 @@ import {
     MoveLog,
     PlayerList,
     QuestionDialog,
-    skinOf,
 } from '@/components/snakes/shared';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,6 +29,7 @@ import {
     useSnakesConnection,
 } from '@/hooks/use-snakes-connection';
 import { useTranslations } from '@/hooks/use-translations';
+import { AdMoment } from '@/lib/ads';
 import { walkPath } from '@/lib/snakes-board';
 import { Coins, DoorOpen, GraduationCap, Shuffle, Trophy } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -67,11 +68,13 @@ export function RoomGame({
     initialPin,
     hasGrade,
     play,
+    muted = false,
 }: {
     wsUrl: string | null;
     initialPin: string | null;
     hasGrade: boolean;
     play: (sound: Sound) => void;
+    muted?: boolean;
 }) {
     const { t, i18n } = useTranslations();
     const [state, setState] = useState<Received | null>(null);
@@ -324,6 +327,7 @@ export function RoomGame({
         id: p.seat,
         name: p.name,
         skinIndex: p.seat,
+        character: p.character,
         position:
             move && walk && walk.id === move.id && walk.seat === p.seat
                 ? walk.position
@@ -335,6 +339,7 @@ export function RoomGame({
         id: p.seat,
         name: p.name,
         skinIndex: p.seat,
+        character: p.character,
         position:
             boardPlayers.find((b) => b.id === p.seat)?.position ?? p.position,
         score: p.score,
@@ -352,7 +357,6 @@ export function RoomGame({
     }));
     const winner =
         state.phase === 'done' ? players[state.winner ?? -1] : undefined;
-    const skin = skinOf(turn);
     const turnLabel = !current
         ? ''
         : current.seat === you
@@ -371,12 +375,20 @@ export function RoomGame({
                 {current && state.phase === 'playing' && (
                     <div
                         className="flex items-center gap-2 rounded-2xl border-3 border-[#1f2a44] px-3.5 py-1.5 font-display text-xs font-black text-[#1f2a44] shadow-[3px_3px_0px_#1f2a44]"
-                        style={{ backgroundColor: skin.color }}
+                        style={{
+                            backgroundColor: avatarTint(
+                                current.character,
+                                turn,
+                            ),
+                        }}
                         data-testid="snakes-turn"
                         data-mine={myTurn}
                     >
-                        <div className="h-6 w-6">
-                            <MiniBlockAvatar skinIndex={turn} />
+                        <div className="size-8">
+                            <PlayerAvatar
+                                character={current.character}
+                                seat={turn}
+                            />
                         </div>
                         <span>{turnLabel}</span>
                     </div>
@@ -399,24 +411,25 @@ export function RoomGame({
                 </div>
 
                 <div className="flex flex-col gap-4 lg:col-span-4 lg:max-h-[calc(100dvh-200px)] lg:overflow-y-auto lg:pr-2">
-                    <div className="rounded-3xl border-3 border-[#1f2a44] bg-white p-6 shadow-[5px_5px_0px_#1f2a44]">
+                    <div className="rounded-3xl border-3 border-[#1f2a44] bg-white p-4 shadow-[5px_5px_0px_#1f2a44] sm:p-5">
                         {state.phase === 'playing' && (
                             <>
+                                <AdMoment moment="start" muted={muted} />
                                 <Button
                                     onClick={() => send({ t: 'roll' })}
                                     disabled={
                                         !myTurn || step !== 'roll' || !online
                                     }
                                     data-testid="snakes-roll"
-                                    className="min-h-14 w-full rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
+                                    className="mx-auto flex min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-6 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
                                 >
                                     {step === 'move' ? (
                                         <DiceFace
                                             value={state.dice ?? 1}
-                                            className="mr-2 size-6"
+                                            className="size-6"
                                         />
                                     ) : (
-                                        <Shuffle className="mr-2 size-5" />
+                                        <Shuffle className="size-5" />
                                     )}
                                     {step === 'move'
                                         ? t('snakes.dice.moving')
@@ -499,10 +512,17 @@ export function RoomGame({
                                         onClick={() => send({ t: 'leave' })}
                                         className="min-h-11 rounded-xl border-2 border-[#1f2a44] bg-white font-black"
                                     >
-                                        <DoorOpen className="mr-1.5 size-4" />
+                                        <DoorOpen className="size-4" />
                                         {t('room.leave')}
                                     </Button>
                                 </div>
+                                {winner?.seat === you && (
+                                    <AdMoment moment="win" muted={muted} />
+                                )}
+                                <AdSlot
+                                    placement="arena.result"
+                                    className="mt-4"
+                                />
                             </div>
                         )}
                         {error && (
@@ -521,13 +541,14 @@ export function RoomGame({
                                 variant="ghost"
                                 onClick={() => send({ t: 'leave' })}
                                 data-testid="snakes-leave"
-                                className="mt-3 min-h-11 w-full text-xs font-bold text-slate-600"
+                                className="mx-auto mt-3 flex min-h-11 text-xs font-bold text-slate-600"
                             >
-                                <DoorOpen className="mr-1.5 size-4" />
+                                <DoorOpen className="size-4" />
                                 {t('room.leave')}
                             </Button>
                         )}
                     </div>
+                    <AdSlot placement="arena.sidebar" />
                     <MoveLog entries={log} />
                 </div>
             </div>
@@ -547,6 +568,7 @@ export function RoomGame({
                     <QuestionDialog
                         name={current.name}
                         skinIndex={turn}
+                        character={current.character}
                         question={{
                             subject: t(
                                 `flagQuest.subjects.${state.question.subject}`,

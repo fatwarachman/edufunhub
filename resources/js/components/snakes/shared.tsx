@@ -1,5 +1,6 @@
-import { BLOCK_SKINS, MiniBlockAvatar } from '@/components/mini-block-avatar';
+import { PlayerAvatar } from '@/components/player-avatar';
 import { useTranslations } from '@/hooks/use-translations';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import { cn } from '@/lib/utils';
 import {
     CheckCircle2,
@@ -15,10 +16,6 @@ import {
 } from 'lucide-react';
 
 const DICE_ICONS = [Dice1, Dice2, Dice3, Dice4, Dice5, Dice6];
-
-export function skinOf(index: number) {
-    return BLOCK_SKINS[index % BLOCK_SKINS.length];
-}
 
 export function DiceFace({
     value,
@@ -97,6 +94,7 @@ export interface QuestionView {
 export function QuestionDialog({
     name,
     skinIndex,
+    character,
     question,
     dice,
     target,
@@ -110,6 +108,7 @@ export function QuestionDialog({
 }: {
     name: string;
     skinIndex: number;
+    character?: CharacterLook | null;
     question: QuestionView;
     dice: number;
     target: number;
@@ -137,8 +136,11 @@ export function QuestionDialog({
             >
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[#1f2a44]/15 pb-4">
                     <div className="flex min-w-0 items-center gap-2">
-                        <div className="h-8 w-8 shrink-0">
-                            <MiniBlockAvatar skinIndex={skinIndex} />
+                        <div className="size-10 shrink-0">
+                            <PlayerAvatar
+                                character={character}
+                                seat={skinIndex}
+                            />
                         </div>
                         <span className="truncate font-display text-sm font-black text-[#1f2a44]">
                             {t('snakes.question.turnOf', { name })}
@@ -268,6 +270,7 @@ export interface ArenaPlayer {
     position: number;
     score: number;
     skinIndex: number;
+    character?: CharacterLook | null;
     badges?: string[];
     muted?: boolean;
 }
@@ -287,7 +290,6 @@ export function PlayerList({
                 {t('snakes.players.inArena')}
             </span>
             {players.map((p) => {
-                const skin = skinOf(p.skinIndex);
                 const isTurn = p.id === turnId;
                 return (
                     <div
@@ -303,25 +305,28 @@ export function PlayerList({
                         data-turn={isTurn}
                     >
                         <div className="flex min-w-0 items-center gap-2.5">
-                            <div className="h-8 w-8 shrink-0">
-                                <MiniBlockAvatar skinIndex={p.skinIndex} />
+                            <div className="size-10 shrink-0">
+                                <PlayerAvatar
+                                    character={p.character}
+                                    seat={p.skinIndex}
+                                />
                             </div>
                             <div className="min-w-0">
                                 <div className="truncate text-xs font-black text-[#1f2a44]">
                                     {p.name}
                                 </div>
-                                <div className="flex flex-wrap gap-1 text-[10px] font-bold text-slate-500">
-                                    {p.badges?.length
-                                        ? p.badges.map((badge) => (
-                                              <span
-                                                  key={badge}
-                                                  className="rounded border border-[#1f2a44]/30 bg-white px-1"
-                                              >
-                                                  {badge}
-                                              </span>
-                                          ))
-                                        : skin.name}
-                                </div>
+                                {p.badges?.length ? (
+                                    <div className="flex flex-wrap gap-1 text-[10px] font-bold text-slate-500">
+                                        {p.badges.map((badge) => (
+                                            <span
+                                                key={badge}
+                                                className="rounded border border-[#1f2a44]/30 bg-white px-1"
+                                            >
+                                                {badge}
+                                            </span>
+                                        ))}
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
                         <div className="flex shrink-0 items-center gap-1.5 text-xs font-bold">
@@ -347,12 +352,12 @@ export function PlayerList({
 export function MoveLog({ entries }: { entries: string[] }) {
     const { t } = useTranslations();
     return (
-        <div className="rounded-3xl border-3 border-[#1f2a44] bg-white p-5 shadow-[4px_4px_0px_#1f2a44]">
+        <div className="flex min-h-0 flex-col rounded-3xl border-3 border-[#1f2a44] bg-white p-4 shadow-[4px_4px_0px_#1f2a44] sm:p-5 lg:flex-1">
             <span className="text-xs font-black text-slate-500 uppercase">
                 {t('snakes.log.title')}
             </span>
             <div
-                className="mt-2 flex flex-col gap-1.5"
+                className="mt-2 flex min-h-0 flex-col gap-1.5 overflow-y-auto"
                 data-testid="snakes-log"
             >
                 {entries.map((entry, index) => (
