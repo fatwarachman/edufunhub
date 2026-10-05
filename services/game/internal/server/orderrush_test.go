@@ -136,11 +136,18 @@ func TestOrderRushWebSocketRace(t *testing.T) {
 		if v["is_correct"] != true {
 			t.Fatalf("module %d: %v", i, v)
 		}
+		if i == 0 {
+			// The host board follows progress (throttled); wait for it before
+			// the race can finish and replace it with the podium.
+			host.until("race_progress_broadcast", func(m map[string]any) bool {
+				board := m["leaderboard"].([]any)
+				return len(board) > 0 && board[0].(map[string]any)["step"] == float64(1)
+			})
+		}
 		if i < 4 {
 			qid = v["next_question"].(map[string]any)["id"].(string)
 		}
 	}
-	host.until("race_progress_broadcast", nil)
 	pod := a.until("podium_result", nil)
 	if pod["you"].(map[string]any)["won"] != true {
 		t.Fatalf("podium: %v", pod)
