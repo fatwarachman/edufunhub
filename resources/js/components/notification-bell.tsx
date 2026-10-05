@@ -14,7 +14,14 @@ import {
     X,
     type LucideIcon,
 } from 'lucide-react';
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useId,
+    useRef,
+    useState,
+    type CSSProperties,
+} from 'react';
 
 export interface PlayerNotice {
     id: string;
@@ -178,13 +185,15 @@ export function NotificationBell() {
         }
     }, [initialUnread, load]);
 
+    const [toastHeld, setToastHeld] = useState(false);
+
     useEffect(() => {
-        if (!toast) {
+        if (!toast || toastHeld) {
             return;
         }
         const timer = window.setTimeout(() => setToast(null), TOAST_MS);
         return () => window.clearTimeout(timer);
-    }, [toast]);
+    }, [toast, toastHeld]);
 
     useEffect(() => {
         if (!open) {
@@ -370,10 +379,21 @@ export function NotificationBell() {
             </div>
             {toast && !open && (
                 <div
+                    key={toast.id}
                     className="edu-notice-toast"
                     role="status"
                     aria-live="polite"
                     data-testid="notification-toast"
+                    onPointerEnter={() => setToastHeld(true)}
+                    onPointerLeave={() => setToastHeld(false)}
+                    onFocus={() => setToastHeld(true)}
+                    onBlur={() => setToastHeld(false)}
+                    style={
+                        {
+                            '--notice-tone':
+                                KIND_TONE[toast.kind] ?? KIND_TONE.admin,
+                        } as CSSProperties
+                    }
                 >
                     <button
                         type="button"

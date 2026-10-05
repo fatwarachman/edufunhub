@@ -11,9 +11,10 @@ import {
     Panel,
     rateTone,
     StatTile,
-    SUBJECT_LABELS,
+    useSubjectLabel,
     type Bucket,
 } from '@/components/admin/game-stats';
+import { GameTabs } from '@/components/admin/game-tabs';
 import AdminLayout from '@/layouts/admin-layout';
 import { cn } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
@@ -91,6 +92,7 @@ interface Stats {
         points: number;
         avg_points: number;
         avg_duration: number | null;
+        total_duration: number;
         accuracy: number | null;
         success_rate: number | null;
         plays_per_player: number;
@@ -140,6 +142,7 @@ export default function GameShow({
     stats,
     passPercent,
 }: ShowProps) {
+    const subjectLabel = useSubjectLabel();
     const { summary } = stats;
     const hasPlays = summary.plays > 0;
 
@@ -205,6 +208,8 @@ export default function GameShow({
                     </div>
                 </div>
 
+                <GameTabs game={game.key} active="analytics" />
+
                 {!game.tracked && (
                     <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
                         This game is a client-side practice demo. Its results
@@ -257,6 +262,15 @@ export default function GameShow({
                     <StatTile
                         label="Avg duration"
                         value={formatDuration(summary.avg_duration)}
+                        hint={
+                            <Link
+                                href={`/admin/playing-time?game=${game.key}`}
+                                className="hover:text-foreground hover:underline"
+                            >
+                                {formatDuration(summary.total_duration || null)}{' '}
+                                total · per player
+                            </Link>
+                        }
                         icon={Clock}
                         color="bg-bubble-pink"
                     />
@@ -497,10 +511,9 @@ export default function GameShow({
                                                             {question.prompt}
                                                         </Link>
                                                         <span className="text-xs text-muted-foreground">
-                                                            {SUBJECT_LABELS[
-                                                                question.subject
-                                                            ] ??
-                                                                question.subject}
+                                                            {subjectLabel(
+                                                                question.subject,
+                                                            )}
                                                             {question.band !==
                                                                 null &&
                                                                 ` · ${BAND_LABELS[question.band]}`}{' '}

@@ -8,12 +8,14 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\Chat\ChatController;
 use App\Http\Controllers\CrosswordController;
+use App\Http\Controllers\EconomyHeistController;
 use App\Http\Controllers\FlagQuestController;
+use App\Http\Controllers\FloorDropController;
 use App\Http\Controllers\GameInviteController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\KnowledgeTrainController;
-use App\Http\Controllers\FloorDropController;
 use App\Http\Controllers\MiniGameController;
+use App\Http\Controllers\OrderRushController;
 use App\Http\Controllers\PlayerDetailsController;
 use App\Http\Controllers\PlayerNotificationController;
 use App\Http\Controllers\PortalController;
@@ -87,6 +89,10 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         }
         Route::get('/games/floor-drop', [FloorDropController::class, 'show'])->middleware(RecordGameAccess::class.':floor-drop')->name('games.floor-drop');
         Route::post('/games/floor-drop/token', [FloorDropController::class, 'token'])->middleware('throttle:30,1')->name('games.floor-drop.token');
+        Route::get('/games/economy-heist', [EconomyHeistController::class, 'show'])->middleware(RecordGameAccess::class.':economy-heist')->name('games.economy-heist');
+        Route::post('/games/economy-heist/token', [EconomyHeistController::class, 'token'])->middleware('throttle:30,1')->name('games.economy-heist.token');
+        Route::get('/games/order-rush', [OrderRushController::class, 'show'])->middleware(RecordGameAccess::class.':order-rush')->name('games.order-rush');
+        Route::post('/games/order-rush/token', [OrderRushController::class, 'token'])->middleware('throttle:30,1')->name('games.order-rush.token');
         Route::get('/games/{game}/join/{pin}', GameInviteController::class)->where(['game' => '[a-z-]+', 'pin' => '[0-9]{6}'])->name('games.join');
         Route::post('/games/snakes-and-ladders/token', [SnakesAndLaddersController::class, 'token'])->middleware('throttle:30,1')->name('games.snakes-and-ladders.token');
     });

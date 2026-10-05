@@ -1,11 +1,11 @@
 import {
     BAND_LABELS,
-    SUBJECT_LABELS,
     fieldClass,
     formatNumber,
     formatPercent,
     gameLabel,
     rateTone,
+    useSubjectLabel,
 } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
@@ -63,6 +63,7 @@ export default function QuestionForm({
     perCorrect,
     maxPoints,
 }: FormProps) {
+    const subjectLabel = useSubjectLabel();
     const editing = question !== null;
     const backHref = `/admin/questions?subject=${question?.subject ?? defaultSubject ?? 'all'}`;
     const form = useForm({
@@ -175,7 +176,7 @@ export default function QuestionForm({
                         <ArrowLeft className="size-4" />
                         Question bank
                         {(question?.subject ?? defaultSubject) &&
-                            ` · ${SUBJECT_LABELS[question?.subject ?? defaultSubject ?? ''] ?? ''}`}
+                            ` · ${subjectLabel(question?.subject ?? defaultSubject ?? '')}`}
                     </Link>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-3">
@@ -183,7 +184,7 @@ export default function QuestionForm({
                                 {editing ? 'Edit question' : 'Add question'}
                             </h2>
                             <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
-                                {SUBJECT_LABELS[data.subject] ?? data.subject}
+                                {subjectLabel(data.subject)}
                                 {' · '}
                                 {BAND_LABELS[data.band]}
                             </span>
@@ -278,7 +279,7 @@ export default function QuestionForm({
                             >
                                 {subjects.map((subject) => (
                                     <option key={subject} value={subject}>
-                                        {SUBJECT_LABELS[subject] ?? subject}
+                                        {subjectLabel(subject)}
                                     </option>
                                 ))}
                             </select>

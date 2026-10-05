@@ -15,7 +15,7 @@ import {
     gameLabel,
     Panel,
     rateTone,
-    SUBJECT_LABELS,
+    useSubjectLabel,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
 import { cn } from '@/lib/utils';
@@ -169,6 +169,7 @@ const WRONG_COLOR = 'var(--color-bubble-pink)';
 type PlayerFilter = 'all' | 'correct' | 'wrong';
 
 export default function QuestionShow({ question, stats }: Props) {
+    const subjectLabel = useSubjectLabel();
     const { summary } = stats;
     const [filter, setFilter] = useState<PlayerFilter>('all');
     const options =
@@ -210,8 +211,7 @@ export default function QuestionShow({ question, stats }: Props) {
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        Question bank ·{' '}
-                        {SUBJECT_LABELS[question.subject] ?? question.subject}
+                        Question bank · {subjectLabel(question.subject)}
                     </Link>
                     <Link
                         href={`/admin/questions/${question.id}/edit`}
@@ -227,8 +227,7 @@ export default function QuestionShow({ question, stats }: Props) {
                     <div className="flex min-w-0 flex-col gap-4">
                         <div className="flex flex-wrap items-center gap-1.5 text-xs">
                             <Chip className="bg-primary/10 text-primary">
-                                {SUBJECT_LABELS[question.subject] ??
-                                    question.subject}
+                                {subjectLabel(question.subject)}
                             </Chip>
                             <Chip className="bg-secondary text-secondary-foreground">
                                 {BAND_LABELS[question.band]}

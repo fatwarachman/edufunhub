@@ -88,6 +88,8 @@ const GAME_NAMES: Record<string, string> = {
     'explore-indonesia': 'Explore Indonesia (rooms)',
     'mini-lab': 'Mini Lab (rooms)',
     'floor-drop': 'Floor Drop (rooms)',
+    'economy-heist': 'Economy Heist (rooms)',
+    'order-rush': 'Order Rush TKJ (rooms)',
 };
 
 function formatBytes(bytes: number | null | undefined): string {

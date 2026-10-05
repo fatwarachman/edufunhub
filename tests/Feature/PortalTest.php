@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\GameAccess;
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\PointLedger;
@@ -81,7 +82,8 @@ test('portal lists every catalog game with play urls and point rules', function 
         ->where('progress.points', 0)
         ->where('progress.level', 1)
         ->where('rank', null)
-        ->has('leaderboard', 0)
+        ->has('leaderboards.all.entries', 0)
+        ->where('leaderboards.all.me', null)
         ->has('recent', 0));
 });
 
@@ -122,11 +124,15 @@ test('verified game results flow into portal points, level, rank, history and da
         ->where('progress.levelProgress', 50)
         ->where('progress.nextLevelAt', 400)
         ->where('rank', 1)
-        ->where('leaderboard.0.name', 'Andika')
-        ->where('leaderboard.0.points', 250)
-        ->where('leaderboard.0.isMe', true)
-        ->where('leaderboard.1.points', 150)
-        ->where('leaderboard.1.isMe', false)
+        ->where('leaderboards.all.entries.0.name', 'Andika')
+        ->where('leaderboards.all.entries.0.points', 250)
+        ->where('leaderboards.all.entries.0.isMe', true)
+        ->where('leaderboards.all.entries.1.points', 150)
+        ->where('leaderboards.all.entries.1.isMe', false)
+        ->where('leaderboards.all.entries.1.userId', $rival->id)
+        ->where('leaderboards.all.entries.0.userId', $user->id)
+        ->where('leaderboards.all.me', ['rank' => 1, 'points' => 250])
+        ->where('leaderboards.week.entries.0.name', 'Andika')
         ->has('recent', 2)
         ->where('recent.0.game_key', 'flag-quest'));
 
@@ -167,6 +173,114 @@ test('leaderboard hides disabled players and players without points', function (
     GameHistory::factory()->for($active)->create();
 
     $this->actingAs($viewer)->get('/portal')->assertInertia(fn (Assert $page) => $page
-        ->has('leaderboard', 1)
-        ->where('leaderboard.0.points', 40));
+        ->has('leaderboards.all.entries', 1)
+        ->where('leaderboards.all.entries.0.points', 40));
+});
+
+test('leaderboard ranks players per week, month and all time', function (): void {
+    $viewer = User::factory()->create();
+    PlayerProfile::factory()->for($viewer)->create(['nickname' => 'Viewer']);
+    $veteran = User::factory()->create();
+    PlayerProfile::factory()->for($veteran)->create(['nickname' => 'Veteran']);
+    $monthly = User::factory()->create();
+    PlayerProfile::factory()->for($monthly)->create(['nickname' => 'Monthly']);
+
+    PointLedger::factory()->for($veteran)->create(['points' => 900, 'created_at' => now()->subDays(60)]);
+    PointLedger::factory()->for($monthly)->create(['points' => 300, 'created_at' => now()->subDays(20)]);
+    PointLedger::factory()->for($viewer)->create(['points' => 50, 'created_at' => now()->subDays(2)]);
+    PointLedger::factory()->for($viewer)->create(['points' => -30, 'created_at' => now()->subDay()]);
+
+    $this->actingAs($viewer)->get('/portal')->assertInertia(fn (Assert $page) => $page
+        ->has('leaderboards.week.entries', 1)
+        ->where('leaderboards.week.entries.0.name', 'Viewer')
+        ->where('leaderboards.week.entries.0.points', 50)
+        ->where('leaderboards.week.me', ['rank' => 1, 'points' => 50])
+        ->has('leaderboards.month.entries', 2)
+        ->where('leaderboards.month.entries.0.name', 'Monthly')
+        ->where('leaderboards.month.me', ['rank' => 2, 'points' => 50])
+        ->has('leaderboards.all.entries', 3)
+        ->where('leaderboards.all.entries.0.name', 'Veteran')
+        ->where('leaderboards.all.entries.2.isMe', true)
+        ->where('leaderboards.all.me', ['rank' => 3, 'points' => 50]));
+});
+
+test('leaderboard shows the viewer standing outside the top ten', function (): void {
+    $viewer = User::factory()->create();
+    PointLedger::factory()->for($viewer)->create(['points' => 5]);
+
+    foreach (range(1, 10) as $index) {
+        PointLedger::factory()->for(User::factory()->create())->create(['points' => 100 + $index]);
+    }
+
+    $this->actingAs($viewer)->get('/portal')->assertInertia(fn (Assert $page) => $page
+        ->has('leaderboards.all.entries', 10)
+        ->where('leaderboards.all.entries.9.isMe', false)
+        ->where('leaderboards.all.me', ['rank' => 11, 'points' => 5])
+        ->where('rank', 11));
+});
+
+test('players without points in a period are not ranked in it', function (): void {
+    $viewer = User::factory()->create();
+    PointLedger::factory()->for($viewer)->create(['points' => 70, 'created_at' => now()->subDays(45)]);
+
+    $this->actingAs($viewer)->get('/portal')->assertInertia(fn (Assert $page) => $page
+        ->has('leaderboards.week.entries', 0)
+        ->where('leaderboards.week.me', null)
+        ->where('leaderboards.month.me', null)
+        ->where('leaderboards.all.me', ['rank' => 1, 'points' => 70]));
+});
+
+test('portal game cards show play counts and badge the three most played games', function (): void {
+    $user = User::factory()->create();
+    PlayerProfile::factory()->for($user)->create(['grade' => 4]);
+
+    GameAccess::factory()->count(5)->create(['game_key' => 'crossword', 'accessed_at' => now()->subDays(2)]);
+    GameAccess::factory()->count(3)->create(['game_key' => 'sky-quiz', 'accessed_at' => now()->subDays(10)]);
+    GameAccess::factory()->count(2)->create(['game_key' => 'flag-quest', 'accessed_at' => now()->subDay()]);
+    GameAccess::factory()->create(['game_key' => 'mini-lab', 'accessed_at' => now()]);
+    GameAccess::factory()->count(9)->create(['game_key' => 'market-math', 'accessed_at' => now()->subDays(45)]);
+
+    $this->actingAs($user)->get('/portal')->assertInertia(function (Assert $page): void {
+        $page->where('popularityDays', 30);
+        $games = collect($page->toArray()['props']['categories'])->flatMap(fn (array $category): array => $category['games'])->keyBy('key');
+
+        expect($games['crossword']['plays'])->toBe(5)
+            ->and($games['crossword']['popularRank'])->toBe(1)
+            ->and($games['sky-quiz']['popularRank'])->toBe(2)
+            ->and($games['flag-quest']['popularRank'])->toBe(3)
+            ->and($games['mini-lab']['plays'])->toBe(1)
+            ->and($games['mini-lab']['popularRank'])->toBeNull()
+            ->and($games['market-math']['plays'])->toBe(0)
+            ->and($games['market-math']['popularRank'])->toBeNull();
+    });
+});
+
+test('no game is badged most played when nothing was played recently', function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->get('/portal')->assertInertia(function (Assert $page): void {
+        $games = collect($page->toArray()['props']['categories'])->flatMap(fn (array $category): array => $category['games']);
+
+        expect($games->pluck('popularRank')->filter()->all())->toBe([])
+            ->and($games->sum('plays'))->toBe(0);
+    });
+});
+
+test('games with the same play count share a most played rank', function (): void {
+    $user = User::factory()->create();
+    GameAccess::factory()->count(4)->create(['game_key' => 'sky-quiz']);
+    GameAccess::factory()->count(4)->create(['game_key' => 'snakes-and-ladders']);
+    GameAccess::factory()->count(2)->create(['game_key' => 'crossword']);
+    GameAccess::factory()->count(2)->create(['game_key' => 'mini-lab']);
+    GameAccess::factory()->create(['game_key' => 'flag-quest']);
+
+    $this->actingAs($user)->get('/portal')->assertInertia(function (Assert $page): void {
+        $games = collect($page->toArray()['props']['categories'])->flatMap(fn (array $category): array => $category['games'])->keyBy('key');
+
+        expect($games['sky-quiz']['popularRank'])->toBe(1)
+            ->and($games['snakes-and-ladders']['popularRank'])->toBe(1)
+            ->and($games['crossword']['popularRank'])->toBe(3)
+            ->and($games['mini-lab']['popularRank'])->toBe(3)
+            ->and($games['flag-quest']['popularRank'])->toBeNull();
+    });
 });

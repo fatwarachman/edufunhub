@@ -32,6 +32,8 @@ class StoreGameResultRequest extends FormRequest
         'explore-indonesia' => ['event_id' => '/^ei-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 950],
         'mini-lab' => ['event_id' => '/^ml-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 950],
         'floor-drop' => ['event_id' => '/^fd-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 2150, 'max_players' => 100, 'max_level' => 20],
+        'economy-heist' => ['event_id' => '/^eh-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 4150, 'max_players' => 60],
+        'order-rush' => ['event_id' => '/^or-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 4150, 'max_players' => 60, 'max_level' => 20],
     ];
 
     public function authorize(): bool
@@ -88,6 +90,15 @@ class StoreGameResultRequest extends FormRequest
             'match.words' => ['nullable', 'array', 'max:30'],
             'match.words.*.key' => ['required', 'string', 'max:60'],
             'match.words.*.solved' => ['required', 'boolean'],
+            'sequence_stats' => ['sometimes', 'nullable', 'array', 'max:50'],
+            'sequence_stats.*.set' => ['required', 'string', 'max:40'],
+            'sequence_stats.*.category' => ['required', 'string', 'max:40'],
+            'sequence_stats.*.attempts' => ['required', 'integer', 'min:0', 'max:1000'],
+            'sequence_stats.*.solved' => ['required', 'integer', 'min:0', 'max:1000'],
+            'sequence_stats.*.wrong' => ['required', 'integer', 'min:0', 'max:1000'],
+            'sequence_stats.*.total_ms' => ['required', 'integer', 'min:0', 'max:86400000'],
+            'sequence_stats.*.slot_errors' => ['present', 'nullable', 'array', 'max:12'],
+            'sequence_stats.*.slot_errors.*' => ['integer', 'min:0', 'max:1000'],
         ];
     }
 }

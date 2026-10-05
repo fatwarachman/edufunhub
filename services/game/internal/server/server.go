@@ -22,8 +22,10 @@ import (
 	"edufunhub/game/internal/crossword"
 	"edufunhub/game/internal/duel"
 	"edufunhub/game/internal/floordrop"
+	"edufunhub/game/internal/heist"
 	"edufunhub/game/internal/lobby"
 	"edufunhub/game/internal/minigames"
+	"edufunhub/game/internal/orderrush"
 	"edufunhub/game/internal/session"
 	"edufunhub/game/internal/sky"
 	"edufunhub/game/internal/snakes"
@@ -40,6 +42,10 @@ type Config struct {
 	Logger         *slog.Logger
 	// FloorDrop timings (zero = floordrop.Defaults).
 	FloorDrop floordrop.Config
+	// Heist timings (zero = heist.Defaults).
+	Heist heist.Config
+	// OrderRush timings (zero = orderrush.Defaults).
+	OrderRush orderrush.Config
 }
 
 type connection struct{ cancel context.CancelFunc }
@@ -65,6 +71,10 @@ type Server struct {
 	miniSubs      map[string]map[int64]*miniSub
 	floor         *floordrop.Hub
 	floorConns    map[floorKey]*floordrop.Client
+	heist         *heist.Hub
+	heistConns    map[floorKey]*heist.Client
+	rush          *orderrush.Hub
+	rushConns     map[floorKey]*orderrush.Client
 	started       time.Time
 }
 
@@ -82,6 +92,12 @@ func New(cfg Config) *Server {
 	if cfg.FloorDrop.Tick == 0 {
 		cfg.FloorDrop = floordrop.Defaults
 	}
+	if cfg.Heist.Tick == 0 {
+		cfg.Heist = heist.Defaults
+	}
+	if cfg.OrderRush.Tick == 0 {
+		cfg.OrderRush = orderrush.Defaults
+	}
 	s := &Server{
 		cfg: cfg, sessions: map[int64]*session.Session{}, conns: map[int64]*connection{},
 		skies: map[int64]*sky.Session{}, skyConns: map[int64]*connection{},
@@ -93,6 +109,10 @@ func New(cfg Config) *Server {
 		minis: map[string]*minigames.Hub{}, miniSubs: map[string]map[int64]*miniSub{},
 		floor:      floordrop.NewHub(cfg.FloorDrop, uint64(cfg.Now().UnixNano())^0xf1d0),
 		floorConns: map[floorKey]*floordrop.Client{},
+		heist:      heist.NewHub(cfg.Heist, uint64(cfg.Now().UnixNano())^0x4e57),
+		heistConns: map[floorKey]*heist.Client{},
+		rush:       orderrush.NewHub(cfg.OrderRush, uint64(cfg.Now().UnixNano())^0x0d3e),
+		rushConns:  map[floorKey]*orderrush.Client{},
 		started:    cfg.Now(),
 	}
 	for i, key := range minigames.Keys {
@@ -119,6 +139,8 @@ func (s *Server) Handler() http.Handler {
 		mux.HandleFunc("GET /ws/"+key, s.serveMini(key))
 	}
 	mux.HandleFunc("GET /ws/floor-drop", s.serveFloorDrop)
+	mux.HandleFunc("GET /ws/economy-heist", s.serveHeist)
+	mux.HandleFunc("GET /ws/order-rush", s.serveOrderRush)
 	mux.HandleFunc("GET /internal/stats", s.serveStats)
 	return mux
 }

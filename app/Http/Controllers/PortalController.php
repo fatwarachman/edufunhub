@@ -28,8 +28,9 @@ class PortalController extends Controller
             'detailsRequiredNotice' => $request->session()->get('player_details_required') !== null,
             'progress' => $this->portal->progress($points),
             'rank' => $this->portal->rankOf($user, $points),
-            'categories' => $this->portal->catalog($profile->grade),
-            'leaderboard' => $this->portal->leaderboard($user),
+            'categories' => $this->portal->catalog($profile->grade, $this->portal->popularity()),
+            'popularityDays' => PlayerPortal::POPULARITY_DAYS,
+            'leaderboards' => $this->portal->leaderboards($user),
             'recent' => $this->portal->recentResults($user),
         ]);
     }

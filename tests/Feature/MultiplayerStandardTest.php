@@ -37,6 +37,8 @@ dataset('multiplayer games', [
     'explore indonesia' => ['explore-indonesia', '/games/explore-indonesia'],
     'mini lab' => ['mini-lab', '/games/mini-lab'],
     'floor drop' => ['floor-drop', '/games/floor-drop'],
+    'economy heist' => ['economy-heist', '/games/economy-heist'],
+    'order rush' => ['order-rush', '/games/order-rush'],
 ]);
 
 it('marks every multiplayer game in the catalog', function (string $key): void {
@@ -103,6 +105,8 @@ it('records results for room games and adds them to the point total', function (
     'explore indonesia' => ['explore-indonesia', 'ei-%d-room-1790000000000', 'room', 45, 'Jelajah Indonesia'],
     'mini lab' => ['mini-lab', 'ml-%d-room-1790000000000', 'room', 45, 'Lab Mini'],
     'floor drop' => ['floor-drop', 'fd-%d-room-1790000000000', 'room', 45, 'Lantai Runtuh'],
+    'economy heist' => ['economy-heist', 'eh-%d-room-1790000000000', 'room', 45, 'Peti Emas Misteri'],
+    'order rush' => ['order-rush', 'or-%d-room-1790000000000', 'room', 45, 'Order Rush TKJ'],
 ]);
 
 it('caps room game points and missions', function (array $override): void {

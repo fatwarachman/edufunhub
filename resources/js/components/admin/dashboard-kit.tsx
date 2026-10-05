@@ -30,6 +30,8 @@ export const GAME_COLORS: Record<string, string> = {
     'explore-indonesia': '#e11d48',
     'mini-lab': '#8b5cf6',
     'floor-drop': '#2563eb',
+    'economy-heist': '#b45309',
+    'order-rush': '#0f766e',
     'knowledge-train': 'var(--color-bubble-purple)',
 };
 

@@ -32,6 +32,18 @@ export interface CharacterPose {
     facingBack: boolean;
     /** 1 = facing right, -1 = facing left. */
     flip: number;
+    /** Whole-body lean around the feet, radians (idle animation). */
+    lean?: number;
+    /** Squash (+) / stretch (-) around the feet, about -0.1..0.1. */
+    squash?: number;
+    /** Head tilt around the neck, radians. */
+    headTilt?: number;
+    /** Back (left) arm angle override, radians; 0 hangs down. */
+    armBack?: number;
+    /** Front (right) arm angle override, radians; 0 hangs down. */
+    armFront?: number;
+    /** Eyes closed (blink). */
+    blink?: boolean;
 }
 
 export const CHARACTER_INK = '#1d2238';
@@ -160,6 +172,8 @@ export function resolveItems(
 const HEAD_X = 1;
 const HEAD_Y = -50;
 const HEAD_R = 17;
+/** Pivot for head tilts: where the head meets the shirt. */
+const NECK_Y = -33;
 
 function drawBack(
     ctx: CanvasRenderingContext2D,
@@ -331,6 +345,7 @@ function drawHead(
     hair: string,
     facingBack: boolean,
     hat: string | null,
+    blink = false,
 ): void {
     const covered = hat !== null && !['flower', 'circlet'].includes(hat);
     circle(ctx, HEAD_X, HEAD_Y, HEAD_R);
@@ -348,8 +363,23 @@ function drawHead(
         circle(ctx, HEAD_X - 9, HEAD_Y + 2, 3.5);
         ink(ctx, shade(skin, -0.06), 1.6);
     }
-    // Eyes: big and determined.
+    // Eyes: big and determined (a short curve while blinking).
     for (const ex of [6, 13]) {
+        if (blink) {
+            ctx.strokeStyle = CHARACTER_INK;
+            ctx.lineWidth = 1.8;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(HEAD_X + ex - 2.4, HEAD_Y + 1.2);
+            ctx.quadraticCurveTo(
+                HEAD_X + ex,
+                HEAD_Y + 2.6,
+                HEAD_X + ex + 2.4,
+                HEAD_Y + 1.2,
+            );
+            ctx.stroke();
+            continue;
+        }
         ctx.beginPath();
         ctx.ellipse(HEAD_X + ex, HEAD_Y + 1, 2.4, 3.6, 0, 0, Math.PI * 2);
         ctx.fillStyle = CHARACTER_INK;
@@ -754,6 +784,8 @@ export function drawCharacter(
     pose: CharacterPose = STANDING_POSE,
 ): void {
     const { phase, bob, facingBack, flip } = pose;
+    const squash = pose.squash ?? 0;
+    const headTilt = pose.headTilt ?? 0;
     const items = resolveItems(look);
     const girl = look.gender === 'girl';
     const skin = SKIN_TONES[look.skin ?? ''] ?? SKIN_TONES.light;
@@ -763,6 +795,12 @@ export function drawCharacter(
 
     ctx.save();
     ctx.translate(x, y - bob);
+    if (pose.lean) {
+        ctx.rotate(pose.lean);
+    }
+    if (squash) {
+        ctx.scale(1 + squash * 0.6, 1 - squash);
+    }
     ctx.scale(flip, 1);
 
     if (items.back && !facingBack) {
@@ -779,22 +817,37 @@ export function drawCharacter(
         circle(ctx, 0, -29, 2.4);
         ink(ctx, '#f2c14e', 1.4);
     }
-    drawArm(ctx, -11, 0.3 + phase * 0.35, sleeve, skin);
+    drawArm(ctx, -11, pose.armBack ?? 0.3 + phase * 0.35, sleeve, skin);
     if (items.offhand && !facingBack) {
         drawShield(ctx, items.offhand);
     }
+    ctx.save();
+    if (headTilt) {
+        ctx.translate(HEAD_X, NECK_Y);
+        ctx.rotate(headTilt);
+        ctx.translate(-HEAD_X, -NECK_Y);
+    }
     drawHairBack(ctx, girl, hair, facingBack);
-    drawHead(ctx, skin, girl, hair, facingBack, items.hat?.style ?? null);
+    drawHead(
+        ctx,
+        skin,
+        girl,
+        hair,
+        facingBack,
+        items.hat?.style ?? null,
+        pose.blink ?? false,
+    );
     if (items.face && !facingBack) {
         drawFace(ctx, items.face);
     }
     if (items.hat) {
         drawHat(ctx, items.hat);
     }
+    ctx.restore();
     if (items.weapon) {
         drawWeapon(ctx, items.weapon);
     }
-    drawArm(ctx, 11, -0.3 - phase * 0.35, sleeve, skin);
+    drawArm(ctx, 11, pose.armFront ?? -0.3 - phase * 0.35, sleeve, skin);
     if (items.back && facingBack) {
         drawBack(ctx, items.back, phase);
     }

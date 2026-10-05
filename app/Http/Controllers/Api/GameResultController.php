@@ -9,6 +9,7 @@ use App\Models\GameHistory;
 use App\Models\Question;
 use App\Models\QuestionAnswer;
 use App\Models\QuestionCompensationRate;
+use App\Models\SequenceAttempt;
 use App\Models\User;
 use App\Services\MatchRecorder;
 use App\Services\PlayerBadges;
@@ -51,6 +52,7 @@ class GameResultController extends Controller
             ]);
 
             $this->recordAnswers($history, $data['answers'] ?? []);
+            $this->recordSequences($history, $data['sequence_stats'] ?? []);
 
             if (! empty($data['match'])) {
                 $matches->record($data['game_key'], $data['match'], $history);
@@ -119,6 +121,30 @@ class GameResultController extends Controller
         }
     }
 
+    /**
+     * Store Order Rush per-set attempts (solved, wrong, wrong slots) for the
+     * "most misunderstood sequence" analytics.
+     *
+     * @param  list<array{set: string, category: string, attempts: int, solved: int, wrong: int, total_ms: int, slot_errors: ?list<int>}>  $stats
+     */
+    private function recordSequences(GameHistory $history, array $stats): void
+    {
+        foreach ($stats as $stat) {
+            SequenceAttempt::query()->create([
+                'game_history_id' => $history->id,
+                'user_id' => $history->user_id,
+                'set_key' => $stat['set'],
+                'category' => $stat['category'],
+                'attempts' => $stat['attempts'],
+                'solved' => $stat['solved'],
+                'wrong' => $stat['wrong'],
+                'total_ms' => $stat['total_ms'],
+                'slot_errors' => array_values(array_map('intval', $stat['slot_errors'] ?? [])),
+                'played_at' => $history->played_at,
+            ]);
+        }
+    }
+
     private function historyName(string $gameKey, string $mission, string $locale): string
     {
         if ($gameKey === 'sky-quiz') {
@@ -139,6 +165,14 @@ class GameResultController extends Controller
 
         if ($gameKey === 'floor-drop') {
             return __('floor_drop.history_name', [], $locale);
+        }
+
+        if ($gameKey === 'economy-heist') {
+            return __('economy_heist.history_name', [], $locale);
+        }
+
+        if ($gameKey === 'order-rush') {
+            return __('order_rush.history_name', [], $locale);
         }
 
         if ($gameKey === 'crossword') {

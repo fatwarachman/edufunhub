@@ -4,6 +4,7 @@ import { teacherFieldClass, Toggle } from '@/components/teacher/teacher-ui';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { GRADE_LEVELS, gradeLabel } from '@/lib/grade';
+import { useSubjectName } from '@/lib/subjects';
 import { Link, useForm } from '@inertiajs/react';
 import { CircleCheck, Loader2, Plus, X } from 'lucide-react';
 import { type FormEvent, type ReactNode } from 'react';
@@ -47,6 +48,7 @@ export default function TeacherQuestionForm({
     subjects,
 }: TeacherFormProps) {
     const { t } = useTranslations();
+    const subjectName = useSubjectName();
     const editing = question !== null;
     const form = useForm({
         type: question?.type ?? ('choice' as 'choice' | 'true_false'),
@@ -276,7 +278,7 @@ export default function TeacherQuestionForm({
                             >
                                 {subjects.map((subject) => (
                                     <option key={subject} value={subject}>
-                                        {t(`teacher.subjects.${subject}`)}
+                                        {subjectName(subject)}
                                     </option>
                                 ))}
                             </select>

@@ -1,3 +1,4 @@
+import { DigitalClock } from '@/components/digital-clock';
 import { GameMenu } from '@/components/game-menu';
 import { NotificationBell } from '@/components/notification-bell';
 import { useTranslations } from '@/hooks/use-translations';
@@ -256,12 +257,14 @@ export function SiteNav({
             className={[
                 'edu-nav-bar',
                 compact && 'edu-nav-bar--compact',
+                items.length > PLAYER_ITEMS.length && 'edu-nav-bar--crowded',
                 className,
             ]
                 .filter(Boolean)
                 .join(' ')}
             data-testid="site-nav"
         >
+            <DigitalClock />
             <div className="edu-nav-links">{links}</div>
             {signedIn && <NotificationBell />}
             <div className="edu-nav-links">{account}</div>

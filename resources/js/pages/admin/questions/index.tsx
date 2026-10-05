@@ -2,12 +2,12 @@ import { AiBadge } from '@/components/admin/admin-kit';
 import {
     BAND_LABELS,
     EmptyState,
-    SUBJECT_LABELS,
     fieldClass,
     formatNumber,
     formatPercent,
     gameLabel,
     rateTone,
+    useSubjectLabel,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
 import { cn } from '@/lib/utils';
@@ -129,10 +129,6 @@ const BAND_LEVEL: Record<number, string> = {
     3: 'SMA',
 };
 
-function subjectLabel(subject: string): string {
-    return SUBJECT_LABELS[subject] ?? subject;
-}
-
 function correctAnswer(question: QuestionRow): string {
     if (question.type === 'true_false')
         return question.answer === 1 ? 'True' : 'False';
@@ -158,6 +154,7 @@ function SubjectOverview({
     games,
     bands,
 }: QuestionsProps) {
+    const subjectLabel = useSubjectLabel();
     const [search, setSearch] = useState('');
 
     return (
@@ -368,6 +365,7 @@ function QuestionList({
     bands,
     subjectStats,
 }: QuestionsProps) {
+    const subjectLabel = useSubjectLabel();
     const [search, setSearch] = useState(filters.search ?? '');
     const [deleteTarget, setDeleteTarget] = useState<QuestionRow | null>(null);
     const [deleting, setDeleting] = useState(false);

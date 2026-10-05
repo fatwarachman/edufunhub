@@ -4,8 +4,10 @@ namespace App\Http\Middleware;
 
 use App\Models\Announcement;
 use App\Models\SeoMetadata;
+use App\Models\Subject;
 use App\Services\Chat\ChatService;
 use App\Services\FeatureService;
+use App\Services\GameSounds;
 use App\Services\PlayerNotifications;
 use App\Services\PlayerPortal;
 use Illuminate\Foundation\Inspiring;
@@ -74,6 +76,9 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'gameMenu' => fn (): array => app(PlayerPortal::class)->menu(),
+            'gameSounds' => fn (): array => GameSounds::current(),
+            'subjects' => fn (): array => Subject::forFrontend(),
+            'subjectLabels' => fn (): array => $user?->is_superadmin ? Subject::adminLabels() : [],
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $user ? [

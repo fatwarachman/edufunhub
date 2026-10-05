@@ -3,6 +3,7 @@
 use App\Ai\Agents\QuestionWriter;
 use App\Jobs\GenerateQuestions;
 use App\Models\Question;
+use App\Models\Subject;
 use App\Models\QuestionGeneration;
 use App\Models\Role;
 use App\Models\Setting;
@@ -165,7 +166,7 @@ describe('question generation', function (): void {
             ->assertRedirect('/admin/questions/generate')->assertSessionHasNoErrors();
 
         $generation = QuestionGeneration::query()->sole();
-        expect($generation->subjects)->toBe(Question::SUBJECTS)
+        expect($generation->subjects)->toBe(Subject::activeKeys())
             ->and($generation->grades)->toBe(Question::GRADES)
             ->and($generation->total_jobs)->toBe(6 * 13)
             ->and($generation->model)->toBe('gpt-4o-mini');

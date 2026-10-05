@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BulkQuestionRequest;
 use App\Http\Requests\Admin\QuestionRequest;
 use App\Models\Question;
+use App\Models\Subject;
 use App\Services\PointRules;
 use App\Services\QuestionAnalytics;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -25,7 +26,7 @@ class QuestionController extends Controller
     {
         $filters = $request->only(['search', 'game', 'band', 'subject', 'type', 'status', 'sort', 'source']);
         $subject = $filters['subject'] ?? null;
-        $showList = in_array($subject, [...Question::SUBJECTS, 'all'], true) || filled($filters['search'] ?? null) || filled($filters['source'] ?? null);
+        $showList = in_array($subject, [...Subject::keys(), 'all'], true) || filled($filters['search'] ?? null) || filled($filters['source'] ?? null);
 
         return Inertia::render('admin/questions/index', [
             'mode' => $showList ? 'list' : 'subjects',
@@ -59,7 +60,7 @@ class QuestionController extends Controller
             ->get()
             ->groupBy('subject');
 
-        return collect(Question::SUBJECTS)->map(function (string $subject) use ($rows): array {
+        return collect(Subject::keys())->map(function (string $subject) use ($rows): array {
             $group = $rows->get($subject, collect());
             $answered = (int) $group->sum('answered');
 
@@ -89,7 +90,7 @@ class QuestionController extends Controller
                 ->orWhere('key', $search)))
             ->when(in_array($filters['game'] ?? null, Question::GAMES, true), fn (Builder $q) => $q->whereJsonContains('games', $filters['game']))
             ->when(isset($filters['band']) && $filters['band'] !== '' && array_key_exists((int) $filters['band'], Question::BANDS), fn (Builder $q) => $q->where('band', (int) $filters['band']))
-            ->when(in_array($filters['subject'] ?? null, Question::SUBJECTS, true), fn (Builder $q) => $q->where('subject', $filters['subject']))
+            ->when(in_array($filters['subject'] ?? null, Subject::keys(), true), fn (Builder $q) => $q->where('subject', $filters['subject']))
             ->when(in_array($filters['type'] ?? null, Question::TYPES, true), fn (Builder $q) => $q->where('type', $filters['type']))
             ->when(($filters['source'] ?? null) === 'ai', fn (Builder $q) => $q->where('source', Question::SOURCE_AI))
             ->when(($filters['source'] ?? null) === 'bonus', fn (Builder $q) => $q->where('points', '>', 0))
@@ -115,7 +116,7 @@ class QuestionController extends Controller
 
     public function create(Request $request): Response
     {
-        $subject = in_array($request->query('subject'), Question::SUBJECTS, true) ? $request->query('subject') : null;
+        $subject = in_array($request->query('subject'), Subject::activeKeys(), true) ? $request->query('subject') : null;
 
         return Inertia::render('admin/questions/form', ['question' => null, 'defaultSubject' => $subject, ...$this->options()]);
     }
@@ -230,7 +231,7 @@ class QuestionController extends Controller
         return [
             'games' => Question::GAMES,
             'choiceOnlyGames' => Question::CHOICE_ONLY_GAMES,
-            'subjects' => Question::SUBJECTS,
+            'subjects' => Subject::activeKeys(),
             'types' => Question::TYPES,
             'perCorrect' => PointRules::current()['per_correct'],
             'maxPoints' => Question::MAX_POINTS,

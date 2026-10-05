@@ -27,6 +27,9 @@ class UserAnalytics
 
     public const AGE_MAX = 19;
 
+    /** Games listed in the dashboard "Games" panel (most played first). */
+    public const DASHBOARD_TOP_GAMES = 5;
+
     public function __construct(private GameAnalytics $games) {}
 
     /**
@@ -75,14 +78,18 @@ class UserAnalytics
                 'schools' => $profiles->pluck('school_key')->filter()->unique()->count(),
             ],
             'daily' => $daily,
-            'games' => collect($this->games->overview())->map(fn (array $game): array => [
-                'key' => $game['key'],
-                'accent' => $game['accent'],
-                'plays' => $game['plays'],
-                'players' => $game['players'],
-                'success_rate' => $game['success_rate'],
-                'tracked' => $game['tracked'],
-            ])->all(),
+            'games' => collect($this->games->overview())
+                ->sortByDesc('plays')
+                ->take(self::DASHBOARD_TOP_GAMES)
+                ->values()
+                ->map(fn (array $game): array => [
+                    'key' => $game['key'],
+                    'accent' => $game['accent'],
+                    'plays' => $game['plays'],
+                    'players' => $game['players'],
+                    'success_rate' => $game['success_rate'],
+                    'tracked' => $game['tracked'],
+                ])->all(),
             'levels' => $this->levelSplit($profiles),
             'grades' => collect(range(1, 12))->map(fn (int $grade): array => [
                 'grade' => $grade,
@@ -189,7 +196,7 @@ class UserAnalytics
                 'failed_logins' => LoginActivity::query()->where('user_id', $user->id)->where('is_successful', false)->count(),
             ],
             'perGame' => (clone $histories)
-                ->selectRaw('game_key, COUNT(*) as plays, SUM(points) as points, MAX(points) as best, SUM(correct) as correct, SUM(wrong) as wrong, MAX(played_at) as last_played_at')
+                ->selectRaw('game_key, COUNT(*) as plays, SUM(points) as points, MAX(points) as best, SUM(correct) as correct, SUM(wrong) as wrong, SUM(duration_seconds) as seconds, MAX(played_at) as last_played_at')
                 ->groupBy('game_key')
                 ->orderByDesc('plays')
                 ->get()
@@ -199,6 +206,7 @@ class UserAnalytics
                     'points' => (int) $row->points,
                     'best' => (int) $row->best,
                     'accuracy' => $this->percent((int) $row->correct, (int) $row->correct + (int) $row->wrong),
+                    'play_seconds' => (int) $row->seconds,
                     'last_played_at' => Carbon::parse($row->last_played_at)->toIso8601String(),
                 ])->all(),
             'daily' => $this->userDaily($user, 30),

@@ -463,14 +463,15 @@
     background: #ff5470;
 }
 .edu-notice-toast {
+    --notice-tone: #ffd93d;
     position: fixed;
-    right: 16px;
-    bottom: calc(16px + env(safe-area-inset-bottom));
+    left: 50%;
+    bottom: calc(max(72px, 12dvh) + env(safe-area-inset-bottom));
     z-index: 80;
     display: flex;
     align-items: flex-start;
     gap: 4px;
-    width: min(380px, calc(100vw - 32px));
+    width: min(400px, calc(100vw - 24px));
     padding: 6px;
     border: 2.5px solid #151b2e;
     border-radius: 16px;
@@ -478,7 +479,17 @@
     box-shadow: 4px 4px 0 #151b2e;
     color: #151b2e;
     font-family: 'Instrument Sans', 'DM Sans', system-ui, sans-serif;
-    animation: edu-notice-toast-in 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: translateX(-50%);
+    animation:
+        edu-notice-toast-in 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
+        edu-notice-toast-pulse 1.6s ease-in-out 260ms infinite;
+}
+.edu-notice-toast:hover,
+.edu-notice-toast:focus-within {
+    animation-play-state: running, paused;
+}
+.edu-notice-toast .edu-notice-icon {
+    animation: edu-notice-icon-beat 1.6s ease-in-out 260ms infinite;
 }
 .edu-notice-toast-close {
     display: grid;
@@ -502,11 +513,46 @@
 @keyframes edu-notice-toast-in {
     from {
         opacity: 0;
-        transform: translateY(12px) scale(0.96);
+        transform: translateX(-50%) translateY(16px) scale(0.94);
     }
     to {
         opacity: 1;
-        transform: none;
+        transform: translateX(-50%);
+    }
+}
+/* Heartbeat glow in the notice colour, keeping the hard ink shadow. */
+@keyframes edu-notice-toast-pulse {
+    0%,
+    100% {
+        box-shadow:
+            4px 4px 0 #151b2e,
+            0 0 0 0 color-mix(in srgb, var(--notice-tone) 70%, transparent),
+            0 0 14px 2px color-mix(in srgb, var(--notice-tone) 45%, transparent);
+    }
+    50% {
+        box-shadow:
+            4px 4px 0 #151b2e,
+            0 0 0 7px color-mix(in srgb, var(--notice-tone) 35%, transparent),
+            0 0 30px 10px
+                color-mix(in srgb, var(--notice-tone) 60%, transparent);
+    }
+}
+@keyframes edu-notice-icon-beat {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    15% {
+        transform: scale(1.14);
+    }
+    30% {
+        transform: scale(1);
+    }
+    45% {
+        transform: scale(1.08);
+    }
+    60% {
+        transform: scale(1);
     }
 }
 @media (max-width: 767px) {
@@ -521,16 +567,17 @@
         width: auto;
         max-height: calc(100dvh - 96px);
     }
-    .edu-notice-toast {
-        right: 12px;
-        left: 12px;
-        width: auto;
-    }
 }
 @media (prefers-reduced-motion: reduce) {
     .edu-notice-panel,
-    .edu-notice-toast {
+    .edu-notice-toast,
+    .edu-notice-toast .edu-notice-icon {
         animation: none;
+    }
+    .edu-notice-toast {
+        box-shadow:
+            4px 4px 0 #151b2e,
+            0 0 0 4px color-mix(in srgb, var(--notice-tone) 45%, transparent);
     }
 }
 
@@ -657,4 +704,128 @@
     color: #fff;
     font-size: 12px;
     font-weight: 800;
+}
+
+/* Digital clock in the header nav: same ink frame as the nav buttons. */
+.edu-clock {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 2px 12px;
+    border: 2.5px solid #151b2e;
+    border-radius: 12px;
+    background: #151b2e;
+    color: #ffd93d;
+    box-shadow: 2px 2px 0 #f5a623;
+    font-family: 'Instrument Sans', 'DM Sans', system-ui, sans-serif;
+    line-height: 1.05;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.edu-clock-time {
+    font-size: 17px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+}
+.edu-clock-seconds {
+    font-size: 13px;
+    color: #fff3c4;
+}
+.edu-clock-colon {
+    animation: edu-clock-blink 1s steps(1) infinite;
+}
+.edu-clock-day {
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff3c4;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+@keyframes edu-clock-blink {
+    50% {
+        opacity: 0.35;
+    }
+}
+/*
+ * Up to 1199px the full nav labels plus a dated clock no longer fit next to
+ * the brand, so the clock shows the time only (hours and minutes).
+ */
+/*
+ * 1024–1199px: the clock takes the room of the logout label, so log out
+ * becomes icon-only (it keeps its aria-label and tooltip).
+ */
+@media (min-width: 1024px) and (max-width: 1199px) {
+    .edu-nav-bar [data-testid='nav-logout'] {
+        padding: 0;
+        width: 44px;
+    }
+    .edu-nav-bar [data-testid='nav-logout'] .edu-nav-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+}
+/*
+ * Teacher/admin accounts have extra nav items. Up to 1279px their log out
+ * button is icon-only, and up to 1199px every item is (labels stay for
+ * screen readers and tooltips).
+ */
+@media (min-width: 1024px) and (max-width: 1279px) {
+    .edu-nav-bar--crowded [data-testid='nav-logout'] {
+        padding: 0;
+        width: 44px;
+    }
+    .edu-nav-bar--crowded [data-testid='nav-logout'] .edu-nav-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+}
+@media (min-width: 1024px) and (max-width: 1199px) {
+    .edu-nav-bar--crowded .edu-nav-btn {
+        padding: 0;
+        width: 44px;
+    }
+    .edu-nav-bar--crowded .edu-nav-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+}
+@media (max-width: 1199px) {
+    .edu-clock {
+        padding: 0 10px;
+    }
+    .edu-clock-day,
+    .edu-clock-seconds {
+        display: none;
+    }
+}
+/* Phones: smaller frame so the nav still fits on one row. */
+@media (max-width: 479px) {
+    .edu-clock {
+        min-height: 40px;
+        padding: 0 7px;
+        border-radius: 11px;
+    }
+    .edu-clock-time {
+        font-size: 14px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .edu-clock-colon {
+        animation: none;
+    }
 }

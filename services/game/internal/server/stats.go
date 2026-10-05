@@ -66,6 +66,16 @@ func (s *Server) Snapshot() Stats {
 	s.mu.Unlock()
 	floorRooms, _ := s.floor.Counts()
 	games = append(games, Usage{Game: "floor-drop", Connections: floorConns, Sessions: floorRooms})
+	s.mu.Lock()
+	heistConns := len(s.heistConns)
+	s.mu.Unlock()
+	heistRooms, _ := s.heist.Counts()
+	games = append(games, Usage{Game: "economy-heist", Connections: heistConns, Sessions: heistRooms})
+	s.mu.Lock()
+	rushConns := len(s.rushConns)
+	s.mu.Unlock()
+	rushRooms, _ := s.rush.Counts()
+	games = append(games, Usage{Game: "order-rush", Connections: rushConns, Sessions: rushRooms})
 	return Stats{
 		Service:        "edufunhub-game",
 		GoVersion:      runtime.Version(),

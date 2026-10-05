@@ -13,10 +13,12 @@ import {
     formatPercent,
     rateTone,
 } from '@/components/admin/game-stats';
+import { GameTabs } from '@/components/admin/game-tabs';
 import AdminLayout from '@/layouts/admin-layout';
 import { cn } from '@/lib/utils';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
+    ArrowLeft,
     Eye,
     EyeOff,
     Grid3x3,
@@ -67,7 +69,7 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
 
     const apply = (next: Record<string, string | undefined>) =>
         router.get(
-            '/admin/crossword-words',
+            '/admin/games/crossword/words',
             Object.fromEntries(
                 Object.entries({ ...filters, ...next }).filter(
                     ([, value]) => value,
@@ -83,12 +85,22 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
 
     return (
         <AdminLayout>
-            <Head title="Crossword Words" />
+            <Head title="Crossword · Word bank" />
             <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4">
+                    <Link
+                        href="/admin/games"
+                        className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        <ArrowLeft className="size-4" />
+                        All games
+                    </Link>
+                    <GameTabs game="crossword" active="words" />
+                </div>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">
-                            Crossword Words
+                            Crossword word bank
                         </h1>
                         <p className="text-sm text-muted-foreground">
                             Teka-Teki Silang answers and clues. The game service
@@ -96,7 +108,7 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                         </p>
                     </div>
                     <Link
-                        href={`/admin/crossword-words/create${filters.level ? `?level=${filters.level}` : ''}`}
+                        href={`/admin/games/crossword/words/create${filters.level ? `?level=${filters.level}` : ''}`}
                         className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                     >
                         <Plus className="size-4" />
@@ -290,7 +302,7 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                                                 <td className="px-5 py-2.5">
                                                     <div className="flex justify-end gap-1">
                                                         <Link
-                                                            href={`/admin/crossword-words/${word.id}/edit`}
+                                                            href={`/admin/games/crossword/words/${word.id}/edit`}
                                                             className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                                                             aria-label={`Edit ${word.answer}`}
                                                         >
@@ -300,7 +312,7 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                                                             type="button"
                                                             onClick={() =>
                                                                 router.patch(
-                                                                    `/admin/crossword-words/${word.id}/toggle`,
+                                                                    `/admin/games/crossword/words/${word.id}/toggle`,
                                                                     {},
                                                                     {
                                                                         preserveScroll: true,
@@ -358,14 +370,17 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                 onClose={() => setDeleting(null)}
                 onConfirm={() =>
                     deleting &&
-                    router.delete(`/admin/crossword-words/${deleting.id}`, {
-                        preserveScroll: true,
-                        onStart: () => setProcessing(true),
-                        onFinish: () => {
-                            setProcessing(false);
-                            setDeleting(null);
+                    router.delete(
+                        `/admin/games/crossword/words/${deleting.id}`,
+                        {
+                            preserveScroll: true,
+                            onStart: () => setProcessing(true),
+                            onFinish: () => {
+                                setProcessing(false);
+                                setDeleting(null);
+                            },
                         },
-                    })
+                    )
                 }
             />
         </AdminLayout>
