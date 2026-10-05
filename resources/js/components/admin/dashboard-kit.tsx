@@ -32,6 +32,7 @@ export const GAME_COLORS: Record<string, string> = {
     'floor-drop': '#2563eb',
     'economy-heist': '#b45309',
     'order-rush': '#0f766e',
+    'port-sorter': '#0d9488',
     'knowledge-train': 'var(--color-bubble-purple)',
 };
 

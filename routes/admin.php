@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SequenceSetController;
 use App\Http\Controllers\Admin\ServerMonitorController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SorterSetController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserStatisticsController;
@@ -106,6 +107,8 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::resource('subjects', SubjectController::class)->only(['index', 'store', 'update', 'destroy']);
             Route::patch('/sequence-sets/{sequence_set}/toggle', [SequenceSetController::class, 'toggle'])->name('sequence-sets.toggle');
             Route::resource('sequence-sets', SequenceSetController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::patch('/sorter-sets/{sorter_set}/toggle', [SorterSetController::class, 'toggle'])->name('sorter-sets.toggle');
+            Route::resource('sorter-sets', SorterSetController::class)->only(['index', 'store', 'update', 'destroy']);
             Route::patch('/character-items/{character_item}/toggle', [CharacterItemController::class, 'toggle'])->name('character-items.toggle');
             Route::resource('character-items', CharacterItemController::class)->except(['show']);
 

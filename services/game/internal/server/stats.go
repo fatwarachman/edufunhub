@@ -47,6 +47,7 @@ func (s *Server) Snapshot() Stats {
 	snakesConns := len(s.snakesSubs)
 	crosswordConns := len(s.crosswordSubs)
 	games = append(games, Usage{Game: "knowledge-train", Connections: len(s.trainConns), Sessions: len(s.trains)})
+	games = append(games, Usage{Game: "port-sorter", Connections: len(s.portConns), Sessions: len(s.ports)})
 	s.mu.Unlock()
 	matches, _ := s.duels.Counts()
 	games = append(games, Usage{Game: "quiz-duel", Connections: duelConns, Sessions: matches})

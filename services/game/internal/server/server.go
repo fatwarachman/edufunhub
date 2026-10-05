@@ -26,6 +26,7 @@ import (
 	"edufunhub/game/internal/lobby"
 	"edufunhub/game/internal/minigames"
 	"edufunhub/game/internal/orderrush"
+	"edufunhub/game/internal/portsorter"
 	"edufunhub/game/internal/session"
 	"edufunhub/game/internal/sky"
 	"edufunhub/game/internal/snakes"
@@ -60,6 +61,8 @@ type Server struct {
 	skyConns      map[int64]*connection
 	trains        map[int64]*train.Session
 	trainConns    map[int64]*connection
+	ports         map[int64]*portsorter.Session
+	portConns     map[int64]*connection
 	duels         *duel.Hub
 	duelSubs      map[int64]*duelSub
 	duelRooms     *lobby.Hub[struct{}, struct{}]
@@ -102,6 +105,7 @@ func New(cfg Config) *Server {
 		cfg: cfg, sessions: map[int64]*session.Session{}, conns: map[int64]*connection{},
 		skies: map[int64]*sky.Session{}, skyConns: map[int64]*connection{},
 		trains: map[int64]*train.Session{}, trainConns: map[int64]*connection{},
+		ports: map[int64]*portsorter.Session{}, portConns: map[int64]*connection{},
 		duels: duel.NewHub(uint64(cfg.Now().UnixNano())), duelSubs: map[int64]*duelSub{},
 		duelRooms: lobby.New[struct{}, struct{}](uint64(cfg.Now().UnixNano())^0xd0e1, lobby.Config{Min: 2, Max: 2}),
 		snakes:    snakes.NewHub(uint64(cfg.Now().UnixNano()) ^ 0x51ed), snakesSubs: map[int64]*snakesSub{},
@@ -133,6 +137,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /ws/sky", s.serveSky)
 	mux.HandleFunc("GET /ws/duel", s.serveDuel)
 	mux.HandleFunc("GET /ws/train", s.serveTrain)
+	mux.HandleFunc("GET /ws/port-sorter", s.servePortSorter)
 	mux.HandleFunc("GET /ws/snakes", s.serveSnakes)
 	mux.HandleFunc("GET /ws/crossword", s.serveCrossword)
 	for _, key := range minigames.Keys {
@@ -159,6 +164,7 @@ type inbound struct {
 	Level   int     `json:"level"`
 	Word    int     `json:"word"`
 	Subject string  `json:"subject"`
+	Packet  string  `json:"packet"`
 }
 
 func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
@@ -324,6 +330,11 @@ func (s *Server) Prune(ttl time.Duration) {
 	for id, sess := range s.trains {
 		if _, online := s.trainConns[id]; !online && sess.LastSeen.Before(cutoff) {
 			delete(s.trains, id)
+		}
+	}
+	for id, sess := range s.ports {
+		if _, online := s.portConns[id]; !online && sess.LastSeen.Before(cutoff) {
+			delete(s.ports, id)
 		}
 	}
 	s.duels.Prune(s.cfg.Now())

@@ -23,6 +23,7 @@ import {
     Megaphone,
     Menu,
     Moon,
+    Network,
     Server,
     Settings,
     ShieldCheck,
@@ -97,6 +98,12 @@ const navItems: NavItem[] = [
         title: 'Sequence Bank',
         href: '/admin/sequence-sets',
         icon: Cable,
+        superadminOnly: true,
+    },
+    {
+        title: 'Sorter Bank',
+        href: '/admin/sorter-sets',
+        icon: Network,
         superadminOnly: true,
     },
     {

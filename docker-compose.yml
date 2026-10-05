@@ -80,6 +80,7 @@ services:
       GAME_QUESTION_BANK_URL: ${GAME_QUESTION_BANK_URL:-http://edufunhub-dashboard:8000/api/internal/question-bank}
       GAME_CROSSWORD_BANK_URL: ${GAME_CROSSWORD_BANK_URL:-http://edufunhub-dashboard:8000/api/internal/crossword-bank}
       GAME_SEQUENCE_BANK_URL: ${GAME_SEQUENCE_BANK_URL:-http://edufunhub-dashboard:8000/api/internal/sequence-bank}
+      GAME_SORTER_BANK_URL: ${GAME_SORTER_BANK_URL:-http://edufunhub-dashboard:8000/api/internal/sorter-bank}
       GAME_ALLOWED_ORIGINS: ${GAME_ALLOWED_ORIGINS:-*}
     expose:
       - "8090"

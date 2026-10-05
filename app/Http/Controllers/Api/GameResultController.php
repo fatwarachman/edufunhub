@@ -159,6 +159,10 @@ class GameResultController extends Controller
             return __('knowledge_train.history_name', [], $locale);
         }
 
+        if ($gameKey === 'port-sorter') {
+            return __('port_sorter.history_name', [], $locale);
+        }
+
         if ($gameKey === 'snakes-and-ladders') {
             return __('snakes.history_name', [], $locale);
         }

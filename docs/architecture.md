@@ -85,6 +85,18 @@ Sukhoi Sky Quiz (`sky-quiz`): jalur WebSocket `/game-ws/sky` ke `GET /ws/sky` di
 - poin akhir (10 per jawaban benar, +20 selesai, +20 sempurna, maksimal 150).
 
 State `sky_state` juga memuat `history` (benar/salah per soal, untuk progress bar). Ketika selesai, `result` memuat `percent`, `passed` (benar > 70% dari total soal), dan `reason` (`finished` atau `shields`). Hasil dikirim ke `POST /api/internal/game-results` dengan `event_id` `sq-{user}-sky-{nanos}` dan `mission=sky`. Setelah selesai, client melakukan partial reload `points` sampai total akun sudah memuat award. Tamu memainkan mode demo lokal (kelas 1–4) tanpa poin.
+Pilah Port & Protokol / Port Sorter (`port-sorter`, Edisi TKJ): jalur WebSocket `/game-ws/port-sorter` ke `GET /ws/port-sorter` di Go (paket `internal/portsorter`). Token dari `POST /games/port-sorter/token` (`game=port-sorter`; pemain tanpa kelas tetap dapat token, kelas diisi `MIN_GRADE`).
+
+Keranjang dinamis: topik, keranjang, dan item dikelola super admin di `/admin/sorter-sets` (tabel `sorter_sets`, model `SorterSet`, kolom JSON `bins` dan `items`). Satu set punya 2–6 keranjang (nama ID/EN + warna hex, urutan = kolom kiri ke kanan) dan item jatuh (label maks. 12 karakter, petunjuk ID/EN, keranjang, level muncul 1–6). Level 1 wajib berisi item dari minimal 2 keranjang. Minimal satu set harus aktif. Go menarik `GET /api/internal/sorter-bank` (signed, `GAME_SORTER_BANK_URL`) tiap menit; set bawaan `ports-basic` (4 keranjang: HTTP/WEB, DNS, SSH/REMOTE, MAIL) dan `ports-services` (6 keranjang) dipakai sampai sinkron pertama dan di-seed dari `database/data/sorter_sets.php`. Permainan yang sedang berjalan memakai set saat mulai.
+
+Client menganimasikan jatuhnya paket, menggambar kolom sebanyak keranjang set, menggeser kolom (swipe/ketuk/panah/angka 1–9), dan melapor `land{packet,option}` saat paket menyentuh tanah. Pesan lain: `choose{value}` (pilih set, hanya di luar permainan), `start{value}`, `pause`, `resume`, `locale`. Go menentukan:
+- kunci jawaban item → keranjang dari set aktif, item terbuka bertahap per level;
+- 30 paket, 3 nyawa, level kecepatan naik tiap 5 paket (jatuh 6,5 dtk → 3 dtk), paket biasanya muncul di atas keranjang yang salah;
+- menolak pendaratan lebih cepat dari waktu jatuh (toleransi 400 ms), paket basi/ganda, dan indeks keranjang di luar set; paket tanpa laporan dianggap hilang setelah 6 dtk;
+- poin akhir (`points.Question` per paket benar, +20 selesai, +20 sempurna; batas `Cap(30)+40` = 3190).
+
+State `port_state` memuat `set{key,title,description}`, `bins[{key,name,color}]`, `packet{id,label,column,delay,fall_ms,elapsed_ms}` (tanpa jawaban), `history`, `level`; di luar permainan juga `sets` (pemilih topik) dan `legend` (contekan). `result` memuat `missed` (item yang salah). Hasil dikirim dengan `event_id` `ps-{user}-sort-{nanos}` dan `mission=sort`.
+
 Pesan Go → client: `welcome`, `correct{x,y}`, `challenge`, `gates`, `raise`, `complete`, `error{code}`, `pong`.
 
 Aturan server-side: kecepatan gerak dibatasi, collision air/gerbang/props, jawaban tidak pernah dikirim ke client

@@ -45,7 +45,7 @@ func TestStatsRequiresSignatureAndReportsGames(t *testing.T) {
 	if err := json.NewDecoder(res.Body).Decode(&stats); err != nil {
 		t.Fatal(err)
 	}
-	if stats.Service != "edufunhub-game" || stats.Goroutines == 0 || stats.HeapAllocBytes == 0 || len(stats.Games) != 13 {
+	if stats.Service != "edufunhub-game" || stats.Goroutines == 0 || stats.HeapAllocBytes == 0 || len(stats.Games) != 14 {
 		t.Fatalf("unexpected stats: %+v", stats)
 	}
 }

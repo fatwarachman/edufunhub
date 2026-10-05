@@ -19,6 +19,7 @@ use App\Http\Controllers\OrderRushController;
 use App\Http\Controllers\PlayerDetailsController;
 use App\Http\Controllers\PlayerNotificationController;
 use App\Http\Controllers\PortalController;
+use App\Http\Controllers\PortSorterController;
 use App\Http\Controllers\QuizDuelController;
 use App\Http\Controllers\SkyQuizController;
 use App\Http\Controllers\SnakesAndLaddersController;
@@ -93,6 +94,8 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::post('/games/economy-heist/token', [EconomyHeistController::class, 'token'])->middleware('throttle:30,1')->name('games.economy-heist.token');
         Route::get('/games/order-rush', [OrderRushController::class, 'show'])->middleware(RecordGameAccess::class.':order-rush')->name('games.order-rush');
         Route::post('/games/order-rush/token', [OrderRushController::class, 'token'])->middleware('throttle:30,1')->name('games.order-rush.token');
+        Route::get('/games/port-sorter', [PortSorterController::class, 'show'])->middleware(RecordGameAccess::class.':port-sorter')->name('games.port-sorter');
+        Route::post('/games/port-sorter/token', [PortSorterController::class, 'token'])->middleware('throttle:30,1')->name('games.port-sorter.token');
         Route::get('/games/{game}/join/{pin}', GameInviteController::class)->where(['game' => '[a-z-]+', 'pin' => '[0-9]{6}'])->name('games.join');
         Route::post('/games/snakes-and-ladders/token', [SnakesAndLaddersController::class, 'token'])->middleware('throttle:30,1')->name('games.snakes-and-ladders.token');
     });
