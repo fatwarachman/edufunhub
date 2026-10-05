@@ -264,6 +264,51 @@ func (g *Generator) pick(items []Item) (Item, bool) {
 	return best, true
 }
 
+// BankChoice draws a multiple choice bank question distributed to this
+// generator's game, limited to the given subjects (none = any subject). It
+// never falls back to generated arithmetic or other subjects, so games with
+// their own content mix in admin questions only when they exist.
+func (g *Generator) BankChoice(subjects ...string) (Question, bool) {
+	all := Current().filter(TypeChoice, g.Grade, g.Game)
+	items := make([]Item, 0, len(all))
+	for _, it := range all {
+		if len(subjects) == 0 || containsString(subjects, it.Subject) {
+			items = append(items, it)
+		}
+	}
+	best, bestAge, found := Item{}, int64(0), false
+	for _, i := range g.Rand.Perm(len(items)) {
+		it := items[i]
+		if g.used[it.Key] {
+			continue
+		}
+		age := History.LastSeen(g.Players, it.Key)
+		if !found || age < bestAge {
+			best, bestAge, found = it, age, true
+		}
+		if age == 0 {
+			break
+		}
+	}
+	if !found {
+		return Question{}, false
+	}
+	g.used[best.Key] = true
+	History.Mark(g.Players, best.Key)
+	q := Question{Key: best.Key, Subject: best.Subject, Prompt: best.Prompt, Hint: best.Hint, Options: append([]Text(nil), best.Options...), Answer: best.Answer, FromBank: true, Points: best.Points}
+	g.shuffle(&q)
+	return q, true
+}
+
+func containsString(list []string, s string) bool {
+	for _, v := range list {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
 // Choice returns a multiple choice question: bank question or generated arithmetic.
 func (g *Generator) Choice() Question {
 	if it, ok := g.pick(g.items(TypeChoice)); ok {

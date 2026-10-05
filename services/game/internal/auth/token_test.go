@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 	"testing"
@@ -65,5 +66,21 @@ func TestVerifyRejectsTamperingExpiryAndBadClaims(t *testing.T) {
 
 	if _, err := Verify(token, []byte("short"), "flag-quest", now); !errors.Is(err, ErrSignature) {
 		t.Errorf("short secret must be rejected, got %v", err)
+	}
+}
+
+func TestVerifyKeepsCharacterAndDropsOversizedLook(t *testing.T) {
+	now := time.Unix(1_800_000_000, 0)
+	c := validClaims(now)
+	c.Character = json.RawMessage(`{"color":"teal","gender":"girl","items":{"hat":{"style":"crown","color":null}}}`)
+	token, _ := Sign(c, secret)
+	got, err := Verify(token, secret, "flag-quest", now)
+	if err != nil || string(got.Character) != string(c.Character) {
+		t.Fatalf("character not kept: %s %v", got.Character, err)
+	}
+	c.Character = json.RawMessage(`{"color":"` + strings.Repeat("x", MaxCharacterBytes) + `"}`)
+	token, _ = Sign(c, secret)
+	if got, _ = Verify(token, secret, "flag-quest", now); got.Character != nil {
+		t.Fatal("oversized character should be dropped")
 	}
 }

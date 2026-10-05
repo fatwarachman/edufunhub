@@ -20,7 +20,7 @@ class GameServiceSigner
     }
 
     /**
-     * @param  array{name: string, grade: int, color: string, accessory: string}  $player
+     * @param  array{name: string, grade: int, color: string, accessory: string, character?: array<string, mixed>}  $player
      */
     public function issueToken(User $user, string $game, array $player): string
     {
@@ -30,6 +30,7 @@ class GameServiceSigner
             'grade' => $player['grade'],
             'color' => $player['color'],
             'accessory' => $player['accessory'],
+            'character' => $player['character'] ?? null,
             'game' => $game,
             'exp' => now()->addSeconds((int) config('game-service.token_ttl'))->getTimestamp(),
             'nonce' => Str::random(16),

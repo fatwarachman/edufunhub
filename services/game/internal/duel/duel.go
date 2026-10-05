@@ -580,13 +580,13 @@ func (h *Hub) stateLocked(uid int64, claims auth.Claims, now time.Time) Message 
 			msg["phase"] = PhaseQueue
 			msg["waited_ms"] = now.Sub(w.since).Milliseconds()
 			msg["bot_after_ms"] = BotAfter.Milliseconds()
-			msg["you"] = Message{"name": claims.Name, "grade": claims.Grade}
+			msg["you"] = Message{"name": claims.Name, "grade": claims.Grade, "character": claims.Character}
 			return msg
 		}
 	}
 	m, ok := h.matches[uid]
 	if !ok {
-		msg["you"] = Message{"name": claims.Name, "grade": claims.Grade}
+		msg["you"] = Message{"name": claims.Name, "grade": claims.Grade, "character": claims.Character}
 		return msg
 	}
 	locale := h.locales[uid]
@@ -597,9 +597,9 @@ func (h *Hub) stateLocked(uid int64, claims auth.Claims, now time.Time) Message 
 	msg["match_id"] = m.id
 	msg["subject"] = subjectOrMix(m.subject)
 	msg["subject_fallback"] = m.gen.Fallback()
-	msg["you"] = Message{"name": me.claims.Name, "grade": me.claims.Grade, "score": me.score, "correct": me.correct, "history": append([]bool{}, me.history...)}
+	msg["you"] = Message{"name": me.claims.Name, "grade": me.claims.Grade, "character": me.claims.Character, "score": me.score, "correct": me.correct, "history": append([]bool{}, me.history...)}
 	msg["opponent"] = Message{
-		"name": op.claims.Name, "grade": op.claims.Grade, "score": op.score, "correct": op.correct,
+		"name": op.claims.Name, "grade": op.claims.Grade, "character": op.claims.Character, "score": op.score, "correct": op.correct,
 		"bot": op.bot, "online": op.bot || h.online[op.id()], "answered": op.answered,
 		"history": append([]bool{}, op.history...),
 	}

@@ -38,7 +38,7 @@ export default function GameList() {
             </Head>
 
             <header className="sticky top-0 z-40 border-b-4 border-[#1f2a44] bg-[#FFF9E6]/95 backdrop-blur-md">
-                <div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+                <div className="mx-auto flex min-h-20 items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
                     <div className="flex min-w-0 items-center gap-3">
                         <BackButton
                             href={backHref}
@@ -65,7 +65,7 @@ export default function GameList() {
                 </div>
             </header>
 
-            <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+            <main className="mx-auto px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
                 <div className="text-center">
                     <div className="inline-flex items-center gap-2 rounded-full border-3 border-[#1f2a44] bg-[#FFF176] px-4 py-1 text-xs font-black tracking-wider text-[#1f2a44] uppercase shadow-[3px_3px_0px_#1f2a44]">
                         <Gamepad2 className="h-4 w-4" />

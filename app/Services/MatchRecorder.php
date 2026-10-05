@@ -69,6 +69,8 @@ class MatchRecorder
                 'score' => max(0, (int) $player['score']),
                 'correct' => (int) $player['correct'],
                 'wrong' => (int) $player['wrong'],
+                'survival_ms' => isset($player['survival_ms']) ? (int) $player['survival_ms'] : null,
+                'accuracy' => isset($player['accuracy']) ? round((float) $player['accuracy'], 1) : null,
             ]);
         }
 

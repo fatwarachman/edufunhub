@@ -1,3 +1,4 @@
+import AdSlot from '@/components/ads/ad-slot';
 import ChallengeDialog from '@/components/flag-quest/challenge-dialog';
 import {
     type GameSubject,
@@ -9,6 +10,7 @@ import { BackButton, NavButton } from '@/components/site-nav';
 import { useFlagQuestConnection } from '@/hooks/use-flag-quest-connection';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import { useTranslations } from '@/hooks/use-translations';
+import { AdMoment, useAdMoments } from '@/lib/ads';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import {
     drawMinimap,
@@ -223,6 +225,10 @@ export default function FlagQuest({
     );
     const { world, challenge, complete, raising, send } = conn;
     const blocked = challenge !== null || complete !== null;
+    useAdMoments(complete ? 'done' : world ? 'playing' : 'idle', {
+        muted,
+        won: false,
+    });
 
     const worldRef = useRef<WorldData | null>(null);
     const blockedRef = useRef(blocked);
@@ -1093,6 +1099,8 @@ export default function FlagQuest({
                         <p className="text-xs text-muted-foreground">
                             {t('flagQuest.complete.saved')}
                         </p>
+                        <AdMoment moment="win" muted={muted} />
+                        <AdSlot placement="arena.result" className="w-full" />
                         <div className="flex w-full flex-col gap-2 sm:flex-row">
                             <button
                                 type="button"

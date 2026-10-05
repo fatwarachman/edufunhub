@@ -1,6 +1,7 @@
 package lobby
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -119,4 +120,22 @@ func TestPruneDropsOfflineRooms(t *testing.T) {
 	if rooms, players := h.Counts(); rooms != 0 || players != 0 {
 		t.Fatalf("offline room kept %d %d", rooms, players)
 	}
+}
+
+func TestRoomPayloadCarriesSeatCharacter(t *testing.T) {
+	h := New[game, data](1, Config{Min: 1, Max: 2})
+	now := time.Unix(1_800_000_000, 0)
+	host := c(1)
+	host.Character = []byte(`{"color":"violet","gender":"girl"}`)
+	pin, _ := h.Create(host, now, nil)
+	_, _ = h.Enter(c(2), pin, now)
+	h.View(1, func(r *Room[game, data]) {
+		players := h.RoomPayload(r, 1, nil)["players"].([]Message)
+		if string(players[0]["character"].(json.RawMessage)) != `{"color":"violet","gender":"girl"}` {
+			t.Fatalf("host character %v", players[0]["character"])
+		}
+		if _, ok := players[1]["character"]; ok {
+			t.Fatal("seat without a look must not send character")
+		}
+	})
 }

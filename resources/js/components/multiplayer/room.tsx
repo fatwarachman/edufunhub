@@ -1,7 +1,8 @@
-import { MiniBlockAvatar } from '@/components/mini-block-avatar';
+import { PlayerAvatar } from '@/components/player-avatar';
 import { Button } from '@/components/ui/button';
 import { type GameSocketStatus } from '@/hooks/use-game-socket';
 import { useTranslations } from '@/hooks/use-translations';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import { cn } from '@/lib/utils';
 import {
     Copy,
@@ -39,6 +40,8 @@ export interface RoomSeat {
     left: boolean;
     local: boolean;
     controlled: boolean;
+    /** Portal avatar look of the account behind this seat. */
+    character?: CharacterLook | null;
 }
 
 export interface RoomPayload<Seat extends RoomSeat = RoomSeat> {
@@ -193,9 +196,9 @@ export function RoomEntry({
                 onClick={onCreate}
                 disabled={!online}
                 data-testid="room-create"
-                className="mt-5 min-h-14 w-full rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
+                className="mx-auto mt-5 flex min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-6 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
             >
-                <Plus className="mr-2 size-5" />
+                <Plus className="size-5" />
                 {createLabel ?? t('room.create')}
             </Button>
             <div className="my-4 flex items-center gap-3 text-xs font-black text-slate-500 uppercase">
@@ -205,9 +208,9 @@ export function RoomEntry({
             </div>
             <form
                 onSubmit={submit}
-                className="flex flex-col gap-2 text-left sm:flex-row sm:items-end"
+                className="mx-auto flex max-w-sm items-end gap-2 text-left"
             >
-                <label className="flex flex-1 flex-col gap-1 text-xs font-black">
+                <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs font-black">
                     {t('room.pinLabel')}
                     <input
                         value={pin}
@@ -231,9 +234,9 @@ export function RoomEntry({
                     type="submit"
                     disabled={!online || pin.length !== 6}
                     data-testid="room-join"
-                    className="min-h-12 rounded-xl border-2 border-[#1f2a44] bg-[#1f2a44] px-6 font-display font-black text-white shadow-[3px_3px_0px_#FF9E44] disabled:opacity-50"
+                    className="min-h-12 shrink-0 rounded-xl border-2 border-[#1f2a44] bg-[#1f2a44] px-4 font-display font-black text-white shadow-[3px_3px_0px_#FF9E44] disabled:opacity-50"
                 >
-                    <LogIn className="mr-1.5 size-4" />
+                    <LogIn className="size-4" />
                     {t('room.join')}
                 </Button>
             </form>
@@ -250,11 +253,13 @@ function ShareButton({
     onClick,
     icon: Icon,
     testId,
+    label,
     children,
 }: {
     onClick: () => void;
     icon: typeof Copy;
     testId: string;
+    label?: string;
     children: ReactNode;
 }) {
     return (
@@ -262,7 +267,9 @@ function ShareButton({
             type="button"
             onClick={onClick}
             data-testid={testId}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-white px-4 text-sm font-black text-[#1f2a44] shadow-[2px_2px_0px_#1f2a44] transition-colors hover:bg-[#FFF176]"
+            aria-label={label}
+            title={label}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-white px-3 text-sm font-black whitespace-nowrap text-[#1f2a44] shadow-[2px_2px_0px_#1f2a44] transition-colors hover:bg-[#FFF176]"
         >
             <Icon className="size-4" />
             {children}
@@ -342,10 +349,7 @@ export function RoomLobby({
     };
 
     return (
-        <div
-            className="mx-auto flex w-full max-w-3xl flex-col gap-5"
-            data-testid="room-lobby"
-        >
+        <div className="flex w-full flex-col gap-5" data-testid="room-lobby">
             <div className="rounded-3xl border-3 border-[#1f2a44] bg-white p-5 text-[#1f2a44] shadow-[5px_5px_0px_#1f2a44] sm:p-7">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="font-display text-xl font-black">
@@ -354,225 +358,260 @@ export function RoomLobby({
                     <ConnectionBadge status={status} />
                 </div>
 
-                <div className="mt-5 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#FFFDE6] p-5 text-center">
-                    <p className="text-sm font-black">{t('room.shareTitle')}</p>
-                    <p className="mt-1 text-xs font-bold text-slate-600">
-                        {t('room.shareHint')}
-                    </p>
-                    <p
-                        className="mt-3 font-display text-4xl font-black tracking-[0.25em] sm:text-5xl"
-                        data-testid="room-pin"
-                    >
-                        {room.pin}
-                    </p>
-                    <p
-                        className="mt-2 text-xs font-bold break-all text-slate-600"
-                        data-testid="room-link"
-                    >
-                        {link}
-                    </p>
-                    <div className="mt-4 flex flex-wrap justify-center gap-2">
-                        <ShareButton
-                            onClick={() => copy('pin', room.pin)}
-                            icon={Copy}
-                            testId="room-copy-pin"
-                        >
-                            {copied === 'pin'
-                                ? t('room.copied')
-                                : t('room.copyPin')}
-                        </ShareButton>
-                        <ShareButton
-                            onClick={() => copy('link', link)}
-                            icon={Link2}
-                            testId="room-copy-link"
-                        >
-                            {copied === 'link'
-                                ? t('room.copied')
-                                : t('room.copyLink')}
-                        </ShareButton>
-                        <ShareButton
-                            onClick={share}
-                            icon={Share2}
-                            testId="room-share"
-                        >
-                            {t('room.share')}
-                        </ShareButton>
-                    </div>
-                    {shareError && (
-                        <div className="mt-3">
-                            <RoomError code={shareError} />
-                        </div>
-                    )}
-                </div>
-
-                {settings && <div className="mt-5">{settings}</div>}
-
-                <div className="mt-5">
-                    <p className="text-xs font-black text-slate-500 uppercase">
-                        {t('room.seats', {
-                            count: active.length,
-                            max: room.max_players,
-                        })}
-                    </p>
-                    <ul
-                        className="mt-2 grid gap-2 sm:grid-cols-2"
-                        data-testid="room-players"
-                    >
-                        {Array.from({ length: room.max_players }, (_, i) => {
-                            const p = active[i];
-                            return (
-                                <li
-                                    key={p ? `seat-${p.seat}` : `empty-${i}`}
-                                    className={cn(
-                                        'flex min-h-14 items-center gap-2.5 rounded-2xl border-2 border-[#1f2a44] px-3',
-                                        p
-                                            ? 'bg-white'
-                                            : 'border-dashed text-slate-500',
-                                    )}
-                                >
-                                    {p ? (
-                                        <>
-                                            <div className="h-9 w-9 shrink-0">
-                                                <MiniBlockAvatar
-                                                    skinIndex={p.seat}
-                                                />
-                                            </div>
-                                            <span className="min-w-0 flex-1 truncate text-sm font-black">
-                                                {p.name}
-                                                {p.seat === room.you &&
-                                                    ` (${t('room.you')})`}
-                                            </span>
-                                            {p.seat === room.host && (
-                                                <span className="inline-flex items-center gap-1 rounded-full border border-[#1f2a44] bg-[#ffd93d] px-2 text-[10px] font-black">
-                                                    <Crown className="size-3" />
-                                                    {t('room.host')}
-                                                </span>
-                                            )}
-                                            {p.local && (
-                                                <span
-                                                    className="inline-flex items-center gap-1 rounded-full border border-[#1f2a44] bg-[#c9f5e5] px-2 text-[10px] font-black"
-                                                    title={t('room.localHint')}
-                                                >
-                                                    <MonitorSmartphone className="size-3" />
-                                                    {t('room.local')}
-                                                </span>
-                                            )}
-                                            {!p.online && (
-                                                <WifiOff
-                                                    className="size-4 text-[#AD1457]"
-                                                    aria-label={t(
-                                                        'room.offline',
-                                                    )}
-                                                />
-                                            )}
-                                            {p.local &&
-                                                isHost &&
-                                                onRemoveLocal && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            onRemoveLocal(
-                                                                p.seat,
-                                                            )
-                                                        }
-                                                        aria-label={t(
-                                                            'room.removeLocal',
-                                                            { name: p.name },
-                                                        )}
-                                                        className="grid size-9 place-items-center rounded-lg hover:bg-[#FFEBF0]"
-                                                    >
-                                                        <Trash2 className="size-4" />
-                                                    </button>
-                                                )}
-                                        </>
-                                    ) : (
-                                        <span className="text-xs font-bold">
-                                            {t('room.emptySeat')}
-                                        </span>
-                                    )}
-                                </li>
-                            );
-                        })}
-                    </ul>
-                    {isHost &&
-                        room.local_seats &&
-                        onAddLocal &&
-                        active.length < room.max_players && (
-                            <form
-                                onSubmit={addLocal}
-                                className="mt-3 flex flex-col gap-2 sm:flex-row"
+                <div className="mt-4 grid gap-5 lg:grid-cols-2 lg:items-start">
+                    <div className="flex flex-col gap-5">
+                        <div className="rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#FFFDE6] p-4 text-center">
+                            <p className="text-sm font-black">
+                                {t('room.shareTitle')}
+                            </p>
+                            <p className="mt-1 text-xs font-bold text-slate-600">
+                                {t('room.shareHint')}
+                            </p>
+                            <p
+                                className="mt-2 font-display text-4xl font-black tracking-[0.25em] sm:text-5xl"
+                                data-testid="room-pin"
                             >
-                                <input
-                                    value={localName}
-                                    onChange={(event) =>
-                                        setLocalName(
-                                            event.target.value.slice(0, 20),
-                                        )
-                                    }
-                                    placeholder={t('room.localPlaceholder')}
-                                    aria-label={t('room.localPlaceholder')}
-                                    data-testid="room-local-name"
-                                    className="min-h-11 flex-1 rounded-xl border-2 border-[#1f2a44] bg-white px-3.5 text-sm font-bold outline-none focus-visible:ring-4 focus-visible:ring-[#FF9E44]/40"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={!online}
-                                    data-testid="room-add-local"
-                                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5] px-4 text-sm font-black disabled:opacity-50"
+                                {room.pin}
+                            </p>
+                            <p
+                                className="mt-1 text-xs font-bold [overflow-wrap:anywhere] text-slate-600"
+                                data-testid="room-link"
+                            >
+                                {link}
+                            </p>
+                            <div className="mt-3 flex flex-wrap justify-center gap-2">
+                                <ShareButton
+                                    onClick={() => copy('pin', room.pin)}
+                                    icon={Copy}
+                                    testId="room-copy-pin"
+                                    label={t('room.copyPinLabel')}
                                 >
-                                    <UserPlus className="size-4" />
-                                    {t('room.addLocal')}
-                                </button>
-                            </form>
-                        )}
-                </div>
+                                    {copied === 'pin'
+                                        ? t('room.copied')
+                                        : t('room.copyPin')}
+                                </ShareButton>
+                                <ShareButton
+                                    onClick={() => copy('link', link)}
+                                    icon={Link2}
+                                    testId="room-copy-link"
+                                    label={t('room.copyLinkLabel')}
+                                >
+                                    {copied === 'link'
+                                        ? t('room.copied')
+                                        : t('room.copyLink')}
+                                </ShareButton>
+                                <ShareButton
+                                    onClick={share}
+                                    icon={Share2}
+                                    testId="room-share"
+                                >
+                                    {t('room.share')}
+                                </ShareButton>
+                            </div>
+                            {shareError && (
+                                <div className="mt-3">
+                                    <RoomError code={shareError} />
+                                </div>
+                            )}
+                        </div>
 
-                {error && (
-                    <div className="mt-4">
-                        <RoomError code={error} />
+                        {settings && <div>{settings}</div>}
                     </div>
-                )}
 
-                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                    {isHost ? (
-                        <Button
-                            onClick={onStart}
-                            disabled={!online || !enough}
-                            data-testid="room-start"
-                            className="min-h-14 flex-1 rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
-                        >
-                            <Play className="mr-2 size-5" />
-                            {!enough
-                                ? t('room.needMore', {
-                                      min: room.min_players,
-                                  })
-                                : active.length === 1
-                                  ? t('room.startSolo')
-                                  : t('room.start')}
-                        </Button>
-                    ) : (
-                        <p
-                            className="flex min-h-14 flex-1 items-center justify-center rounded-2xl border-2 border-[#1f2a44] bg-[#FFFDE6] px-4 text-sm font-bold text-slate-700"
-                            data-testid="room-waiting-host"
-                        >
-                            {t('room.waitingHost')}
-                        </p>
-                    )}
-                    <Button
-                        variant="outline"
-                        onClick={onLeave}
-                        data-testid="room-leave"
-                        className="min-h-14 rounded-2xl border-2 border-[#1f2a44] bg-white font-black text-[#1f2a44]"
-                    >
-                        <DoorOpen className="mr-1.5 size-4" />
-                        {t('room.leave')}
-                    </Button>
+                    <div className="flex flex-col">
+                        <div>
+                            <p className="text-xs font-black text-slate-500 uppercase">
+                                {t('room.seats', {
+                                    count: active.length,
+                                    max: room.max_players,
+                                })}
+                            </p>
+                            <ul
+                                className="mt-2 grid gap-2 sm:grid-cols-2"
+                                data-testid="room-players"
+                            >
+                                {Array.from(
+                                    { length: room.max_players },
+                                    (_, i) => {
+                                        const p = active[i];
+                                        return (
+                                            <li
+                                                key={
+                                                    p
+                                                        ? `seat-${p.seat}`
+                                                        : `empty-${i}`
+                                                }
+                                                className={cn(
+                                                    'flex min-h-12 items-center gap-2.5 rounded-2xl border-2 border-[#1f2a44] px-3 py-1',
+                                                    p
+                                                        ? 'bg-white'
+                                                        : 'border-dashed text-slate-600',
+                                                )}
+                                            >
+                                                {p ? (
+                                                    <>
+                                                        <div className="size-10 shrink-0">
+                                                            <PlayerAvatar
+                                                                character={
+                                                                    p.character
+                                                                }
+                                                                seat={p.seat}
+                                                            />
+                                                        </div>
+                                                        <span className="min-w-0 flex-1 truncate text-sm font-black">
+                                                            {p.name}
+                                                            {p.seat ===
+                                                                room.you &&
+                                                                ` (${t('room.you')})`}
+                                                        </span>
+                                                        {p.seat ===
+                                                            room.host && (
+                                                            <span className="inline-flex items-center gap-1 rounded-full border border-[#1f2a44] bg-[#ffd93d] px-2 text-[10px] font-black">
+                                                                <Crown className="size-3" />
+                                                                {t('room.host')}
+                                                            </span>
+                                                        )}
+                                                        {p.local && (
+                                                            <span
+                                                                className="inline-flex items-center gap-1 rounded-full border border-[#1f2a44] bg-[#c9f5e5] px-2 text-[10px] font-black"
+                                                                title={t(
+                                                                    'room.localHint',
+                                                                )}
+                                                            >
+                                                                <MonitorSmartphone className="size-3" />
+                                                                {t(
+                                                                    'room.local',
+                                                                )}
+                                                            </span>
+                                                        )}
+                                                        {!p.online && (
+                                                            <WifiOff
+                                                                className="size-4 text-[#AD1457]"
+                                                                aria-label={t(
+                                                                    'room.offline',
+                                                                )}
+                                                            />
+                                                        )}
+                                                        {p.local &&
+                                                            isHost &&
+                                                            onRemoveLocal && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        onRemoveLocal(
+                                                                            p.seat,
+                                                                        )
+                                                                    }
+                                                                    aria-label={t(
+                                                                        'room.removeLocal',
+                                                                        {
+                                                                            name: p.name,
+                                                                        },
+                                                                    )}
+                                                                    className="grid size-9 place-items-center rounded-lg hover:bg-[#FFEBF0]"
+                                                                >
+                                                                    <Trash2 className="size-4" />
+                                                                </button>
+                                                            )}
+                                                    </>
+                                                ) : (
+                                                    <span className="text-xs font-bold">
+                                                        {t('room.emptySeat')}
+                                                    </span>
+                                                )}
+                                            </li>
+                                        );
+                                    },
+                                )}
+                            </ul>
+                            {isHost &&
+                                room.local_seats &&
+                                onAddLocal &&
+                                active.length < room.max_players && (
+                                    <form
+                                        onSubmit={addLocal}
+                                        className="mt-3 flex gap-2"
+                                    >
+                                        <input
+                                            value={localName}
+                                            onChange={(event) =>
+                                                setLocalName(
+                                                    event.target.value.slice(
+                                                        0,
+                                                        20,
+                                                    ),
+                                                )
+                                            }
+                                            placeholder={t(
+                                                'room.localPlaceholder',
+                                            )}
+                                            aria-label={t(
+                                                'room.localPlaceholder',
+                                            )}
+                                            data-testid="room-local-name"
+                                            className="min-h-11 min-w-0 flex-1 rounded-xl border-2 border-[#1f2a44] bg-white px-3.5 text-sm font-bold outline-none focus-visible:ring-4 focus-visible:ring-[#FF9E44]/40"
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={!online}
+                                            data-testid="room-add-local"
+                                            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5] px-3.5 text-sm font-black disabled:opacity-50"
+                                        >
+                                            <UserPlus className="size-4" />
+                                            {t('room.addLocal')}
+                                        </button>
+                                    </form>
+                                )}
+                        </div>
+
+                        {error && (
+                            <div className="mt-4">
+                                <RoomError code={error} />
+                            </div>
+                        )}
+
+                        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                            {isHost ? (
+                                <Button
+                                    onClick={onStart}
+                                    disabled={!online || !enough}
+                                    data-testid="room-start"
+                                    className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-6 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
+                                >
+                                    <Play className="size-5" />
+                                    {!enough
+                                        ? t('room.needMore', {
+                                              min: room.min_players,
+                                          })
+                                        : active.length === 1
+                                          ? t('room.startSolo')
+                                          : t('room.start')}
+                                </Button>
+                            ) : (
+                                <p
+                                    className="flex min-h-12 items-center justify-center rounded-2xl border-2 border-[#1f2a44] bg-[#FFFDE6] px-4 text-sm font-bold text-slate-700"
+                                    data-testid="room-waiting-host"
+                                >
+                                    {t('room.waitingHost')}
+                                </p>
+                            )}
+                            <Button
+                                variant="outline"
+                                onClick={onLeave}
+                                data-testid="room-leave"
+                                className="min-h-12 rounded-2xl border-2 border-[#1f2a44] bg-white px-4 font-black text-[#1f2a44]"
+                            >
+                                <DoorOpen className="size-4" />
+                                {t('room.leave')}
+                            </Button>
+                        </div>
+                        {isHost && soloHint && active.length === 1 && (
+                            <p className="mt-3 text-center text-xs font-bold text-slate-500">
+                                {soloHint}
+                            </p>
+                        )}
+                    </div>
                 </div>
-                {isHost && soloHint && active.length === 1 && (
-                    <p className="mt-3 text-center text-xs font-bold text-slate-500">
-                        {soloHint}
-                    </p>
-                )}
             </div>
         </div>
     );

@@ -1,15 +1,17 @@
+import AdSlot from '@/components/ads/ad-slot';
 import { IllustratedSnakesBoard } from '@/components/illustrated-snakes-board';
-import { MiniBlockAvatar } from '@/components/mini-block-avatar';
+import { PlayerAvatar, avatarTint } from '@/components/player-avatar';
 import {
     BoardLegend,
     DiceDialog,
     MoveLog,
     PlayerList,
     QuestionDialog,
-    skinOf,
 } from '@/components/snakes/shared';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
+import { AdMoment } from '@/lib/ads';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import {
     BOARD_LADDERS as LADDERS,
     BOARD_SNAKES as SNAKES,
@@ -34,6 +36,7 @@ interface Player {
     name: string;
     position: number;
     skinIndex: number;
+    character?: CharacterLook | null;
     score: number;
 }
 
@@ -51,8 +54,13 @@ const PLAYER_COUNTS = [1, 2, 3, 4] as const;
  */
 export const LocalGame = forwardRef<
     LocalGameHandle,
-    { firstName: string | null; play: (sound: Sound) => void }
->(function LocalGame({ firstName, play }, ref) {
+    {
+        firstName: string | null;
+        character?: CharacterLook | null;
+        play: (sound: Sound) => void;
+        muted?: boolean;
+    }
+>(function LocalGame({ firstName, character, play, muted = false }, ref) {
     const { t } = useTranslations();
     const generation = useRef(0);
     const timers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
@@ -84,6 +92,7 @@ export const LocalGame = forwardRef<
                     : t('snakes.players.default', { number: id + 1 }),
             position: 1,
             skinIndex: id,
+            character: id === 0 ? character : null,
             score: 0,
         }));
 
@@ -253,8 +262,6 @@ export const LocalGame = forwardRef<
         }, 2400);
     };
 
-    const skin = skinOf(current.skinIndex);
-
     return (
         <>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-3xl border-3 border-[#1f2a44] bg-white p-4 shadow-[4px_4px_0px_#1f2a44]">
@@ -294,11 +301,19 @@ export const LocalGame = forwardRef<
                     </span>
                     <div
                         className="flex items-center gap-2 rounded-2xl border-3 border-[#1f2a44] px-3.5 py-1.5 font-display text-xs font-black text-[#1f2a44] shadow-[3px_3px_0px_#1f2a44]"
-                        style={{ backgroundColor: skin.color }}
+                        style={{
+                            backgroundColor: avatarTint(
+                                current.character,
+                                current.skinIndex,
+                            ),
+                        }}
                         data-testid="snakes-turn"
                     >
-                        <div className="h-6 w-6">
-                            <MiniBlockAvatar skinIndex={current.skinIndex} />
+                        <div className="size-8">
+                            <PlayerAvatar
+                                character={current.character}
+                                seat={current.skinIndex}
+                            />
                         </div>
                         <span>{current.name}</span>
                         <span className="rounded-md border border-[#1f2a44] bg-white px-1.5 py-0.5 text-[10px]">
@@ -323,7 +338,7 @@ export const LocalGame = forwardRef<
                 </div>
 
                 <div className="flex flex-col gap-4 lg:col-span-4 lg:max-h-[calc(100dvh-200px)] lg:overflow-y-auto lg:pr-2">
-                    <div className="rounded-3xl border-3 border-[#1f2a44] bg-white p-6 shadow-[5px_5px_0px_#1f2a44]">
+                    <div className="rounded-3xl border-3 border-[#1f2a44] bg-white p-4 shadow-[5px_5px_0px_#1f2a44] sm:p-5">
                         <div className="flex items-center justify-between border-b-2 border-[#1f2a44]/10 pb-3">
                             <div className="flex items-center gap-2">
                                 <Gamepad2 className="h-5 w-5 text-[#FF9E44]" />
@@ -340,9 +355,9 @@ export const LocalGame = forwardRef<
                             onClick={rollDice}
                             disabled={busy}
                             data-testid="snakes-roll"
-                            className="mt-6 min-h-14 w-full cursor-pointer rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] transition-all hover:-translate-y-0.5 hover:bg-[#ff8f29] hover:shadow-[6px_6px_0px_#1f2a44] active:translate-y-0 active:shadow-[2px_2px_0px_#1f2a44] disabled:opacity-50"
+                            className="mx-auto mt-5 flex min-h-12 cursor-pointer rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-6 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] transition-all hover:-translate-y-0.5 hover:bg-[#ff8f29] hover:shadow-[6px_6px_0px_#1f2a44] active:translate-y-0 active:shadow-[2px_2px_0px_#1f2a44] disabled:opacity-50"
                         >
-                            <Shuffle className="mr-2 h-5 w-5" />
+                            <Shuffle className="h-5 w-5" />
                             {rolling || showDice
                                 ? t('snakes.dice.rolling')
                                 : moving
@@ -350,7 +365,7 @@ export const LocalGame = forwardRef<
                                   : t('snakes.dice.roll')}
                         </Button>
 
-                        <div className="mt-6 border-t-2 border-[#1f2a44]/10 pt-4">
+                        <div className="mt-5 border-t-2 border-[#1f2a44]/10 pt-4">
                             <PlayerList
                                 players={players}
                                 turnId={winner ? null : current.id}
@@ -380,9 +395,15 @@ export const LocalGame = forwardRef<
                             >
                                 {t('snakes.winner.again')}
                             </Button>
+                            <AdMoment moment="win" muted={muted} />
+                            <AdSlot
+                                placement="arena.result"
+                                className="mx-auto mt-4 max-w-md"
+                            />
                         </div>
                     )}
 
+                    <AdSlot placement="arena.sidebar" />
                     <MoveLog entries={log} />
                 </div>
             </div>
@@ -398,6 +419,7 @@ export const LocalGame = forwardRef<
                 <QuestionDialog
                     name={current.name}
                     skinIndex={current.skinIndex}
+                    character={current.character}
                     question={{
                         subject: question.subject,
                         level: question.level,

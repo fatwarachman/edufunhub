@@ -32,6 +32,8 @@ export function useGameSocket<State>(
     handlers: {
         onState: (state: State) => void;
         onError: (code: string) => void;
+        /** Every other server event (games that stream deltas). */
+        onMessage?: (msg: Record<string, unknown>) => void;
     },
 ) {
     const enabled = Boolean(wsUrl);
@@ -124,6 +126,8 @@ export function useGameSocket<State>(
                     handlersRef.current.onState(msg as unknown as State);
                 } else if (msg.t === 'error') {
                     handlersRef.current.onError(msg.code as string);
+                } else if (msg.t !== 'pong') {
+                    handlersRef.current.onMessage?.(msg);
                 }
             };
             ws.onclose = () => {

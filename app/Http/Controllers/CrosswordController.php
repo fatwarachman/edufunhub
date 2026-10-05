@@ -48,7 +48,7 @@ class CrosswordController extends Controller
     }
 
     /**
-     * @return array{name: string, grade: ?int, color: string, accessory: string}
+     * @return array{name: string, grade: ?int, color: string, accessory: string, character: array<string, mixed>}
      */
     private function player(Request $request): array
     {
@@ -60,6 +60,7 @@ class CrosswordController extends Controller
             'grade' => $profile->grade,
             'color' => $profile->color,
             'accessory' => $profile->accessory,
+            'character' => $profile->look(),
         ];
     }
 }

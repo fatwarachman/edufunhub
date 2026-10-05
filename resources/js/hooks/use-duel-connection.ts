@@ -1,5 +1,6 @@
 import { type RoomPayload } from '@/components/multiplayer/room';
 import { useGameSocket } from '@/hooks/use-game-socket';
+import { type CharacterLook } from '@/lib/character/draw-character';
 
 export type DuelConnectionStatus =
     'connecting' | 'online' | 'reconnecting' | 'offline' | 'grade_required';
@@ -10,6 +11,7 @@ export type DuelPhase =
 export interface DuelSide {
     name: string;
     grade: number;
+    character?: CharacterLook | null;
     score?: number;
     correct?: number;
     history?: boolean[];

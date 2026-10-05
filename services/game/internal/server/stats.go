@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+
+	"edufunhub/game/internal/minigames"
 )
 
 // statsTolerance bounds the clock skew accepted on signed stats requests.
@@ -52,6 +54,18 @@ func (s *Server) Snapshot() Stats {
 	games = append(games, Usage{Game: "snakes-and-ladders", Connections: snakesConns, Sessions: rooms})
 	cwRooms, _ := s.crosswords.Counts()
 	games = append(games, Usage{Game: "crossword", Connections: crosswordConns, Sessions: cwRooms})
+	for _, key := range minigames.Keys {
+		s.mu.Lock()
+		conns := len(s.miniSubs[key])
+		s.mu.Unlock()
+		rooms, _ := s.minis[key].Counts()
+		games = append(games, Usage{Game: key, Connections: conns, Sessions: rooms})
+	}
+	s.mu.Lock()
+	floorConns := len(s.floorConns)
+	s.mu.Unlock()
+	floorRooms, _ := s.floor.Counts()
+	games = append(games, Usage{Game: "floor-drop", Connections: floorConns, Sessions: floorRooms})
 	return Stats{
 		Service:        "edufunhub-game",
 		GoVersion:      runtime.Version(),

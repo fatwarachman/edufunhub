@@ -1,4 +1,6 @@
-import { MiniBlockAvatar } from '@/components/mini-block-avatar';
+import { avatarLook } from '@/components/player-avatar';
+import PlayerCharacter from '@/components/player-character';
+import { type CharacterLook } from '@/lib/character/draw-character';
 import { BOARD_LADDERS, BOARD_SNAKES, boardPoint } from '@/lib/snakes-board';
 
 interface BoardPlayer {
@@ -6,6 +8,7 @@ interface BoardPlayer {
     name: string;
     position: number;
     skinIndex: number;
+    character?: CharacterLook | null;
 }
 
 export function IllustratedSnakesBoard({
@@ -320,6 +323,7 @@ export function IllustratedSnakesBoard({
                 const crowded = peers.length > 1;
                 const width = crowded ? 26 : 39;
                 const height = crowded ? 32 : 49;
+                const box = crowded ? 64 : 96;
                 return (
                     <g
                         key={p.id}
@@ -335,28 +339,41 @@ export function IllustratedSnakesBoard({
                         <title>
                             {p.name}, petak {p.position}
                         </title>
-                        <svg
-                            width={width}
-                            height={height}
-                            viewBox="0 0 64 80"
+                        <foreignObject
+                            x={width / 2 - box / 2}
+                            y={height - box * 0.92}
+                            width={box}
+                            height={box}
                             overflow="visible"
                         >
-                            <MiniBlockAvatar
-                                skinIndex={p.skinIndex}
-                                walking={moving && activeId === p.id}
-                            />
-                        </svg>
+                            <div
+                                className={
+                                    moving && activeId === p.id
+                                        ? 'edu-avatar-hop size-full'
+                                        : 'size-full'
+                                }
+                            >
+                                <PlayerCharacter
+                                    character={avatarLook(
+                                        p.character,
+                                        p.skinIndex,
+                                    )}
+                                    backdrop={false}
+                                    className="size-full"
+                                />
+                            </div>
+                        </foreignObject>
                         <circle
-                            cx={width - 2}
-                            cy={height - 3}
+                            cx={width / 2 + box * 0.36}
+                            cy={height - box * 0.8}
                             r="7"
                             fill="#fffce8"
                             stroke="#36563d"
                             strokeWidth="1"
                         />
                         <text
-                            x={width - 2}
-                            y={height + 1}
+                            x={width / 2 + box * 0.36}
+                            y={height - box * 0.8 + 3.5}
                             textAnchor="middle"
                             fontSize="10"
                             fontWeight="900"
