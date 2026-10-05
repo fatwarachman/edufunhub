@@ -133,10 +133,7 @@ export default function ResetPassword({ email, token }: ResetPasswordProps) {
                             t('reset.submit')
                         )}
                     </Button>
-                    <Link
-                        href="/login"
-                        className="text-center text-sm font-semibold underline"
-                    >
+                    <Link href="/login" className="link text-center text-sm">
                         {t('reset.back')}
                     </Link>
                 </div>

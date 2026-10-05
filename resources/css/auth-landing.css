@@ -8,6 +8,7 @@
     --card-foreground: var(--auth-ink);
     --primary: var(--auth-amber);
     --primary-foreground: var(--auth-ink);
+    --link: #2b4fd6;
     --muted-foreground: #515667;
     --border: var(--auth-ink);
     --input: var(--auth-ink);

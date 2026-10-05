@@ -351,7 +351,7 @@ function SubjectOverview({
 
             <Link
                 href="/admin/questions?subject=all"
-                className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                className="inline-flex w-fit items-center gap-1.5 link text-sm"
             >
                 <Layers className="size-4" />
                 View all questions in one list

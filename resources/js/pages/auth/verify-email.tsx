@@ -61,7 +61,7 @@ export default function VerifyEmail({ status }: VerifyEmailProps) {
                     method="post"
                     as="button"
                     type="button"
-                    className="text-sm font-semibold underline"
+                    className="link text-sm"
                 >
                     {t('verify.logout')}
                 </Link>

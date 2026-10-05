@@ -69,10 +69,7 @@ export default function ConfirmPassword() {
                             t('confirm.submit')
                         )}
                     </Button>
-                    <Link
-                        href="/"
-                        className="text-center text-sm font-semibold underline"
-                    >
+                    <Link href="/" className="link text-center text-sm">
                         {t('confirm.back')}
                     </Link>
                 </div>

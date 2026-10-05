@@ -469,7 +469,7 @@ export default function GameShow({
                                 actions={
                                     <Link
                                         href={`/admin/questions?game=${game.key}&sort=hardest`}
-                                        className="text-xs text-primary hover:underline"
+                                        className="link text-xs"
                                     >
                                         Manage questions
                                     </Link>

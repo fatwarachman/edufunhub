@@ -136,10 +136,7 @@ export default function GenerateQuestions({
                             <CircleAlert className="size-4 shrink-0" />
                             Connect an AI server and choose a model first.
                         </span>
-                        <Link
-                            href="/admin/ai-settings"
-                            className="font-medium underline underline-offset-2"
-                        >
+                        <Link href="/admin/ai-settings" className="link">
                             Open AI Settings
                         </Link>
                     </div>
@@ -151,10 +148,7 @@ export default function GenerateQuestions({
                             {ai.model}
                         </span>
                         ·{' '}
-                        <Link
-                            href="/admin/ai-settings"
-                            className="underline underline-offset-2"
-                        >
+                        <Link href="/admin/ai-settings" className="link">
                             change
                         </Link>
                     </p>
@@ -437,7 +431,7 @@ function GenerationRow({ generation: g }: { generation: Generation }) {
             {g.created_count > 0 && !live && (
                 <Link
                     href="/admin/questions?source=ai"
-                    className="self-start text-xs font-medium text-violet-700 underline underline-offset-2 dark:text-violet-300"
+                    className="self-start link text-xs"
                 >
                     Review AI questions
                 </Link>

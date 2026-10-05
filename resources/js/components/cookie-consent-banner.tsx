@@ -114,10 +114,7 @@ export default function CookieConsentBanner() {
                                 personalize content, tailor and measure ads, and
                                 provide a better experience. By clicking "Accept
                                 All", you agree to this use to our{' '}
-                                <a
-                                    href="/privacy"
-                                    className="underline hover:text-foreground"
-                                >
+                                <a href="/privacy" className="link">
                                     Privacy Policy
                                 </a>
                                 .
