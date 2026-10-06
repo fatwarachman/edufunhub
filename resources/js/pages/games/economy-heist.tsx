@@ -372,7 +372,7 @@ function RolePicker() {
             <h2 className="text-center font-display text-2xl font-black">
                 {t('economyHeist.chooseRole')}
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {roles.map(({ role, icon: Icon, title, body, cta, tone }) => (
                     <button
                         key={role}

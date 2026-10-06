@@ -1,6 +1,11 @@
-/** Offline question set for guests and pass-and-play on one device (Indonesian). */
+/**
+ * Questions for practice on one device. The page receives the active bank
+ * questions for Ular Tangga (`practiceQuestions`); this built-in set (also
+ * seeded into the bank as `sl-01`…`sl-30`) is only the offline fallback.
+ */
 export interface OfflineQuestion {
     id: number;
+    key?: string;
     level: string;
     subject: string;
     question: string;

@@ -117,7 +117,11 @@ export function PlayerScreen({
                     </span>
                 </div>
                 <span className="size-24" data-testid="or-lobby-avatar">
-                    <PlayerAvatar character={look} seat={you?.user_id ?? 0} />
+                    <PlayerAvatar
+                        character={look}
+                        seat={you?.user_id ?? 0}
+                        userId={you?.user_id ?? 0}
+                    />
                 </span>
                 <p
                     className="font-display text-xl font-black"
@@ -435,7 +439,11 @@ function Arena({
                     data-hit={frozen || tangled ? 'true' : 'false'}
                     data-testid="or-you-avatar"
                 >
-                    <PlayerAvatar character={character} seat={you.user_id} />
+                    <PlayerAvatar
+                        character={character}
+                        seat={you.user_id}
+                        userId={you.user_id}
+                    />
                     {you.shield && (
                         <Shield
                             className="absolute -right-1 -bottom-1 size-5 fill-[#c7d2fe] text-[#4338ca]"
@@ -492,6 +500,7 @@ function Arena({
                         <PlayerAvatar
                             character={character}
                             seat={you.user_id}
+                            userId={you.user_id}
                         />
                     </span>
                     <span className="font-display text-sm font-black">
@@ -715,6 +724,7 @@ function Arena({
                             <PlayerAvatar
                                 character={character}
                                 seat={you.user_id}
+                                userId={you.user_id}
                             />
                         </span>
                         <span className="rounded-xl border-2 border-[#0369a1] bg-white px-3 py-1 font-display text-sm font-black text-[#0c4a6e]">
@@ -806,6 +816,7 @@ function Arena({
                                     <PlayerAvatar
                                         character={row.avatar ?? row.character}
                                         seat={row.user_id}
+                                        userId={row.user_id}
                                     />
                                 </span>
                                 <span className="truncate">{row.username}</span>

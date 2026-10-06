@@ -36,8 +36,18 @@ func TestSubjectFilterAndMix(t *testing.T) {
 			t.Fatalf("social game drew %q (bank %v)", q.Subject, q.FromBank)
 		}
 	}
-	// A subject without questions for the grade falls back to the mix.
+	// A subject the game has no questions for borrows the subject's
+	// questions from the built-in bank instead of generating arithmetic.
 	g = NewFor("sky-quiz", 5, 7).For("civics", 1)
+	for i := 0; i < 12; i++ {
+		if q := g.Choice(); q.Subject != "civics" || !q.FromBank || g.Fallback() {
+			t.Fatalf("civics game drew %q (bank %v, fallback %v)", q.Subject, q.FromBank, g.Fallback())
+		}
+	}
+	// A subject without questions anywhere falls back to the mix.
+	UseSubjects(append([]string{"music"}, BuiltinSubjects...))
+	t.Cleanup(func() { UseSubjects(BuiltinSubjects) })
+	g = NewFor("sky-quiz", 5, 7).For("music", 1)
 	if q := g.Choice(); !q.FromBank || !g.Fallback() {
 		t.Fatal("empty subject must fall back to the bank mix and say so")
 	}
@@ -119,5 +129,42 @@ func TestSubjectsFollowTheSyncedList(t *testing.T) {
 	UseSubjects(nil)
 	if NormSubject("science") != "science" {
 		t.Fatal("an empty list restores the built-in subjects")
+	}
+}
+
+func TestSubjectNeverTurnsIntoArithmetic(t *testing.T) {
+	// The game pool only holds English for grade 1 (like the live
+	// snakes-and-ladders bank); other subjects and grades must still be
+	// asked from the bank, not as generated math.
+	bank, err := Parse([]byte(`{"version":"t","questions":[
+		{"key":"en1","type":"choice","band":0,"subject":"english","prompt":{"id":"A"},"options":[{"id":"a"},{"id":"b"},{"id":"c"}],"answer":0,"games":["snakes-and-ladders"]},
+		{"key":"so1","type":"choice","band":1,"subject":"social","prompt":{"id":"B"},"options":[{"id":"a"},{"id":"b"},{"id":"c"}],"answer":0,"games":["sky-quiz"]}
+	]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	Use(bank)
+	History.Reset()
+	t.Cleanup(func() { Use(nil); History.Reset() })
+	for _, c := range []struct {
+		subject string
+		grade   int
+	}{{"social", 5}, {"science", 5}, {"science", 8}, {"english", 1}} {
+		g := NewFor("snakes-and-ladders", c.grade, 3).For(c.subject, 1)
+		for i := 0; i < 25; i++ {
+			if q := g.Choice(); q.Subject != c.subject || !q.FromBank {
+				t.Fatalf("%s grade %d drew %q (bank %v) at question %d", c.subject, c.grade, q.Subject, q.FromBank, i)
+			}
+		}
+	}
+	g := NewFor("snakes-and-ladders", 5, 3).For("mix", 1)
+	bankDrawn := 0
+	for i := 0; i < 40; i++ {
+		if g.Choice().FromBank {
+			bankDrawn++
+		}
+	}
+	if bankDrawn != 1 {
+		t.Fatalf("mix with an empty game pool must still ask the bank question once: %d/40", bankDrawn)
 	}
 }

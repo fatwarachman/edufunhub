@@ -1,4 +1,5 @@
 import type { SkyRoundState } from '@/lib/sky-quiz';
+import { watchSocket } from '@/lib/socket-watchdog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type SkyConnectionStatus =
@@ -72,6 +73,7 @@ export function useSkyConnection(
         }
         let closed = false;
         let timer: ReturnType<typeof setTimeout> | undefined;
+        let seen = () => {};
 
         const schedule = () => {
             if (closed) {
@@ -121,6 +123,7 @@ export function useSkyConnection(
                 setStatus('online');
             };
             ws.onmessage = (event: MessageEvent<string>) => {
+                seen();
                 let msg: Record<string, unknown>;
                 try {
                     msg = JSON.parse(event.data);
@@ -147,12 +150,29 @@ export function useSkyConnection(
             };
         };
 
+        const watchdog = watchSocket({
+            current: () => socket.current,
+            ping: () => send({ t: 'ping' }),
+            reconnect: () => {
+                const ws = socket.current;
+                if (ws) {
+                    ws.onclose = null;
+                    ws.close();
+                    socket.current = null;
+                }
+                clearTimeout(timer);
+                attempts.current = 0;
+                setStatus('reconnecting');
+                void connect();
+            },
+        });
+        seen = watchdog.seen;
+
         void connect();
-        const ping = setInterval(() => send({ t: 'ping' }), 20000);
         return () => {
+            watchdog.stop();
             closed = true;
             clearTimeout(timer);
-            clearInterval(ping);
             socket.current?.close();
             socket.current = null;
         };

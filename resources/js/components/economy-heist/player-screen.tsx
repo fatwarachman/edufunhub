@@ -127,7 +127,11 @@ export function PlayerScreen({
                     </span>
                 </div>
                 <span className="size-24" data-testid="eh-lobby-avatar">
-                    <PlayerAvatar character={look} seat={you?.user_id ?? 0} />
+                    <PlayerAvatar
+                        character={look}
+                        seat={you?.user_id ?? 0}
+                        userId={you?.user_id ?? 0}
+                    />
                 </span>
                 <p
                     className="font-display text-xl font-black"
@@ -266,7 +270,11 @@ function StatusBar({
             data-testid="eh-status"
         >
             <span className="size-12 shrink-0 sm:size-14">
-                <PlayerAvatar character={character} seat={you?.user_id ?? 0} />
+                <PlayerAvatar
+                    character={character}
+                    seat={you?.user_id ?? 0}
+                    userId={you?.user_id ?? 0}
+                />
             </span>
             <div className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-xs font-black text-slate-600">
@@ -715,6 +723,7 @@ function TargetPicker({
                                         <PlayerAvatar
                                             character={r.character}
                                             seat={r.user_id}
+                                            userId={r.user_id}
                                         />
                                     </span>
                                     <span className="flex min-w-0 flex-1 flex-col">

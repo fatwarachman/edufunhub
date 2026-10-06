@@ -266,6 +266,7 @@ export default function TurboTriviaController({
                     <PlayerAvatar
                         character={player.character}
                         seat={player.id}
+                        userId={player.id}
                         walking
                     />
                 </span>

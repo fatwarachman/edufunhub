@@ -1,4 +1,5 @@
 import { PlayerAvatar } from '@/components/player-avatar';
+import { ResponsiveTable } from '@/components/responsive-table';
 import {
     type PowerUp,
     type RushAction,
@@ -352,6 +353,7 @@ export function FeedItem({ action }: { action: RushAction }) {
                 <PlayerAvatar
                     character={action.source_player.character}
                     seat={action.source_player.user_id}
+                    userId={action.source_player.user_id}
                 />
             </span>
             <span
@@ -373,6 +375,7 @@ export function FeedItem({ action }: { action: RushAction }) {
                     <PlayerAvatar
                         character={action.target_player.character}
                         seat={action.target_player.user_id}
+                        userId={action.target_player.user_id}
                     />
                 </span>
             )}
@@ -418,6 +421,7 @@ export function Podium({ state }: { state: RushState }) {
                             <PlayerAvatar
                                 character={p.character}
                                 seat={p.user_id}
+                                userId={p.user_id}
                             />
                             {p.rank === 1 && (
                                 <Crown
@@ -450,76 +454,79 @@ export function Podium({ state }: { state: RushState }) {
                 ))}
             </ol>
             {ranking.length > 0 && (
-                <div className="mx-auto w-full max-w-3xl overflow-x-auto rounded-2xl border-2 border-[#1f2a44] bg-white">
-                    <table
-                        className="w-full min-w-[480px] text-sm"
-                        data-testid="or-ranking"
-                    >
-                        <thead>
-                            <tr className="border-b-2 border-[#1f2a44]/15 text-left text-xs font-black text-slate-600 uppercase">
-                                <th className="px-3 py-2">#</th>
-                                <th className="px-3 py-2">
-                                    {t('orderRush.player')}
-                                </th>
-                                <th className="px-3 py-2 text-right">
-                                    {t('orderRush.score')}
-                                </th>
-                                <th className="px-3 py-2 text-right">
-                                    {t('orderRush.modules')}
-                                </th>
-                                <th className="px-3 py-2 text-right">
-                                    {t('orderRush.accuracy')}
-                                </th>
-                                <th className="px-3 py-2 text-right">
-                                    {t('orderRush.avgTime')}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {ranking.map((p) => (
-                                <tr
-                                    key={p.user_id}
-                                    className={cn(
-                                        'border-b border-[#1f2a44]/10 last:border-0',
-                                        p.user_id === state.result?.user_id &&
-                                            'bg-[#ccfbf1]',
-                                    )}
-                                >
-                                    <td className="px-3 py-1.5 font-display font-black tabular-nums">
-                                        {p.rank}
-                                    </td>
-                                    <td className="px-3 py-1.5">
-                                        <span className="flex min-w-0 items-center gap-2">
-                                            <span className="size-7 shrink-0">
-                                                <PlayerAvatar
-                                                    character={p.character}
-                                                    seat={p.user_id}
-                                                />
-                                            </span>
-                                            <span className="truncate font-bold">
-                                                {p.name}
-                                            </span>
-                                        </span>
-                                    </td>
-                                    <td className="px-3 py-1.5 text-right font-black tabular-nums">
-                                        {formatScore(p.score, i18n.language)}
-                                    </td>
-                                    <td className="px-3 py-1.5 text-right tabular-nums">
-                                        {p.step}
-                                    </td>
-                                    <td className="px-3 py-1.5 text-right tabular-nums">
-                                        {p.accuracy}%
-                                    </td>
-                                    <td className="px-3 py-1.5 text-right tabular-nums">
-                                        {p.avg_ms > 0
-                                            ? `${(p.avg_ms / 1000).toFixed(1)} s`
-                                            : '–'}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <ResponsiveTable
+                    variant="player"
+                    testId="or-ranking"
+                    className="mx-auto max-w-3xl data-[layout=table]:overflow-hidden data-[layout=table]:rounded-2xl data-[layout=table]:border-2 data-[layout=table]:border-[#1f2a44] data-[layout=table]:bg-white"
+                    rows={ranking}
+                    rowKey={(p) => p.user_id}
+                    rowClassName={(p) =>
+                        p.user_id === state.result?.user_id
+                            ? 'bg-[#ccfbf1]'
+                            : undefined
+                    }
+                    columns={[
+                        {
+                            key: 'rank',
+                            header: '#',
+                            primary: true,
+                            cellClassName:
+                                'font-display font-black tabular-nums',
+                            cell: (p) => p.rank,
+                        },
+                        {
+                            key: 'player',
+                            header: t('orderRush.player'),
+                            primary: true,
+                            cell: (p) => (
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <span className="size-7 shrink-0">
+                                        <PlayerAvatar
+                                            character={p.character}
+                                            seat={p.user_id}
+                                            userId={p.user_id}
+                                        />
+                                    </span>
+                                    <span className="min-w-0 font-bold [overflow-wrap:anywhere]">
+                                        {p.name}
+                                    </span>
+                                </span>
+                            ),
+                        },
+                        {
+                            key: 'score',
+                            header: t('orderRush.score'),
+                            align: 'right',
+                            summary: true,
+                            cellClassName: 'font-black tabular-nums',
+                            cell: (p) => formatScore(p.score, i18n.language),
+                        },
+                        {
+                            key: 'modules',
+                            header: t('orderRush.modules'),
+                            align: 'right',
+                            cellClassName: 'tabular-nums',
+                            cell: (p) => p.step,
+                        },
+                        {
+                            key: 'accuracy',
+                            header: t('orderRush.accuracy'),
+                            align: 'right',
+                            cellClassName: 'tabular-nums',
+                            cell: (p) => `${p.accuracy}%`,
+                        },
+                        {
+                            key: 'avgTime',
+                            header: t('orderRush.avgTime'),
+                            align: 'right',
+                            cellClassName: 'tabular-nums',
+                            cell: (p) =>
+                                p.avg_ms > 0
+                                    ? `${(p.avg_ms / 1000).toFixed(1)} s`
+                                    : '–',
+                        },
+                    ]}
+                />
             )}
         </div>
     );

@@ -53,8 +53,10 @@ type Config struct {
 // Seat is one player in a room.
 type Seat[P any] struct {
 	Claims auth.Claims
-	// Local seats belong to the host's device and have negative ids.
+	// Local seats belong to the device of Owner (the host who added them)
+	// and have negative ids.
 	Local bool
+	Owner int64
 	Left  bool
 	Data  P
 }
@@ -108,13 +110,14 @@ func (r *Room[S, P]) SeatIndex(uid int64) int {
 }
 
 // Controls reports whether uid may act for seat i: their own seat, or a
-// local seat while uid hosts the room.
+// local seat on their device. Local seats stay with the device that added
+// them, also after the host role moved to another player.
 func (r *Room[S, P]) Controls(uid int64, i int) bool {
 	if i < 0 || i >= len(r.Seats) || r.Seats[i].Left {
 		return false
 	}
 	s := r.Seats[i]
-	return s.ID() == uid || (s.Local && r.Host == uid)
+	return s.ID() == uid || (s.Local && s.Owner == uid)
 }
 
 // Touch marks a change: clients get a new state and the room stays alive.
@@ -132,6 +135,7 @@ type Hub[S, P any] struct {
 	members  map[int64]string
 	locales  map[int64]string
 	online   map[int64]bool
+	away     map[string]time.Time
 	localSeq int64
 
 	// OnLeave runs (under the hub lock) when a seat leaves a playing room,
@@ -148,8 +152,14 @@ func New[S, P any](seed uint64, cfg Config) *Hub[S, P] {
 		members: map[int64]string{},
 		locales: map[int64]string{},
 		online:  map[int64]bool{},
+		away:    map[string]time.Time{},
 	}
 }
+
+// HostGrace is how long a host may stay disconnected before the host role
+// moves to a connected player, so the room can still be started, restarted
+// and configured.
+const HostGrace = 10 * time.Second
 
 // Config returns the room bounds.
 func (h *Hub[S, P]) Config() Config { return h.cfg }
@@ -196,12 +206,12 @@ func (h *Hub[S, P]) Locale(uid int64) string {
 	return "id"
 }
 
-// Online reports presence. Local seats are online while their host is.
+// Online reports presence. Local seats are online while their device is.
 // Call with the lock held (inside callbacks).
 func (h *Hub[S, P]) Online(r *Room[S, P], i int) bool {
 	s := r.Seats[i]
 	if s.Local {
-		return h.online[r.Host]
+		return h.online[s.Owner]
 	}
 	return h.online[s.ID()]
 }
@@ -287,6 +297,7 @@ func (h *Hub[S, P]) AddLocal(uid int64, name string, now time.Time) ([]int64, er
 	r.Seats = append(r.Seats, &Seat[P]{
 		Claims: auth.Claims{Subject: -h.localSeq, Name: name, Grade: host.Grade, Game: host.Game},
 		Local:  true,
+		Owner:  uid,
 	})
 	r.Touch(now)
 	return r.Humans(), nil
@@ -333,11 +344,9 @@ func (h *Hub[S, P]) leaveLocked(uid int64, now time.Time) []int64 {
 	}
 	hosting := r.Host == uid
 	leaving := []int{index}
-	if hosting {
-		for i, s := range r.Seats {
-			if s.Local && !s.Left {
-				leaving = append(leaving, i)
-			}
+	for i, s := range r.Seats {
+		if s.Local && !s.Left && s.Owner == uid {
+			leaving = append(leaving, i)
 		}
 	}
 	if r.Phase == PhasePlaying {
@@ -366,12 +375,87 @@ func (h *Hub[S, P]) leaveLocked(uid int64, now time.Time) []int64 {
 	humans := r.Humans()
 	if len(humans) == 0 {
 		delete(h.rooms, r.Pin)
+		delete(h.away, r.Pin)
 		return nil
 	}
 	if hosting {
-		r.Host = humans[0]
+		r.Host = h.successor(r, humans)
+		delete(h.away, r.Pin)
 	}
 	return humans
+}
+
+// successor picks the next host: the first connected account holder, else
+// the first one still in the room.
+func (h *Hub[S, P]) successor(r *Room[S, P], humans []int64) int64 {
+	for _, id := range humans {
+		if id != r.Host && h.online[id] {
+			return id
+		}
+	}
+	for _, id := range humans {
+		if id != r.Host {
+			return id
+		}
+	}
+	return humans[0]
+}
+
+// HandOver moves the host role of every room whose host has been
+// disconnected for at least grace to a connected player. The game itself
+// never stops because the host dropped; this keeps start, restart and the
+// settings usable. Returns the players to update.
+func (h *Hub[S, P]) HandOver(now time.Time, grace time.Duration) []int64 {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	var ids []int64
+	for pin, r := range h.rooms {
+		if h.online[r.Host] {
+			delete(h.away, pin)
+			continue
+		}
+		since, ok := h.away[pin]
+		if !ok {
+			h.away[pin] = now
+			continue
+		}
+		if now.Sub(since) < grace {
+			continue
+		}
+		humans := r.Humans()
+		next := h.successor(r, humans)
+		if next == r.Host || !h.online[next] {
+			continue
+		}
+		r.Host = next
+		r.Touch(now)
+		delete(h.away, pin)
+		ids = append(ids, humans...)
+	}
+	for pin := range h.away {
+		if _, ok := h.rooms[pin]; !ok {
+			delete(h.away, pin)
+		}
+	}
+	return ids
+}
+
+// Presence describes the room uid is seated in (for "continue playing").
+type Presence struct {
+	Pin   string
+	Phase string
+	Host  bool
+}
+
+// PresenceOf returns uid's room, if any.
+func (h *Hub[S, P]) PresenceOf(uid int64) (Presence, bool) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	r := h.roomOf(uid)
+	if r == nil || r.SeatIndex(uid) < 0 {
+		return Presence{}, false
+	}
+	return Presence{Pin: r.Pin, Phase: r.Phase, Host: r.Host == uid}, true
 }
 
 // Start begins or restarts the game. Only the host may start. start runs
@@ -425,6 +509,27 @@ func (h *Hub[S, P]) SetSubject(uid int64, subject string, norm func(string) stri
 		return nil, ErrPhase
 	}
 	r.Subject = norm(subject)
+	r.Touch(now)
+	return r.Humans(), nil
+}
+
+// Configure changes a game setting before the game starts (host only).
+func (h *Hub[S, P]) Configure(uid int64, now time.Time, fn func(r *Room[S, P]) error) ([]int64, error) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	r := h.roomOf(uid)
+	if r == nil {
+		return nil, ErrNoRoom
+	}
+	if r.Host != uid {
+		return nil, ErrNotHost
+	}
+	if r.Phase == PhasePlaying {
+		return nil, ErrPhase
+	}
+	if err := fn(r); err != nil {
+		return nil, err
+	}
 	r.Touch(now)
 	return r.Humans(), nil
 }
@@ -554,6 +659,9 @@ func (h *Hub[S, P]) RoomPayload(r *Room[S, P], viewer int64, extra func(i int, s
 		}
 		if len(s.Claims.Character) > 0 {
 			p["character"] = s.Claims.Character
+		}
+		if !s.Local && s.ID() > 0 {
+			p["user_id"] = s.ID()
 		}
 		if extra != nil {
 			for k, v := range extra(i, s) {

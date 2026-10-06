@@ -99,7 +99,7 @@ function LevelPicker({
             <legend className="mb-2 text-xs font-black text-slate-500 uppercase">
                 {t('crossword.level.label')}
             </legend>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {levels.map((level) => (
                     <button
                         key={level.level}
@@ -760,6 +760,7 @@ export default function Crossword({
                                         <PlayerAvatar
                                             character={p.character}
                                             seat={p.seat}
+                                            userId={p.user_id}
                                         />
                                     </div>
                                     <span className="min-w-0 flex-1 truncate text-sm font-black">

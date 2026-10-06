@@ -10,8 +10,11 @@ func TestEveryPlayedGamePays(t *testing.T) {
 	if Finished(500, 100) != 100 {
 		t.Fatal("awards are capped")
 	}
-	if Abandoned(50, MinAnswersForAbandon-1, 100) != 0 {
-		t.Fatal("leaving before really playing pays nothing")
+	if Abandoned(0, MinAnswersForAbandon-1, 100) != 0 {
+		t.Fatal("leaving before achieving anything pays nothing")
+	}
+	if Abandoned(20, 1, 100) != 20 || Abandoned(500, 1, 100) != 100 {
+		t.Fatal("leaving early keeps what was achieved, without participation")
 	}
 	if Abandoned(20, MinAnswersForAbandon, 100) != p+20 {
 		t.Fatal("leaving after playing pays participation and achievements")

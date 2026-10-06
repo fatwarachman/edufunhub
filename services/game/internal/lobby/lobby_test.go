@@ -137,5 +137,57 @@ func TestRoomPayloadCarriesSeatCharacter(t *testing.T) {
 		if _, ok := players[1]["character"]; ok {
 			t.Fatal("seat without a look must not send character")
 		}
+		if players[0]["user_id"] != int64(1) || players[1]["user_id"] != int64(2) {
+			t.Fatalf("account seats carry user_id %v %v", players[0]["user_id"], players[1]["user_id"])
+		}
 	})
+}
+
+func TestDisconnectedHostHandsOverAfterGrace(t *testing.T) {
+	h := New[game, data](5, Config{Min: 1, Max: 4, Local: true})
+	now := time.Unix(1_800_000_000, 0)
+	for _, id := range []int64{1, 2, 3} {
+		h.Join(c(id), "id")
+	}
+	pin, _ := h.Create(c(1), now, nil)
+	_, _ = h.AddLocal(1, "Adik", now)
+	_, _ = h.Enter(c(2), pin, now)
+	_, _ = h.Enter(c(3), pin, now)
+	h.Offline(1)
+	h.Offline(2)
+	h.HandOver(now, HostGrace)
+	if ids := h.HandOver(now.Add(HostGrace/2), HostGrace); len(ids) != 0 {
+		t.Fatal("no handover inside the grace period")
+	}
+	if ids := h.HandOver(now.Add(HostGrace), HostGrace); len(ids) != 3 {
+		t.Fatalf("handover updates the room: %v", ids)
+	}
+	h.View(1, func(r *Room[game, data]) {
+		if r.Host != 3 {
+			t.Fatalf("host must move to the first connected player: %d", r.Host)
+		}
+		if !r.Controls(1, 1) || r.Controls(3, 1) {
+			t.Fatal("local seat stays on its device")
+		}
+	})
+	if p, ok := h.PresenceOf(1); !ok || p.Pin != pin || p.Host {
+		t.Fatalf("old host still seated: %+v %v", p, ok)
+	}
+	if _, err := h.Configure(3, now, func(*Room[game, data]) error { return nil }); err != nil {
+		t.Fatalf("new host configures: %v", err)
+	}
+	if _, err := h.Configure(1, now, func(*Room[game, data]) error { return nil }); err != ErrNotHost {
+		t.Fatalf("old host configures: %v", err)
+	}
+	h.Leave(1, now)
+	h.View(3, func(r *Room[game, data]) {
+		for _, s := range r.Seats {
+			if s.Local {
+				t.Fatal("leaving takes the device's local seats along")
+			}
+		}
+	})
+	if _, ok := h.PresenceOf(1); ok {
+		t.Fatal("left player has no presence")
+	}
 }

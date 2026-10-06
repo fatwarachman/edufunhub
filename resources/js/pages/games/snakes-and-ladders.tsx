@@ -14,6 +14,7 @@ import { useGameAudio } from '@/hooks/use-game-audio';
 import { useTranslations } from '@/hooks/use-translations';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { hasGrade } from '@/lib/grade';
+import { type OfflineQuestion } from '@/lib/snakes-questions';
 import { cn } from '@/lib/utils';
 import { Head } from '@inertiajs/react';
 import {
@@ -35,6 +36,7 @@ interface SnakesProps {
     online: boolean;
     wsUrl: string | null;
     pin: string | null;
+    practiceQuestions?: OfflineQuestion[];
 }
 
 type Mode = 'local' | 'online';
@@ -44,6 +46,7 @@ export default function SnakesAndLaddersGame({
     online,
     wsUrl,
     pin,
+    practiceQuestions = [],
 }: SnakesProps) {
     const { t } = useTranslations();
     const signedIn = player !== null;
@@ -65,7 +68,7 @@ export default function SnakesAndLaddersGame({
     ];
 
     return (
-        <div className="relative min-h-screen bg-[#FFF9E6] text-[#1f2a44] selection:bg-[#FF6584] selection:text-white">
+        <div className="relative min-h-screen touch-manipulation overflow-x-clip bg-[#FFF9E6] text-[#1f2a44] selection:bg-[#FF6584] selection:text-white">
             <Head title={`${t('snakes.title')} - EduFunHub`}>
                 <meta name="description" content={t('snakes.meta')} />
             </Head>
@@ -132,7 +135,7 @@ export default function SnakesAndLaddersGame({
                 </div>
             </header>
 
-            <main className="mx-auto px-3 py-3 sm:px-6 lg:px-8">
+            <main className="mx-auto overflow-x-clip px-3 py-3 sm:px-6 lg:px-8">
                 <GameAdStrip className="mb-4" />
                 <div
                     className="mb-4 flex flex-wrap items-center justify-center gap-2"
@@ -175,6 +178,7 @@ export default function SnakesAndLaddersGame({
                             character={player?.character}
                             play={play}
                             muted={muted}
+                            questions={practiceQuestions}
                         />
                     </>
                 ) : !signedIn ? (

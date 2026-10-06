@@ -348,7 +348,7 @@ function RolePicker() {
             <h2 className="text-center font-display text-2xl font-black">
                 {t('floorDrop.chooseRole')}
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {roles.map(({ role, icon: Icon, title, body, cta, tone }) => (
                     <button
                         key={role}
@@ -643,6 +643,7 @@ function HostScreen({
                                         <PlayerAvatar
                                             character={p.character}
                                             seat={p.user_id}
+                                            userId={p.user_id}
                                         />
                                     </span>
                                     <span className="w-full truncate text-center text-xs font-black">
@@ -916,6 +917,7 @@ function HostTile({
                         <PlayerAvatar
                             character={p.character}
                             seat={p.user_id}
+                            userId={p.user_id}
                         />
                     </li>
                 ))}
@@ -965,6 +967,7 @@ function SurvivorChip({ player }: { player: FloorPlayer }) {
                 <PlayerAvatar
                     character={player.character}
                     seat={player.user_id}
+                    userId={player.user_id}
                 />
             </span>
             <span className="truncate text-xs font-black">{player.name}</span>
@@ -1004,6 +1007,7 @@ function Podium({ state }: { state: FloorState }) {
                             <PlayerAvatar
                                 character={p.character}
                                 seat={p.user_id}
+                                userId={p.user_id}
                             />
                             {p.rank === 1 && (
                                 <Crown
@@ -1068,6 +1072,7 @@ function Ranking({ ranking, you }: { ranking: FloorRanking[]; you?: number }) {
                             <PlayerAvatar
                                 character={p.character}
                                 seat={p.user_id}
+                                userId={p.user_id}
                             />
                         </span>
                         <span className="min-w-0 flex-1 truncate font-black">
@@ -1170,6 +1175,7 @@ function PlayerScreen({
                             )?.character
                         }
                         seat={you?.user_id ?? 0}
+                        userId={you?.user_id ?? 0}
                     />
                 </span>
                 <p
@@ -1422,6 +1428,7 @@ function EliminatedOverlay({ state }: { state: FloorState }) {
                             <PlayerAvatar
                                 character={p.character}
                                 seat={p.user_id}
+                                userId={p.user_id}
                             />
                         </span>
                         <span className="truncate text-xs font-bold">

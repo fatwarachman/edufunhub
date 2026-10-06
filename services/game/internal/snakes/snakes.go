@@ -30,12 +30,16 @@ const (
 	Options    = 4
 	PinDigits  = lobby.PinDigits
 
-	// RollTime auto-rolls for a player who does not roll in time.
-	RollTime = 25 * time.Second
+	// RollTime auto-rolls for a player who does not roll in time, so a
+	// player who left their phone does not hold up the others.
+	RollTime = 10 * time.Second
 	// OfflineSkip skips the turn of a disconnected player.
 	OfflineSkip = 5 * time.Second
 	// AnswerTime is how long the current player has to answer.
 	AnswerTime = 30 * time.Second
+	// IdleAnswerTime replaces AnswerTime after an automatic roll: the player
+	// did not touch the dice, so they are probably away.
+	IdleAnswerTime = 10 * time.Second
 	// RevealTime shows the correct answer to everyone.
 	RevealTime = 2500 * time.Millisecond
 	// StepTime and JumpTime pace the token animation clients play.
@@ -52,13 +56,21 @@ const (
 	ScoreLadder  = 50
 	ScoreFinish  = 100
 
+	// FinishBonus is the portal point bonus of the first player to reach
+	// square 100.
+	FinishBonus = 100
+
 	// MaxAnswered bounds the questions one seat can be paid for; the award
 	// cap follows the admin point bounds (see points.Cap).
 	MaxAnswered = 30
 )
 
 // MaxPoints is the highest award of one game.
-var MaxPoints = points.Cap(MaxAnswered)
+var MaxPoints = points.Cap(MaxAnswered) + FinishBonus
+
+// Durations are the game lengths the host can pick, in minutes. 0 plays
+// until a player reaches square 100.
+var Durations = []int{0, 5, 10, 15, 20, 30}
 
 // Board layout, shared with resources/js/lib/snakes-board.ts.
 var (
@@ -90,6 +102,7 @@ var (
 	ErrNotTurn  = errors.New("not_your_turn")
 	ErrOption   = errors.New("invalid_option")
 	ErrTooEarly = errors.New("too_early")
+	ErrDuration = errors.New("invalid_duration")
 )
 
 // Message is a generic event.
@@ -120,6 +133,8 @@ type player struct {
 	wrong    int
 	answers  []questions.Answer
 	reported bool
+	// finished is the 1-based order in which the seat reached square 100.
+	finished int
 }
 
 type game struct {
@@ -134,11 +149,20 @@ type game struct {
 	right    bool
 	winner   int
 	forfeit  bool
-	gen      *questions.Generator
-	grade    int
-	subject  string
-	stepAt   time.Time
-	started  time.Time
+	timeUp   bool
+	auto     bool
+	// minutes is the game length (0 = until a player finishes); first is
+	// the seat that reached square 100 first (-1 = nobody yet).
+	minutes  int
+	first    int
+	finishes int
+	// round numbers the dice rolls; it identifies the current question.
+	round   int
+	gen     *questions.Generator
+	grade   int
+	subject string
+	stepAt  time.Time
+	started time.Time
 }
 
 type room = lobby.Room[game, player]
@@ -151,6 +175,9 @@ type Hub struct {
 
 	mu      sync.Mutex
 	pending []Result
+	// paid remembers the award of players who left a running game, so the
+	// server can tell them their points were kept.
+	paid map[int64]int
 }
 
 // NewHub creates an empty hub.
@@ -159,6 +186,7 @@ func NewHub(seed uint64) *Hub {
 		rooms: lobby.New[game, player](seed, lobby.Config{Min: MinPlayers, Max: MaxPlayers, Local: true}),
 		rng:   rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)),
 		seed:  seed,
+		paid:  map[int64]int{},
 	}
 	h.rooms.OnLeave = h.onLeave
 	return h
@@ -190,6 +218,41 @@ func Landing(position, dice int) int {
 func Award(earned int, won bool) int {
 	return points.Finished(points.Outcome(earned, won, false), MaxPoints)
 }
+
+// award is the portal points of seat i; the first player to reach square
+// 100 also earns FinishBonus.
+func award(r *room, i int, finished bool) int {
+	g := &r.Game
+	p := &r.Seats[i].Data
+	bonus := 0
+	if g.first == i {
+		bonus = FinishBonus
+	}
+	if !finished && p.finished == 0 {
+		return min(points.Abandoned(p.earned, p.correct+p.wrong, MaxPoints)+bonus, MaxPoints)
+	}
+	return min(Award(p.earned, g.winner == i)+bonus, MaxPoints)
+}
+
+// SetDuration picks the game length in minutes before the game (host only).
+func (h *Hub) SetDuration(uid int64, minutes int, now time.Time) ([]int64, error) {
+	return h.rooms.Configure(uid, now, func(r *room) error {
+		for _, d := range Durations {
+			if d == minutes {
+				r.Game.minutes = minutes
+				return nil
+			}
+		}
+		return ErrDuration
+	})
+}
+
+// HandOver moves the host role away from a host disconnected for longer
+// than lobby.HostGrace; the game keeps running either way.
+func (h *Hub) HandOver(now time.Time) []int64 { return h.rooms.HandOver(now, lobby.HostGrace) }
+
+// Presence reports the room uid is seated in (portal "continue playing").
+func (h *Hub) Presence(uid int64) (lobby.Presence, bool) { return h.rooms.PresenceOf(uid) }
 
 // SetSubject picks the question subject before the game (host only).
 func (h *Hub) SetSubject(uid int64, subject string, now time.Time) ([]int64, error) {
@@ -228,7 +291,7 @@ func (h *Hub) queue(res Result) {
 
 // Create opens a new room hosted by claims and returns its PIN.
 func (h *Hub) Create(claims auth.Claims, now time.Time) (string, []int64) {
-	return h.rooms.Create(claims, now, func(r *room) { r.Game.winner = -1 })
+	return h.rooms.Create(claims, now, func(r *room) { r.Game.winner, r.Game.first = -1, -1 })
 }
 
 // Enter joins the room with the given PIN.
@@ -247,7 +310,24 @@ func (h *Hub) RemoveLocal(uid int64, seat int, now time.Time) ([]int64, error) {
 }
 
 // Leave removes a player from their room and returns who must be updated.
-func (h *Hub) Leave(uid int64, now time.Time) []int64 { return h.rooms.Leave(uid, now) }
+// paid is the award kept for a running game the player left (-1 = none).
+// A player leaving a running game without points gets 0.
+func (h *Hub) Leave(uid int64, now time.Time) (ids []int64, paid int) {
+	before, seated := h.rooms.PresenceOf(uid)
+	ids = h.rooms.Leave(uid, now)
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	paid, ok := h.paid[uid]
+	delete(h.paid, uid)
+	switch {
+	case ok:
+	case seated && before.Phase == PhasePlaying:
+		paid = 0
+	default:
+		paid = -1
+	}
+	return ids, paid
+}
 
 // onLeave runs under the lobby lock when a seat leaves a playing room.
 func (h *Hub) onLeave(r *room, seat int, now time.Time) {
@@ -265,8 +345,8 @@ func (h *Hub) onLeave(r *room, seat int, now time.Time) {
 			}
 		}
 	}
-	if r.Active() > 0 && g.turn == seat && g.step != StepMove {
-		nextTurn(r, now)
+	if r.Active() > 0 && g.turn == seat && g.step != StepMove && !nextTurn(r, now) {
+		h.end(r, now)
 	}
 }
 
@@ -280,7 +360,7 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 		}
 		h.seed++
 		gen := questions.NewFor(GameKey, grade, h.seed).For(r.Subject, r.Humans()...)
-		r.Game = game{gen: gen, grade: grade, subject: r.Subject, winner: -1, started: now}
+		r.Game = game{gen: gen, grade: grade, subject: r.Subject, winner: -1, first: -1, minutes: r.Game.minutes, started: now}
 		beginTurn(r, now)
 		return nil
 	})
@@ -288,21 +368,42 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 
 func beginTurn(r *room, now time.Time) {
 	g := &r.Game
-	g.step, g.stepAt, g.dice, g.choice, g.right = StepRoll, now, 0, -1, false
+	g.step, g.stepAt, g.dice, g.choice, g.right, g.auto = StepRoll, now, 0, -1, false, false
 	r.Touch(now)
 }
 
-// nextTurn passes the dice to the next seat still in the room.
-func nextTurn(r *room, now time.Time) {
+// playing reports whether seat i still takes turns.
+func playing(r *room, i int) bool {
+	s := r.Seats[i]
+	return !s.Left && s.Data.finished == 0
+}
+
+// nextTurn passes the dice to the next seat still racing. It returns false
+// when nobody is left to play (everyone left or finished).
+func nextTurn(r *room, now time.Time) bool {
 	g := &r.Game
 	for i := 1; i <= len(r.Seats); i++ {
 		next := (g.turn + i) % len(r.Seats)
-		if !r.Seats[next].Left {
+		if playing(r, next) {
 			g.turn = next
 			beginTurn(r, now)
-			return
+			return true
 		}
 	}
+	return false
+}
+
+// answerTime is the answer window of the current question.
+func answerTime(g *game) time.Duration {
+	if g.auto {
+		return IdleAnswerTime
+	}
+	return AnswerTime
+}
+
+// timeLeft is the remaining game time of a timed game.
+func timeLeft(g *game, now time.Time) time.Duration {
+	return max(0, time.Duration(g.minutes)*time.Minute-now.Sub(g.started))
 }
 
 func turnCheck(r *room, uid int64, step string) error {
@@ -322,12 +423,12 @@ func (h *Hub) Roll(uid int64, now time.Time) ([]int64, error) {
 		if err := turnCheck(r, uid, StepRoll); err != nil {
 			return err
 		}
-		h.roll(r, now)
+		h.roll(r, now, false)
 		return nil
 	})
 }
 
-func (h *Hub) roll(r *room, now time.Time) {
+func (h *Hub) roll(r *room, now time.Time, auto bool) {
 	g := &r.Game
 	p := &r.Seats[g.turn].Data
 	g.dice = 1 + h.rng.IntN(6)
@@ -335,7 +436,8 @@ func (h *Hub) roll(r *room, now time.Time) {
 	g.landing = Landing(p.position, g.dice)
 	g.final = Destination(g.landing)
 	g.question = questions.Trim(g.gen.Choice(), Options, g.gen.Rand)
-	g.step, g.stepAt = StepQuestion, now
+	g.round++
+	g.step, g.stepAt, g.auto = StepQuestion, now, auto
 	r.Touch(now)
 }
 
@@ -397,13 +499,18 @@ func (h *Hub) advance(r *room, now time.Time) {
 	switch g.step {
 	case StepRoll:
 		switch {
-		case s.Left || (!h.rooms.Online(r, g.turn) && elapsed >= OfflineSkip):
-			nextTurn(r, now)
+		case g.minutes > 0 && timeLeft(g, now) == 0:
+			g.timeUp = true
+			h.end(r, now)
+		case !playing(r, g.turn) || (!h.rooms.Online(r, g.turn) && elapsed >= OfflineSkip):
+			if !nextTurn(r, now) {
+				h.end(r, now)
+			}
 		case elapsed >= RollTime:
-			h.roll(r, now)
+			h.roll(r, now, true)
 		}
 	case StepQuestion:
-		if elapsed >= AnswerTime || (!h.rooms.Online(r, g.turn) && elapsed >= OfflineSkip) {
+		if elapsed >= answerTime(g) || (!h.rooms.Online(r, g.turn) && elapsed >= OfflineSkip) {
 			judge(r, -1, now)
 		}
 	case StepReveal:
@@ -411,7 +518,9 @@ func (h *Hub) advance(r *room, now time.Time) {
 			return
 		}
 		if !g.right {
-			nextTurn(r, now)
+			if !nextTurn(r, now) {
+				h.end(r, now)
+			}
 			return
 		}
 		p.position = g.final
@@ -427,18 +536,51 @@ func (h *Hub) advance(r *room, now time.Time) {
 		switch {
 		case p.position == Finish:
 			p.score += ScoreFinish
-			g.winner = g.turn
-			h.end(r, now)
+			g.finishes++
+			p.finished = g.finishes
+			if g.first < 0 {
+				g.first = g.turn
+			}
+			if g.minutes == 0 || !nextTurn(r, now) {
+				h.end(r, now)
+			}
 		case g.dice == 6 && !s.Left:
 			beginTurn(r, now)
 		default:
-			nextTurn(r, now)
+			if !nextTurn(r, now) {
+				h.end(r, now)
+			}
 		}
 	}
 }
 
+// leader is the seat ranked first when the game ends: the first finisher,
+// else the furthest seat still in the room (higher score breaks ties).
+func leader(r *room) int {
+	if r.Game.first >= 0 {
+		return r.Game.first
+	}
+	best := -1
+	for i, s := range r.Seats {
+		if s.Left {
+			continue
+		}
+		if best < 0 || s.Data.position > r.Seats[best].Data.position ||
+			(s.Data.position == r.Seats[best].Data.position && s.Data.score > r.Seats[best].Data.score) {
+			best = i
+		}
+	}
+	return best
+}
+
 // end finishes the game and queues the result of every seat still playing.
 func (h *Hub) end(r *room, now time.Time) {
+	if r.Phase != PhasePlaying {
+		return
+	}
+	if !r.Game.forfeit {
+		r.Game.winner = leader(r)
+	}
 	r.Phase = PhaseDone
 	r.Touch(now)
 	for i, s := range r.Seats {
@@ -449,21 +591,24 @@ func (h *Hub) end(r *room, now time.Time) {
 }
 
 // settle queues the result of one seat once. Pass-and-play seats have no
-// account. A seat leaving early is paid only after answering a question.
+// account. A seat leaving early keeps what it achieved (see
+// points.Abandoned); a seat that already reached square 100 is paid in full.
 func (h *Hub) settle(r *room, i int, finished bool, now time.Time) {
 	s := r.Seats[i]
 	p := &s.Data
 	if s.Local || p.reported || r.Game.started.IsZero() {
 		return
 	}
-	pts := Award(p.earned, r.Game.winner == i)
-	if !finished {
-		if p.correct+p.wrong < points.MinAnswersForAbandon {
-			return
-		}
-		pts = points.Abandoned(p.earned, p.correct+p.wrong, MaxPoints)
+	pts := award(r, i, finished)
+	if !finished && p.finished == 0 && pts == 0 {
+		return
 	}
 	p.reported = true
+	if !finished {
+		h.mu.Lock()
+		h.paid[s.ID()] = pts
+		h.mu.Unlock()
+	}
 	h.queue(Result{
 		EventID:     fmt.Sprintf("sl-%d-room-%d", s.ID(), r.Game.started.UnixNano()),
 		UserID:      s.ID(),
@@ -490,7 +635,13 @@ func matchOf(r *room, now time.Time) *record.Match {
 			players[i].UserID = s.ID()
 		}
 	}
-	record.Rank(players, func(i int) int { return r.Seats[i].Data.position*10000 + r.Seats[i].Data.score }, g.winner)
+	record.Rank(players, func(i int) int {
+		d := r.Seats[i].Data
+		if d.finished > 0 {
+			return 1_000_000_000 - d.finished
+		}
+		return d.position*10000 + d.score
+	}, g.winner)
 	return &record.Match{
 		Key: fmt.Sprintf("sl-%s-%d", r.Pin, g.started.UnixNano()), Mode: record.Mode(players), Pin: r.Pin,
 		Grade: g.grade, StartedAt: record.Stamp(g.started), EndedAt: record.Stamp(now),
@@ -513,6 +664,8 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 	msg := Message{
 		"t": "snakes_state", "phase": PhaseNone, "you": -1,
 		"min_players": MinPlayers, "max_players": MaxPlayers, "local_seats": true,
+		"durations": Durations, "finish_bonus": FinishBonus,
+		"roll_ms": RollTime.Milliseconds(),
 	}
 	h.rooms.View(claims.Subject, func(r *room) {
 		if r == nil {
@@ -521,24 +674,36 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 		g := &r.Game
 		locale := h.rooms.Locale(claims.Subject)
 		for k, v := range h.rooms.RoomPayload(r, claims.Subject, func(_ int, s *lobby.Seat[player]) Message {
-			return Message{"position": max(1, s.Data.position), "score": s.Data.score, "correct": s.Data.correct, "wrong": s.Data.wrong}
+			return Message{"position": max(1, s.Data.position), "score": s.Data.score, "correct": s.Data.correct, "wrong": s.Data.wrong, "finished": s.Data.finished}
 		}) {
 			msg[k] = v
+		}
+		msg["minutes"] = g.minutes
+		if r.Phase != PhaseLobby {
+			msg["first"] = g.first
 		}
 		if r.Phase == PhaseDone {
 			msg["winner"] = g.winner
 			msg["reason"] = "finish"
-			if g.forfeit {
+			switch {
+			case g.forfeit:
 				msg["reason"] = "forfeit"
+			case g.timeUp:
+				msg["reason"] = "time"
 			}
 			if i := r.SeatIndex(claims.Subject); i >= 0 {
-				msg["points"] = Award(r.Seats[i].Data.earned, g.winner == i)
+				msg["points"] = award(r, i, true)
+				msg["finish_bonus_won"] = g.first == i
 			}
 		}
 		if r.Phase != PhasePlaying {
 			return
 		}
 		msg["turn"], msg["step"], msg["dice"] = g.turn, g.step, g.dice
+		msg["auto_roll"] = g.auto
+		if g.minutes > 0 {
+			msg["time_left_ms"] = timeLeft(g, now).Milliseconds()
+		}
 		msg["subject_fallback"] = g.gen != nil && g.gen.Fallback()
 		elapsed := now.Sub(g.stepAt)
 		switch g.step {
@@ -550,11 +715,11 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 				opts[i] = o.Get(locale)
 			}
 			q := Message{
-				"id": fmt.Sprintf("%s-%d", r.Pin, r.Seq), "subject": g.question.Subject, "worth": g.question.Worth(),
+				"id": fmt.Sprintf("%s-%d", r.Pin, g.round), "subject": g.question.Subject, "worth": g.question.Worth(),
 				"text": g.question.Prompt.Get(locale), "options": opts, "target": g.landing,
 			}
 			if g.step == StepQuestion {
-				q["remaining_ms"] = max(0, (AnswerTime - elapsed).Milliseconds())
+				q["remaining_ms"] = max(0, (answerTime(g) - elapsed).Milliseconds())
 			} else {
 				msg["reveal"] = Message{
 					"answer": g.question.Answer, "choice": g.choice, "correct": g.right,

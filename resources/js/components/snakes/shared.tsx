@@ -4,12 +4,15 @@ import { type CharacterLook } from '@/lib/character/draw-character';
 import { cn } from '@/lib/utils';
 import {
     CheckCircle2,
+    Clock,
     Dice1,
     Dice2,
     Dice3,
     Dice4,
     Dice5,
     Dice6,
+    DoorOpen,
+    Flag,
     Sparkles,
     Timer,
     XCircle,
@@ -266,6 +269,8 @@ export function QuestionDialog({
 
 export interface ArenaPlayer {
     id: number;
+    /** Account id (online dot); absent for local seats. */
+    userId?: number;
     name: string;
     position: number;
     score: number;
@@ -297,7 +302,7 @@ export function PlayerList({
                         className={cn(
                             'flex items-center justify-between gap-2 rounded-2xl border-2 border-[#1f2a44] p-2.5 transition-all',
                             isTurn
-                                ? 'translate-x-1 bg-[#FFFDE6] shadow-[3px_3px_0px_#1f2a44]'
+                                ? 'bg-[#FFFDE6] shadow-[3px_3px_0px_#1f2a44] sm:translate-x-1'
                                 : 'bg-white',
                             p.muted && 'opacity-60',
                         )}
@@ -309,6 +314,7 @@ export function PlayerList({
                                 <PlayerAvatar
                                     character={p.character}
                                     seat={p.skinIndex}
+                                    userId={p.userId}
                                 />
                             </div>
                             <div className="min-w-0">
@@ -389,6 +395,168 @@ export function BoardLegend() {
             <div className="flex items-center gap-1.5">
                 <span className="inline-block h-3.5 w-3.5 rounded border border-[#1f2a44] bg-[#FFF176]" />
                 <span>{t('snakes.legend.finish')}</span>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Game length picked by the host before the room starts: a number of
+ * minutes, or "until someone finishes" (0). Everyone else sees the choice.
+ */
+export function DurationPicker({
+    value,
+    options,
+    finishBonus,
+    disabled,
+    onChange,
+}: {
+    value: number;
+    options: number[];
+    finishBonus: number;
+    disabled?: boolean;
+    onChange: (minutes: number) => void;
+}) {
+    const { t } = useTranslations();
+    return (
+        <fieldset
+            className="text-left"
+            data-testid="snakes-duration"
+            data-minutes={value}
+        >
+            <legend className="mb-2 flex items-center gap-1.5 text-xs font-black text-slate-500 uppercase">
+                <Clock className="size-3.5" aria-hidden="true" />
+                {t('snakes.duration.label')}
+            </legend>
+            <div className="grid grid-cols-3 gap-2">
+                {options.map((minutes) => {
+                    const selected = value === minutes;
+                    return (
+                        <button
+                            key={minutes}
+                            type="button"
+                            disabled={disabled}
+                            aria-pressed={selected}
+                            onClick={() => onChange(minutes)}
+                            data-testid={`snakes-duration-${minutes}`}
+                            className={cn(
+                                'flex min-h-12 min-w-0 flex-col items-center justify-center rounded-2xl border-2 border-[#1f2a44] px-2 py-1.5 text-center font-display leading-tight font-black transition-colors disabled:cursor-default',
+                                minutes === 0 && 'col-span-3',
+                                selected
+                                    ? 'bg-[#1f2a44] text-white shadow-[3px_3px_0px_#FF9E44]'
+                                    : 'bg-white text-[#1f2a44] enabled:hover:bg-[#FFF9E6] disabled:opacity-60',
+                            )}
+                        >
+                            {minutes === 0 ? (
+                                <span className="flex items-center gap-1.5 text-sm">
+                                    <Flag
+                                        className="size-4 shrink-0"
+                                        aria-hidden="true"
+                                    />
+                                    {t('snakes.duration.untilFinish')}
+                                </span>
+                            ) : (
+                                <>
+                                    <span className="text-lg">{minutes}</span>
+                                    <span className="text-[10px] font-bold">
+                                        {t('snakes.duration.minutesShort')}
+                                    </span>
+                                </>
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+            <p className="mt-2 text-xs font-bold text-slate-600">
+                {value === 0
+                    ? t('snakes.duration.hintUntilFinish')
+                    : t('snakes.duration.hintTimed', { count: value })}
+            </p>
+            <p className="mt-1 inline-flex items-center gap-1 rounded-full border border-[#1f2a44] bg-[#ffd93d] px-2 py-0.5 text-[11px] font-black text-[#1f2a44]">
+                <Sparkles className="size-3" aria-hidden="true" />
+                {t('snakes.finishBonus.rule', { points: finishBonus })}
+            </p>
+            {disabled && (
+                <p className="mt-2 text-xs font-bold text-slate-500">
+                    {t('snakes.duration.host')}
+                </p>
+            )}
+        </fieldset>
+    );
+}
+
+/** mm:ss for the remaining time of a timed game. */
+export function formatClock(ms: number): string {
+    const total = Math.max(0, Math.ceil(ms / 1000));
+    const minutes = Math.floor(total / 60);
+    const seconds = total % 60;
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+/**
+ * Confirmation before leaving a running game. Points already earned stay on
+ * the account (the referee reports them when the player leaves).
+ */
+export function LeaveGameDialog({
+    open,
+    onCancel,
+    onConfirm,
+}: {
+    open: boolean;
+    onCancel: () => void;
+    onConfirm: () => void;
+}) {
+    const { t } = useTranslations();
+    if (!open) {
+        return null;
+    }
+    return (
+        <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+            data-testid="snakes-leave-dialog"
+            onClick={onCancel}
+            onKeyDown={(event) => event.key === 'Escape' && onCancel()}
+        >
+            <div
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="snakes-leave-title"
+                aria-describedby="snakes-leave-body"
+                onClick={(event) => event.stopPropagation()}
+                className="w-full max-w-sm animate-in rounded-3xl border-4 border-[#1f2a44] bg-[#FFF9E6] p-6 text-center text-[#1f2a44] shadow-[8px_8px_0px_#1f2a44] duration-200 zoom-in-95 fade-in"
+            >
+                <DoorOpen className="mx-auto size-10 text-[#FF6584]" />
+                <h2
+                    id="snakes-leave-title"
+                    className="mt-2 font-display text-xl font-black"
+                >
+                    {t('snakes.leave.title')}
+                </h2>
+                <p
+                    id="snakes-leave-body"
+                    className="mt-2 text-sm font-bold text-slate-700"
+                >
+                    {t('snakes.leave.body')}
+                </p>
+                <div className="mt-5 grid grid-cols-2 gap-2">
+                    <button
+                        type="button"
+                        autoFocus
+                        onClick={onCancel}
+                        className="min-h-11 rounded-xl border-2 border-[#1f2a44] bg-white px-3 text-sm font-black"
+                        data-testid="snakes-leave-cancel"
+                    >
+                        {t('snakes.leave.cancel')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        className="min-h-11 rounded-xl border-2 border-[#1f2a44] bg-[#FF6584] px-3 text-sm font-black text-white shadow-[2px_2px_0px_#1f2a44]"
+                        data-testid="snakes-leave-confirm"
+                    >
+                        {t('snakes.leave.confirm')}
+                    </button>
+                </div>
             </div>
         </div>
     );

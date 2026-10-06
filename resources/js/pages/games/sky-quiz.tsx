@@ -14,6 +14,7 @@ import {
     SiteNav,
     useGameBackHref,
 } from '@/components/site-nav';
+import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import {
     type SkyServerState,
@@ -313,6 +314,7 @@ export default function SkyQuiz({
     wsUrl,
 }: SkyQuizProps) {
     const { t, i18n } = useTranslations();
+    const myId = useMyUserId();
     const subjectName = useSubjectName();
     const [subjectChoice, setSubjectChoice] = useState<GameSubject>(() =>
         typeof window === 'undefined' ? 'mix' : rememberedSubject(),
@@ -1109,6 +1111,7 @@ export default function SkyQuiz({
                                     <span className="-my-1 size-9 shrink-0">
                                         <PlayerAvatar
                                             character={player.character}
+                                            userId={myId}
                                         />
                                     </span>
                                     <span className="truncate">

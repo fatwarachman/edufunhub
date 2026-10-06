@@ -250,6 +250,7 @@ export function Leaderboard({
                         <PlayerAvatar
                             character={row.character}
                             seat={row.user_id}
+                            userId={row.user_id}
                         />
                     </span>
                     <span
@@ -301,6 +302,7 @@ export function FeedItem({ action }: { action: HeistAction }) {
                 <PlayerAvatar
                     character={action.source_player.character}
                     seat={action.source_player.user_id}
+                    userId={action.source_player.user_id}
                 />
             </span>
             <span
@@ -314,6 +316,7 @@ export function FeedItem({ action }: { action: HeistAction }) {
                     <PlayerAvatar
                         character={action.target_player.character}
                         seat={action.target_player.user_id}
+                        userId={action.target_player.user_id}
                     />
                 </span>
             )}
@@ -390,6 +393,7 @@ export function Podium({ state }: { state: HeistState }) {
                             <PlayerAvatar
                                 character={p.character}
                                 seat={p.user_id}
+                                userId={p.user_id}
                             />
                             {p.rank === 1 && (
                                 <Crown
@@ -458,6 +462,7 @@ function Ranking({ ranking, you }: { ranking: HeistRanking[]; you?: number }) {
                             <PlayerAvatar
                                 character={p.character}
                                 seat={p.user_id}
+                                userId={p.user_id}
                             />
                         </span>
                         <span className="min-w-0 flex-1 truncate font-black">

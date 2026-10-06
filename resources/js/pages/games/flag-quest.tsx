@@ -5,6 +5,7 @@ import {
     rememberedSubject,
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
+import { OnlineDot } from '@/components/online-dot';
 import PlayerCharacter from '@/components/player-character';
 import { BackButton, NavButton } from '@/components/site-nav';
 import { useFlagQuestConnection } from '@/hooks/use-flag-quest-connection';
@@ -104,7 +105,7 @@ export default function FlagQuest({
     const [subject, setSubject] = useState<GameSubject>(() =>
         typeof window === 'undefined' ? 'mix' : rememberedSubject(),
     );
-    const { locale } = usePage<SharedData>().props;
+    const { locale, auth } = usePage<SharedData>().props;
     const lang = i18n.language === 'en' ? 'en' : 'id';
     const { play, muted, toggleMuted } = useGameAudio();
 
@@ -622,12 +623,15 @@ export default function FlagQuest({
             {/* Player panel */}
             <div className="fq-safe-top fq-safe-left absolute flex max-w-[calc(100vw-20px)] flex-col gap-2 sm:max-w-[330px]">
                 <div className="fq-card flex items-center gap-2.5 p-2 sm:gap-3 sm:p-2.5">
-                    <div className="relative size-12 shrink-0 overflow-hidden rounded-xl border-[2.5px] border-[#151b2e] bg-[#ffb35c] sm:size-14">
-                        <PlayerCharacter
-                            character={character}
-                            backdrop={false}
-                            className="size-full"
-                        />
+                    <div className="relative size-12 shrink-0 sm:size-14">
+                        <div className="size-full overflow-hidden rounded-xl border-[2.5px] border-[#151b2e] bg-[#ffb35c]">
+                            <PlayerCharacter
+                                character={character}
+                                backdrop={false}
+                                className="size-full"
+                            />
+                        </div>
+                        <OnlineDot userId={auth?.user?.id} />
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col gap-1">
                         <div className="flex min-w-0 items-center gap-1.5">
