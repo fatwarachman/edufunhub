@@ -1,7 +1,7 @@
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
-import { ChartColumnBig, Grid3x3 } from 'lucide-react';
+import { Cable, ChartColumnBig, Grid3x3, Network } from 'lucide-react';
 
 /** Admin sub pages of a game, shown as tabs under the game header. */
 const GAME_TABS: Record<
@@ -20,6 +20,34 @@ const GAME_TABS: Record<
             label: 'Word bank',
             href: '/admin/games/crossword/words',
             icon: Grid3x3,
+        },
+    ],
+    'order-rush': [
+        {
+            key: 'analytics',
+            label: 'Analytics',
+            href: '/admin/games/order-rush',
+            icon: ChartColumnBig,
+        },
+        {
+            key: 'sequences',
+            label: 'Sequence bank',
+            href: '/admin/games/order-rush/sequences',
+            icon: Cable,
+        },
+    ],
+    'port-sorter': [
+        {
+            key: 'analytics',
+            label: 'Analytics',
+            href: '/admin/games/port-sorter',
+            icon: ChartColumnBig,
+        },
+        {
+            key: 'sets',
+            label: 'Item bank',
+            href: '/admin/games/port-sorter/sets',
+            icon: Network,
         },
     ],
 };

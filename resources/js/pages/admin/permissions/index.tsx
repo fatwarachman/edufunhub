@@ -1,5 +1,6 @@
 import { tr } from '@/lib/admin-i18n';
 import AdminLayout from '@/layouts/admin-layout';
+import { ResponsiveTable } from '@/components/responsive-table';
 import { type Permission, type Role } from '@/types/admin';
 import { Head } from '@inertiajs/react';
 import { cn } from '@/lib/utils';
@@ -72,65 +73,63 @@ function ModuleSection({
             >
                 <div className="min-h-0 overflow-hidden">
                 <div className="border-t border-border">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-border bg-muted/30">
-                                    <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                        {tr("Permission")}
-                                    </th>
-                                    <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                        {tr("Slug")}
-                                    </th>
-                                    <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                        {tr("Assigned to Roles")}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {perms.map((perm) => {
+                    <ResponsiveTable
+                        className="[&>ul]:m-3 [&>ul]:w-auto"
+                        rows={perms}
+                        rowKey={(perm) => perm.id}
+                        columns={[
+                            {
+                                key: 'permission',
+                                header: tr("Permission"),
+                                primary: true,
+                                cell: (perm) => (
+                                    <div className="min-w-0">
+                                        <p className="font-medium text-foreground">{perm.name}</p>
+                                        {perm.description && (
+                                            <p className="text-xs font-normal text-muted-foreground">{tr(perm.description)}</p>
+                                        )}
+                                    </div>
+                                ),
+                            },
+                            {
+                                key: 'slug',
+                                header: tr("Slug"),
+                                cell: (perm) => (
+                                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-foreground [overflow-wrap:anywhere]">
+                                        {perm.slug}
+                                    </code>
+                                ),
+                            },
+                            {
+                                key: 'roles',
+                                header: tr("Assigned to Roles"),
+                                cell: (perm) => {
                                     const assignedRoles = roles.filter((r) =>
                                         r.permissions?.some((p) => p.id === perm.id),
                                     );
-
                                     return (
-                                        <tr key={perm.id} className="hover:bg-muted/30">
-                                            <td className="px-5 py-3">
-                                                <p className="font-medium text-foreground">{perm.name}</p>
-                                                {perm.description && (
-                                                    <p className="text-xs text-muted-foreground">{tr(perm.description)}</p>
-                                                )}
-                                            </td>
-                                            <td className="px-5 py-3">
-                                                <code className="rounded bg-muted px-1.5 py-0.5 text-xs text-foreground">
-                                                    {perm.slug}
-                                                </code>
-                                            </td>
-                                            <td className="px-5 py-3">
-                                                <div className="flex flex-wrap gap-1">
-                                                    {assignedRoles.length > 0 ? (
-                                                        assignedRoles.map((r) => (
-                                                            <span
-                                                                key={r.id}
-                                                                className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
-                                                            >
-                                                                <ShieldCheck className="size-2.5" />
-                                                                {r.name}
-                                                            </span>
-                                                        ))
-                                                    ) : (
-                                                        <span className="text-xs text-muted-foreground/60">
-                                                            {tr("Not assigned")}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        <div className="flex flex-wrap justify-end gap-1 [table_&]:justify-start">
+                                            {assignedRoles.length > 0 ? (
+                                                assignedRoles.map((r) => (
+                                                    <span
+                                                        key={r.id}
+                                                        className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+                                                    >
+                                                        <ShieldCheck className="size-2.5" />
+                                                        {r.name}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground/60">
+                                                    {tr("Not assigned")}
+                                                </span>
+                                            )}
+                                        </div>
                                     );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                },
+                            },
+                        ]}
+                    />
                 </div>
                 </div>
             </div>

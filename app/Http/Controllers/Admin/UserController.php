@@ -9,12 +9,16 @@ use App\Models\GameHistory;
 use App\Models\ImpersonationLog;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserAbilityAssessment;
+use App\Services\ActivityLogPresenter;
+use App\Services\Ai\AbilityProfileBuilder;
+use App\Services\Ai\AiSettings;
 use App\Services\GameAnalytics;
 use App\Services\MatchHistory;
+use App\Services\PlayerBadges;
 use App\Services\PlayerNotifications;
 use App\Services\UserAnalytics;
 use Illuminate\Http\RedirectResponse;
-use App\Services\PlayerBadges;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -130,7 +134,7 @@ class UserController extends Controller
     /**
      * Show user detail with roles and recent activity log.
      */
-    public function show(User $user, UserAnalytics $analytics, MatchHistory $matchHistory, PlayerBadges $badges): Response
+    public function show(User $user, UserAnalytics $analytics, MatchHistory $matchHistory, PlayerBadges $badges, AiSettings $aiSettings, AbilityProfileBuilder $abilityBuilder): Response
     {
         $user->load(['roles', 'playerProfile', 'connectedAccounts:id,user_id,provider,created_at']);
 
@@ -184,6 +188,11 @@ class UserController extends Controller
                     'played_at' => $play->played_at->toIso8601String(),
                 ]),
             'passPercent' => GameAnalytics::PASS_PERCENT,
+            'hasAbilityAssessment' => UserAbilityAssessment::query()
+                ->where('user_id', $user->id)
+                ->where('status', UserAbilityAssessment::DONE)
+                ->exists(),
+            'abilityAssessments' => Inertia::defer(fn (): array => AbilityAssessmentController::forUserPage($user, request()->user(), $aiSettings, $abilityBuilder)),
             'matchHistory' => $matchHistory->forUser($user),
             'matches' => $matchHistory->matchesFor($user),
             'shop' => [
@@ -236,6 +245,7 @@ class UserController extends Controller
         activity()
             ->causedBy($request->user())
             ->performedOn($user)
+            ->withProperties(ActivityLogPresenter::changes($user))
             ->log('Updated user');
 
         return redirect()->route('admin.users.show', $user)
@@ -260,6 +270,7 @@ class UserController extends Controller
         activity()
             ->causedBy($request->user())
             ->performedOn($user)
+            ->withProperties(['old' => $user->only(['name', 'email'])])
             ->log('Deleted user');
 
         return redirect()->route('admin.users.index')

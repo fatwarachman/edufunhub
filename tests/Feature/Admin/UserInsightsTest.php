@@ -6,6 +6,7 @@ use App\Models\PlayerProfile;
 use App\Models\Question;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserAbilityAssessment;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function (): void {
@@ -132,12 +133,14 @@ test('dashboard shows platform, game and demographic metrics', function (): void
         ->where('daily.29.plays', 1)
         ->where('levels.0.users', 1)
         ->where('grades.3.users', 1)
-        ->where('topPlayers.0.user_id', $kid->id)
-        ->where('topSchools.0.school', 'SDN Polisi 1')
+        ->missing('leaderboards')
         ->where('recentPlays.0.user_id', $kid->id)
         ->has('recentUsers')
         ->has('recentActivity')
-        ->has('games'));
+        ->has('games')
+        ->loadDeferredProps(fn (Assert $reload) => $reload
+            ->where('leaderboards.all.players.0.user_id', $kid->id)
+            ->where('leaderboards.all.schools.0.school', 'SDN Polisi 1')));
 });
 
 test('user detail shows profile, game history, logs and mastery', function (): void {
@@ -186,6 +189,23 @@ test('user detail works for a user without profile or games', function (): void 
         ->where('stats.accuracy', null)
         ->has('perGame', 0)
         ->where('plays.total', 0));
+});
+
+test('user detail sends every played game for the all games tab, most played first', function (): void {
+    $user = learner(['grade' => 4]);
+    foreach (['g-1', 'g-2', 'g-3', 'g-4', 'g-5', 'g-6', 'g-7'] as $index => $key) {
+        foreach (range(0, $index) as $_) {
+            learnerPlay($user, ['game_key' => $key, 'game_name' => $key]);
+        }
+    }
+
+    $this->actingAs($this->superadmin)->get("/admin/users/{$user->id}?tab=perGame")->assertInertia(fn (Assert $page) => $page
+        ->component('admin/users/show')
+        ->has('perGame', 7)
+        ->where('perGame.0.key', 'g-7')
+        ->where('perGame.0.plays', 7)
+        ->where('perGame.6.key', 'g-1')
+        ->missing('abilityAssessments'));
 });
 
 test('profile age helper stays consistent with demographics', function (): void {
@@ -296,4 +316,22 @@ test('question statistics are limited to super admins', function (): void {
     $question = Question::query()->firstOrFail();
 
     $this->actingAs(User::factory()->create())->get("/admin/questions/{$question->id}")->assertForbidden();
+});
+
+test('user detail flags whether a finished AI ability analysis exists', function (): void {
+    $user = User::factory()->create();
+    $flag = fn (): bool => $this->actingAs($this->superadmin)->get("/admin/users/{$user->id}")->inertiaProps('hasAbilityAssessment');
+
+    expect($flag())->toBeFalse();
+
+    UserAbilityAssessment::factory()->for($user)->create();
+    UserAbilityAssessment::factory()->for($user)->failed()->create();
+    UserAbilityAssessment::factory()->done()->create();
+    expect($flag())->toBeFalse();
+
+    UserAbilityAssessment::factory()->for($user)->done()->create();
+    $this->actingAs($this->superadmin)->get("/admin/users/{$user->id}")->assertInertia(fn (Assert $page) => $page
+        ->component('admin/users/show')
+        ->where('hasAbilityAssessment', true)
+        ->missing('abilityAssessments'));
 });

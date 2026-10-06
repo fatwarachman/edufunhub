@@ -1,5 +1,6 @@
 import { buttonPrimary } from '@/components/admin/ads/shared';
 import { Panel, fieldClass } from '@/components/admin/game-stats';
+import { ResponsiveTable } from '@/components/responsive-table';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { router, useForm } from '@inertiajs/react';
@@ -175,209 +176,182 @@ function PlacementRules({
                 </button>
             }
         >
-            <div className="-mx-5 -my-5 overflow-x-auto">
-                <table className="w-full min-w-[720px] text-sm">
-                    <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
-                        <tr>
-                            <th className="px-5 py-3 font-medium">
-                                {tr('Placement')}
-                            </th>
-                            <th className="px-3 py-3 font-medium">
-                                {tr('Shown')}
-                            </th>
-                            <th className="px-3 py-3 font-medium">
-                                {tr('Display')}
-                            </th>
-                            <th className="px-3 py-3 font-medium">
-                                {tr('Every')}
-                            </th>
-                            <th className="px-5 py-3 font-medium">
-                                {tr('Creatives in rotation')}
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                        {Object.entries(data.placements).map(([key, rule]) => {
-                            const fixed =
-                                key.startsWith('jingle.') ||
-                                key === 'shop.item';
-                            const rotating = !fixed && rule.mode === 'rotate';
-                            return (
-                                <tr
-                                    key={key}
-                                    className={cn(
-                                        !rule.is_enabled && 'bg-muted/30',
-                                    )}
-                                    data-testid={`ads-rule-${key}`}
+            <ResponsiveTable
+                testId="ads-rules"
+                rows={Object.entries(data.placements).map(([key, rule]) => {
+                    const fixed =
+                        key.startsWith('jingle.') || key === 'shop.item';
+                    return {
+                        key,
+                        rule,
+                        fixed,
+                        rotating: !fixed && rule.mode === 'rotate',
+                    };
+                })}
+                rowKey={(row) => row.key}
+                rowClassName={(row) =>
+                    cn(!row.rule.is_enabled && 'bg-muted/30')
+                }
+                columns={[
+                    {
+                        key: 'placement',
+                        header: tr('Placement'),
+                        primary: true,
+                        cell: ({ key }) => (
+                            <div
+                                className="min-w-0"
+                                data-testid={`ads-rule-${key}`}
+                            >
+                                <p className="font-medium text-foreground">
+                                    {labels[key] ?? key}
+                                </p>
+                                <p className="font-mono text-xs font-normal text-muted-foreground">
+                                    {key}
+                                </p>
+                            </div>
+                        ),
+                    },
+                    {
+                        key: 'shown',
+                        header: tr('Shown'),
+                        cell: ({ key, rule }) => (
+                            <label className="inline-flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    checked={rule.is_enabled}
+                                    onChange={(event) =>
+                                        update(key, {
+                                            is_enabled: event.target.checked,
+                                        })
+                                    }
+                                    className="size-4 rounded border-input"
+                                    data-testid={`ads-rule-enabled-${key}`}
+                                />
+                                <span className="text-xs text-muted-foreground">
+                                    {rule.is_enabled ? tr('On') : tr('Hidden')}
+                                </span>
+                            </label>
+                        ),
+                    },
+                    {
+                        key: 'display',
+                        header: tr('Display'),
+                        cell: ({ key, rule, fixed }) =>
+                            fixed ? (
+                                <span className="text-xs text-muted-foreground">
+                                    {key === 'shop.item'
+                                        ? tr('Per item')
+                                        : tr('Once per moment')}
+                                </span>
+                            ) : (
+                                <div
+                                    className="inline-flex rounded-lg border border-border p-0.5"
+                                    role="radiogroup"
                                 >
-                                    <td className="px-5 py-2.5">
-                                        <p className="font-medium text-foreground">
-                                            {labels[key] ?? key}
-                                        </p>
-                                        <p className="font-mono text-xs text-muted-foreground">
-                                            {key}
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-2.5">
-                                        <label className="inline-flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={rule.is_enabled}
-                                                onChange={(event) =>
-                                                    update(key, {
-                                                        is_enabled:
-                                                            event.target
-                                                                .checked,
-                                                    })
+                                    {(['static', 'rotate'] as const).map(
+                                        (mode) => (
+                                            <button
+                                                key={mode}
+                                                type="button"
+                                                role="radio"
+                                                aria-checked={
+                                                    rule.mode === mode
                                                 }
-                                                className="size-4 rounded border-input"
-                                                data-testid={`ads-rule-enabled-${key}`}
-                                            />
-                                            <span className="text-xs text-muted-foreground">
-                                                {rule.is_enabled
-                                                    ? tr('On')
-                                                    : tr('Hidden')}
-                                            </span>
-                                        </label>
-                                    </td>
-                                    <td className="px-3 py-2.5">
-                                        {fixed ? (
-                                            <span className="text-xs text-muted-foreground">
-                                                {key === 'shop.item'
-                                                    ? tr('Per item')
-                                                    : tr('Once per moment')}
-                                            </span>
-                                        ) : (
-                                            <div
-                                                className="inline-flex rounded-lg border border-border p-0.5"
-                                                role="radiogroup"
+                                                disabled={!rule.is_enabled}
+                                                onClick={() =>
+                                                    update(key, { mode })
+                                                }
+                                                data-testid={`ads-rule-mode-${key}-${mode}`}
+                                                className={cn(
+                                                    'inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-xs font-medium disabled:opacity-50',
+                                                    rule.mode === mode
+                                                        ? 'bg-primary text-primary-foreground'
+                                                        : 'text-muted-foreground hover:text-foreground',
+                                                )}
                                             >
-                                                {(
-                                                    [
-                                                        'static',
-                                                        'rotate',
-                                                    ] as const
-                                                ).map((mode) => (
-                                                    <button
-                                                        key={mode}
-                                                        type="button"
-                                                        role="radio"
-                                                        aria-checked={
-                                                            rule.mode === mode
-                                                        }
-                                                        disabled={
-                                                            !rule.is_enabled
-                                                        }
-                                                        onClick={() =>
-                                                            update(key, {
-                                                                mode,
-                                                            })
-                                                        }
-                                                        data-testid={`ads-rule-mode-${key}-${mode}`}
-                                                        className={cn(
-                                                            'inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-xs font-medium disabled:opacity-50',
-                                                            rule.mode === mode
-                                                                ? 'bg-primary text-primary-foreground'
-                                                                : 'text-muted-foreground hover:text-foreground',
-                                                        )}
-                                                    >
-                                                        {mode === 'rotate' && (
-                                                            <Repeat className="size-3" />
-                                                        )}
-                                                        {mode === 'static'
-                                                            ? tr('Static')
-                                                            : tr('Rotating')}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </td>
-                                    {fixed ? (
-                                        <td
-                                            colSpan={2}
-                                            className="px-3 py-2.5 text-xs text-muted-foreground"
-                                        >
-                                            —
-                                        </td>
-                                    ) : (
-                                        <>
-                                            <td className="px-3 py-2.5">
-                                                <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                                                    <input
-                                                        type="number"
-                                                        min={3}
-                                                        max={120}
-                                                        value={
-                                                            rule.rotate_seconds
-                                                        }
-                                                        disabled={!rotating}
-                                                        onChange={(event) =>
-                                                            update(key, {
-                                                                rotate_seconds:
-                                                                    Number(
-                                                                        event
-                                                                            .target
-                                                                            .value,
-                                                                    ),
-                                                            })
-                                                        }
-                                                        className={cn(
-                                                            fieldClass,
-                                                            'h-8 w-20 disabled:opacity-40',
-                                                        )}
-                                                        aria-label={tr(
-                                                            'Seconds',
-                                                        )}
-                                                    />
-                                                    {tr('sec')}
-                                                </label>
-                                            </td>
-                                            <td className="px-5 py-2.5">
-                                                <select
-                                                    value={rule.max_creatives}
-                                                    disabled={!rotating}
-                                                    onChange={(event) =>
-                                                        update(key, {
-                                                            max_creatives:
-                                                                Number(
-                                                                    event.target
-                                                                        .value,
-                                                                ),
-                                                        })
-                                                    }
-                                                    className={cn(
-                                                        fieldClass,
-                                                        'h-8 disabled:opacity-40',
-                                                    )}
-                                                    aria-label={tr(
-                                                        'Creatives in rotation',
-                                                    )}
-                                                >
-                                                    {Array.from(
-                                                        {
-                                                            length:
-                                                                maxCreatives -
-                                                                1,
-                                                        },
-                                                        (_, i) => i + 2,
-                                                    ).map((n) => (
-                                                        <option
-                                                            key={n}
-                                                            value={n}
-                                                        >
-                                                            {tr('up to')} {n}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </td>
-                                        </>
+                                                {mode === 'rotate' && (
+                                                    <Repeat className="size-3" />
+                                                )}
+                                                {mode === 'static'
+                                                    ? tr('Static')
+                                                    : tr('Rotating')}
+                                            </button>
+                                        ),
                                     )}
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                            ),
+                    },
+                    {
+                        key: 'every',
+                        header: tr('Every'),
+                        cell: ({ key, rule, fixed, rotating }) =>
+                            fixed ? (
+                                <span className="text-xs text-muted-foreground">
+                                    —
+                                </span>
+                            ) : (
+                                <label className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <input
+                                        type="number"
+                                        min={3}
+                                        max={120}
+                                        value={rule.rotate_seconds}
+                                        disabled={!rotating}
+                                        onChange={(event) =>
+                                            update(key, {
+                                                rotate_seconds: Number(
+                                                    event.target.value,
+                                                ),
+                                            })
+                                        }
+                                        className={cn(
+                                            fieldClass,
+                                            'h-8 w-20 disabled:opacity-40',
+                                        )}
+                                        aria-label={tr('Seconds')}
+                                    />
+                                    {tr('sec')}
+                                </label>
+                            ),
+                    },
+                    {
+                        key: 'creatives',
+                        header: tr('Creatives in rotation'),
+                        cell: ({ key, rule, fixed, rotating }) =>
+                            fixed ? (
+                                <span className="text-xs text-muted-foreground">
+                                    —
+                                </span>
+                            ) : (
+                                <select
+                                    value={rule.max_creatives}
+                                    disabled={!rotating}
+                                    onChange={(event) =>
+                                        update(key, {
+                                            max_creatives: Number(
+                                                event.target.value,
+                                            ),
+                                        })
+                                    }
+                                    className={cn(
+                                        fieldClass,
+                                        'h-8 disabled:opacity-40',
+                                    )}
+                                    aria-label={tr('Creatives in rotation')}
+                                >
+                                    {Array.from(
+                                        { length: maxCreatives - 1 },
+                                        (_, i) => i + 2,
+                                    ).map((n) => (
+                                        <option key={n} value={n}>
+                                            {tr('up to')} {n}
+                                        </option>
+                                    ))}
+                                </select>
+                            ),
+                    },
+                ]}
+            />
             {Object.keys(errors).length > 0 && (
                 <p className="mt-6 text-sm text-destructive">
                     {tr(Object.values(errors)[0])}

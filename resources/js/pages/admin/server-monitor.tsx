@@ -1,11 +1,11 @@
 import { EmptyState, formatNumber, Panel } from '@/components/admin/game-stats';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, router, usePoll } from '@inertiajs/react';
 import {
     Box,
-    ChevronDown,
     Cpu,
     Gamepad2,
     HardDrive,
@@ -417,280 +417,127 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                     {!containers.available ? (
                         <Unavailable what={tr('Container metrics')} />
                     ) : (
-                        <>
-                            <ContainerAccordion items={containers.items} />
-                            <div className="-mx-5 -my-4 hidden overflow-x-auto md:block">
-                                <table
-                                    className="w-full min-w-[760px] text-sm"
-                                    data-testid="container-table"
-                                >
-                                    <thead>
-                                        <tr className="border-b border-border text-left text-xs text-muted-foreground uppercase">
-                                            <th className="px-5 py-3 font-semibold">
-                                                {tr('Container')}
-                                            </th>
-                                            <th className="px-3 py-3 font-semibold">
-                                                {tr('State')}
-                                            </th>
-                                            <th className="w-40 px-3 py-3 font-semibold">
-                                                {tr('CPU')}
-                                            </th>
-                                            <th className="w-48 px-3 py-3 font-semibold">
-                                                {tr('Memory')}
-                                            </th>
-                                            <th className="px-3 py-3 font-semibold">
-                                                {tr('Net rx / tx')}
-                                            </th>
-                                            <th className="px-5 py-3 text-right font-semibold">
-                                                {tr('PIDs')}
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {containers.items.map((c) => (
-                                            <tr
-                                                key={c.id}
-                                                className="border-b border-border last:border-0"
-                                            >
-                                                <td className="px-5 py-3">
-                                                    <div className="flex min-w-0 items-center gap-2">
-                                                        <span className="truncate font-medium text-foreground">
-                                                            {c.name}
-                                                        </span>
-                                                        {c.is_game && (
-                                                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                                                {tr('game')}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <span className="block truncate text-xs text-muted-foreground">
-                                                        {c.image}
+                        <ResponsiveTable
+                            testId="container-table"
+                            rows={containers.items}
+                            rowKey={(c) => c.id}
+                            columns={[
+                                {
+                                    key: 'container',
+                                    header: tr('Container'),
+                                    primary: true,
+                                    cell: (c) => (
+                                        <div className="min-w-0">
+                                            <div className="flex min-w-0 items-center gap-2">
+                                                <span
+                                                    className={cn(
+                                                        'size-2 shrink-0 rounded-full',
+                                                        c.state === 'running'
+                                                            ? 'bg-emerald-500'
+                                                            : 'bg-red-500',
+                                                    )}
+                                                    aria-hidden="true"
+                                                />
+                                                <span className="font-medium [overflow-wrap:anywhere] text-foreground">
+                                                    {c.name}
+                                                </span>
+                                                {c.is_game && (
+                                                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                                        {tr('game')}
                                                     </span>
-                                                </td>
-                                                <td className="px-3 py-3">
-                                                    <StateBadge
-                                                        state={c.state}
-                                                    />
-                                                    <span className="mt-1 block text-xs text-muted-foreground">
-                                                        {c.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-3 py-3">
-                                                    <div className="flex flex-col gap-1.5">
-                                                        <span className="font-semibold text-foreground tabular-nums">
-                                                            {c.cpu_percent ===
-                                                            null
-                                                                ? '—'
-                                                                : `${c.cpu_percent}%`}
-                                                        </span>
-                                                        {c.cpu_percent !==
-                                                            null && (
-                                                            <Meter
-                                                                percent={
-                                                                    c.cpu_percent
-                                                                }
-                                                            />
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="px-3 py-3">
-                                                    <div className="flex flex-col gap-1.5">
-                                                        <span className="text-foreground tabular-nums">
-                                                            {c.memory
-                                                                ? `${formatBytes(c.memory.used)} / ${formatBytes(c.memory.total)}`
-                                                                : '—'}
-                                                        </span>
-                                                        {c.memory && (
-                                                            <Meter
-                                                                percent={
-                                                                    c.memory
-                                                                        .percent
-                                                                }
-                                                            />
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="px-3 py-3 text-muted-foreground tabular-nums">
-                                                    {c.network
-                                                        ? `${formatBytes(c.network.rx_bytes)} / ${formatBytes(c.network.tx_bytes)}`
-                                                        : '—'}
-                                                </td>
-                                                <td className="px-5 py-3 text-right text-foreground tabular-nums">
-                                                    {c.pids ?? '—'}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </>
-                    )}
-                </Panel>
-            </div>
-        </>
-    );
-}
-
-function ContainerAccordion({ items }: { items: ContainerRow[] }) {
-    const [openIds, setOpenIds] = useState<Set<string>>(() => new Set());
-
-    const toggle = (id: string) =>
-        setOpenIds((current) => {
-            const next = new Set(current);
-            if (next.has(id)) {
-                next.delete(id);
-            } else {
-                next.add(id);
-            }
-            return next;
-        });
-
-    return (
-        <ul
-            className="-mx-5 -my-4 divide-y divide-border md:hidden"
-            data-testid="container-accordion"
-        >
-            {items.map((c) => {
-                const open = openIds.has(c.id);
-                const panelId = `container-panel-${c.id}`;
-                return (
-                    <li key={c.id}>
-                        <button
-                            type="button"
-                            onClick={() => toggle(c.id)}
-                            aria-expanded={open}
-                            aria-controls={panelId}
-                            className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
-                        >
-                            <span
-                                className={cn(
-                                    'size-2 shrink-0 rounded-full',
-                                    c.state === 'running'
-                                        ? 'bg-emerald-500'
-                                        : 'bg-red-500',
-                                )}
-                                aria-hidden="true"
-                            />
-                            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                                <span className="flex min-w-0 items-center gap-2">
-                                    <span className="truncate text-sm font-medium text-foreground">
-                                        {c.name}
-                                    </span>
-                                    {c.is_game && (
-                                        <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                            {tr('game')}
-                                        </span>
-                                    )}
-                                </span>
-                                <span className="truncate text-xs text-muted-foreground tabular-nums">
-                                    {tr('CPU')}{' '}
-                                    {c.cpu_percent === null
-                                        ? '—'
-                                        : `${c.cpu_percent}%`}{' '}
-                                    {tr('· RAM')} {formatBytes(c.memory?.used)}
-                                </span>
-                            </span>
-                            <ChevronDown
-                                className={cn(
-                                    'size-4 shrink-0 text-muted-foreground transition-transform duration-300 ease-out motion-reduce:transition-none',
-                                    open && 'rotate-180',
-                                )}
-                                aria-hidden="true"
-                            />
-                        </button>
-                        <div
-                            id={panelId}
-                            className={cn(
-                                'grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none',
-                                open
-                                    ? 'grid-rows-[1fr] opacity-100'
-                                    : 'grid-rows-[0fr] opacity-0',
-                            )}
-                            aria-hidden={!open}
-                            inert={!open}
-                        >
-                            <div className="min-h-0 overflow-hidden">
-                                <dl className="flex flex-col gap-3 px-5 pt-1 pb-4 text-sm">
-                                    <AccordionRow label={tr('State')}>
-                                        <span className="flex flex-col items-end gap-1">
+                                                )}
+                                            </div>
+                                            <span className="block text-xs font-normal [overflow-wrap:anywhere] text-muted-foreground">
+                                                {c.image}
+                                            </span>
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: 'state',
+                                    header: tr('State'),
+                                    summary: true,
+                                    cell: (c) => (
+                                        <span className="inline-flex flex-col items-start gap-1">
                                             <StateBadge state={c.state} />
                                             <span className="text-xs text-muted-foreground">
                                                 {c.status}
                                             </span>
                                         </span>
-                                    </AccordionRow>
-                                    <AccordionRow label={tr('Image')}>
-                                        <span className="truncate text-foreground">
-                                            {c.image}
-                                        </span>
-                                    </AccordionRow>
-                                    <div className="flex flex-col gap-1.5">
-                                        <AccordionRow label={tr('CPU')}>
+                                    ),
+                                },
+                                {
+                                    key: 'cpu',
+                                    header: tr('CPU'),
+                                    headerClassName: 'w-40',
+                                    cell: (c) => (
+                                        <div className="flex w-full min-w-24 flex-col gap-1.5">
                                             <span className="font-semibold text-foreground tabular-nums">
                                                 {c.cpu_percent === null
                                                     ? '—'
                                                     : `${c.cpu_percent}%`}
                                             </span>
-                                        </AccordionRow>
-                                        {c.cpu_percent !== null && (
-                                            <Meter percent={c.cpu_percent} />
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col gap-1.5">
-                                        <AccordionRow label={tr('Memory')}>
+                                            {c.cpu_percent !== null && (
+                                                <Meter
+                                                    percent={c.cpu_percent}
+                                                />
+                                            )}
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: 'memory',
+                                    header: tr('Memory'),
+                                    headerClassName: 'w-48',
+                                    cell: (c) => (
+                                        <div className="flex w-full min-w-24 flex-col gap-1.5">
                                             <span className="text-foreground tabular-nums">
                                                 {c.memory
                                                     ? `${formatBytes(c.memory.used)} / ${formatBytes(c.memory.total)}`
                                                     : '—'}
                                             </span>
-                                        </AccordionRow>
-                                        {c.memory && (
-                                            <Meter percent={c.memory.percent} />
-                                        )}
-                                    </div>
-                                    <AccordionRow label={tr('Net rx / tx')}>
-                                        <span className="text-foreground tabular-nums">
-                                            {c.network
-                                                ? `${formatBytes(c.network.rx_bytes)} / ${formatBytes(c.network.tx_bytes)}`
-                                                : '—'}
-                                        </span>
-                                    </AccordionRow>
-                                    <AccordionRow label={tr('Disk r / w')}>
-                                        <span className="text-foreground tabular-nums">
-                                            {c.block
-                                                ? `${formatBytes(c.block.read_bytes)} / ${formatBytes(c.block.write_bytes)}`
-                                                : '—'}
-                                        </span>
-                                    </AccordionRow>
-                                    <AccordionRow label={tr('PIDs')}>
-                                        <span className="text-foreground tabular-nums">
-                                            {c.pids ?? '—'}
-                                        </span>
-                                    </AccordionRow>
-                                </dl>
-                            </div>
-                        </div>
-                    </li>
-                );
-            })}
-        </ul>
-    );
-}
-
-function AccordionRow({
-    label,
-    children,
-}: {
-    label: string;
-    children: ReactNode;
-}) {
-    return (
-        <div className="flex min-w-0 items-start justify-between gap-4">
-            <dt className="shrink-0 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                {tr(label)}
-            </dt>
-            <dd className="flex min-w-0 justify-end text-right">{children}</dd>
-        </div>
+                                            {c.memory && (
+                                                <Meter
+                                                    percent={c.memory.percent}
+                                                />
+                                            )}
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: 'network',
+                                    header: tr('Net rx / tx'),
+                                    cellClassName:
+                                        'text-muted-foreground tabular-nums',
+                                    cell: (c) =>
+                                        c.network
+                                            ? `${formatBytes(c.network.rx_bytes)} / ${formatBytes(c.network.tx_bytes)}`
+                                            : '—',
+                                },
+                                {
+                                    key: 'disk',
+                                    header: tr('Disk r / w'),
+                                    cellClassName:
+                                        'text-muted-foreground tabular-nums',
+                                    cell: (c) =>
+                                        c.block
+                                            ? `${formatBytes(c.block.read_bytes)} / ${formatBytes(c.block.write_bytes)}`
+                                            : '—',
+                                },
+                                {
+                                    key: 'pids',
+                                    header: tr('PIDs'),
+                                    align: 'right',
+                                    cellClassName:
+                                        'text-foreground tabular-nums',
+                                    cell: (c) => c.pids ?? '—',
+                                },
+                            ]}
+                        />
+                    )}
+                </Panel>
+            </div>
+        </>
     );
 }
 

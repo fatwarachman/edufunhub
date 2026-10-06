@@ -5,14 +5,7 @@ import {
     gameLabel,
     rateTone,
 } from '@/components/admin/game-stats';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -296,120 +289,103 @@ function GamesTable({ games }: { games: GameRow[] }) {
                 : { key, desc: key !== 'name' },
         );
 
+    const header = (column: (typeof COLUMNS)[number]) => {
+        const active = sort.key === column.key;
+        const Icon = active ? (sort.desc ? ArrowDown : ArrowUp) : ArrowUpDown;
+        return (
+            <button
+                type="button"
+                onClick={() => toggle(column.key)}
+                aria-label={`${tr('Sort by')} ${tr(column.label)}`}
+                aria-pressed={active}
+                className={cn(
+                    'inline-flex items-center gap-1 rounded-md text-[11px] font-semibold tracking-wide text-muted-foreground uppercase hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                    active && 'text-foreground',
+                )}
+            >
+                {tr(column.label)}
+                <Icon
+                    className={cn('size-3.5', !active && 'opacity-80')}
+                    aria-hidden="true"
+                />
+            </button>
+        );
+    };
+
+    const cells: Record<SortKey, (game: GameRow) => ReactNode> = {
+        name: (game) => (
+            <span
+                className="flex min-w-0 items-center gap-3"
+                data-testid={`admin-game-row-${game.key}`}
+            >
+                <GameMark accent={game.accent} size="sm" />
+                <span className="flex min-w-0 flex-col">
+                    <span className="truncate font-semibold text-foreground">
+                        {gameLabel(game.key)}
+                    </span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                        {game.tracked
+                            ? tr('Server-scored')
+                            : tr('Practice demo')}
+                    </span>
+                </span>
+            </span>
+        ),
+        plays: (game) => formatNumber(game.plays),
+        players: (game) => formatNumber(game.players),
+        success_rate: (game) => (
+            <span className={tableTone(game.success_rate)}>
+                {formatPercent(game.success_rate)}
+            </span>
+        ),
+        accuracy: (game) => (
+            <span className={tableTone(game.accuracy)}>
+                {formatPercent(game.accuracy)}
+            </span>
+        ),
+        points: (game) => formatNumber(game.points),
+        questions: (game) =>
+            game.tracked ? formatNumber(game.questions) : '—',
+        last_played_at: (game) => (
+            <span className="flex items-center justify-between gap-2">
+                <LastPlayed value={game.last_played_at} />
+                <ChevronRight
+                    className="size-4 shrink-0 text-foreground/50"
+                    aria-hidden="true"
+                />
+            </span>
+        ),
+    };
+
     return (
-        <div
-            className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
-            data-testid="admin-games-table"
-        >
-            <Table className="min-w-[780px]">
-                <TableHeader>
-                    <TableRow className="bg-muted/40 hover:bg-muted/40">
-                        {COLUMNS.map((column) => {
-                            const active = sort.key === column.key;
-                            const Icon = active
-                                ? sort.desc
-                                    ? ArrowDown
-                                    : ArrowUp
-                                : ArrowUpDown;
-                            return (
-                                <TableHead
-                                    key={column.key}
-                                    aria-sort={
-                                        active
-                                            ? sort.desc
-                                                ? 'descending'
-                                                : 'ascending'
-                                            : 'none'
-                                    }
-                                    className={cn(
-                                        'h-11 px-3 first:pl-4',
-                                        column.numeric && 'text-right',
-                                    )}
-                                >
-                                    <button
-                                        type="button"
-                                        onClick={() => toggle(column.key)}
-                                        className={cn(
-                                            'inline-flex items-center gap-1 rounded-md text-[11px] font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-                                            active && 'text-foreground',
-                                        )}
-                                    >
-                                        {tr(column.label)}
-                                        <Icon
-                                            className={cn(
-                                                'size-3.5',
-                                                !active && 'opacity-80',
-                                            )}
-                                            aria-hidden="true"
-                                        />
-                                    </button>
-                                </TableHead>
-                            );
-                        })}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {rows.map((game) => (
-                        <TableRow
-                            key={game.key}
-                            className="cursor-pointer"
-                            onClick={() =>
-                                router.visit(`/admin/games/${game.key}`)
-                            }
-                            data-testid={`admin-game-row-${game.key}`}
-                        >
-                            <TableCell className="max-w-56 py-3 pr-3 pl-4">
-                                <Link
-                                    href={`/admin/games/${game.key}`}
-                                    onClick={(event) => event.stopPropagation()}
-                                    className="flex min-w-0 items-center gap-3 rounded-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                >
-                                    <GameMark accent={game.accent} size="sm" />
-                                    <span className="flex min-w-0 flex-col">
-                                        <span className="truncate font-semibold text-foreground">
-                                            {gameLabel(game.key)}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">
-                                            {game.tracked
-                                                ? tr('Server-scored')
-                                                : tr('Practice demo')}
-                                        </span>
-                                    </span>
-                                </Link>
-                            </TableCell>
-                            <NumberCell>{formatNumber(game.plays)}</NumberCell>
-                            <NumberCell>
-                                {formatNumber(game.players)}
-                            </NumberCell>
-                            <NumberCell>
-                                <span className={tableTone(game.success_rate)}>
-                                    {formatPercent(game.success_rate)}
-                                </span>
-                            </NumberCell>
-                            <NumberCell>
-                                <span className={tableTone(game.accuracy)}>
-                                    {formatPercent(game.accuracy)}
-                                </span>
-                            </NumberCell>
-                            <NumberCell>{formatNumber(game.points)}</NumberCell>
-                            <NumberCell>
-                                {game.tracked
-                                    ? formatNumber(game.questions)
-                                    : '—'}
-                            </NumberCell>
-                            <TableCell className="py-3 pr-4 pl-3">
-                                <span className="flex items-center justify-between gap-2">
-                                    <LastPlayed value={game.last_played_at} />
-                                    <ChevronRight
-                                        className="size-4 shrink-0 text-foreground/50"
-                                        aria-hidden="true"
-                                    />
-                                </span>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <ResponsiveTable
+                testId="admin-games-table"
+                className="[&>ul]:rounded-none [&>ul]:border-0"
+                rows={rows}
+                rowKey={(game) => game.key}
+                onRowClick={(game) => router.visit(`/admin/games/${game.key}`)}
+                rowAriaLabel={(game) => `${tr('Open')} ${gameLabel(game.key)}`}
+                columns={COLUMNS.map((column) => ({
+                    key: column.key,
+                    header: header(column),
+                    label: tr(column.label),
+                    align: column.numeric ? 'right' : 'left',
+                    primary: column.key === 'name',
+                    summary: column.key === 'plays',
+                    headerClassName: cn(
+                        'h-11 bg-muted/40 whitespace-normal',
+                        sort.key === column.key && 'text-foreground',
+                    ),
+                    cellClassName: cn(
+                        'py-3',
+                        column.key === 'name' && 'max-w-56',
+                        column.numeric &&
+                            'font-medium text-foreground tabular-nums',
+                    ),
+                    cell: cells[column.key],
+                }))}
+            />
         </div>
     );
 }
@@ -454,14 +430,6 @@ function tableTone(value: number | null): string {
         return 'text-amber-700 dark:text-amber-400';
     }
     return 'text-red-700 dark:text-red-400';
-}
-
-function NumberCell({ children }: { children: ReactNode }) {
-    return (
-        <TableCell className="px-3 py-3 text-right font-medium text-foreground tabular-nums">
-            {children}
-        </TableCell>
-    );
 }
 
 function Metric({

@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\BulkQuestionRequest;
 use App\Http\Requests\Admin\QuestionRequest;
 use App\Models\Question;
 use App\Models\Subject;
+use App\Services\ActivityLogPresenter;
 use App\Services\PointRules;
 use App\Services\QuestionAnalytics;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -181,7 +182,7 @@ class QuestionController extends Controller
 
         $question->update([...$data, 'updated_by' => $request->user()->id]);
 
-        activity()->causedBy($request->user())->performedOn($question)->log('Updated question');
+        activity()->causedBy($request->user())->performedOn($question)->withProperties(ActivityLogPresenter::changes($question))->log('Updated question');
 
         return redirect()->route('admin.questions.index', ['subject' => $question->subject])->with('success', __('Question updated.'));
     }
@@ -190,7 +191,7 @@ class QuestionController extends Controller
     {
         $question->update(['is_active' => ! $question->is_active]);
 
-        activity()->causedBy($request->user())->performedOn($question)->log($question->is_active ? 'Activated question' : 'Deactivated question');
+        activity()->causedBy($request->user())->performedOn($question)->withProperties(ActivityLogPresenter::changes($question))->log($question->is_active ? 'Activated question' : 'Deactivated question');
 
         return back()->with('success', $question->is_active ? __('Question activated.') : __('Question deactivated.'));
     }
@@ -219,7 +220,7 @@ class QuestionController extends Controller
 
     public function destroy(Request $request, Question $question): RedirectResponse
     {
-        activity()->causedBy($request->user())->performedOn($question)->log('Deleted question');
+        activity()->causedBy($request->user())->performedOn($question)->withProperties(ActivityLogPresenter::snapshotOf($question))->log('Deleted question');
         $question->delete();
 
         return redirect()->route('admin.questions.index', ['subject' => $question->subject])->with('success', __('Question deleted.'));

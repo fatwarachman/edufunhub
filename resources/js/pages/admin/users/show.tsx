@@ -1,3 +1,13 @@
+import {
+    AbilityAssessmentPanel,
+    type AbilityAssessments,
+    AbilityAssessmentSkeleton,
+} from '@/components/admin/ability-assessment';
+import {
+    ActivityEventBadge,
+    type ActivityProperties,
+    activitySummary,
+} from '@/components/admin/activity-entry';
 import { type Paginated, SimplePagination } from '@/components/admin/admin-kit';
 import {
     axisTick,
@@ -22,15 +32,18 @@ import {
 import { MatchCard, type MatchRow } from '@/components/admin/match-history';
 import { BadgeMedal, type BadgeProgress } from '@/components/badges';
 import PlayerCharacter from '@/components/player-character';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLocale, tr } from '@/lib/admin-i18n';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { cn } from '@/lib/utils';
-import { Head, Link, router } from '@inertiajs/react';
+import { Deferred, Head, Link, router } from '@inertiajs/react';
 import {
     Activity,
     ArrowLeft,
+    ArrowRight,
     BookOpenCheck,
+    BrainCircuit,
     Cake,
     Calendar,
     CircleCheck,
@@ -57,7 +70,7 @@ import {
     Trophy,
     UserRound,
 } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {
     Bar,
     BarChart,
@@ -175,6 +188,7 @@ interface Props {
         by_self: boolean;
         causer_name: string | null;
         changes: { field: string; old: unknown; new: unknown }[];
+        properties: ActivityProperties;
         created_at: string | null;
     }[];
     impersonationLogs: {
@@ -193,6 +207,8 @@ interface Props {
         next_page_url: string | null;
     };
     passPercent: number;
+    hasAbilityAssessment: boolean;
+    abilityAssessments?: AbilityAssessments;
     matchHistory: {
         summary: {
             matches: number;
@@ -244,7 +260,31 @@ interface Props {
     };
 }
 
-type Tab = 'games' | 'matches' | 'activity' | 'logins';
+type Tab = 'games' | 'perGame' | 'ability' | 'matches' | 'activity' | 'logins';
+
+const TABS: Tab[] = [
+    'games',
+    'perGame',
+    'ability',
+    'matches',
+    'activity',
+    'logins',
+];
+
+const PER_GAME_PREVIEW = 5;
+
+function initialTab(): Tab {
+    if (typeof window === 'undefined') return 'games';
+    const value = new URLSearchParams(window.location.search).get('tab');
+    return TABS.includes(value as Tab) ? (value as Tab) : 'games';
+}
+
+function writeTabToUrl(tab: Tab): void {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('tab') === tab) return;
+    url.searchParams.set('tab', tab);
+    window.history.replaceState(window.history.state, '', url);
+}
 
 function formatDate(
     value: string | null | undefined,
@@ -277,7 +317,30 @@ export default function ShowUser(props: Props) {
     const subjectLabel = useSubjectLabel();
     const { user, stats } = props;
     const profile = user.player_profile;
-    const [tab, setTab] = useState<Tab>('games');
+    const [tab, setTabState] = useState<Tab>(initialTab);
+    const tabsRef = useRef<HTMLElement>(null);
+    const setTab = (next: Tab) => {
+        setTabState(next);
+        writeTabToUrl(next);
+    };
+    useEffect(
+        () =>
+            // Deferred props load through a partial reload that rewrites the
+            // URL, so re-apply the open tab after every Inertia navigation.
+            router.on('navigate', () => writeTabToUrl(tab)),
+        [tab],
+    );
+    const [scrollRequest, setScrollRequest] = useState(0);
+    const openTab = (next: Tab) => {
+        setTab(next);
+        setScrollRequest((count) => count + 1);
+    };
+    useEffect(() => {
+        // Scroll after the new tab has rendered so the target is not clamped
+        // to the shorter page of the previous tab.
+        if (scrollRequest === 0) return;
+        tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, [scrollRequest]);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const suspended = user.status === 'suspended';
@@ -310,11 +373,12 @@ export default function ShowUser(props: Props) {
                                 'linear-gradient(120deg, color-mix(in oklab, var(--color-bubble-orange) 55%, transparent), color-mix(in oklab, var(--color-bubble-purple) 45%, transparent) 55%, color-mix(in oklab, var(--color-bubble-blue) 50%, transparent))',
                         }}
                     />
-                    <div className="flex flex-col gap-5 px-6 pb-6 md:flex-row md:items-end md:justify-between">
+                    <div className="flex flex-col gap-5 px-6 pb-6 xl:flex-row xl:items-end xl:justify-between">
                         <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-start">
                             <UserAvatar
                                 name={user.name}
                                 src={user.avatar_url}
+                                userId={user.id}
                                 className="size-24 border-4 border-card bg-primary text-2xl text-primary-foreground shadow-md"
                             />
                             <div className="flex min-w-0 flex-col gap-1.5 sm:pt-14">
@@ -377,6 +441,20 @@ export default function ShowUser(props: Props) {
                             </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
+                            {props.hasAbilityAssessment && (
+                                <a
+                                    href="?tab=ability"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        openTab('ability');
+                                    }}
+                                    data-testid="user-open-ability"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-violet-500/40 bg-violet-500/10 px-3 py-2 text-sm font-medium whitespace-nowrap text-violet-700 hover:bg-violet-500/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:text-violet-300"
+                                >
+                                    <BrainCircuit className="size-4" />
+                                    {tr('AI ability analysis')}
+                                </a>
+                            )}
                             <button
                                 type="button"
                                 onClick={() =>
@@ -745,68 +823,107 @@ export default function ShowUser(props: Props) {
                             )}
                         </Panel>
                         <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
-                            <Panel title={tr('Per game')} icon={Gamepad2}>
+                            <Panel
+                                title={tr('Per game')}
+                                icon={Gamepad2}
+                                actions={
+                                    props.perGame.length > 0 && (
+                                        <span className="text-xs text-muted-foreground">
+                                            {tr('{0} games', [
+                                                props.perGame.length,
+                                            ])}
+                                        </span>
+                                    )
+                                }
+                            >
                                 {props.perGame.length === 0 ? (
                                     <EmptyState
                                         icon={Gamepad2}
                                         title={tr('Has not played yet')}
                                     />
                                 ) : (
-                                    <ul className="flex flex-col gap-3">
-                                        {props.perGame.map((game) => (
-                                            <li
-                                                key={game.key}
-                                                className="flex flex-col gap-1 rounded-xl border border-border p-3"
-                                            >
-                                                <div className="flex items-center justify-between gap-2 text-sm">
-                                                    <span className="font-medium text-foreground">
-                                                        <GameDot
-                                                            game={game.key}
-                                                        />
-                                                    </span>
-                                                    <span
-                                                        className={cn(
-                                                            'font-semibold tabular-nums',
-                                                            rateTone(
-                                                                game.accuracy,
-                                                            ),
-                                                        )}
+                                    <div className="flex flex-col gap-3">
+                                        <ul
+                                            className="flex flex-col gap-3"
+                                            data-testid="user-per-game-preview"
+                                        >
+                                            {props.perGame
+                                                .slice(0, PER_GAME_PREVIEW)
+                                                .map((game) => (
+                                                    <li
+                                                        key={game.key}
+                                                        className="flex flex-col gap-1 rounded-xl border border-border p-3"
                                                     >
-                                                        {formatPercent(
-                                                            game.accuracy,
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
-                                                    <span>
-                                                        {game.plays}{' '}
-                                                        {tr('plays')}
-                                                    </span>
-                                                    <span>
-                                                        {formatNumber(
-                                                            game.points,
-                                                        )}{' '}
-                                                        {tr('pts')}
-                                                    </span>
-                                                    <span>
-                                                        {tr('best')} {game.best}
-                                                    </span>
-                                                    <span className="inline-flex items-center gap-1">
-                                                        <Clock className="size-3" />
-                                                        {formatDuration(
-                                                            game.play_seconds ||
-                                                                null,
-                                                        )}
-                                                    </span>
-                                                    <span>
-                                                        {timeAgo(
-                                                            game.last_played_at,
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                                        <div className="flex items-center justify-between gap-2 text-sm">
+                                                            <span className="font-medium text-foreground">
+                                                                <GameDot
+                                                                    game={
+                                                                        game.key
+                                                                    }
+                                                                />
+                                                            </span>
+                                                            <span
+                                                                className={cn(
+                                                                    'font-semibold tabular-nums',
+                                                                    rateTone(
+                                                                        game.accuracy,
+                                                                    ),
+                                                                )}
+                                                            >
+                                                                {formatPercent(
+                                                                    game.accuracy,
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+                                                            <span>
+                                                                {game.plays}{' '}
+                                                                {tr('plays')}
+                                                            </span>
+                                                            <span>
+                                                                {formatNumber(
+                                                                    game.points,
+                                                                )}{' '}
+                                                                {tr('pts')}
+                                                            </span>
+                                                            <span>
+                                                                {tr('best')}{' '}
+                                                                {game.best}
+                                                            </span>
+                                                            <span className="inline-flex items-center gap-1">
+                                                                <Clock className="size-3" />
+                                                                {formatDuration(
+                                                                    game.play_seconds ||
+                                                                        null,
+                                                                )}
+                                                            </span>
+                                                            <span>
+                                                                {timeAgo(
+                                                                    game.last_played_at,
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                        </ul>
+                                        {props.perGame.length >
+                                            PER_GAME_PREVIEW && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    openTab('perGame')
+                                                }
+                                                data-testid="user-per-game-more"
+                                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                            >
+                                                {tr('Show more ({0})', [
+                                                    props.perGame.length -
+                                                        PER_GAME_PREVIEW,
+                                                ])}
+                                                <ArrowRight className="size-4" />
+                                            </button>
+                                        )}
+                                    </div>
                                 )}
                             </Panel>
                             <Panel
@@ -933,10 +1050,13 @@ export default function ShowUser(props: Props) {
                 <MatchProgress history={props.matchHistory} />
 
                 {/* Logs */}
-                <section className="flex flex-col rounded-2xl border border-border bg-card shadow-sm">
+                <section
+                    ref={tabsRef}
+                    className="flex min-w-0 scroll-mt-20 flex-col rounded-2xl border border-border bg-card shadow-sm"
+                >
                     <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
                         <div
-                            className="inline-flex rounded-lg border border-border bg-background p-1"
+                            className="inline-flex max-w-full flex-wrap rounded-lg border border-border bg-background p-1"
                             role="tablist"
                             aria-label={tr('User history')}
                         >
@@ -946,6 +1066,18 @@ export default function ShowUser(props: Props) {
                                         key: 'games',
                                         label: `Game history (${props.plays.total})`,
                                         icon: History,
+                                    },
+                                    {
+                                        key: 'perGame',
+                                        label: tr('All games ({0})', [
+                                            props.perGame.length,
+                                        ]),
+                                        icon: Gamepad2,
+                                    },
+                                    {
+                                        key: 'ability',
+                                        label: tr('AI ability analysis'),
+                                        icon: BrainCircuit,
                                     },
                                     {
                                         key: 'matches',
@@ -974,6 +1106,7 @@ export default function ShowUser(props: Props) {
                                     role="tab"
                                     aria-selected={tab === item.key}
                                     onClick={() => setTab(item.key)}
+                                    data-testid={`user-tab-${item.key}`}
                                     className={cn(
                                         'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                                         tab === item.key
@@ -989,6 +1122,24 @@ export default function ShowUser(props: Props) {
                     </header>
                     <div className="p-5">
                         {tab === 'games' && <GameHistory plays={props.plays} />}
+                        {tab === 'perGame' && (
+                            <PerGameTable rows={props.perGame} />
+                        )}
+                        {tab === 'ability' && (
+                            <Deferred
+                                data="abilityAssessments"
+                                fallback={<AbilityAssessmentSkeleton />}
+                            >
+                                {props.abilityAssessments ? (
+                                    <AbilityAssessmentPanel
+                                        userId={user.id}
+                                        data={props.abilityAssessments}
+                                    />
+                                ) : (
+                                    <AbilityAssessmentSkeleton />
+                                )}
+                            </Deferred>
+                        )}
                         {tab === 'matches' &&
                             (props.matches.data.length === 0 ? (
                                 <EmptyState
@@ -1136,86 +1287,89 @@ function GameHistory({ plays }: { plays: Props['plays'] }) {
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-sm">
-                    <thead>
-                        <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-                            <th className="py-2 pr-3 text-left font-medium">
-                                {tr('Played')}
-                            </th>
-                            <th className="px-3 py-2 text-left font-medium">
-                                {tr('Game')}
-                            </th>
-                            <th className="px-3 py-2 text-left font-medium">
-                                {tr('Mission')}
-                            </th>
-                            <th className="px-3 py-2 text-right font-medium">
-                                {tr('Grade')}
-                            </th>
-                            <th className="px-3 py-2 text-right font-medium">
-                                {tr('Correct')}
-                            </th>
-                            <th className="px-3 py-2 text-right font-medium">
-                                {tr('Accuracy')}
-                            </th>
-                            <th className="px-3 py-2 text-right font-medium">
-                                {tr('Duration')}
-                            </th>
-                            <th className="py-2 pl-3 text-right font-medium">
-                                {tr('Points')}
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                        {plays.data.map((play) => (
-                            <tr key={play.id}>
-                                <td className="py-2.5 pr-3 whitespace-nowrap text-muted-foreground">
-                                    {formatDateTime(play.played_at)}
-                                </td>
-                                <td className="px-3 py-2.5 whitespace-nowrap text-foreground">
-                                    <GameDot game={play.game_key} />
-                                </td>
-                                <td className="px-3 py-2.5 text-muted-foreground capitalize">
-                                    {play.mission ?? '—'}
-                                </td>
-                                <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                    {play.grade ?? '—'}
-                                </td>
-                                <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                    {play.correct === null ? (
-                                        '—'
-                                    ) : (
-                                        <span className="inline-flex items-center gap-2">
-                                            <span className="inline-flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
-                                                <CircleCheck className="size-3.5" />
-                                                {play.correct}
-                                            </span>
-                                            <span className="inline-flex items-center gap-0.5 text-red-600 dark:text-red-400">
-                                                <CircleX className="size-3.5" />
-                                                {play.wrong}
-                                            </span>
-                                        </span>
-                                    )}
-                                </td>
-                                <td
-                                    className={cn(
-                                        'px-3 py-2.5 text-right font-medium tabular-nums',
-                                        rateTone(play.accuracy),
-                                    )}
-                                >
-                                    {formatPercent(play.accuracy)}
-                                </td>
-                                <td className="px-3 py-2.5 text-right text-muted-foreground tabular-nums">
-                                    {formatDuration(play.duration_seconds)}
-                                </td>
-                                <td className="py-2.5 pl-3 text-right font-semibold text-foreground tabular-nums">
-                                    +{formatNumber(play.points)}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            <ResponsiveTable
+                testId="user-plays-table"
+                rows={plays.data}
+                rowKey={(play) => play.id}
+                columns={[
+                    {
+                        key: 'game',
+                        header: tr('Game'),
+                        primary: true,
+                        cellClassName: 'whitespace-nowrap text-foreground',
+                        cell: (play) => <GameDot game={play.game_key} />,
+                    },
+                    {
+                        key: 'played',
+                        header: tr('Played'),
+                        summary: true,
+                        cellClassName:
+                            'whitespace-nowrap text-muted-foreground',
+                        cell: (play) => formatDateTime(play.played_at),
+                    },
+                    {
+                        key: 'mission',
+                        header: tr('Mission'),
+                        cellClassName: 'text-muted-foreground capitalize',
+                        cell: (play) => play.mission ?? '—',
+                    },
+                    {
+                        key: 'grade',
+                        header: tr('Grade'),
+                        align: 'right',
+                        cellClassName: 'text-foreground tabular-nums',
+                        cell: (play) => play.grade ?? '—',
+                    },
+                    {
+                        key: 'correct',
+                        header: tr('Correct'),
+                        align: 'right',
+                        cellClassName: 'text-foreground tabular-nums',
+                        cell: (play) =>
+                            play.correct === null ? (
+                                '—'
+                            ) : (
+                                <span className="inline-flex items-center gap-2">
+                                    <span className="inline-flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
+                                        <CircleCheck className="size-3.5" />
+                                        {play.correct}
+                                    </span>
+                                    <span className="inline-flex items-center gap-0.5 text-red-600 dark:text-red-400">
+                                        <CircleX className="size-3.5" />
+                                        {play.wrong}
+                                    </span>
+                                </span>
+                            ),
+                    },
+                    {
+                        key: 'accuracy',
+                        header: tr('Accuracy'),
+                        align: 'right',
+                        cellClassName: 'font-medium tabular-nums',
+                        cell: (play) => (
+                            <span className={rateTone(play.accuracy)}>
+                                {formatPercent(play.accuracy)}
+                            </span>
+                        ),
+                    },
+                    {
+                        key: 'duration',
+                        header: tr('Duration'),
+                        align: 'right',
+                        cellClassName: 'text-muted-foreground tabular-nums',
+                        cell: (play) => formatDuration(play.duration_seconds),
+                    },
+                    {
+                        key: 'points',
+                        header: tr('Points'),
+                        align: 'right',
+                        summary: true,
+                        cellClassName:
+                            'font-semibold text-foreground tabular-nums',
+                        cell: (play) => <>+{formatNumber(play.points)}</>,
+                    },
+                ]}
+            />
             {plays.last_page > 1 && (
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                     <span>
@@ -1254,6 +1408,81 @@ function GameHistory({ plays }: { plays: Props['plays'] }) {
     );
 }
 
+function PerGameTable({ rows }: { rows: Props['perGame'] }) {
+    if (rows.length === 0) {
+        return <EmptyState icon={Gamepad2} title={tr('Has not played yet')} />;
+    }
+
+    return (
+        <ResponsiveTable
+            testId="user-per-game-table"
+            rows={rows}
+            rowKey={(game) => game.key}
+            columns={[
+                {
+                    key: 'game',
+                    header: tr('Game'),
+                    primary: true,
+                    cellClassName: 'whitespace-nowrap text-foreground',
+                    cell: (game) => <GameDot game={game.key} />,
+                },
+                {
+                    key: 'plays',
+                    header: tr('Plays'),
+                    align: 'right',
+                    cellClassName: 'text-foreground tabular-nums',
+                    cell: (game) => formatNumber(game.plays),
+                },
+                {
+                    key: 'points',
+                    header: tr('Points'),
+                    align: 'right',
+                    summary: true,
+                    cellClassName: 'font-semibold text-foreground tabular-nums',
+                    cell: (game) => formatNumber(game.points),
+                },
+                {
+                    key: 'best',
+                    header: tr('Best'),
+                    align: 'right',
+                    cellClassName: 'text-foreground tabular-nums',
+                    cell: (game) => formatNumber(game.best),
+                },
+                {
+                    key: 'accuracy',
+                    header: tr('Accuracy'),
+                    align: 'right',
+                    summary: true,
+                    cellClassName: 'font-medium tabular-nums',
+                    cell: (game) => (
+                        <span className={rateTone(game.accuracy)}>
+                            {formatPercent(game.accuracy)}
+                        </span>
+                    ),
+                },
+                {
+                    key: 'time',
+                    header: tr('Time played'),
+                    align: 'right',
+                    cellClassName: 'text-muted-foreground tabular-nums',
+                    cell: (game) => formatDuration(game.play_seconds || null),
+                },
+                {
+                    key: 'last',
+                    header: tr('Last played'),
+                    align: 'right',
+                    cellClassName: 'whitespace-nowrap text-muted-foreground',
+                    cell: (game) => (
+                        <span title={formatDateTime(game.last_played_at)}>
+                            {timeAgo(game.last_played_at)}
+                        </span>
+                    ),
+                },
+            ]}
+        />
+    );
+}
+
 function ActivityTimeline({
     rows,
     impersonations,
@@ -1283,22 +1512,27 @@ function ActivityTimeline({
                                             : 'bg-primary',
                                     )}
                                 />
-                                <p className="text-sm text-foreground">
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-foreground">
                                     <span className="font-medium">
                                         {row.by_self
                                             ? tr('User')
                                             : (row.causer_name ?? tr('System'))}
-                                    </span>{' '}
-                                    <span className="text-muted-foreground">
-                                        {row.description.toLowerCase()}
                                     </span>
+                                    <ActivityEventBadge event={row.event} />
+                                </div>
+                                <p
+                                    className="mt-0.5 text-sm [overflow-wrap:anywhere] text-muted-foreground"
+                                    data-testid="user-activity-summary"
+                                >
+                                    {activitySummary(
+                                        row.event,
+                                        row.description,
+                                        row.properties,
+                                    )}
                                     {row.subject_type &&
-                                        row.subject_type !== 'User' && (
-                                            <span className="text-muted-foreground">
-                                                {' '}
-                                                · {row.subject_type}
-                                            </span>
-                                        )}
+                                        !['User', 'GameHistory'].includes(
+                                            row.subject_type,
+                                        ) && <> · {row.subject_type}</>}
                                 </p>
                                 {row.changes.length > 0 && (
                                     <ul className="mt-1 flex flex-col gap-0.5 rounded-lg bg-muted/50 px-3 py-2 text-xs">
@@ -1415,50 +1649,42 @@ function LoginTable({ rows }: { rows: Props['logins'] }) {
     }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-sm">
-                <thead>
-                    <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-                        <th className="py-2 pr-3 text-left font-medium">
-                            {tr('Time')}
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium">
-                            {tr('Result')}
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium">
-                            {tr('Device')}
-                        </th>
-                        <th className="py-2 pl-3 text-left font-medium">
-                            {tr('IP address')}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                    {rows.map((row) => (
-                        <tr key={row.id}>
-                            <td className="py-2.5 pr-3 whitespace-nowrap text-foreground">
-                                {formatDateTime(row.login_at)}
-                            </td>
-                            <td className="px-3 py-2.5">
-                                <Pill
-                                    tone={row.is_successful ? 'green' : 'red'}
-                                >
-                                    {row.is_successful
-                                        ? tr('Success')
-                                        : tr('Failed')}
-                                </Pill>
-                            </td>
-                            <td className="px-3 py-2.5 text-muted-foreground">
-                                {row.device}
-                            </td>
-                            <td className="py-2.5 pl-3 font-mono text-xs text-muted-foreground">
-                                {row.ip_address ?? '—'}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <ResponsiveTable
+            testId="user-logins-table"
+            rows={rows}
+            rowKey={(row) => row.id}
+            columns={[
+                {
+                    key: 'time',
+                    header: tr('Time'),
+                    primary: true,
+                    cellClassName: 'whitespace-nowrap text-foreground',
+                    cell: (row) => formatDateTime(row.login_at),
+                },
+                {
+                    key: 'result',
+                    header: tr('Result'),
+                    summary: true,
+                    cell: (row) => (
+                        <Pill tone={row.is_successful ? 'green' : 'red'}>
+                            {row.is_successful ? tr('Success') : tr('Failed')}
+                        </Pill>
+                    ),
+                },
+                {
+                    key: 'device',
+                    header: tr('Device'),
+                    cellClassName: 'text-muted-foreground',
+                    cell: (row) => row.device,
+                },
+                {
+                    key: 'ip',
+                    header: tr('IP address'),
+                    cellClassName: 'font-mono text-xs text-muted-foreground',
+                    cell: (row) => row.ip_address ?? '—',
+                },
+            ]}
+        />
     );
 }
 
@@ -1521,67 +1747,67 @@ function MatchProgress({ history }: { history: Props['matchHistory'] }) {
                             <h4 className="text-sm font-semibold text-foreground">
                                 {tr('Monthly progress')}
                             </h4>
-                            <div className="overflow-x-auto">
-                                <table className="w-full min-w-[420px] text-sm">
-                                    <thead className="text-left text-xs text-muted-foreground">
-                                        <tr>
-                                            <th className="py-1.5 font-medium">
-                                                {tr('Month')}
-                                            </th>
-                                            <th className="py-1.5 text-right font-medium">
-                                                {tr('Matches')}
-                                            </th>
-                                            <th className="py-1.5 text-right font-medium">
-                                                {tr('Win rate')}
-                                            </th>
-                                            <th className="py-1.5 text-right font-medium">
-                                                {tr('Accuracy')}
-                                            </th>
-                                            <th className="py-1.5 text-right font-medium">
-                                                {tr('Avg level')}
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border">
-                                        {monthly.map((row) => (
-                                            <tr key={row.month}>
-                                                <td className="py-1.5 text-foreground">
-                                                    {new Date(
-                                                        `${row.month}-01T00:00:00`,
-                                                    ).toLocaleDateString(
-                                                        adminLocale(),
-                                                        {
-                                                            month: 'short',
-                                                            year: 'numeric',
-                                                        },
-                                                    )}
-                                                </td>
-                                                <td className="py-1.5 text-right tabular-nums">
-                                                    {row.matches}
-                                                </td>
-                                                <td className="py-1.5 text-right tabular-nums">
-                                                    {formatPercent(
-                                                        row.win_rate,
-                                                    )}
-                                                </td>
-                                                <td
-                                                    className={cn(
-                                                        'py-1.5 text-right tabular-nums',
-                                                        rateTone(row.accuracy),
-                                                    )}
-                                                >
-                                                    {formatPercent(
-                                                        row.accuracy,
-                                                    )}
-                                                </td>
-                                                <td className="py-1.5 text-right tabular-nums">
-                                                    {row.avg_level ?? '—'}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <ResponsiveTable
+                                testId="match-monthly-table"
+                                rows={monthly}
+                                rowKey={(row) => row.month}
+                                columns={[
+                                    {
+                                        key: 'month',
+                                        header: tr('Month'),
+                                        primary: true,
+                                        cellClassName: 'text-foreground',
+                                        cell: (row) =>
+                                            new Date(
+                                                `${row.month}-01T00:00:00`,
+                                            ).toLocaleDateString(
+                                                adminLocale(),
+                                                {
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                },
+                                            ),
+                                    },
+                                    {
+                                        key: 'matches',
+                                        header: tr('Matches'),
+                                        align: 'right',
+                                        summary: true,
+                                        cellClassName: 'tabular-nums',
+                                        cell: (row) => row.matches,
+                                    },
+                                    {
+                                        key: 'win_rate',
+                                        header: tr('Win rate'),
+                                        align: 'right',
+                                        cellClassName: 'tabular-nums',
+                                        cell: (row) =>
+                                            formatPercent(row.win_rate),
+                                    },
+                                    {
+                                        key: 'accuracy',
+                                        header: tr('Accuracy'),
+                                        align: 'right',
+                                        cellClassName: 'tabular-nums',
+                                        cell: (row) => (
+                                            <span
+                                                className={rateTone(
+                                                    row.accuracy,
+                                                )}
+                                            >
+                                                {formatPercent(row.accuracy)}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'avg_level',
+                                        header: tr('Avg level'),
+                                        align: 'right',
+                                        cellClassName: 'tabular-nums',
+                                        cell: (row) => row.avg_level ?? '—',
+                                    },
+                                ]}
+                            />
                             <div className="mt-2 flex flex-wrap gap-2">
                                 {byGame.map((game) => (
                                     <span

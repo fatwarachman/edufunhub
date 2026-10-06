@@ -25,6 +25,7 @@ import {
     formatNumber,
     gameLabel,
 } from '@/components/admin/game-stats';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -443,155 +444,176 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
                     )}
                 />
             ) : (
-                <div className="-mx-5 -my-5 overflow-x-auto">
-                    <table
-                        className="w-full min-w-[980px] text-sm"
-                        data-testid="ads-campaign-table"
-                    >
-                        <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
-                            <tr>
-                                <th className="px-5 py-3 font-medium">
-                                    {tr('Campaign')}
-                                </th>
-                                <th className="px-3 py-3 font-medium">
-                                    {tr('Flight')}
-                                </th>
-                                <th className="px-3 py-3 font-medium">
-                                    {tr('Targeting')}
-                                </th>
-                                <th className="px-3 py-3 text-right font-medium">
-                                    {tr('Contract')}
-                                </th>
-                                <th className="px-3 py-3 text-right font-medium">
-                                    {tr('Impressions')}
-                                </th>
-                                <th className="px-3 py-3 text-right font-medium">
-                                    {tr('CTR')}
-                                </th>
-                                <th className="px-3 py-3 font-medium">
-                                    {tr('Status')}
-                                </th>
-                                <th className="px-5 py-3" />
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                            {shown.map((c) => (
-                                <tr
-                                    key={c.id}
-                                    className="cursor-pointer hover:bg-muted/30"
-                                    onClick={() =>
-                                        router.visit(
-                                            `/admin/ads/campaigns/${c.id}`,
-                                        )
-                                    }
+                <ResponsiveTable
+                    testId="ads-campaign-table"
+                    rows={shown}
+                    rowKey={(c) => c.id}
+                    onRowClick={(c) =>
+                        router.visit(`/admin/ads/campaigns/${c.id}`)
+                    }
+                    rowAriaLabel={(c) => tr('Open {0}', [c.name])}
+                    actions={(c) => (
+                        <Link
+                            href={`/admin/ads/campaigns/${c.id}/edit`}
+                            className={cn(buttonGhost, 'h-8 px-3 text-xs')}
+                        >
+                            <Pencil className="size-3.5" />
+                            {tr('Edit')}
+                        </Link>
+                    )}
+                    columns={[
+                        {
+                            key: 'campaign',
+                            header: tr('Campaign'),
+                            primary: true,
+                            cell: (c) => (
+                                <div
+                                    className="flex min-w-0 items-center gap-3"
                                     data-testid={`ads-campaign-${c.id}`}
                                 >
-                                    <td className="px-5 py-2.5">
-                                        <div className="flex items-center gap-3">
-                                            <BrandMark
-                                                name={c.advertiser_name}
-                                                logo={c.advertiser_logo}
-                                            />
-                                            <div className="min-w-0">
-                                                <p className="font-medium text-foreground">
-                                                    {c.name}
-                                                </p>
-                                                <p className="truncate text-xs text-muted-foreground">
-                                                    {c.advertiser_name} ·{' '}
-                                                    {c.creatives_count}{' '}
-                                                    {tr('creative(s)')}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2.5 text-xs">
-                                        <p className="text-foreground">
-                                            {formatDate(c.starts_on)} –{' '}
-                                            {formatDate(c.ends_on)}
+                                    <BrandMark
+                                        name={c.advertiser_name}
+                                        logo={c.advertiser_logo}
+                                    />
+                                    <div className="min-w-0">
+                                        <p className="font-medium text-foreground">
+                                            {c.name}
                                         </p>
-                                        <p className="text-muted-foreground">
-                                            {c.duration_days} {tr('days')}
-                                            {c.display_status === 'live' &&
-                                                tr(' · {0} left', [
-                                                    c.days_left,
-                                                ])}
+                                        <p className="text-xs font-normal text-muted-foreground">
+                                            {c.advertiser_name} ·{' '}
+                                            {c.creatives_count}{' '}
+                                            {tr('creative(s)')}
                                         </p>
-                                    </td>
-                                    <td className="px-3 py-2.5 text-xs text-muted-foreground">
-                                        <p>
-                                            {c.target_games.length === 0
-                                                ? tr('All games')
-                                                : c.target_games
-                                                      .map(gameLabel)
-                                                      .join(', ')}
-                                        </p>
-                                        <p>
-                                            {c.grade_min || c.grade_max
-                                                ? tr('Grade {0}–{1}', [
-                                                      c.grade_min ?? 1,
-                                                      c.grade_max ?? 12,
-                                                  ])
-                                                : tr('All grades')}{' '}
-                                            {tr('· weight')} {c.weight}
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-2.5 text-right">
-                                        <p className="font-medium tabular-nums">
-                                            {formatRupiah(c.contract_value)}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {tr(
-                                                PRICING_LABELS[
-                                                    c.pricing_model
-                                                ].split(' ')[0],
-                                            )}
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-2.5 text-right tabular-nums">
-                                        <p>
-                                            {formatNumber(c.stats.impressions)}
-                                            {c.max_impressions && (
-                                                <span className="text-muted-foreground">
-                                                    {' '}
-                                                    /{' '}
-                                                    {formatNumber(
-                                                        c.max_impressions,
-                                                    )}
-                                                </span>
-                                            )}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {tr('today')}{' '}
-                                            {formatNumber(c.stats.today ?? 0)}
-                                        </p>
-                                    </td>
-                                    <td className="px-3 py-2.5 text-right tabular-nums">
-                                        {ctr(c.stats)}
-                                    </td>
-                                    <td className="px-3 py-2.5">
-                                        <CampaignStatus
-                                            status={c.display_status}
-                                        />
-                                    </td>
-                                    <td className="px-5 py-2.5 text-right">
-                                        <Link
-                                            href={`/admin/ads/campaigns/${c.id}/edit`}
-                                            onClick={(event) =>
-                                                event.stopPropagation()
-                                            }
-                                            className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                                            aria-label={tr('Edit {0}', [
-                                                c.name,
-                                            ])}
-                                        >
-                                            <Pencil className="size-4" />
-                                        </Link>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+                                </div>
+                            ),
+                        },
+                        {
+                            key: 'flight',
+                            header: tr('Flight'),
+                            cellClassName: 'text-xs',
+                            cell: (c) => (
+                                <div>
+                                    <p className="text-foreground">
+                                        {formatDate(c.starts_on)} –{' '}
+                                        {formatDate(c.ends_on)}
+                                    </p>
+                                    <p className="text-muted-foreground">
+                                        {c.duration_days} {tr('days')}
+                                        {c.display_status === 'live' &&
+                                            tr(' · {0} left', [c.days_left])}
+                                    </p>
+                                </div>
+                            ),
+                        },
+                        {
+                            key: 'targeting',
+                            header: tr('Targeting'),
+                            cellClassName: 'text-xs text-muted-foreground',
+                            cell: (c) => (
+                                <div>
+                                    <p>
+                                        {c.target_games.length === 0
+                                            ? tr('All games')
+                                            : c.target_games
+                                                  .map(gameLabel)
+                                                  .join(', ')}
+                                    </p>
+                                    <p>
+                                        {c.grade_min || c.grade_max
+                                            ? tr('Grade {0}–{1}', [
+                                                  c.grade_min ?? 1,
+                                                  c.grade_max ?? 12,
+                                              ])
+                                            : tr('All grades')}{' '}
+                                        {tr('· weight')} {c.weight}
+                                    </p>
+                                </div>
+                            ),
+                        },
+                        {
+                            key: 'contract',
+                            header: tr('Contract'),
+                            align: 'right',
+                            cell: (c) => (
+                                <div>
+                                    <p className="font-medium tabular-nums">
+                                        {formatRupiah(c.contract_value)}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {tr(
+                                            PRICING_LABELS[
+                                                c.pricing_model
+                                            ].split(' ')[0],
+                                        )}
+                                    </p>
+                                </div>
+                            ),
+                        },
+                        {
+                            key: 'impressions',
+                            header: tr('Impressions'),
+                            align: 'right',
+                            cellClassName: 'tabular-nums',
+                            cell: (c) => (
+                                <div>
+                                    <p>
+                                        {formatNumber(c.stats.impressions)}
+                                        {c.max_impressions && (
+                                            <span className="text-muted-foreground">
+                                                {' '}
+                                                /{' '}
+                                                {formatNumber(
+                                                    c.max_impressions,
+                                                )}
+                                            </span>
+                                        )}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {tr('today')}{' '}
+                                        {formatNumber(c.stats.today ?? 0)}
+                                    </p>
+                                </div>
+                            ),
+                        },
+                        {
+                            key: 'ctr',
+                            header: tr('CTR'),
+                            align: 'right',
+                            cellClassName: 'tabular-nums',
+                            cell: (c) => ctr(c.stats),
+                        },
+                        {
+                            key: 'status',
+                            header: tr('Status'),
+                            summary: true,
+                            cell: (c) => (
+                                <CampaignStatus status={c.display_status} />
+                            ),
+                        },
+                        {
+                            key: 'edit',
+                            header: (
+                                <span className="sr-only">{tr('Edit')}</span>
+                            ),
+                            align: 'right',
+                            hideInAccordion: true,
+                            cell: (c) => (
+                                <Link
+                                    href={`/admin/ads/campaigns/${c.id}/edit`}
+                                    onClick={(event) => event.stopPropagation()}
+                                    onKeyDown={(event) =>
+                                        event.stopPropagation()
+                                    }
+                                    className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    aria-label={tr('Edit {0}', [c.name])}
+                                >
+                                    <Pencil className="size-4" />
+                                </Link>
+                            ),
+                        },
+                    ]}
+                />
             )}
         </Panel>
     );
@@ -734,85 +756,90 @@ function Inventory({
                 icon={LayoutGrid}
                 className="xl:col-span-2"
             >
-                <div className="-mx-5 -my-5 overflow-x-auto">
-                    <table
-                        className="w-full min-w-[720px] text-sm"
-                        data-testid="ads-inventory"
-                    >
-                        <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
-                            <tr>
-                                <th className="px-5 py-3 font-medium">
-                                    {tr('Placement')}
-                                </th>
-                                <th className="px-3 py-3 font-medium">
-                                    {tr('Accepts')}
-                                </th>
-                                <th className="px-3 py-3 text-right font-medium">
-                                    {tr('Live creatives')}
-                                </th>
-                                <th className="px-5 py-3 text-right font-medium">
-                                    {tr('30-day delivery')}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                            {inventory.map((row) => (
-                                <tr key={row.key}>
-                                    <td className="px-5 py-2.5">
-                                        <p className="font-medium text-foreground">
-                                            {tr(row.label)}
+                <ResponsiveTable
+                    testId="ads-inventory"
+                    rows={inventory}
+                    rowKey={(row) => row.key}
+                    columns={[
+                        {
+                            key: 'placement',
+                            header: tr('Placement'),
+                            primary: true,
+                            cell: (row) => (
+                                <div className="min-w-0">
+                                    <p className="font-medium text-foreground">
+                                        {tr(row.label)}
+                                    </p>
+                                    <p className="font-mono text-xs font-normal text-muted-foreground">
+                                        {row.key}
+                                    </p>
+                                </div>
+                            ),
+                        },
+                        {
+                            key: 'accepts',
+                            header: tr('Accepts'),
+                            cellClassName: 'text-xs text-muted-foreground',
+                            cell: (row) => (
+                                <div>
+                                    <p className="capitalize">
+                                        {row.types.join(', ')}
+                                    </p>
+                                    {row.sizes.length > 0 && (
+                                        <p>
+                                            {row.sizes
+                                                .map(
+                                                    (s) =>
+                                                        `${sizes[s]?.width}×${sizes[s]?.height}`,
+                                                )
+                                                .join(' · ')}
                                         </p>
-                                        <p className="font-mono text-xs text-muted-foreground">
-                                            {row.key}
+                                    )}
+                                    {row.moment && (
+                                        <p className="inline-flex items-center gap-1">
+                                            <Music className="size-3" />
+                                            {tr('plays at')} {row.moment}
                                         </p>
-                                    </td>
-                                    <td className="px-3 py-2.5 text-xs text-muted-foreground">
-                                        <p className="capitalize">
-                                            {row.types.join(', ')}
-                                        </p>
-                                        {row.sizes.length > 0 && (
-                                            <p>
-                                                {row.sizes
-                                                    .map(
-                                                        (s) =>
-                                                            `${sizes[s]?.width}×${sizes[s]?.height}`,
-                                                    )
-                                                    .join(' · ')}
-                                            </p>
-                                        )}
-                                        {row.moment && (
-                                            <p className="inline-flex items-center gap-1">
-                                                <Music className="size-3" />
-                                                {tr('plays at')} {row.moment}
-                                            </p>
-                                        )}
-                                    </td>
-                                    <td className="px-3 py-2.5 text-right tabular-nums">
-                                        {row.live_creatives === 0 ? (
-                                            <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-                                                {tr('Available')}
-                                            </span>
-                                        ) : (
-                                            row.live_creatives
-                                        )}
-                                    </td>
-                                    <td className="px-5 py-2.5 text-right text-xs tabular-nums">
-                                        <p className="text-foreground">
-                                            {formatNumber(row.impressions_30d)}{' '}
-                                            {tr('impressions')}
-                                        </p>
-                                        <p className="text-muted-foreground">
-                                            {formatNumber(row.clicks_30d)}{' '}
-                                            {tr('clicks ·')}{' '}
-                                            {formatNumber(row.plays_30d)}{' '}
-                                            {tr('plays')}
-                                        </p>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                                    )}
+                                </div>
+                            ),
+                        },
+                        {
+                            key: 'live',
+                            header: tr('Live creatives'),
+                            align: 'right',
+                            cellClassName: 'tabular-nums',
+                            cell: (row) =>
+                                row.live_creatives === 0 ? (
+                                    <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                                        {tr('Available')}
+                                    </span>
+                                ) : (
+                                    row.live_creatives
+                                ),
+                        },
+                        {
+                            key: 'delivery',
+                            header: tr('30-day delivery'),
+                            align: 'right',
+                            cellClassName: 'text-xs tabular-nums',
+                            cell: (row) => (
+                                <div>
+                                    <p className="text-foreground">
+                                        {formatNumber(row.impressions_30d)}{' '}
+                                        {tr('impressions')}
+                                    </p>
+                                    <p className="text-muted-foreground">
+                                        {formatNumber(row.clicks_30d)}{' '}
+                                        {tr('clicks ·')}{' '}
+                                        {formatNumber(row.plays_30d)}{' '}
+                                        {tr('plays')}
+                                    </p>
+                                </div>
+                            ),
+                        },
+                    ]}
+                />
             </Panel>
             <Panel
                 title={tr('Creative sizes')}

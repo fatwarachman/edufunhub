@@ -15,6 +15,7 @@ import {
     Panel,
     rateTone,
 } from '@/components/admin/game-stats';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -543,59 +544,69 @@ function Matrix({ matrix }: { matrix: Stats['matrix'] }) {
     }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full min-w-[320px] border-separate border-spacing-1 text-xs">
-                <thead>
-                    <tr>
-                        <th className="text-left font-medium text-muted-foreground">
-                            {tr('Grade')}
-                        </th>
-                        {matrix.columns.map((column) => (
-                            <th
-                                key={column}
-                                className="font-medium text-muted-foreground"
+        <ResponsiveTable
+            testId="user-stats-age-grade"
+            rows={matrix.rows}
+            rowKey={(row) => row.grade}
+            tableClassName="text-xs"
+            columns={[
+                {
+                    key: 'grade',
+                    header: tr('Grade'),
+                    primary: true,
+                    cellClassName:
+                        'px-1 py-0.5 font-medium text-foreground tabular-nums',
+                    headerClassName: 'px-1',
+                    cell: (row) => row.grade,
+                },
+                {
+                    key: 'total',
+                    header: tr('Learners'),
+                    summary: true,
+                    hideInAccordion: true,
+                    headerClassName: 'hidden',
+                    cellClassName: 'hidden',
+                    cell: (row) =>
+                        tr('{0} learners', [
+                            row.counts.reduce((a, b) => a + b, 0),
+                        ]),
+                },
+                ...matrix.columns.map((column, index) => ({
+                    key: `age-${column}`,
+                    header: column,
+                    align: 'center' as const,
+                    headerClassName: 'px-0.5 first:pl-0.5 last:pr-0.5',
+                    cellClassName: 'px-0.5 py-0.5 first:pl-0.5 last:pr-0.5',
+                    cell: (row: (typeof matrix.rows)[number]) => {
+                        const count = row.counts[index];
+                        return (
+                            <span
+                                title={tr('Grade {0}, age {1}: {2}', [
+                                    row.grade,
+                                    column,
+                                    count,
+                                ])}
+                                className={cn(
+                                    'flex h-6 min-w-8 items-center justify-center rounded-md px-1 tabular-nums',
+                                    count === 0
+                                        ? 'bg-muted/60 text-muted-foreground/60'
+                                        : 'font-semibold text-foreground',
+                                )}
+                                style={
+                                    count > 0
+                                        ? {
+                                              background: `color-mix(in oklab, var(--color-bubble-orange) ${30 + (count / max) * 60}%, transparent)`,
+                                          }
+                                        : undefined
+                                }
                             >
-                                {column}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {matrix.rows.map((row) => (
-                        <tr key={row.grade}>
-                            <td className="pr-1 font-medium text-foreground tabular-nums">
-                                {row.grade}
-                            </td>
-                            {row.counts.map((count, index) => (
-                                <td
-                                    key={index}
-                                    title={tr('Grade {0}, age {1}: {2}', [
-                                        row.grade,
-                                        matrix.columns[index],
-                                        count,
-                                    ])}
-                                    className={cn(
-                                        'h-6 rounded-md text-center tabular-nums',
-                                        count === 0
-                                            ? 'bg-muted/60 text-muted-foreground/60'
-                                            : 'font-semibold text-foreground',
-                                    )}
-                                    style={
-                                        count > 0
-                                            ? {
-                                                  background: `color-mix(in oklab, var(--color-bubble-orange) ${30 + (count / max) * 60}%, transparent)`,
-                                              }
-                                            : undefined
-                                    }
-                                >
-                                    {count || '·'}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+                                {count || '·'}
+                            </span>
+                        );
+                    },
+                })),
+            ]}
+        />
     );
 }
 
@@ -621,86 +632,88 @@ function SegmentTable({
     }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-sm">
-                <thead>
-                    <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-                        <th className="py-2 pr-3 text-left font-medium">
-                            {header}
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium">
-                            {tr('Learners')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Have played')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Plays')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Avg points')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Avg age')}
-                        </th>
-                        <th className="py-2 pl-3 text-right font-medium">
-                            {tr('Accuracy')}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                    {visible.map((row) => (
-                        <tr key={row.label}>
-                            <td className="py-2.5 pr-3 font-medium whitespace-nowrap text-foreground">
-                                {labelFor(row.label)}
-                            </td>
-                            <td className="px-3 py-2.5">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-2 w-24 shrink-0 overflow-hidden rounded-full bg-muted">
-                                        <div
-                                            className="h-full rounded-full bg-primary"
-                                            style={{
-                                                width: `${(row.users / max) * 100}%`,
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-foreground tabular-nums">
-                                        {formatNumber(row.users)}
-                                    </span>
-                                </div>
-                            </td>
-                            <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                {formatNumber(row.players)}
-                                <span className="ml-1 text-xs text-muted-foreground">
-                                    (
-                                    {Math.round(
-                                        (row.players / row.users) * 100,
-                                    )}
-                                    %)
-                                </span>
-                            </td>
-                            <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                {formatNumber(row.plays)}
-                            </td>
-                            <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                {row.avg_points}
-                            </td>
-                            <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                {row.avg_age ?? '—'}
-                            </td>
-                            <td
-                                className={cn(
-                                    'py-2.5 pl-3 text-right font-medium tabular-nums',
-                                    rateTone(row.accuracy),
-                                )}
-                            >
-                                {formatPercent(row.accuracy)}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <ResponsiveTable
+            testId="user-stats-segments"
+            rows={visible}
+            rowKey={(row) => row.label}
+            columns={[
+                {
+                    key: 'label',
+                    header,
+                    primary: true,
+                    cellClassName:
+                        'font-medium whitespace-nowrap text-foreground',
+                    cell: (row) => labelFor(row.label),
+                },
+                {
+                    key: 'users',
+                    header: tr('Learners'),
+                    summary: true,
+                    cell: (row) => (
+                        <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 shrink-0 overflow-hidden rounded-full bg-muted">
+                                <div
+                                    className="h-full rounded-full bg-primary"
+                                    style={{
+                                        width: `${(row.users / max) * 100}%`,
+                                    }}
+                                />
+                            </div>
+                            <span className="text-foreground tabular-nums">
+                                {formatNumber(row.users)}
+                            </span>
+                        </div>
+                    ),
+                },
+                {
+                    key: 'players',
+                    header: tr('Have played'),
+                    align: 'right',
+                    cellClassName:
+                        'whitespace-nowrap text-foreground tabular-nums',
+                    cell: (row) => (
+                        <>
+                            {formatNumber(row.players)}
+                            <span className="ml-1 text-xs text-muted-foreground">
+                                ({Math.round((row.players / row.users) * 100)}%)
+                            </span>
+                        </>
+                    ),
+                },
+                {
+                    key: 'plays',
+                    header: tr('Plays'),
+                    align: 'right',
+                    cellClassName: 'text-foreground tabular-nums',
+                    cell: (row) => formatNumber(row.plays),
+                },
+                {
+                    key: 'avg_points',
+                    header: tr('Avg points'),
+                    align: 'right',
+                    cellClassName: 'text-foreground tabular-nums',
+                    cell: (row) => row.avg_points,
+                },
+                {
+                    key: 'avg_age',
+                    header: tr('Avg age'),
+                    align: 'right',
+                    cellClassName: 'text-foreground tabular-nums',
+                    cell: (row) => row.avg_age ?? '—',
+                },
+                {
+                    key: 'accuracy',
+                    header: tr('Accuracy'),
+                    align: 'right',
+                    cellClassName: 'font-medium tabular-nums',
+                    cell: (row) => (
+                        <span className={rateTone(row.accuracy)}>
+                            {formatPercent(row.accuracy)}
+                        </span>
+                    ),
+                },
+            ]}
+        />
     );
 }
 
@@ -717,116 +730,124 @@ function SchoolTable({ rows }: { rows: SchoolSegment[] }) {
     }
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-sm">
-                <thead>
-                    <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-                        <th className="py-2 pr-3 text-left font-medium">
-                            {tr('School')}
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium">
-                            {tr('Level')}
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium">
-                            {tr('Learners')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Grades')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Avg age')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Plays')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Points')}
-                        </th>
-                        <th className="py-2 pl-3 text-right font-medium">
-                            {tr('Accuracy')}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                    {rows.map((row) => (
-                        <tr key={row.label}>
-                            <td className="max-w-64 py-2.5 pr-3">
-                                <Link
-                                    href={`/admin/leaderboard?school=${encodeURIComponent(row.label)}`}
-                                    className="block truncate font-medium text-foreground hover:underline"
-                                    title={tr(row.label)}
-                                >
-                                    {tr(row.label)}
-                                </Link>
-                            </td>
-                            <td className="px-3 py-2.5">
-                                <div className="flex flex-wrap gap-1">
-                                    {Object.entries(row.levels).map(
-                                        ([level, count]) => (
-                                            <span
-                                                key={level}
-                                                className="rounded-full px-2 py-0.5 text-xs font-semibold"
-                                                style={{
-                                                    background: `color-mix(in oklab, ${LEVEL_COLORS[level]} 16%, transparent)`,
-                                                    color: LEVEL_COLORS[level],
-                                                }}
-                                                title={tr('{0} learners', [
-                                                    count,
-                                                ])}
-                                            >
-                                                {tr(LEVEL_SHORT[level])}
-                                            </span>
-                                        ),
-                                    )}
-                                </div>
-                            </td>
-                            <td className="px-3 py-2.5">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-2 w-20 shrink-0 overflow-hidden rounded-full bg-muted">
-                                        <div
-                                            className="h-full rounded-full bg-primary"
-                                            style={{
-                                                width: `${(row.users / max) * 100}%`,
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-foreground tabular-nums">
-                                        {formatNumber(row.users)}
+        <ResponsiveTable
+            testId="user-stats-schools"
+            rows={rows}
+            rowKey={(row) => row.label}
+            columns={[
+                {
+                    key: 'school',
+                    header: tr('School'),
+                    primary: true,
+                    cellClassName: 'max-w-64',
+                    cell: (row) => (
+                        <Link
+                            href={`/admin/leaderboard?school=${encodeURIComponent(row.label)}`}
+                            className="block font-medium [overflow-wrap:anywhere] text-foreground hover:underline"
+                            title={tr(row.label)}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {tr(row.label)}
+                        </Link>
+                    ),
+                },
+                {
+                    key: 'levels',
+                    header: tr('Level'),
+                    cell: (row) => (
+                        <div className="flex flex-wrap gap-1">
+                            {Object.entries(row.levels).map(
+                                ([level, count]) => (
+                                    <span
+                                        key={level}
+                                        className="rounded-full px-2 py-0.5 text-xs font-semibold"
+                                        style={{
+                                            background: `color-mix(in oklab, ${LEVEL_COLORS[level]} 16%, transparent)`,
+                                            color: LEVEL_COLORS[level],
+                                        }}
+                                        title={tr('{0} learners', [count])}
+                                    >
+                                        {tr(LEVEL_SHORT[level])}
                                     </span>
-                                </div>
-                            </td>
-                            <td className="px-3 py-2.5 text-right whitespace-nowrap text-foreground tabular-nums">
-                                {row.grade_min === null
-                                    ? '—'
-                                    : row.grade_min === row.grade_max
-                                      ? row.grade_min
-                                      : `${row.grade_min}–${row.grade_max}`}
-                            </td>
-                            <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                {row.avg_age ?? '—'}
-                            </td>
-                            <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                {formatNumber(row.plays)}
-                            </td>
-                            <td className="px-3 py-2.5 text-right font-semibold text-foreground tabular-nums">
-                                {formatNumber(row.points)}
-                            </td>
-                            <td
-                                className={cn(
-                                    'py-2.5 pl-3 text-right font-medium tabular-nums',
-                                    rateTone(row.accuracy),
-                                )}
-                            >
-                                <span className="inline-flex items-center gap-1">
-                                    <Target className="size-3 opacity-60" />
-                                    {formatPercent(row.accuracy)}
-                                </span>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+                                ),
+                            )}
+                        </div>
+                    ),
+                },
+                {
+                    key: 'users',
+                    header: tr('Learners'),
+                    summary: true,
+                    cell: (row) => (
+                        <div className="flex items-center gap-2">
+                            <div className="h-2 w-20 shrink-0 overflow-hidden rounded-full bg-muted">
+                                <div
+                                    className="h-full rounded-full bg-primary"
+                                    style={{
+                                        width: `${(row.users / max) * 100}%`,
+                                    }}
+                                />
+                            </div>
+                            <span className="text-foreground tabular-nums">
+                                {formatNumber(row.users)}
+                            </span>
+                        </div>
+                    ),
+                },
+                {
+                    key: 'grades',
+                    header: tr('Grades'),
+                    align: 'right',
+                    cellClassName:
+                        'whitespace-nowrap text-foreground tabular-nums',
+                    cell: (row) =>
+                        row.grade_min === null
+                            ? '—'
+                            : row.grade_min === row.grade_max
+                              ? row.grade_min
+                              : `${row.grade_min}–${row.grade_max}`,
+                },
+                {
+                    key: 'avg_age',
+                    header: tr('Avg age'),
+                    align: 'right',
+                    cellClassName: 'text-foreground tabular-nums',
+                    cell: (row) => row.avg_age ?? '—',
+                },
+                {
+                    key: 'plays',
+                    header: tr('Plays'),
+                    align: 'right',
+                    cellClassName: 'text-foreground tabular-nums',
+                    cell: (row) => formatNumber(row.plays),
+                },
+                {
+                    key: 'points',
+                    header: tr('Points'),
+                    align: 'right',
+                    cellClassName: 'font-semibold text-foreground tabular-nums',
+                    cell: (row) => formatNumber(row.points),
+                },
+                {
+                    key: 'accuracy',
+                    header: tr('Accuracy'),
+                    align: 'right',
+                    summary: true,
+                    cellClassName: 'font-medium tabular-nums',
+                    cell: (row) => (
+                        <span
+                            className={cn(
+                                'inline-flex items-center gap-1',
+                                rateTone(row.accuracy),
+                            )}
+                        >
+                            <Target className="size-3 opacity-60" />
+                            {formatPercent(row.accuracy)}
+                        </span>
+                    ),
+                },
+            ]}
+        />
     );
 }
 

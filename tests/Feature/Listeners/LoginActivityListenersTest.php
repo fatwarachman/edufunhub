@@ -11,7 +11,7 @@ it('logs successful login activity', function () {
     $user = User::factory()->create();
 
     $event = new Login('web', $user, false);
-    $listener = new LogSuccessfulLogin;
+    $listener = app(LogSuccessfulLogin::class);
     $listener->handle($event);
 
     $activity = LoginActivity::where('user_id', $user->id)->first();

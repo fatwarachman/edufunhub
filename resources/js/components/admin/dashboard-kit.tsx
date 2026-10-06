@@ -1,4 +1,5 @@
 import { formatNumber, gameLabel } from '@/components/admin/game-stats';
+import { OnlineDot } from '@/components/online-dot';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
@@ -323,24 +324,32 @@ export function ShareBars({
 export function UserAvatar({
     name,
     src,
+    userId,
     className,
 }: {
     name: string | null | undefined;
     src?: string | null;
+    /** Shows the online dot while this account is connected. */
+    userId?: number | null;
     className?: string;
 }) {
     return (
         <span
             className={cn(
-                'flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/15 text-xs font-bold text-primary',
+                'relative flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary',
                 className,
             )}
         >
             {src ? (
-                <img src={src} alt="" className="size-full object-cover" />
+                <img
+                    src={src}
+                    alt=""
+                    className="size-full rounded-full object-cover"
+                />
             ) : (
                 initials(name)
             )}
+            <OnlineDot userId={userId} className="edu-online-dot--round" />
         </span>
     );
 }

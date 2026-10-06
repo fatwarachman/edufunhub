@@ -14,6 +14,7 @@ import {
     LEVEL_LABELS,
     Panel,
 } from '@/components/admin/game-stats';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -633,56 +634,62 @@ function PlayerBreakdown({
                         : '—'}
                 </Fact>
             </dl>
-            <table className="w-full text-sm">
-                <thead className="text-left text-xs text-muted-foreground uppercase">
-                    <tr>
-                        <th className="py-1 font-medium">{tr('Game')}</th>
-                        <th className="py-1 text-right font-medium">
-                            {tr('Time')}
-                        </th>
-                        <th className="hidden py-1 text-right font-medium sm:table-cell">
-                            {tr('Plays')}
-                        </th>
-                        <th className="w-2/5 py-1 pl-3 font-medium">
-                            {tr('Share')}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {player.games.map((game) => (
-                        <tr key={game.key}>
-                            <td className="py-1.5 text-foreground">
-                                <GameDot game={game.key} />
-                            </td>
-                            <td className="py-1.5 text-right font-medium text-foreground tabular-nums">
-                                {formatPlayTime(game.seconds)}
-                            </td>
-                            <td className="hidden py-1.5 text-right text-muted-foreground tabular-nums sm:table-cell">
-                                {game.plays}
-                            </td>
-                            <td className="py-1.5 pl-3">
-                                <span className="flex items-center gap-2">
-                                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                                        <span
-                                            className="block h-full rounded-full"
-                                            style={{
-                                                width: `${game.share}%`,
-                                                background: gameColor(
-                                                    game.key,
-                                                    accents[game.key],
-                                                ),
-                                            }}
-                                        />
-                                    </span>
-                                    <span className="w-10 text-right text-xs text-muted-foreground tabular-nums">
-                                        {game.share}%
-                                    </span>
+            <ResponsiveTable
+                testId={`playing-time-player-games-${player.user_id}`}
+                rows={player.games}
+                rowKey={(game) => game.key}
+                columns={[
+                    {
+                        key: 'game',
+                        header: tr('Game'),
+                        primary: true,
+                        cellClassName: 'py-1.5 text-foreground',
+                        cell: (game) => <GameDot game={game.key} />,
+                    },
+                    {
+                        key: 'time',
+                        header: tr('Time'),
+                        align: 'right',
+                        summary: true,
+                        cellClassName:
+                            'py-1.5 font-medium text-foreground tabular-nums',
+                        cell: (game) => formatPlayTime(game.seconds),
+                    },
+                    {
+                        key: 'plays',
+                        header: tr('Plays'),
+                        align: 'right',
+                        cellClassName:
+                            'py-1.5 text-muted-foreground tabular-nums',
+                        cell: (game) => game.plays,
+                    },
+                    {
+                        key: 'share',
+                        header: tr('Share'),
+                        headerClassName: 'w-2/5',
+                        cellClassName: 'py-1.5',
+                        cell: (game) => (
+                            <span className="flex w-full min-w-32 items-center gap-2">
+                                <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                                    <span
+                                        className="block h-full rounded-full"
+                                        style={{
+                                            width: `${game.share}%`,
+                                            background: gameColor(
+                                                game.key,
+                                                accents[game.key],
+                                            ),
+                                        }}
+                                    />
                                 </span>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                                <span className="w-10 text-right text-xs text-muted-foreground tabular-nums">
+                                    {game.share}%
+                                </span>
+                            </span>
+                        ),
+                    },
+                ]}
+            />
             <Link
                 href={`/admin/users/${player.user_id}`}
                 className="w-fit text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"

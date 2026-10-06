@@ -10,12 +10,18 @@ use App\Models\User;
 use App\Services\DeviceAnalytics;
 use App\Services\GameAnalytics;
 use App\Services\UserAnalytics;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
 
 class DashboardController extends Controller
 {
+    /** Cache key and lifetime (seconds) of the dashboard leaderboard section. */
+    public const LEADERBOARD_CACHE_KEY = 'admin.dashboard.leaderboards';
+
+    public const LEADERBOARD_CACHE_SECONDS = 90;
+
     /**
      * Render the admin dashboard: platform KPIs, game activity, player demographics and recent activity.
      */
@@ -36,6 +42,11 @@ class DashboardController extends Controller
                 'user_growth_percent' => $previous30d > 0 ? round(($newUsers30d - $previous30d) / $previous30d * 100, 1) : null,
             ],
             'gameCatalog' => $this->gameCatalog($games),
+            'leaderboards' => Inertia::defer(fn (): array => Cache::remember(
+                self::LEADERBOARD_CACHE_KEY,
+                self::LEADERBOARD_CACHE_SECONDS,
+                fn (): array => $games->leaderboardsByPeriod(),
+            )),
             'sparklines' => [
                 'new_users' => collect(range(6, 0))->map(fn (int $ago): int => User::query()->whereDate('created_at', now()->subDays($ago)->toDateString())->count())->all(),
             ],

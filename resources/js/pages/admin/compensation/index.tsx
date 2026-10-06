@@ -1,5 +1,6 @@
 import { Panel, StatTile } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -206,43 +207,47 @@ export default function CompensationIndex({
                             {tr('No teacher has earned compensation yet.')}
                         </p>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full min-w-[480px] text-sm">
-                                <thead>
-                                    <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-                                        <th className="py-2 pr-3 text-left font-medium">
-                                            {tr('Teacher')}
-                                        </th>
-                                        <th className="px-3 py-2 text-right font-medium">
-                                            {tr('Paid answers')}
-                                        </th>
-                                        <th className="py-2 pl-3 text-right font-medium">
-                                            {tr('Total')}
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border">
-                                    {teachers.map((teacher) => (
-                                        <tr key={teacher.id}>
-                                            <td className="py-2.5 pr-3">
-                                                <p className="font-medium text-foreground">
-                                                    {teacher.name}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {teacher.email}
-                                                </p>
-                                            </td>
-                                            <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                                {teacher.correct_answers.toLocaleString()}
-                                            </td>
-                                            <td className="py-2.5 pl-3 text-right font-semibold text-foreground tabular-nums">
-                                                {rupiah.format(teacher.total)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <ResponsiveTable
+                            testId="compensation-teachers"
+                            rows={teachers}
+                            rowKey={(teacher) => teacher.id}
+                            columns={[
+                                {
+                                    key: 'teacher',
+                                    header: tr('Teacher'),
+                                    primary: true,
+                                    cell: (teacher) => (
+                                        <span className="flex min-w-0 flex-col">
+                                            <span className="font-medium text-foreground">
+                                                {teacher.name}
+                                            </span>
+                                            <span className="text-xs font-normal text-muted-foreground">
+                                                {teacher.email}
+                                            </span>
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    key: 'answers',
+                                    header: tr('Paid answers'),
+                                    align: 'right',
+                                    cellClassName:
+                                        'text-foreground tabular-nums',
+                                    cell: (teacher) =>
+                                        teacher.correct_answers.toLocaleString(),
+                                },
+                                {
+                                    key: 'total',
+                                    header: tr('Total'),
+                                    align: 'right',
+                                    summary: true,
+                                    cellClassName:
+                                        'font-semibold text-foreground tabular-nums',
+                                    cell: (teacher) =>
+                                        rupiah.format(teacher.total),
+                                },
+                            ]}
+                        />
                     )}
                 </Panel>
             </div>
