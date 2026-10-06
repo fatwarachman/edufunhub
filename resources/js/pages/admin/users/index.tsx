@@ -1,5 +1,6 @@
 import { BadgeChips } from '@/components/badges';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import {
@@ -34,14 +35,14 @@ import {
 } from 'react';
 
 function timeAgo(dateStr: string | null | undefined): string {
-    if (!dateStr) return 'Never';
+    if (!dateStr) return tr('Never');
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return tr('Just now');
+    if (mins < 60) return tr('{0}m ago', [mins]);
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    if (hrs < 24) return tr('{0}h ago', [hrs]);
+    return tr('{0}d ago', [Math.floor(hrs / 24)]);
 }
 
 function getInitialsFromName(name: string): string {
@@ -105,12 +106,12 @@ function SignupBadge({ google }: { google: boolean }) {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A10.96 10.96 0 0 0 12 1 11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z"
                 />
             </svg>
-            Google
+            {tr('Google')}
         </span>
     ) : (
         <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
             <Mail className="size-3.5" aria-hidden="true" />
-            Email
+            {tr('Email')}
         </span>
     );
 }
@@ -155,16 +156,18 @@ function ConfirmDialog({
             <div className="fixed inset-0 bg-black/50" onClick={onClose} />
             <div className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
                 <h3 className="text-lg font-semibold text-foreground">
-                    {title}
+                    {tr(title)}
                 </h3>
-                <p className="mt-2 text-sm text-muted-foreground">{message}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    {tr(message)}
+                </p>
                 <div className="mt-6 flex items-center justify-end gap-3">
                     <button
                         onClick={onClose}
                         className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         disabled={processing}
                     >
-                        Cancel
+                        {tr('Cancel')}
                     </button>
                     <button
                         onClick={onConfirm}
@@ -209,21 +212,21 @@ function Pagination({
             <p className="text-sm text-muted-foreground">
                 {from && to ? (
                     <>
-                        Showing{' '}
+                        {tr('Showing')}{' '}
                         <span className="font-medium text-foreground">
                             {from}
                         </span>{' '}
-                        to{' '}
+                        {tr('to')}{' '}
                         <span className="font-medium text-foreground">
                             {to}
                         </span>{' '}
-                        of{' '}
+                        {tr('of')}{' '}
                         <span className="font-medium text-foreground">
                             {total}
                         </span>
                     </>
                 ) : (
-                    'No results'
+                    tr('No results')
                 )}
             </p>
             <div className="flex items-center gap-1">
@@ -346,18 +349,22 @@ export default function UsersIndex({
 
     return (
         <>
-            <Head title="Users" />
+            <Head title={tr('Users')} />
 
             <div className="space-y-4">
                 {/* Header */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 className="font-display text-2xl font-bold text-foreground">
-                            Users
+                            {tr('Users')}
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            {users.total} user{users.total !== 1 ? 's' : ''}{' '}
-                            total
+                            {tr(
+                                users.total === 1
+                                    ? '{0} user total'
+                                    : '{0} users total',
+                                [users.total],
+                            )}
                         </p>
                     </div>
                     <Link
@@ -365,7 +372,7 @@ export default function UsersIndex({
                         className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                         <Plus className="size-4" />
-                        Add User
+                        {tr('Add User')}
                     </Link>
                 </div>
 
@@ -377,7 +384,7 @@ export default function UsersIndex({
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search users…"
+                            placeholder={tr('Search users…')}
                             className="h-9 w-full rounded-lg border border-input bg-background pr-3 pl-9 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         />
                     </div>
@@ -388,7 +395,7 @@ export default function UsersIndex({
                         }
                         className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
-                        <option value="">All roles</option>
+                        <option value="">{tr('All roles')}</option>
                         {roles.map((role) => (
                             <option key={role.id} value={role.slug}>
                                 {role.name}
@@ -396,7 +403,7 @@ export default function UsersIndex({
                         ))}
                     </select>
                     <select
-                        aria-label="Sign-up method"
+                        aria-label={tr('Sign-up method')}
                         value={filters.signup ?? ''}
                         onChange={(e) =>
                             updateFilters({
@@ -405,9 +412,9 @@ export default function UsersIndex({
                         }
                         className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
-                        <option value="">All sign-up methods</option>
-                        <option value="google">Google account</option>
-                        <option value="email">Email (direct)</option>
+                        <option value="">{tr('All sign-up methods')}</option>
+                        <option value="google">{tr('Google account')}</option>
+                        <option value="email">{tr('Email (direct)')}</option>
                     </select>
                 </div>
 
@@ -417,10 +424,10 @@ export default function UsersIndex({
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <UserX className="mb-3 size-10 text-muted-foreground/30" />
                             <p className="text-sm font-medium text-muted-foreground">
-                                No users found
+                                {tr('No users found')}
                             </p>
                             <p className="text-xs text-muted-foreground/70">
-                                Try adjusting your search or filter
+                                {tr('Try adjusting your search or filter')}
                             </p>
                         </div>
                     ) : (
@@ -435,7 +442,7 @@ export default function UsersIndex({
                                                 direction={filters.direction}
                                                 onSort={handleSort}
                                             >
-                                                Name
+                                                {tr('Name')}
                                             </SortHeader>
                                         </th>
                                         <th className="px-5 py-3 text-left">
@@ -445,32 +452,32 @@ export default function UsersIndex({
                                                 direction={filters.direction}
                                                 onSort={handleSort}
                                             >
-                                                Email
+                                                {tr('Email')}
                                             </SortHeader>
                                         </th>
                                         <th className="px-5 py-3 text-left">
                                             <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                Sign-up
+                                                {tr('Sign-up')}
                                             </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
                                             <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                Age
+                                                {tr('Age')}
                                             </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
                                             <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                Last school
+                                                {tr('Last school')}
                                             </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
                                             <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                Roles
+                                                {tr('Roles')}
                                             </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
                                             <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                Status
+                                                {tr('Status')}
                                             </span>
                                         </th>
                                         <th className="px-5 py-3 text-left">
@@ -480,12 +487,12 @@ export default function UsersIndex({
                                                 direction={filters.direction}
                                                 onSort={handleSort}
                                             >
-                                                Joined
+                                                {tr('Joined')}
                                             </SortHeader>
                                         </th>
                                         <th className="px-5 py-3 text-right">
                                             <span className="sr-only">
-                                                Actions
+                                                {tr('Actions')}
                                             </span>
                                         </th>
                                     </tr>
@@ -522,7 +529,9 @@ export default function UsersIndex({
                                                         </Link>
                                                         {user.is_superadmin && (
                                                             <span className="text-xs text-bubble-purple">
-                                                                Superadmin
+                                                                {tr(
+                                                                    'Superadmin',
+                                                                )}
                                                             </span>
                                                         )}
                                                         {(user.badges?.length ??
@@ -545,9 +554,11 @@ export default function UsersIndex({
                                                     {user.ads_disabled && (
                                                         <span
                                                             className="inline-flex items-center rounded-full border border-border px-1.5 text-[11px] font-medium text-muted-foreground"
-                                                            title="Ads hidden for this user"
+                                                            title={tr(
+                                                                'Ads hidden for this user',
+                                                            )}
                                                         >
-                                                            No ads
+                                                            {tr('No ads')}
                                                         </span>
                                                     )}
                                                 </span>
@@ -587,7 +598,7 @@ export default function UsersIndex({
                                                         ))
                                                     ) : (
                                                         <span className="text-xs text-muted-foreground">
-                                                            No roles
+                                                            {tr('No roles')}
                                                         </span>
                                                     )}
                                                 </div>
@@ -635,7 +646,9 @@ export default function UsersIndex({
                                                             );
                                                         }}
                                                         className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                                        aria-label="Actions"
+                                                        aria-label={tr(
+                                                            'Actions',
+                                                        )}
                                                     >
                                                         <MoreHorizontal className="size-4" />
                                                     </button>
@@ -661,7 +674,7 @@ export default function UsersIndex({
                                                                     }
                                                                 >
                                                                     <Eye className="size-4" />
-                                                                    View
+                                                                    {tr('View')}
                                                                 </Link>
                                                                 <Link
                                                                     href={`/admin/users/${user.id}/edit`}
@@ -673,7 +686,7 @@ export default function UsersIndex({
                                                                     }
                                                                 >
                                                                     <Edit className="size-4" />
-                                                                    Edit
+                                                                    {tr('Edit')}
                                                                 </Link>
                                                                 {viewerIsSuperadmin && (
                                                                     <button
@@ -697,8 +710,12 @@ export default function UsersIndex({
                                                                     >
                                                                         <Megaphone className="size-4" />
                                                                         {user.ads_disabled
-                                                                            ? 'Show ads'
-                                                                            : 'Hide ads'}
+                                                                            ? tr(
+                                                                                  'Show ads',
+                                                                              )
+                                                                            : tr(
+                                                                                  'Hide ads',
+                                                                              )}
                                                                     </button>
                                                                 )}
                                                                 {canLoginAs(
@@ -717,7 +734,9 @@ export default function UsersIndex({
                                                                         data-testid={`user-login-as-${user.id}`}
                                                                     >
                                                                         <LogIn className="size-4" />
-                                                                        Login as
+                                                                        {tr(
+                                                                            'Login as',
+                                                                        )}
                                                                     </button>
                                                                 )}
                                                                 <button
@@ -732,7 +751,9 @@ export default function UsersIndex({
                                                                     className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent"
                                                                 >
                                                                     <Trash2 className="size-4" />
-                                                                    Delete
+                                                                    {tr(
+                                                                        'Delete',
+                                                                    )}
                                                                 </button>
                                                             </div>
                                                         </>
@@ -753,7 +774,7 @@ export default function UsersIndex({
                         <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card py-16 text-center">
                             <UserX className="mb-3 size-10 text-muted-foreground/30" />
                             <p className="text-sm font-medium text-muted-foreground">
-                                No users found
+                                {tr('No users found')}
                             </p>
                         </div>
                     ) : (
@@ -802,10 +823,10 @@ export default function UsersIndex({
                                                     null
                                                         ? `${user.player_profile.age} y · `
                                                         : ''}
-                                                    {
+                                                    {tr(
                                                         user.player_profile
-                                                            .school_name
-                                                    }
+                                                            .school_name,
+                                                    )}
                                                 </p>
                                             )}
                                         </div>
@@ -840,20 +861,21 @@ export default function UsersIndex({
 
                                 <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
                                     <span className="text-xs text-muted-foreground">
-                                        Joined {timeAgo(user.created_at)}
+                                        {tr('Joined')}{' '}
+                                        {timeAgo(user.created_at)}
                                     </span>
                                     <div className="flex items-center gap-1">
                                         <Link
                                             href={`/admin/users/${user.id}`}
                                             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                                            aria-label="View user"
+                                            aria-label={tr('View user')}
                                         >
                                             <Eye className="size-4" />
                                         </Link>
                                         <Link
                                             href={`/admin/users/${user.id}/edit`}
                                             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                                            aria-label="Edit user"
+                                            aria-label={tr('Edit user')}
                                         >
                                             <Edit className="size-4" />
                                         </Link>
@@ -863,7 +885,9 @@ export default function UsersIndex({
                                                     setImpersonateTarget(user)
                                                 }
                                                 className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                                                aria-label={`Login as ${user.name}`}
+                                                aria-label={tr('Login as {0}', [
+                                                    user.name,
+                                                ])}
                                             >
                                                 <LogIn className="size-4" />
                                             </button>
@@ -873,7 +897,7 @@ export default function UsersIndex({
                                                 setDeleteTarget(user)
                                             }
                                             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
-                                            aria-label="Delete user"
+                                            aria-label={tr('Delete user')}
                                         >
                                             <Trash2 className="size-4" />
                                         </button>
@@ -898,8 +922,11 @@ export default function UsersIndex({
                 open={deleteTarget !== null}
                 onClose={() => setDeleteTarget(null)}
                 onConfirm={handleDelete}
-                title="Delete user"
-                message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+                title={tr('Delete user')}
+                message={tr(
+                    'Are you sure you want to delete "{0}"? This action cannot be undone.',
+                    [deleteTarget?.name],
+                )}
                 processing={deleting}
             />
 
@@ -907,9 +934,12 @@ export default function UsersIndex({
                 open={impersonateTarget !== null}
                 onClose={() => setImpersonateTarget(null)}
                 onConfirm={handleImpersonate}
-                title="Login as user"
-                message={`You will browse EduFunHub as "${impersonateTarget?.name}" (${impersonateTarget?.email}). Every action is recorded in the impersonation log. Use "Leave" in the red bar to return to your account.`}
-                confirmLabel="Login as"
+                title={tr('Login as user')}
+                message={tr(
+                    'You will browse EduFunHub as "{0}" ({1}). Every action is recorded in the impersonation log. Use "Leave" in the red bar to return to your account.',
+                    [impersonateTarget?.name, impersonateTarget?.email],
+                )}
+                confirmLabel={tr('Login as')}
                 tone="primary"
                 processing={impersonating}
             />
@@ -918,5 +948,5 @@ export default function UsersIndex({
 }
 
 UsersIndex.layout = (page: ReactNode) => (
-    <AdminLayout title="Users">{page}</AdminLayout>
+    <AdminLayout title={tr('Users')}>{page}</AdminLayout>
 );

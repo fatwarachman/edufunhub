@@ -76,7 +76,8 @@
         "floorDrop": "Floor Drop",
         "economyHeist": "Economy Heist",
         "orderRush": "Order Rush TKJ",
-        "portSorter": "Port Sorter"
+        "portSorter": "Port Sorter",
+        "turboTrivia": "Turbo Trivia"
     },
     "flagQuest": {
         "title": "Flag Quest",
@@ -295,7 +296,8 @@
             "floorDrop": "Trivia battle royale for 2–100 players. Answer right so your tile stays; the last one standing wins.",
             "economyHeist": "Self-paced gold quiz for 2–60 players. Answer right, open mystery chests, steal or swap gold and raise shields!",
             "orderRush": "Race to order UTP cables, fibre cores, OSI layers, DHCP and TCP steps for networking students. Streaks earn sabotage power-ups!",
-            "portSorter": "Sort network packets into the right bin before they drop! Topics and bins are set by teachers: ports & protocols, services and more."
+            "portSorter": "Sort network packets into the right bin before they drop! Topics and bins are set by teachers: ports & protocols, services and more.",
+            "turboTrivia": "A quiz kart race on the classroom projector! Answer right for Nitro, drop Banana Peels, fire Missiles at first place and call Lightning."
         },
         "detailsFirst": "Complete details first",
         "detailsNoticeTitle": "Complete your participant details first!",
@@ -716,20 +718,6 @@
                     ],
                     "fun": "Social intrigue and friendly accusations get even quiet students talking."
                 },
-                "kartRacer": {
-                    "title": "Kart Racer / Turbo Trivia",
-                    "inspiration": "Mario Kart mechanics",
-                    "concept": "Students' avatars race go-karts on a live track on the projector.",
-                    "gameplay": [
-                        "Answer correctly and fast to get a nitro boost.",
-                        "Every correct answer gives a random Item Box.",
-                        "Banana Peel: drop it on the track; anyone who hits it spins out for 3 seconds.",
-                        "Missile: fire at the student in first place.",
-                        "Lightning: shrinks every rival kart and slows it down briefly.",
-                        "Shield: protects your own kart."
-                    ],
-                    "fun": "The leaderboard becomes a live visual race. First place is always the missile target, so comebacks happen naturally."
-                },
                 "bossDefense": {
                     "title": "Dungeon Crawl / Boss Defense",
                     "inspiration": "Co-op RPG / mini Genshin mechanics",
@@ -955,7 +943,11 @@
             "invalid_powerup": "Unknown power-up.",
             "no_powerup": "You don't have that power-up.",
             "shield_active": "Your shield is already up.",
-            "target_busy": "The target is busy."
+            "target_busy": "The target is busy.",
+            "invalid_item": "Unknown item.",
+            "no_item": "You don't have that item.",
+            "no_target": "There is no target ahead of you.",
+            "kart_finished": "Your kart already finished."
         },
         "copyPinLabel": "Copy PIN",
         "copyLinkLabel": "Copy link"
@@ -1682,5 +1674,199 @@
         "errors": {
             "generic": "The server rejected that action."
         }
+    },
+    "turboTrivia": {
+        "title": "Turbo Trivia",
+        "tagline": "A live quiz kart race on the classroom projector",
+        "chooseRole": "Who are you?",
+        "arenaTitle": "Projector screen (teacher)",
+        "arenaBody": "Create a room, show the PIN & QR code, then watch the live race track on a projector or smart TV.",
+        "openArena": "Open the projector screen",
+        "controllerTitle": "Controller (student phone)",
+        "controllerBody": "Scan the QR code or enter the PIN, answer questions for nitro and fire items from your phone.",
+        "openController": "Play as a student",
+        "switchRole": "Switch role",
+        "rules": "3 laps. Answer right and fast = Nitro 120 km/h + an Item Box. A wrong answer = engine stutter at 30 km/h. Items: Banana Peel, Missile, Lightning, Shield.",
+        "arena": {
+            "createRoom": "Create a race room",
+            "hostIntro": "You are the host. Students join from their own phones (2–40 players).",
+            "roomClosed": "The room was closed.",
+            "scanToJoin": "Scan to join the race",
+            "orOpen": "or open {{url}} and enter the PIN",
+            "pin": "PIN",
+            "qrAlt": "QR code to join room {{pin}}",
+            "copyLink": "Copy link",
+            "copied": "Copied!",
+            "waitingPlayers": "No students yet. Show them the PIN or QR code!",
+            "joined": "Racers in the garage",
+            "playersCount": "{{count}} racers",
+            "questions": "Number of questions",
+            "questionsUnit": "questions",
+            "start": "Start the race",
+            "needPlayers": "Needs at least {{min}} racers",
+            "closeRoom": "Close room",
+            "again": "Race again",
+            "endGame": "End race",
+            "endConfirm": "Tap again to end. Places are decided by distance driven.",
+            "endNow": "Yes, end it",
+            "fullscreen": "Full screen",
+            "exitFullscreen": "Exit full screen"
+        },
+        "countdown": "Get ready…",
+        "go": "GO!",
+        "race": {
+            "track": "Turbo Trivia circuit",
+            "lap": "Lap {{lap}}/{{laps}}",
+            "question": "Question {{number}}/{{total}}",
+            "answered": "{{answered}}/{{total}} answered",
+            "secondsLeft": "{{seconds}} s",
+            "standings": "Live standings",
+            "minimap": "Position map",
+            "feedTitle": "Race news",
+            "feedEmpty": "No action yet. Answer questions to get items!",
+            "correctAnswer": "Correct answer",
+            "lastLap": "Final lap!",
+            "sprint": "Out of questions, sprint to the finish line!",
+            "kartLabel": "{{name}}: position {{rank}}, {{speed}} km/h",
+            "finished": "Finished",
+            "offline": "Offline",
+            "raceTime": "Race time"
+        },
+        "feed": {
+            "BANANA": "{{by}} dropped a Banana Peel!",
+            "MISSILE": "{{by}} fired a Missile at {{target}}!",
+            "LIGHTNING": "{{by}} called Lightning! {{count}} rivals shrank.",
+            "SHIELD": "{{by}} raised a Shield!",
+            "bananaHit": "{{target}} slipped on {{by}}'s Banana Peel!",
+            "bananaBlocked": "{{target}}'s Shield smashed a Banana Peel!",
+            "missileHit": "{{by}}'s Missile hit {{target}}!",
+            "missileBlocked": "{{target}}'s Shield blocked {{by}}'s Missile!",
+            "finish": "{{by}} crossed the finish line in place {{place}}!",
+            "left": "{{by}} left the race."
+        },
+        "items": {
+            "BANANA": "Banana Peel",
+            "MISSILE": "Missile",
+            "LIGHTNING": "Lightning",
+            "SHIELD": "Shield"
+        },
+        "itemHelp": {
+            "BANANA": "Drop it behind you",
+            "MISSILE": "Chases first place",
+            "LIGHTNING": "Shrinks every rival",
+            "SHIELD": "Protects for 8 s"
+        },
+        "effects": {
+            "NITRO": "Nitro!",
+            "STUTTER": "Engine stutter",
+            "SPIN": "Spinning out",
+            "STAGGER": "On fire",
+            "SHRINK": "Shrunk",
+            "SHIELD": "Shield active"
+        },
+        "controller": {
+            "playerIntro": "Hi {{name}}! Enter the PIN from the projector screen.",
+            "pinLabel": "Room PIN",
+            "pinPlaceholder": "6 digits",
+            "join": "Join",
+            "waitingStart": "You are in the garage! Wait for the teacher to start the race.",
+            "leave": "Leave",
+            "position": "Position",
+            "speed": "Speed",
+            "speedValue": "{{speed}} km/h",
+            "lap": "Lap",
+            "yourItems": "Item Box",
+            "noItems": "Answer correctly to get an Item Box.",
+            "emptySlot": "Empty slot",
+            "useItem": "Use {{item}}: {{help}}",
+            "answerLabel": "Answer {{letter}}: {{text}}",
+            "nitro": "Correct! Nitro on",
+            "stutter": "Wrong! Engine stutter",
+            "waitNext": "Wait for the next question…",
+            "correctWas": "Correct answer: {{answer}}",
+            "timeUp": "Time is up!",
+            "finished": "Finished! You are in place {{place}}",
+            "finishedWait": "Waiting for the other racers to finish…",
+            "sprint": "Out of questions! Your kart drives to the finish line…",
+            "hit": {
+                "BANANA": "You slipped on a Banana Peel!",
+                "MISSILE": "Missile hit! Your kart is on fire.",
+                "LIGHTNING": "Struck by Lightning! Your kart shrank."
+            },
+            "blocked": "Your Shield blocked the attack!",
+            "newItem": "New item: {{item}}!"
+        },
+        "result": {
+            "podium": "Winners' podium",
+            "winner": "{{name}} wins the race!",
+            "youWon": "You won first place!",
+            "yourRank": "You placed #{{rank}} of {{total}}",
+            "earned": "+{{points}} points",
+            "player": "Racer",
+            "time": "Time",
+            "correct": "Correct",
+            "accuracy": "Accuracy",
+            "items": "Items",
+            "dnf": "Not finished ({{percent}}%)",
+            "ranking": "Final results"
+        },
+        "howTo": {
+            "title": "How to play",
+            "step": "Step {{current}}/{{total}}",
+            "prev": "Previous",
+            "next": "Next",
+            "play": "Play",
+            "pause": "Pause",
+            "replay": "Replay",
+            "goTo": "Go to step {{number}}",
+            "demoProjector": "Projector screen",
+            "demoJoined": "Racers joined",
+            "demoQuestionNo": "Question 3/10",
+            "demoQuestion": "The capital of Indonesia is…",
+            "demoCorrect": "Correct! Nitro + Item Box",
+            "demoNitro": "Right & fast: Nitro",
+            "demoStutter": "Wrong: engine stutter",
+            "demoItemBox": "A correct answer opens a random Item Box",
+            "demoBalance": "Places 1–3 never get Missile or Lightning. The further back, the better the odds.",
+            "demoShield": "A Shield blocks 1 Missile/Banana and ignores Lightning for 8 seconds.",
+            "demoBanana": "Drop a Banana behind you. Whoever runs over it stops for 3 seconds.",
+            "demoTicker": "Budi fires a Missile at Rani!",
+            "demoLaps": "3 laps",
+            "demoWinner": "{{name}} wins!",
+            "scenes": {
+                "join": {
+                    "title": "1. Teacher opens the arena, students join",
+                    "body": "The teacher opens the Arena on the projector or Smart TV, picks a subject and number of questions, then shows the PIN and QR code. Students scan the QR code or type the PIN on their phone."
+                },
+                "answer": {
+                    "title": "2. Answer on your phone",
+                    "body": "Every student gets the same question with 4 choices. Tap an answer before time runs out. Your answer locks once tapped."
+                },
+                "speed": {
+                    "title": "3. Right = Nitro, wrong = stutter",
+                    "body": "Base speed is 50 km/h. A correct answer fires Nitro at 120 km/h; the faster you answer, the longer it lasts. A wrong answer makes the engine stutter at 30 km/h for 2 seconds."
+                },
+                "items": {
+                    "title": "4. Grab an Item Box",
+                    "body": "Every correct answer gives 1 random item (hold up to 2). Tap the item button on your phone any time to use it."
+                },
+                "attack": {
+                    "title": "5. Attack or defend",
+                    "body": "The Missile chases first place, Lightning shrinks and slows every rival, the Banana Peel traps racers behind you, and the Shield protects your kart."
+                },
+                "win": {
+                    "title": "6. Finish 3 laps",
+                    "body": "The projector shows the circuit, live ranking and race news. The first to finish 3 laps wins. Every student earns points and the podium appears at the end."
+                }
+            },
+            "downloadVideo": "Download video",
+            "downloadSlides": "Download slides (PDF)"
+        }
+    },
+    "language": {
+        "label": "Language",
+        "description": "Choose the display language for your account. Indonesian is the default.",
+        "id": "Bahasa Indonesia",
+        "en": "English"
     }
 }

@@ -14,6 +14,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
 import {
@@ -106,17 +107,17 @@ export default function GamesIndex({ games }: { games: GameRow[] }) {
 
     return (
         <>
-            <Head title="Game Statistics" />
+            <Head title={tr('Game Statistics')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div className="flex min-w-0 flex-col gap-1">
                         <h2 className="font-display text-2xl font-bold text-foreground">
-                            Game Statistics
+                            {tr('Game Statistics')}
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            {formatNumber(totalPlays)} recorded plays across{' '}
-                            {games.length} games. Select a game for the full
-                            analysis.
+                            {formatNumber(totalPlays)}{' '}
+                            {tr('recorded plays across')} {games.length}{' '}
+                            {tr('games. Select a game for the full analysis.')}
                         </p>
                     </div>
                     <ViewSwitch view={view} onChange={saveView} />
@@ -140,14 +141,14 @@ function ViewSwitch({
     onChange: (view: View) => void;
 }) {
     const options: { value: View; label: string; icon: React.ElementType }[] = [
-        { value: 'cards', label: 'Cards', icon: LayoutGrid },
-        { value: 'table', label: 'Table', icon: Rows3 },
+        { value: 'cards', label: tr('Cards'), icon: LayoutGrid },
+        { value: 'table', label: tr('Table'), icon: Rows3 },
     ];
 
     return (
         <div
             role="group"
-            aria-label="Display mode"
+            aria-label={tr('Display mode')}
             className="inline-flex h-9 shrink-0 items-center gap-0.5 rounded-xl border border-border bg-muted/60 p-0.5"
         >
             {options.map(({ value, label, icon: Icon }) => (
@@ -165,7 +166,7 @@ function ViewSwitch({
                     )}
                 >
                     <Icon className="size-4" aria-hidden="true" />
-                    {label}
+                    {tr(label)}
                 </button>
             ))}
         </div>
@@ -211,8 +212,10 @@ function GamesCards({ games }: { games: GameRow[] }) {
                                     </span>
                                     <span className="text-xs text-muted-foreground">
                                         {game.tracked
-                                            ? 'Server-scored · results tracked'
-                                            : 'Practice demo · not tracked'}
+                                            ? tr(
+                                                  'Server-scored · results tracked',
+                                              )
+                                            : tr('Practice demo · not tracked')}
                                     </span>
                                 </div>
                             </div>
@@ -220,18 +223,18 @@ function GamesCards({ games }: { games: GameRow[] }) {
                         </div>
 
                         <dl className="grid grid-cols-2 gap-3 text-sm">
-                            <Metric icon={ChartColumnBig} label="Plays">
+                            <Metric icon={ChartColumnBig} label={tr('Plays')}>
                                 {formatNumber(game.plays)}
                             </Metric>
-                            <Metric icon={UsersRound} label="Players">
+                            <Metric icon={UsersRound} label={tr('Players')}>
                                 {formatNumber(game.players)}
                             </Metric>
-                            <Metric icon={Target} label="Success rate">
+                            <Metric icon={Target} label={tr('Success rate')}>
                                 <span className={rateTone(game.success_rate)}>
                                     {formatPercent(game.success_rate)}
                                 </span>
                             </Metric>
-                            <Metric icon={Coins} label="Points given">
+                            <Metric icon={Coins} label={tr('Points given')}>
                                 {formatNumber(game.points)}
                             </Metric>
                         </dl>
@@ -240,11 +243,13 @@ function GamesCards({ games }: { games: GameRow[] }) {
                             <span className="inline-flex items-center gap-1.5">
                                 <ListChecks className="size-3.5" />
                                 {game.tracked
-                                    ? `${game.questions} active questions`
-                                    : 'Uses local demo questions'}
+                                    ? tr('{0} active questions', [
+                                          game.questions,
+                                      ])
+                                    : tr('Uses local demo questions')}
                             </span>
                             <span>
-                                Last played{' '}
+                                {tr('Last played')}{' '}
                                 {formatDateTime(game.last_played_at)}
                             </span>
                         </div>
@@ -329,7 +334,7 @@ function GamesTable({ games }: { games: GameRow[] }) {
                                             active && 'text-foreground',
                                         )}
                                     >
-                                        {column.label}
+                                        {tr(column.label)}
                                         <Icon
                                             className={cn(
                                                 'size-3.5',
@@ -366,8 +371,8 @@ function GamesTable({ games }: { games: GameRow[] }) {
                                         </span>
                                         <span className="text-xs text-muted-foreground">
                                             {game.tracked
-                                                ? 'Server-scored'
-                                                : 'Practice demo'}
+                                                ? tr('Server-scored')
+                                                : tr('Practice demo')}
                                         </span>
                                     </span>
                                 </Link>
@@ -472,7 +477,7 @@ function Metric({
         <div className="flex flex-col gap-0.5 rounded-xl bg-muted/50 px-3 py-2">
             <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Icon className="size-3.5" />
-                {label}
+                {tr(label)}
             </dt>
             <dd className="text-lg font-semibold text-foreground tabular-nums">
                 {children}
@@ -482,5 +487,5 @@ function Metric({
 }
 
 GamesIndex.layout = (page: ReactNode) => (
-    <AdminLayout title="Game Statistics">{page}</AdminLayout>
+    <AdminLayout title={tr('Game Statistics')}>{page}</AdminLayout>
 );

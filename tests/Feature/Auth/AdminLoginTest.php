@@ -16,7 +16,7 @@ test('admin credentials are required at the admin entry point', function (bool $
     $user = User::factory()->withoutTwoFactor()->create(['is_superadmin' => $admin]);
     $response = $this->from('/admin/login')->post('/admin/login', ['email' => $user->email, 'password' => 'password']);
     if ($admin) {
-        $response->assertRedirect(route('admin.dashboard'));
+        $response->assertRedirect(route('portal'));
         $this->assertAuthenticatedAs($user);
     } else {
         $response->assertSessionHasErrors('email');

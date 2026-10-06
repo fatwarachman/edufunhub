@@ -3,16 +3,16 @@
 namespace App\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
-use Laravel\Fortify\Fortify;
 use Symfony\Component\HttpFoundation\Response;
 
 class LoginResponse implements LoginResponseContract
 {
     /**
-     * Redirect admins to the admin dashboard and players to the player dashboard.
+     * Send every role to the player portal after login; an intended URL wins.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      */
     public function toResponse($request): Response
     {
@@ -20,12 +20,6 @@ class LoginResponse implements LoginResponseContract
             return new JsonResponse(['two_factor' => false]);
         }
 
-        $user = $request->user();
-
-        if ($user !== null && ($user->is_superadmin || $user->hasRole('admin'))) {
-            return redirect()->intended(route('admin.dashboard'));
-        }
-
-        return redirect()->intended(Fortify::redirects('login'));
+        return redirect()->intended(route('portal'));
     }
 }

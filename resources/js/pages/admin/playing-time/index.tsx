@@ -15,6 +15,7 @@ import {
     Panel,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
 import {
@@ -106,7 +107,7 @@ const RANGES = [
 ];
 
 const plural = (count: number, word: string) =>
-    `${formatNumber(count)} ${word}${count === 1 ? '' : 's'}`;
+    tr(count === 1 ? `{0} ${word}` : `{0} ${word}s`, [formatNumber(count)]);
 
 /** 4h 05m · 12m 30s · 45s */
 export function formatPlayTime(seconds: number | null | undefined): string {
@@ -182,15 +183,16 @@ export default function PlayingTime({
 
     return (
         <>
-            <Head title="Playing Time" />
+            <Head title={tr('Playing Time')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-1">
                     <h2 className="font-display text-2xl font-bold text-foreground">
-                        Playing Time
+                        {tr('Playing Time')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        How long each player plays, and in which games. Time
-                        comes from finished games reported by the game server.
+                        {tr(
+                            'How long each player plays, and in which games. Time comes from finished games reported by the game server.',
+                        )}
                     </p>
                 </div>
 
@@ -201,7 +203,7 @@ export default function PlayingTime({
                     <div
                         className="inline-flex rounded-lg border border-border bg-background p-1"
                         role="group"
-                        aria-label="Time range"
+                        aria-label={tr('Time range')}
                     >
                         {RANGES.map((range) => (
                             <button
@@ -216,12 +218,12 @@ export default function PlayingTime({
                                         : 'text-muted-foreground hover:text-foreground',
                                 )}
                             >
-                                {range.label}
+                                {tr(range.label)}
                             </button>
                         ))}
                     </div>
                     <select
-                        aria-label="Game"
+                        aria-label={tr('Game')}
                         value={filters.game ?? ''}
                         onChange={(event) =>
                             apply({ game: event.target.value || null })
@@ -229,7 +231,7 @@ export default function PlayingTime({
                         className={fieldClass}
                         data-testid="playing-time-game"
                     >
-                        <option value="">All games</option>
+                        <option value="">{tr('All games')}</option>
                         {games.map((game) => (
                             <option key={game.key} value={game.key}>
                                 {gameLabel(game.key)}
@@ -241,8 +243,8 @@ export default function PlayingTime({
                         <input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Search player, nickname or email"
-                            aria-label="Search players"
+                            placeholder={tr('Search player, nickname or email')}
+                            aria-label={tr('Search players')}
                             className={`${fieldClass} w-full pl-9`}
                             data-testid="playing-time-search"
                         />
@@ -261,14 +263,14 @@ export default function PlayingTime({
                             className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
                         >
                             <RotateCcw className="size-4" />
-                            Reset
+                            {tr('Reset')}
                         </button>
                     )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
                     <KpiCard
-                        label="Total playing time"
+                        label={tr('Total playing time')}
                         value={formatPlayTime(summary.seconds)}
                         icon={Clock}
                         accent="#6366f1"
@@ -279,7 +281,7 @@ export default function PlayingTime({
                         }
                     />
                     <KpiCard
-                        label="Avg per player"
+                        label={tr('Avg per player')}
                         value={formatPlayTime(summary.avg_per_player)}
                         icon={UsersRound}
                         accent="#10b981"
@@ -290,24 +292,24 @@ export default function PlayingTime({
                         }
                     />
                     <KpiCard
-                        label="Avg session"
+                        label={tr('Avg session')}
                         value={formatPlayTime(summary.avg_session)}
                         icon={Timer}
                         accent="#f59e0b"
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                per finished game
+                                {tr('per finished game')}
                             </span>
                         }
                     />
                     <KpiCard
-                        label="Untimed plays"
+                        label={tr('Untimed plays')}
                         value={formatNumber(summary.untimed_plays)}
                         icon={Hourglass}
                         accent="#94a3b8"
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                no duration reported
+                                {tr('no duration reported')}
                             </span>
                         }
                     />
@@ -315,8 +317,11 @@ export default function PlayingTime({
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
                     <Panel
-                        title="Daily playing time"
-                        description={`Minutes played per day · last ${report.daily.length} days`}
+                        title={tr('Daily playing time')}
+                        description={tr(
+                            'Minutes played per day · last {0} days',
+                            [report.daily.length],
+                        )}
                         icon={Clock}
                         className="lg:col-span-3"
                     >
@@ -386,15 +391,15 @@ export default function PlayingTime({
                     </Panel>
 
                     <Panel
-                        title="By game"
-                        description="Total time · avg session · players"
+                        title={tr('By game')}
+                        description={tr('Total time · avg session · players')}
                         icon={Gamepad2}
                         className="lg:col-span-2"
                     >
                         {report.games.length === 0 ? (
                             <EmptyState
                                 icon={Gamepad2}
-                                title="No games played in this range"
+                                title={tr('No games played in this range')}
                             />
                         ) : (
                             <ul
@@ -430,9 +435,9 @@ export default function PlayingTime({
                                             />
                                         </div>
                                         <p className="text-xs text-muted-foreground">
-                                            avg{' '}
-                                            {formatPlayTime(game.avg_session)} ·
-                                            longest{' '}
+                                            {tr('avg')}{' '}
+                                            {formatPlayTime(game.avg_session)}{' '}
+                                            {tr('· longest')}{' '}
                                             {formatPlayTime(game.longest)} ·{' '}
                                             {plural(game.players, 'player')} ·{' '}
                                             {plural(game.plays, 'play')}
@@ -445,15 +450,20 @@ export default function PlayingTime({
                 </div>
 
                 <Panel
-                    title="Players"
-                    description={`Ranked by total playing time · top ${playerLimit}. Open a row to see the time per game.`}
+                    title={tr('Players')}
+                    description={tr(
+                        'Ranked by total playing time · top {0}. Open a row to see the time per game.',
+                        [playerLimit],
+                    )}
                     icon={UsersRound}
                 >
                     {report.players.length === 0 ? (
                         <EmptyState
                             icon={UsersRound}
-                            title="No players found"
-                            description="Change the range, game or search."
+                            title={tr('No players found')}
+                            description={tr(
+                                'Change the range, game or search.',
+                            )}
                         />
                     ) : (
                         <ul
@@ -602,16 +612,16 @@ function PlayerBreakdown({
     return (
         <div className="flex flex-col gap-3 border-t border-dashed border-border bg-muted/20 px-5 py-4 sm:pl-14">
             <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs sm:grid-cols-4">
-                <Fact label="Avg session">
+                <Fact label={tr('Avg session')}>
                     {formatPlayTime(player.avg_session)}
                 </Fact>
-                <Fact label="Timed plays">
+                <Fact label={tr('Timed plays')}>
                     {player.timed_plays} / {player.plays}
                 </Fact>
-                <Fact label="Last played">
+                <Fact label={tr('Last played')}>
                     {timeAgo(player.last_played_at)}
                 </Fact>
-                <Fact label="Level">
+                <Fact label={tr('Level')}>
                     {player.grade !== null
                         ? (LEVEL_LABELS[
                               player.grade <= 6
@@ -626,12 +636,16 @@ function PlayerBreakdown({
             <table className="w-full text-sm">
                 <thead className="text-left text-xs text-muted-foreground uppercase">
                     <tr>
-                        <th className="py-1 font-medium">Game</th>
-                        <th className="py-1 text-right font-medium">Time</th>
-                        <th className="hidden py-1 text-right font-medium sm:table-cell">
-                            Plays
+                        <th className="py-1 font-medium">{tr('Game')}</th>
+                        <th className="py-1 text-right font-medium">
+                            {tr('Time')}
                         </th>
-                        <th className="w-2/5 py-1 pl-3 font-medium">Share</th>
+                        <th className="hidden py-1 text-right font-medium sm:table-cell">
+                            {tr('Plays')}
+                        </th>
+                        <th className="w-2/5 py-1 pl-3 font-medium">
+                            {tr('Share')}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -673,7 +687,7 @@ function PlayerBreakdown({
                 href={`/admin/users/${player.user_id}`}
                 className="w-fit text-xs font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
             >
-                Open {player.account_name}'s profile
+                {tr('Open profile of')} {player.account_name}
             </Link>
         </div>
     );
@@ -682,7 +696,7 @@ function PlayerBreakdown({
 function Fact({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div className="flex items-baseline justify-between gap-2 sm:flex-col sm:items-start sm:gap-0">
-            <dt className="text-muted-foreground uppercase">{label}</dt>
+            <dt className="text-muted-foreground uppercase">{tr(label)}</dt>
             <dd className="font-semibold text-foreground tabular-nums">
                 {children}
             </dd>
@@ -691,5 +705,5 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
 }
 
 PlayingTime.layout = (page: ReactNode) => (
-    <AdminLayout title="Playing Time">{page}</AdminLayout>
+    <AdminLayout title={tr('Playing Time')}>{page}</AdminLayout>
 );

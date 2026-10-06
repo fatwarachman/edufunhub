@@ -13,6 +13,7 @@ import {
     type MatchRow,
 } from '@/components/admin/match-history';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { Head, router } from '@inertiajs/react';
 import { CalendarDays, DoorOpen, Search, Swords, Users } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
@@ -57,39 +58,40 @@ export default function MatchesIndex({
 
     return (
         <AdminLayout>
-            <Head title="Match History" />
+            <Head title={tr('Match History')} />
             <div className="flex flex-col gap-6">
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">
-                        Match History
+                        {tr('Match History')}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Every recorded room and duel: who played together, at
-                        which level and how they ranked.
+                        {tr(
+                            'Every recorded room and duel: who played together, at which level and how they ranked.',
+                        )}
                     </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                     <StatTile
-                        label="Matches"
+                        label={tr('Matches')}
                         value={formatNumber(summary.matches)}
                         icon={Swords}
                         color="bg-indigo-500"
                     />
                     <StatTile
-                        label="With 2+ players"
+                        label={tr('With 2+ players')}
                         value={formatNumber(summary.multiplayer)}
                         icon={Users}
                         color="bg-emerald-500"
                     />
                     <StatTile
-                        label="Invite rooms"
+                        label={tr('Invite rooms')}
                         value={formatNumber(summary.rooms)}
                         icon={DoorOpen}
                         color="bg-sky-500"
                     />
                     <StatTile
-                        label="Today"
+                        label={tr('Today')}
                         value={formatNumber(summary.today)}
                         icon={CalendarDays}
                         color="bg-amber-500"
@@ -97,7 +99,7 @@ export default function MatchesIndex({
                 </div>
 
                 <Panel
-                    title="Matches"
+                    title={tr('Matches')}
                     icon={Swords}
                     actions={
                         <div className="flex flex-wrap items-center gap-2">
@@ -112,9 +114,9 @@ export default function MatchesIndex({
                                     onChange={(event) =>
                                         setSearch(event.target.value)
                                     }
-                                    placeholder="Player name or PIN"
+                                    placeholder={tr('Player name or PIN')}
                                     className={`${fieldClass} w-52 pl-9`}
-                                    aria-label="Search matches"
+                                    aria-label={tr('Search matches')}
                                 />
                             </form>
                             <select
@@ -125,9 +127,9 @@ export default function MatchesIndex({
                                     })
                                 }
                                 className={fieldClass}
-                                aria-label="Game"
+                                aria-label={tr('Game')}
                             >
-                                <option value="">All games</option>
+                                <option value="">{tr('All games')}</option>
                                 {games.map((game) => (
                                     <option key={game} value={game}>
                                         {gameLabel(game)}
@@ -142,9 +144,9 @@ export default function MatchesIndex({
                                     })
                                 }
                                 className={fieldClass}
-                                aria-label="Mode"
+                                aria-label={tr('Mode')}
                             >
-                                <option value="">All modes</option>
+                                <option value="">{tr('All modes')}</option>
                                 {modes.map((mode) => (
                                     <option key={mode} value={mode}>
                                         {MODE_LABELS[mode] ?? mode}
@@ -157,8 +159,10 @@ export default function MatchesIndex({
                     {matches.data.length === 0 ? (
                         <EmptyState
                             icon={Swords}
-                            title="No matches yet"
-                            description="Room games and duels are recorded when they end."
+                            title={tr('No matches yet')}
+                            description={tr(
+                                'Room games and duels are recorded when they end.',
+                            )}
                         />
                     ) : (
                         <div className="flex flex-col gap-3">

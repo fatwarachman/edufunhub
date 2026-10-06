@@ -13,6 +13,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { SubjectIcon } from '@/lib/subjects';
 import { cn } from '@/lib/utils';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
@@ -89,18 +90,17 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
 
     return (
         <AdminLayout>
-            <Head title="Subjects" />
+            <Head title={tr('Subjects')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">
-                            Subjects
+                            {tr('Subjects')}
                         </h1>
                         <p className="max-w-2xl text-sm text-muted-foreground">
-                            School subjects players pick before a game. New
-                            subjects appear in every game and in the question
-                            bank right away; the game service picks them up
-                            within a minute.
+                            {tr(
+                                'School subjects players pick before a game. New subjects appear in every game and in the question bank right away; the game service picks them up within a minute.',
+                            )}
                         </p>
                     </div>
                     <button
@@ -110,22 +110,25 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
                         className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                     >
                         <Plus className="size-4" />
-                        New subject
+                        {tr('New subject')}
                     </button>
                 </div>
 
                 <FlashMessages errors={editing === null ? errors : undefined} />
 
                 <Panel
-                    title={`${subjects.length} subjects`}
-                    description={`${visible} shown in games · order = order in the game picker`}
+                    title={tr('{0} subjects', [subjects.length])}
+                    description={tr(
+                        '{0} shown in games · order = order in the game picker',
+                        [visible],
+                    )}
                     icon={BookMarked}
                 >
                     {subjects.length === 0 ? (
                         <EmptyState
                             icon={BookMarked}
-                            title="No subjects yet"
-                            description="Add the first subject."
+                            title={tr('No subjects yet')}
+                            description={tr('Add the first subject.')}
                         />
                     ) : (
                         <ul
@@ -174,10 +177,12 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
                                                 {subject.is_system && (
                                                     <span
                                                         className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
-                                                        title="Built-in subject: can be hidden, not deleted"
+                                                        title={tr(
+                                                            'Built-in subject: can be hidden, not deleted',
+                                                        )}
                                                     >
                                                         <Lock className="size-3" />
-                                                        Built-in
+                                                        {tr('Built-in')}
                                                     </span>
                                                 )}
                                             </p>
@@ -191,13 +196,15 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
                                                 >
                                                     <ListChecks className="size-3.5" />
                                                     {subject.active_questions}{' '}
-                                                    active / {subject.questions}{' '}
-                                                    questions
+                                                    {tr('active /')}{' '}
+                                                    {subject.questions}{' '}
+                                                    {tr('questions')}
                                                 </Link>
                                                 {empty && subject.is_active && (
                                                     <span className="text-amber-700 dark:text-amber-400">
-                                                        No active questions:
-                                                        games use the mix
+                                                        {tr(
+                                                            'No active questions: games use the mix',
+                                                        )}
                                                     </span>
                                                 )}
                                             </p>
@@ -208,7 +215,9 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
                                             />
                                             <div className="flex items-center gap-0.5">
                                                 <IconButton
-                                                    label={`Move ${subject.name_id} up`}
+                                                    label={tr('Move {0} up', [
+                                                        subject.name_id,
+                                                    ])}
                                                     disabled={index === 0}
                                                     onClick={() =>
                                                         act(
@@ -220,7 +229,9 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
                                                     <ArrowUp className="size-4" />
                                                 </IconButton>
                                                 <IconButton
-                                                    label={`Move ${subject.name_id} down`}
+                                                    label={tr('Move {0} down', [
+                                                        subject.name_id,
+                                                    ])}
                                                     disabled={
                                                         index ===
                                                         subjects.length - 1
@@ -238,7 +249,9 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
                                                     <ArrowDown className="size-4" />
                                                 </IconButton>
                                                 <IconButton
-                                                    label={`Edit ${subject.name_id}`}
+                                                    label={tr('Edit {0}', [
+                                                        subject.name_id,
+                                                    ])}
                                                     testId={`subject-edit-${subject.key}`}
                                                     onClick={() =>
                                                         setEditing(subject)
@@ -249,8 +262,18 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
                                                 <IconButton
                                                     label={
                                                         subject.is_active
-                                                            ? `Hide ${subject.name_id} from games`
-                                                            : `Show ${subject.name_id} in games`
+                                                            ? tr(
+                                                                  'Hide {0} from games',
+                                                                  [
+                                                                      subject.name_id,
+                                                                  ],
+                                                              )
+                                                            : tr(
+                                                                  'Show {0} in games',
+                                                                  [
+                                                                      subject.name_id,
+                                                                  ],
+                                                              )
                                                     }
                                                     testId={`subject-toggle-${subject.key}`}
                                                     onClick={() =>
@@ -268,13 +291,18 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
                                                 {subject.is_system ? (
                                                     <span
                                                         className="inline-flex size-9 items-center justify-center text-muted-foreground/40"
-                                                        title="Built-in subjects can be hidden, not deleted"
+                                                        title={tr(
+                                                            'Built-in subjects can be hidden, not deleted',
+                                                        )}
                                                     >
                                                         <Lock className="size-4" />
                                                     </span>
                                                 ) : (
                                                     <IconButton
-                                                        label={`Delete ${subject.name_id}`}
+                                                        label={tr(
+                                                            'Delete {0}',
+                                                            [subject.name_id],
+                                                        )}
                                                         testId={`subject-delete-${subject.key}`}
                                                         danger
                                                         onClick={() =>
@@ -310,14 +338,19 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete subject?"
+                title={tr('Delete subject?')}
                 message={
                     deleting &&
                     (deleting.questions > 0
-                        ? `“${deleting.name_id}” still has ${deleting.questions} question(s). Move or delete them first, or hide the subject instead.`
-                        : `“${deleting.name_id}” will be removed from every game picker.`)
+                        ? tr(
+                              '“{0}” still has {1} question(s). Move or delete them first, or hide the subject instead.',
+                              [deleting.name_id, deleting.questions],
+                          )
+                        : tr('“{0}” will be removed from every game picker.', [
+                              deleting.name_id,
+                          ]))
                 }
-                confirmLabel="Delete"
+                confirmLabel={tr('Delete')}
                 processing={processing}
                 onClose={() => setDeleting(null)}
                 onConfirm={() =>
@@ -380,10 +413,12 @@ function SubjectDialog({
             >
                 <DialogHeader>
                     <DialogTitle>
-                        {subject ? `Edit ${subject.name_id}` : 'New subject'}
+                        {subject
+                            ? tr('Edit {0}', [subject.name_id])
+                            : tr('New subject')}
                     </DialogTitle>
                     <DialogDescription>
-                        Shown to players in the game subject picker.
+                        {tr('Shown to players in the game subject picker.')}
                     </DialogDescription>
                 </DialogHeader>
                 <form
@@ -401,17 +436,21 @@ function SubjectDialog({
                         </span>
                         <div className="min-w-0">
                             <p className="font-semibold break-words text-foreground">
-                                {data.name_id || 'Subject name'}
+                                {data.name_id || tr('Subject name')}
                             </p>
                             <p className="text-xs break-words text-muted-foreground">
-                                {data.name_en || 'English name'} · key{' '}
+                                {data.name_en || tr('English name')}{' '}
+                                {tr('· key')}{' '}
                                 <code className="font-mono">{key || '—'}</code>
                             </p>
                         </div>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <Field label="Name (Indonesian)" error={errors.name_id}>
+                        <Field
+                            label={tr('Name (Indonesian)')}
+                            error={errors.name_id}
+                        >
                             <input
                                 value={data.name_id}
                                 onChange={(event) =>
@@ -420,12 +459,15 @@ function SubjectDialog({
                                 className={fieldClass}
                                 name="name_id"
                                 maxLength={60}
-                                placeholder="Seni Budaya"
+                                placeholder={tr('Seni Budaya')}
                                 required
                                 autoFocus
                             />
                         </Field>
-                        <Field label="Name (English)" error={errors.name_en}>
+                        <Field
+                            label={tr('Name (English)')}
+                            error={errors.name_en}
+                        >
                             <input
                                 value={data.name_en}
                                 onChange={(event) =>
@@ -434,18 +476,22 @@ function SubjectDialog({
                                 className={fieldClass}
                                 name="name_en"
                                 maxLength={60}
-                                placeholder="Arts"
+                                placeholder={tr('Arts')}
                             />
                         </Field>
                     </div>
 
                     <Field
-                        label="Key"
+                        label={tr('Key')}
                         error={errors.key}
                         hint={
                             subject
-                                ? 'Fixed after creation: questions and saved player choices use it.'
-                                : 'Lowercase letters, numbers and hyphens. Made from the name unless you change it.'
+                                ? tr(
+                                      'Fixed after creation: questions and saved player choices use it.',
+                                  )
+                                : tr(
+                                      'Lowercase letters, numbers and hyphens. Made from the name unless you change it.',
+                                  )
                         }
                     >
                         <input
@@ -471,11 +517,11 @@ function SubjectDialog({
                         />
                     </Field>
 
-                    <Field label="Icon" error={errors.icon}>
+                    <Field label={tr('Icon')} error={errors.icon}>
                         <div
                             className="grid grid-cols-5 gap-2 sm:grid-cols-10"
                             role="radiogroup"
-                            aria-label="Icon"
+                            aria-label={tr('Icon')}
                         >
                             {icons.map((name) => {
                                 const selected = data.icon === name;
@@ -505,14 +551,14 @@ function SubjectDialog({
                         </div>
                     </Field>
 
-                    <Field label="Colour" error={errors.color}>
+                    <Field label={tr('Colour')} error={errors.color}>
                         <div className="flex flex-wrap items-center gap-2">
                             {COLORS.map((color) => (
                                 <button
                                     key={color}
                                     type="button"
                                     onClick={() => setData('color', color)}
-                                    aria-label={`Colour ${color}`}
+                                    aria-label={tr('Colour {0}', [color])}
                                     aria-pressed={data.color === color}
                                     className={cn(
                                         'size-8 rounded-full border-2 border-[#1f2a44] transition-transform',
@@ -531,15 +577,19 @@ function SubjectDialog({
                                     }
                                     className="size-5 cursor-pointer rounded-full border-0 bg-transparent p-0"
                                 />
-                                Custom
+                                {tr('Custom')}
                             </label>
                         </div>
                     </Field>
 
                     <Field
-                        label="Description for the AI question writer (optional)"
+                        label={tr(
+                            'Description for the AI question writer (optional)',
+                        )}
                         error={errors.ai_hint}
-                        hint="Tells AI generation what to write about, e.g. “arts: music, dance, crafts”."
+                        hint={tr(
+                            'Tells AI generation what to write about, e.g. “arts: music, dance, crafts”.',
+                        )}
                     >
                         <input
                             value={data.ai_hint}
@@ -562,10 +612,10 @@ function SubjectDialog({
                             }
                             className="size-4 rounded border-input"
                         />
-                        Show in games
+                        {tr('Show in games')}
                     </label>
                     <InputError
-                        message={(errors as Record<string, string>).subject}
+                        message={tr((errors as Record<string, string>).subject)}
                     />
 
                     <div className="flex justify-end gap-3 border-t border-border pt-5">
@@ -574,7 +624,7 @@ function SubjectDialog({
                             onClick={onClose}
                             className="inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                         >
-                            Cancel
+                            {tr('Cancel')}
                         </button>
                         <button
                             type="submit"
@@ -585,7 +635,7 @@ function SubjectDialog({
                             {processing && (
                                 <Loader2 className="size-4 animate-spin" />
                             )}
-                            {subject ? 'Save changes' : 'Add subject'}
+                            {subject ? tr('Save changes') : tr('Add subject')}
                         </button>
                     </div>
                 </form>
@@ -607,9 +657,13 @@ function Field({
 }) {
     return (
         <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-foreground">{label}</span>
+            <span className="text-sm font-medium text-foreground">
+                {tr(label)}
+            </span>
             {children}
-            {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+            {hint && (
+                <p className="text-xs text-muted-foreground">{tr(hint)}</p>
+            )}
             <InputError message={error} />
         </div>
     );
@@ -635,8 +689,8 @@ function IconButton({
             type="button"
             onClick={onClick}
             disabled={disabled}
-            aria-label={label}
-            title={label}
+            aria-label={tr(label)}
+            title={tr(label)}
             data-testid={testId}
             className={cn(
                 'inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground disabled:pointer-events-none disabled:opacity-30',

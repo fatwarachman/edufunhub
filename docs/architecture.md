@@ -95,6 +95,8 @@ Client menganimasikan jatuhnya paket, menggambar kolom sebanyak keranjang set, m
 - menolak pendaratan lebih cepat dari waktu jatuh (toleransi 400 ms), paket basi/ganda, dan indeks keranjang di luar set; paket tanpa laporan dianggap hilang setelah 6 dtk;
 - poin akhir (`points.Question` per paket benar, +20 selesai, +20 sempurna; batas `Cap(30)+40` = 3190).
 
+Turbo Trivia / Kart Racer (`turbo-trivia`): balap gokart kuis dua layar. Layar proyektor `/arena/turbo-trivia/{pin?}` (token `game=turbo-trivia-host`), kontroler HP murid `/play/turbo-trivia/{pin?}` (token `game=turbo-trivia`), keduanya lewat WebSocket `/game-ws/turbo-trivia` ke `GET /ws/turbo-trivia` (paket `internal/turbotrivia`). Laravel hanya merender halaman, menandatangani token, dan menggambar QR join (`GET /games/turbo-trivia/qr/{pin}`, SVG via bacon-qr-code). Go menjalankan tick 20 Hz per ruang: progress lap, efek, tabrakan pisang, rudal homing, petir, dan poin. Detail kontrak di `docs/multiplayer.md`.
+
 State `port_state` memuat `set{key,title,description}`, `bins[{key,name,color}]`, `packet{id,label,column,delay,fall_ms,elapsed_ms}` (tanpa jawaban), `history`, `level`; di luar permainan juga `sets` (pemilih topik) dan `legend` (contekan). `result` memuat `missed` (item yang salah). Hasil dikirim dengan `event_id` `ps-{user}-sort-{nanos}` dan `mission=sort`.
 
 Pesan Go → client: `welcome`, `correct{x,y}`, `challenge`, `gates`, `raise`, `complete`, `error{code}`, `pong`.

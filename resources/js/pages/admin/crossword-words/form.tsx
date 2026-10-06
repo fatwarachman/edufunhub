@@ -1,6 +1,7 @@
 import { Panel, fieldClass } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Grid3x3, Loader2 } from 'lucide-react';
 import { type FormEvent, type ReactNode } from 'react';
@@ -57,7 +58,9 @@ export default function CrosswordWordForm({
 
     return (
         <AdminLayout>
-            <Head title={word ? `Edit ${word.answer}` : 'New word'} />
+            <Head
+                title={word ? tr('Edit {0}', [word.answer]) : tr('New word')}
+            />
             <div className="flex w-full flex-col gap-6">
                 <div>
                     <Link
@@ -65,26 +68,26 @@ export default function CrosswordWordForm({
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        Crossword word bank
+                        {tr('Crossword word bank')}
                     </Link>
                     <h1 className="mt-2 text-2xl font-bold text-foreground">
-                        {word ? `Edit ${word.answer}` : 'New word'}
+                        {word ? tr('Edit {0}', [word.answer]) : tr('New word')}
                     </h1>
                     {word && (
                         <p className="text-sm text-muted-foreground">
-                            Used in {word.times_used} grids
+                            {tr('Used in')} {word.times_used} {tr('grids')}
                         </p>
                     )}
                 </div>
 
-                <Panel title="Word and clue" icon={Grid3x3}>
+                <Panel title={tr('Word and clue')} icon={Grid3x3}>
                     <form
                         onSubmit={submit}
                         className="flex flex-col gap-5"
                         data-testid="word-form"
                     >
                         <div className="grid gap-5 sm:grid-cols-[160px_minmax(0,1fr)]">
-                            <Field label="Level" error={errors.level}>
+                            <Field label={tr('Level')} error={errors.level}>
                                 <select
                                     value={data.level}
                                     onChange={(event) =>
@@ -98,13 +101,14 @@ export default function CrosswordWordForm({
                                 >
                                     {levels.map((l) => (
                                         <option key={l.level} value={l.level}>
-                                            Level {l.level} ({l.size}×{l.size})
+                                            {tr('Level')} {l.level} ({l.size}×
+                                            {l.size})
                                         </option>
                                     ))}
                                 </select>
                             </Field>
                             <Field
-                                label="Answer (letters A–Z, no spaces)"
+                                label={tr('Answer (letters A–Z, no spaces)')}
                                 error={errors.answer}
                             >
                                 <input
@@ -119,19 +123,26 @@ export default function CrosswordWordForm({
                                 />
                                 {cleaned && (
                                     <p className="text-xs text-muted-foreground">
-                                        Saved as{' '}
+                                        {tr('Saved as')}{' '}
                                         <span className="font-mono font-semibold text-foreground">
                                             {cleaned}
                                         </span>{' '}
-                                        · {cleaned.length}/{MAX_LENGTH} letters
+                                        · {cleaned.length}/{MAX_LENGTH}{' '}
+                                        {tr('letters')}
                                         {level &&
                                             cleaned.length > level.size &&
-                                            ` · longer than the level ${level.level} grid (${level.size}), it will rarely fit`}
+                                            tr(
+                                                ' · longer than the level {0} grid ({1}), it will rarely fit',
+                                                [level.level, level.size],
+                                            )}
                                     </p>
                                 )}
                             </Field>
                         </div>
-                        <Field label="Clue (Indonesian)" error={errors.clue_id}>
+                        <Field
+                            label={tr('Clue (Indonesian)')}
+                            error={errors.clue_id}
+                        >
                             <textarea
                                 value={data.clue_id}
                                 onChange={(event) =>
@@ -144,7 +155,10 @@ export default function CrosswordWordForm({
                                 required
                             />
                         </Field>
-                        <Field label="Clue (English)" error={errors.clue_en}>
+                        <Field
+                            label={tr('Clue (English)')}
+                            error={errors.clue_en}
+                        >
                             <textarea
                                 value={data.clue_en}
                                 onChange={(event) =>
@@ -165,17 +179,19 @@ export default function CrosswordWordForm({
                                 }
                                 className="size-4 rounded border-input"
                             />
-                            Active (used in new grids)
+                            {tr('Active (used in new grids)')}
                         </label>
                         <InputError
-                            message={(errors as Record<string, string>).word}
+                            message={tr(
+                                (errors as Record<string, string>).word,
+                            )}
                         />
                         <div className="flex justify-end gap-3 border-t border-border pt-5">
                             <Link
                                 href={`/admin/games/crossword/words?level=${data.level}`}
                                 className="inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                             >
-                                Cancel
+                                {tr('Cancel')}
                             </Link>
                             <button
                                 type="submit"
@@ -185,7 +201,7 @@ export default function CrosswordWordForm({
                                 {processing && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                {word ? 'Save changes' : 'Add word'}
+                                {word ? tr('Save changes') : tr('Add word')}
                             </button>
                         </div>
                     </form>
@@ -206,7 +222,9 @@ function Field({
 }) {
     return (
         <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-foreground">{label}</span>
+            <span className="text-sm font-medium text-foreground">
+                {tr(label)}
+            </span>
             {children}
             <InputError message={error} />
         </div>

@@ -48,7 +48,7 @@ it('creates a new user and connected account on successful fresh callback', func
 
     $response = $this->get('/auth/github/callback');
 
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('portal', absolute: false));
 
     $this->assertAuthenticated();
 
@@ -92,7 +92,7 @@ it('logs in an existing connected account automatically', function () {
 
     $response = $this->get('/auth/github/callback');
 
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('portal', absolute: false));
     $this->assertAuthenticatedAs($user);
 
     $connection = $user->connectedAccounts()->first();
@@ -115,7 +115,7 @@ it('attaches to existing email account if a connection does not exist yet', func
     $this->mockProvider->shouldReceive('user')->andReturn($socialiteUser);
 
     $response = $this->get('/auth/github/callback');
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('portal', absolute: false));
 
     $this->assertAuthenticatedAs($user);
 

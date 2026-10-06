@@ -2,6 +2,7 @@ import { Panel, fieldClass } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import PlayerCharacter from '@/components/player-character';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { type ItemSlot } from '@/lib/character/draw-character';
 import { SLOT_LABELS, itemPreview } from '@/lib/character/items';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -59,7 +60,7 @@ export default function CharacterItemForm({
 
     return (
         <AdminLayout>
-            <Head title={item ? 'Edit item' : 'New item'} />
+            <Head title={item ? tr('Edit item') : tr('New item')} />
             <div className="flex flex-col gap-6">
                 <div>
                     <Link
@@ -67,30 +68,30 @@ export default function CharacterItemForm({
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        Character Items
+                        {tr('Character Items')}
                     </Link>
                     <h1 className="mt-2 text-2xl font-bold text-foreground">
                         {item
-                            ? `Edit ${item.name_en ?? item.name_id}`
-                            : 'New item'}
+                            ? tr('Edit {0}', [item.name_en ?? item.name_id])
+                            : tr('New item')}
                     </h1>
                     {item && (
                         <p className="text-sm text-muted-foreground">
-                            Owned by {item.owners} · worn by {item.wearing}{' '}
-                            players right now
+                            {tr('Owned by')} {item.owners} {tr('· worn by')}{' '}
+                            {item.wearing} {tr('players right now')}
                         </p>
                     )}
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
-                    <Panel title="Item details" icon={Package}>
+                    <Panel title={tr('Item details')} icon={Package}>
                         <form
                             onSubmit={submit}
                             className="flex flex-col gap-5"
                             data-testid="item-form"
                         >
                             <div className="grid gap-5 sm:grid-cols-2">
-                                <Field label="Slot" error={errors.slot}>
+                                <Field label={tr('Slot')} error={errors.slot}>
                                     <select
                                         value={data.slot}
                                         onChange={(event) => {
@@ -107,12 +108,12 @@ export default function CharacterItemForm({
                                     >
                                         {slots.map((slot) => (
                                             <option key={slot} value={slot}>
-                                                {SLOT_LABELS[slot]}
+                                                {tr(SLOT_LABELS[slot])}
                                             </option>
                                         ))}
                                     </select>
                                 </Field>
-                                <Field label="Style" error={errors.style}>
+                                <Field label={tr('Style')} error={errors.style}>
                                     <select
                                         value={data.style}
                                         onChange={(event) =>
@@ -129,7 +130,7 @@ export default function CharacterItemForm({
                                     </select>
                                 </Field>
                                 <Field
-                                    label="Name (Indonesian)"
+                                    label={tr('Name (Indonesian)')}
                                     error={errors.name_id}
                                 >
                                     <input
@@ -147,7 +148,7 @@ export default function CharacterItemForm({
                                     />
                                 </Field>
                                 <Field
-                                    label="Name (English)"
+                                    label={tr('Name (English)')}
                                     error={errors.name_en}
                                 >
                                     <input
@@ -164,7 +165,7 @@ export default function CharacterItemForm({
                                     />
                                 </Field>
                                 <Field
-                                    label="Price (points, 0 = free)"
+                                    label={tr('Price (points, 0 = free)')}
                                     error={errors.price}
                                 >
                                     <input
@@ -189,7 +190,10 @@ export default function CharacterItemForm({
                                         name="price"
                                     />
                                 </Field>
-                                <Field label="Colour" error={errors.color}>
+                                <Field
+                                    label={tr('Colour')}
+                                    error={errors.color}
+                                >
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="color"
@@ -201,7 +205,7 @@ export default function CharacterItemForm({
                                                 )
                                             }
                                             className="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-input bg-background p-1"
-                                            aria-label="Colour"
+                                            aria-label={tr('Colour')}
                                         />
                                         <input
                                             value={data.color ?? ''}
@@ -217,7 +221,7 @@ export default function CharacterItemForm({
                                     </div>
                                 </Field>
                                 <Field
-                                    label="Sort order"
+                                    label={tr('Sort order')}
                                     error={errors.sort_order}
                                 >
                                     <input
@@ -252,7 +256,7 @@ export default function CharacterItemForm({
                                         }
                                         className="size-4 rounded border-input"
                                     />
-                                    Show in shop
+                                    {tr('Show in shop')}
                                 </label>
                             </div>
                             <div className="flex justify-end gap-3 border-t border-border pt-5">
@@ -260,7 +264,7 @@ export default function CharacterItemForm({
                                     href="/admin/character-items"
                                     className="inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                                 >
-                                    Cancel
+                                    {tr('Cancel')}
                                 </Link>
                                 <button
                                     type="submit"
@@ -270,13 +274,15 @@ export default function CharacterItemForm({
                                     {processing && (
                                         <Loader2 className="size-4 animate-spin" />
                                     )}
-                                    {item ? 'Save changes' : 'Create item'}
+                                    {item
+                                        ? tr('Save changes')
+                                        : tr('Create item')}
                                 </button>
                             </div>
                         </form>
                     </Panel>
 
-                    <Panel title="Preview">
+                    <Panel title={tr('Preview')}>
                         <div className="grid grid-cols-2 gap-3">
                             {(['boy', 'girl'] as const).map((gender) => (
                                 <div
@@ -317,7 +323,9 @@ function Field({
 }) {
     return (
         <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-foreground">{label}</span>
+            <span className="text-sm font-medium text-foreground">
+                {tr(label)}
+            </span>
             {children}
             <InputError message={error} />
         </div>

@@ -1,3 +1,4 @@
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
@@ -59,7 +60,7 @@ export function FlashMessages({ errors }: { errors?: Record<string, string> }) {
                     ) : (
                         <CircleAlert className="mt-0.5 size-4 shrink-0" />
                     )}
-                    {text}
+                    {tr(text)}
                 </div>
             ))}
         </div>
@@ -119,10 +120,10 @@ export function ConfirmDialog({
                     id="confirm-title"
                     className="text-lg font-semibold text-foreground"
                 >
-                    {title}
+                    {tr(title)}
                 </h3>
                 <div className="mt-2 text-sm text-muted-foreground">
-                    {message}
+                    {tr(message)}
                 </div>
                 <div className="mt-6 flex items-center justify-end gap-3">
                     <button
@@ -131,7 +132,7 @@ export function ConfirmDialog({
                         disabled={processing}
                         className="h-9 rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
-                        Cancel
+                        {tr('Cancel')}
                     </button>
                     <button
                         type="button"
@@ -173,7 +174,7 @@ export function SimplePagination({
     return (
         <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground tabular-nums">
-                {from}–{to} of {total}
+                {from}–{to} {tr('of')} {total}
             </p>
             <div className="flex items-center gap-2">
                 {prev?.url ? (
@@ -183,12 +184,12 @@ export function SimplePagination({
                         className={cn(button, 'hover:bg-muted')}
                     >
                         <ChevronLeft className="size-4" />
-                        Prev
+                        {tr('Prev')}
                     </Link>
                 ) : (
                     <span className={cn(button, 'opacity-40')}>
                         <ChevronLeft className="size-4" />
-                        Prev
+                        {tr('Prev')}
                     </span>
                 )}
                 {next?.url ? (
@@ -197,12 +198,12 @@ export function SimplePagination({
                         preserveScroll
                         className={cn(button, 'hover:bg-muted')}
                     >
-                        Next
+                        {tr('Next')}
                         <ChevronRight className="size-4" />
                     </Link>
                 ) : (
                     <span className={cn(button, 'opacity-40')}>
-                        Next
+                        {tr('Next')}
                         <ChevronRight className="size-4" />
                     </span>
                 )}
@@ -222,7 +223,7 @@ export function StatusPill({ active }: { active: boolean }) {
                     : 'bg-muted text-muted-foreground',
             )}
         >
-            {active ? 'Active' : 'Hidden'}
+            {active ? tr('Active') : tr('Hidden')}
         </span>
     );
 }
@@ -237,7 +238,7 @@ export function AiBadge({ className }: { className?: string }) {
             )}
         >
             <Sparkles className="size-3" />
-            AI
+            {tr('AI')}
         </span>
     );
 }

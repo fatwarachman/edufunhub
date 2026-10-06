@@ -1,5 +1,6 @@
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { type Permission } from '@/types/admin';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
@@ -81,15 +82,15 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
 
     return (
         <>
-            <Head title="Create Role" />
+            <Head title={tr('Create Role')} />
 
             <div className="w-full space-y-6">
                 <div>
                     <h2 className="font-display text-2xl font-bold text-foreground">
-                        Create Role
+                        {tr('Create Role')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        Define a new role with permissions
+                        {tr('Define a new role with permissions')}
                     </p>
                 </div>
 
@@ -101,7 +102,7 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
                                 htmlFor="name"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Name
+                                {tr('Name')}
                             </label>
                             <input
                                 id="name"
@@ -111,7 +112,7 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
                                     setData('name', e.target.value)
                                 }
                                 className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                placeholder="Content Manager"
+                                placeholder={tr('Content Manager')}
                                 autoFocus
                                 required
                             />
@@ -124,9 +125,9 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
                                 htmlFor="slug"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Slug{' '}
+                                {tr('Slug')}{' '}
                                 <span className="font-normal text-muted-foreground">
-                                    (auto-generated)
+                                    {tr('(auto-generated)')}
                                 </span>
                             </label>
                             <input
@@ -147,7 +148,7 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
                                 htmlFor="description"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Description
+                                {tr('Description')}
                             </label>
                             <textarea
                                 id="description"
@@ -156,16 +157,16 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
                                     setData('description', e.target.value)
                                 }
                                 className="min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                placeholder="Optional description"
+                                placeholder={tr('Optional description')}
                                 rows={3}
                             />
-                            <InputError message={errors.description} />
+                            <InputError message={tr(errors.description)} />
                         </div>
 
                         {/* Permissions */}
                         <fieldset className="flex flex-col gap-3">
                             <legend className="text-sm font-medium text-foreground">
-                                Permissions
+                                {tr('Permissions')}
                             </legend>
                             <InputError message={errors.permissions} />
 
@@ -198,19 +199,22 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
                                                         toggleModule(moduleName)
                                                     }
                                                     className="size-4 rounded border-input accent-primary"
-                                                    aria-label={`Select all ${moduleName} permissions`}
+                                                    aria-label={tr(
+                                                        'Select all {0} permissions',
+                                                        [moduleName],
+                                                    )}
                                                 />
                                                 <span className="text-sm font-semibold text-foreground capitalize">
                                                     {moduleName}
                                                 </span>
                                                 <span className="ml-auto text-xs text-muted-foreground">
-                                                    {
+                                                    {tr(
                                                         moduleIds.filter((id) =>
                                                             data.permissions.includes(
                                                                 id,
                                                             ),
-                                                        ).length
-                                                    }
+                                                        ).length,
+                                                    )}
                                                     /{moduleIds.length}
                                                 </span>
                                             </div>
@@ -238,9 +242,9 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
                                                             </p>
                                                             {perm.description && (
                                                                 <p className="text-xs text-muted-foreground">
-                                                                    {
-                                                                        perm.description
-                                                                    }
+                                                                    {tr(
+                                                                        perm.description,
+                                                                    )}
                                                                 </p>
                                                             )}
                                                         </div>
@@ -259,7 +263,7 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
                                 href="/admin/roles"
                                 className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                             >
-                                Cancel
+                                {tr('Cancel')}
                             </Link>
                             <button
                                 type="submit"
@@ -269,7 +273,7 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
                                 {processing && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                Create Role
+                                {tr('Create Role')}
                             </button>
                         </div>
                     </form>
@@ -280,5 +284,5 @@ export default function CreateRole({ permissions }: CreateRoleProps) {
 }
 
 CreateRole.layout = (page: ReactNode) => (
-    <AdminLayout title="Create Role">{page}</AdminLayout>
+    <AdminLayout title={tr('Create Role')}>{page}</AdminLayout>
 );

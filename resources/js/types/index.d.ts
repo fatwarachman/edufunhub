@@ -153,6 +153,7 @@ export interface User {
     locale?: string;
     is_superadmin?: boolean;
     is_teacher?: boolean;
+    is_admin?: boolean;
     bio?: string | null;
     timezone?: string;
     date_format?: string;

@@ -2,6 +2,7 @@ import { FlashMessages } from '@/components/admin/admin-kit';
 import { Panel, fieldClass } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { Head, useForm } from '@inertiajs/react';
 import { BellRing, History, Loader2, Send, Users } from 'lucide-react';
 import { type FormEvent } from 'react';
@@ -35,7 +36,7 @@ const AUDIENCE_LABEL: Record<Audience, string> = {
 const GRADES = Array.from({ length: 13 }, (_, grade) => grade);
 
 function gradeName(grade: number): string {
-    return grade === 0 ? 'Kindergarten (TK)' : `Grade ${grade}`;
+    return grade === 0 ? tr('Kindergarten (TK)') : tr('Grade {0}', [grade]);
 }
 
 function audienceName(segment: string): string {
@@ -76,23 +77,23 @@ export default function Notifications({ audiences, counts, sent }: Props) {
 
     return (
         <AdminLayout>
-            <Head title="Notifications" />
+            <Head title={tr('Notifications')} />
             <div className="flex w-full flex-col gap-6">
                 <div>
                     <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
                         <BellRing className="size-6 text-amber-500" />
-                        Notifications
+                        {tr('Notifications')}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Send a message to the bell in the player app. Players
-                        also get automatic notifications for points, level ups,
-                        shop items and the teacher role.
+                        {tr(
+                            'Send a message to the bell in the player app. Players also get automatic notifications for points, level ups, shop items and the teacher role.',
+                        )}
                     </p>
                 </div>
 
                 <FlashMessages />
 
-                <Panel title="New notification" icon={Send}>
+                <Panel title={tr('New notification')} icon={Send}>
                     <form
                         onSubmit={submit}
                         className="flex flex-col gap-4"
@@ -100,7 +101,7 @@ export default function Notifications({ audiences, counts, sent }: Props) {
                     >
                         <label className="flex flex-col gap-1.5">
                             <span className="text-sm font-medium text-foreground">
-                                Title
+                                {tr('Title')}
                             </span>
                             <input
                                 name="title"
@@ -113,11 +114,11 @@ export default function Notifications({ audiences, counts, sent }: Props) {
                                 data-testid="notification-title"
                                 required
                             />
-                            <InputError message={errors.title} />
+                            <InputError message={tr(errors.title)} />
                         </label>
                         <label className="flex flex-col gap-1.5">
                             <span className="flex items-center justify-between text-sm font-medium text-foreground">
-                                Message
+                                {tr('Message')}
                                 <span className="text-xs font-normal text-muted-foreground tabular-nums">
                                     {data.body.length}/500
                                 </span>
@@ -134,11 +135,11 @@ export default function Notifications({ audiences, counts, sent }: Props) {
                                 data-testid="notification-body"
                                 required
                             />
-                            <InputError message={errors.body} />
+                            <InputError message={tr(errors.body)} />
                         </label>
                         <label className="flex flex-col gap-1.5">
                             <span className="text-sm font-medium text-foreground">
-                                Link (optional)
+                                {tr('Link (optional)')}
                             </span>
                             <input
                                 name="url"
@@ -152,14 +153,16 @@ export default function Notifications({ audiences, counts, sent }: Props) {
                                 data-testid="notification-url"
                             />
                             <span className="text-xs text-muted-foreground">
-                                An app page starting with / or an https:// link.
+                                {tr(
+                                    'An app page starting with / or an https:// link.',
+                                )}
                             </span>
                             <InputError message={errors.url} />
                         </label>
                         <fieldset className="flex flex-col gap-2">
                             <legend className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-foreground">
                                 <Users className="size-4 text-muted-foreground" />
-                                Send to
+                                {tr('Send to')}
                             </legend>
                             <div className="grid gap-2 sm:grid-cols-2">
                                 {audiences.map((audience) => (
@@ -178,11 +181,11 @@ export default function Notifications({ audiences, counts, sent }: Props) {
                                             data-testid={`audience-${audience}`}
                                         />
                                         <span className="font-medium text-foreground">
-                                            {AUDIENCE_LABEL[audience]}
+                                            {tr(AUDIENCE_LABEL[audience])}
                                         </span>
                                         {audience !== 'grade' && (
                                             <span className="ml-auto text-xs text-muted-foreground tabular-nums">
-                                                {counts[audience]} users
+                                                {counts[audience]} {tr('users')}
                                             </span>
                                         )}
                                     </label>
@@ -199,7 +202,9 @@ export default function Notifications({ audiences, counts, sent }: Props) {
                                     data-testid="notification-grade"
                                     required
                                 >
-                                    <option value="">Choose a grade…</option>
+                                    <option value="">
+                                        {tr('Choose a grade…')}
+                                    </option>
                                     {GRADES.map((grade) => (
                                         <option key={grade} value={grade}>
                                             {gradeName(grade)}
@@ -223,20 +228,20 @@ export default function Notifications({ audiences, counts, sent }: Props) {
                                 ) : (
                                     <Send className="size-4" />
                                 )}
-                                Send notification
+                                {tr('Send notification')}
                             </button>
                         </div>
                     </form>
                 </Panel>
 
                 <Panel
-                    title="Sent"
+                    title={tr('Sent')}
                     icon={History}
-                    description="Latest 20 manual notifications"
+                    description={tr('Latest 20 manual notifications')}
                 >
                     {sent.length === 0 ? (
                         <p className="py-6 text-center text-sm text-muted-foreground">
-                            Nothing sent yet.
+                            {tr('Nothing sent yet.')}
                         </p>
                     ) : (
                         <ul
@@ -250,7 +255,7 @@ export default function Notifications({ audiences, counts, sent }: Props) {
                                 >
                                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                                         <span className="font-semibold break-words text-foreground">
-                                            {item.title}
+                                            {tr(item.title)}
                                         </span>
                                         <span className="text-xs text-muted-foreground">
                                             {item.sent_at
@@ -261,13 +266,13 @@ export default function Notifications({ audiences, counts, sent }: Props) {
                                         </span>
                                     </div>
                                     <p className="text-sm break-words text-muted-foreground">
-                                        {item.body}
+                                        {tr(item.body)}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                         {audienceName(item.audience)} ·{' '}
-                                        {item.recipients} recipients
+                                        {item.recipients} {tr('recipients')}
                                         {item.sender
-                                            ? ` · by ${item.sender}`
+                                            ? tr(' · by {0}', [item.sender])
                                             : ''}
                                         {item.url ? ` · ${item.url}` : ''}
                                     </p>

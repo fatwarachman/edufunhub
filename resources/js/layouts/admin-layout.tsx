@@ -1,6 +1,9 @@
 import AppLogoIcon from '@/components/app-logo-icon';
+import { LanguageToggle } from '@/components/language-toggle';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useInitials } from '@/hooks/use-initials';
+import { useTranslations } from '@/hooks/use-translations';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
@@ -180,6 +183,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children, title }: AdminLayoutProps) {
     const { auth } = usePage<SharedData>().props;
+    const { i18n } = useTranslations();
     const { resolvedAppearance, toggleAppearance } = useAppearance();
     const getInitials = useInitials();
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -214,7 +218,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
     const initials = getInitials(user.name);
 
     return (
-        <div className="flex min-h-screen bg-background">
+        <div key={i18n.language} className="flex min-h-screen bg-background">
             {/* Mobile overlay */}
             {sidebarOpen && (
                 <div
@@ -248,10 +252,10 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     {!sidebarCollapsed && (
                         <div className="flex flex-col">
                             <span className="font-display text-sm leading-tight font-semibold text-sidebar-foreground">
-                                EduFunHub
+                                {tr('EduFunHub')}
                             </span>
                             <span className="text-xs text-sidebar-foreground/60">
-                                Admin Panel
+                                {tr('Admin Panel')}
                             </span>
                         </div>
                     )}
@@ -259,7 +263,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     <button
                         onClick={() => setSidebarOpen(false)}
                         className="ml-auto rounded-md p-1 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground md:hidden"
-                        aria-label="Close sidebar"
+                        aria-label={tr('Close sidebar')}
                     >
                         <X className="size-4" />
                     </button>
@@ -307,7 +311,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                             <item.icon className="size-4 shrink-0" />
                                             {!sidebarCollapsed && (
                                                 <span className="truncate">
-                                                    {item.title}
+                                                    {tr(item.title)}
                                                 </span>
                                             )}
                                         </Link>
@@ -335,14 +339,14 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                 )}
                                 title={
                                     sidebarCollapsed
-                                        ? 'Back to Site'
+                                        ? tr('Back to Site')
                                         : undefined
                                 }
                             >
                                 <ChevronLeft className="size-4 shrink-0" />
                                 {!sidebarCollapsed && (
                                     <span className="truncate">
-                                        Back to Site
+                                        {tr('Back to Site')}
                                     </span>
                                 )}
                             </Link>
@@ -361,8 +365,8 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                         )}
                         aria-label={
                             sidebarCollapsed
-                                ? 'Expand sidebar'
-                                : 'Collapse sidebar'
+                                ? tr('Expand sidebar')
+                                : tr('Collapse sidebar')
                         }
                     >
                         {sidebarCollapsed ? (
@@ -370,7 +374,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                         ) : (
                             <>
                                 <ChevronLeft className="size-4" />
-                                <span>Collapse</span>
+                                <span>{tr('Collapse')}</span>
                             </>
                         )}
                     </button>
@@ -385,7 +389,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     <button
                         onClick={() => setSidebarOpen(true)}
                         className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:hidden"
-                        aria-label="Open sidebar"
+                        aria-label={tr('Open sidebar')}
                     >
                         <Menu className="size-5" />
                     </button>
@@ -393,16 +397,17 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     {/* Title */}
                     {title && (
                         <h1 className="font-display text-lg font-semibold text-foreground">
-                            {title}
+                            {tr(title)}
                         </h1>
                     )}
 
                     <div className="ml-auto flex items-center gap-2">
+                        <LanguageToggle variant="admin" />
                         {/* Theme toggle */}
                         <button
                             onClick={toggleAppearance}
                             className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                            aria-label="Toggle theme"
+                            aria-label={tr('Toggle theme')}
                         >
                             {resolvedAppearance === 'dark' ? (
                                 <Sun className="size-4" />
@@ -419,7 +424,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                     setUserMenuOpen((o) => !o);
                                 }}
                                 className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                aria-label="User menu"
+                                aria-label={tr('User menu')}
                                 aria-expanded={userMenuOpen}
                             >
                                 <div className="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
@@ -456,21 +461,21 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                         className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent"
                                     >
                                         <UserCog className="size-4" />
-                                        Profile Settings
+                                        {tr('Profile Settings')}
                                     </Link>
                                     <Link
                                         href="/admin/settings"
                                         className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent"
                                     >
                                         <Settings className="size-4" />
-                                        Admin Settings
+                                        {tr('Admin Settings')}
                                     </Link>
                                     <Link
                                         href="/profile/security"
                                         className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent"
                                     >
                                         <KeyRound className="size-4" />
-                                        Security
+                                        {tr('Security')}
                                     </Link>
                                     <div className="border-t border-border" />
                                     <button
@@ -478,7 +483,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                         className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent"
                                     >
                                         <LogOut className="size-4" />
-                                        Log out
+                                        {tr('Log out')}
                                     </button>
                                 </div>
                             )}

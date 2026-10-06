@@ -7,7 +7,6 @@ import { type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import {
     Blocks,
-    CarFront,
     ChefHat,
     Coins,
     FlaskConical,
@@ -26,7 +25,6 @@ import { useState } from 'react';
 const UPCOMING: { key: string; icon: LucideIcon; accent: string }[] = [
     { key: 'monsterCafe', icon: ChefHat, accent: 'bg-[#FF9E44]' },
     { key: 'saboteurLab', icon: FlaskConical, accent: 'bg-[#7ED957]' },
-    { key: 'kartRacer', icon: CarFront, accent: 'bg-[#FF6584]' },
     { key: 'bossDefense', icon: Swords, accent: 'bg-[#8C7CF0]' },
     { key: 'pixelPainter', icon: PaintBucket, accent: 'bg-[#4FC3F7]' },
     { key: 'tetrisQuiz', icon: Blocks, accent: 'bg-[#FFD93D]' },

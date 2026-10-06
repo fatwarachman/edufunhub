@@ -11,6 +11,7 @@ import {
     formatPercent,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
@@ -150,17 +151,17 @@ export default function SequenceSetsIndex({
 
     return (
         <AdminLayout>
-            <Head title="Sequence Bank" />
+            <Head title={tr('Sequence Bank')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">
-                            Sequence Bank
+                            {tr('Sequence Bank')}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Order Rush (TKJ) sequences. Pieces are stored in the
-                            correct order; the game service syncs active sets
-                            every minute and never sends the order to players.
+                            {tr(
+                                'Order Rush (TKJ) sequences. Pieces are stored in the correct order; the game service syncs active sets every minute and never sends the order to players.',
+                            )}
                         </p>
                     </div>
                     <button
@@ -170,15 +171,18 @@ export default function SequenceSetsIndex({
                         className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                     >
                         <Plus className="size-4" />
-                        New sequence
+                        {tr('New sequence')}
                     </button>
                 </div>
 
                 <FlashMessages errors={errors} />
 
                 <Panel
-                    title="Most misunderstood sequences"
-                    description={`Wrong orders per sequence and the slot students miss most, last ${days} days.`}
+                    title={tr('Most misunderstood sequences')}
+                    description={tr(
+                        'Wrong orders per sequence and the slot students miss most, last {0} days.',
+                        [days],
+                    )}
                     icon={ChartColumnBig}
                     actions={
                         <div className="flex gap-1">
@@ -210,8 +214,10 @@ export default function SequenceSetsIndex({
                     {totalAttempts === 0 ? (
                         <EmptyState
                             icon={ChartColumnBig}
-                            title="No Order Rush games yet"
-                            description="Analytics appear after the first finished game."
+                            title={tr('No Order Rush games yet')}
+                            description={tr(
+                                'Analytics appear after the first finished game.',
+                            )}
                         />
                     ) : (
                         <div className="flex flex-col gap-4">
@@ -220,12 +226,13 @@ export default function SequenceSetsIndex({
                                     className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200"
                                     data-testid="sequence-hardest"
                                 >
-                                    Hardest: <strong>{hardest.title}</strong> —{' '}
-                                    {formatPercent(hardest.error_rate)} wrong
-                                    orders
+                                    {tr('Hardest:')}{' '}
+                                    <strong>{tr(hardest.title)}</strong> —{' '}
+                                    {formatPercent(hardest.error_rate)}{' '}
+                                    {tr('wrong orders')}
                                     {hardest.worst_slot !== null && (
                                         <>
-                                            , most often at slot{' '}
+                                            {tr(', most often at slot')}{' '}
                                             {hardest.worst_slot + 1}
                                             {hardest.labels[hardest.worst_slot]
                                                 ? ` (${hardest.labels[hardest.worst_slot]})`
@@ -243,22 +250,22 @@ export default function SequenceSetsIndex({
                                     <thead>
                                         <tr className="border-b border-border text-left text-xs text-muted-foreground uppercase">
                                             <th className="py-2 pr-3">
-                                                Sequence
+                                                {tr('Sequence')}
                                             </th>
                                             <th className="py-2 pr-3 text-right">
-                                                Players
+                                                {tr('Players')}
                                             </th>
                                             <th className="py-2 pr-3 text-right">
-                                                Orders
+                                                {tr('Orders')}
                                             </th>
                                             <th className="py-2 pr-3 text-right">
-                                                Wrong
+                                                {tr('Wrong')}
                                             </th>
                                             <th className="py-2 pr-3 text-right">
-                                                Avg solve
+                                                {tr('Avg solve')}
                                             </th>
                                             <th className="py-2">
-                                                Wrong slots
+                                                {tr('Wrong slots')}
                                             </th>
                                         </tr>
                                     </thead>
@@ -269,7 +276,7 @@ export default function SequenceSetsIndex({
                                                 className="border-b border-border/60 last:border-0"
                                             >
                                                 <td className="py-2 pr-3 font-medium text-foreground">
-                                                    {row.title}
+                                                    {tr(row.title)}
                                                     <span className="block text-xs text-muted-foreground">
                                                         {row.category}
                                                     </span>
@@ -325,7 +332,7 @@ export default function SequenceSetsIndex({
                                         </h3>
                                         <p className="text-xs text-muted-foreground">
                                             {set.category} · {set.items.length}{' '}
-                                            pieces
+                                            {tr('pieces')}
                                         </p>
                                     </div>
                                 </div>
@@ -340,14 +347,14 @@ export default function SequenceSetsIndex({
                                         {set.ends &&
                                             index % piecesPerEnd(set) === 0 && (
                                                 <span className="mt-1 w-full text-xs font-semibold text-teal-700 dark:text-teal-300">
-                                                    {
+                                                    {tr(
                                                         set.ends[
                                                             index /
                                                                 piecesPerEnd(
                                                                     set,
                                                                 )
-                                                        ]?.id
-                                                    }
+                                                        ]?.id,
+                                                    )}
                                                 </span>
                                             )}
                                         <span className="w-5 text-right text-xs text-muted-foreground tabular-nums">
@@ -362,8 +369,10 @@ export default function SequenceSetsIndex({
                             </ol>
                             {set.stats && (
                                 <p className="text-xs text-muted-foreground">
-                                    {formatNumber(set.stats.attempts)} orders ·{' '}
-                                    {formatPercent(set.stats.error_rate)} wrong
+                                    {formatNumber(set.stats.attempts)}{' '}
+                                    {tr('orders ·')}{' '}
+                                    {formatPercent(set.stats.error_rate)}{' '}
+                                    {tr('wrong')}
                                 </p>
                             )}
                             <div className="mt-auto flex flex-wrap gap-2">
@@ -385,7 +394,7 @@ export default function SequenceSetsIndex({
                                     className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-foreground hover:bg-muted"
                                 >
                                     <Pencil className="size-3.5" />
-                                    Edit
+                                    {tr('Edit')}
                                 </button>
                                 <button
                                     type="button"
@@ -403,7 +412,7 @@ export default function SequenceSetsIndex({
                                     ) : (
                                         <Eye className="size-3.5" />
                                     )}
-                                    {set.is_active ? 'Hide' : 'Show'}
+                                    {set.is_active ? tr('Hide') : tr('Show')}
                                 </button>
                                 <button
                                     type="button"
@@ -411,7 +420,7 @@ export default function SequenceSetsIndex({
                                     className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-red-200 px-3 text-xs font-medium text-red-700 hover:bg-red-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
                                 >
                                     <Trash2 className="size-3.5" />
-                                    Delete
+                                    {tr('Delete')}
                                 </button>
                             </div>
                         </article>
@@ -430,14 +439,14 @@ export default function SequenceSetsIndex({
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete sequence set?"
+                title={tr('Delete sequence set?')}
                 message={
                     <>
-                        <strong>{deleting?.title_id}</strong> is removed from
-                        the bank. Past analytics stay.
+                        <strong>{deleting?.title_id}</strong>{' '}
+                        {tr('is removed from the bank. Past analytics stay.')}
                     </>
                 }
-                confirmLabel="Delete"
+                confirmLabel={tr('Delete')}
                 processing={processing}
                 onClose={() => setDeleting(null)}
                 onConfirm={() => {
@@ -468,7 +477,11 @@ function SlotHeat({ row }: { row: SetStats }) {
             {row.slot_errors.map((count, index) => (
                 <span
                     key={index}
-                    title={`Slot ${index + 1}${row.labels[index] ? ` (${row.labels[index]})` : ''}: ${count} wrong`}
+                    title={tr('Slot {0}{1}: {2} wrong', [
+                        index + 1,
+                        row.labels[index] ? ` (${row.labels[index]})` : '',
+                        count,
+                    ])}
                     className="grid size-7 place-items-center rounded-md border border-red-300/60 text-[11px] font-semibold tabular-nums dark:border-red-800/60"
                     style={{
                         background: `rgb(220 38 38 / ${(count / peak) * 0.85})`,
@@ -597,12 +610,12 @@ function SetEditor({
                         id="sequence-editor-title"
                         className="font-semibold text-foreground"
                     >
-                        {draft.id ? 'Edit sequence' : 'New sequence'}
+                        {draft.id ? tr('Edit sequence') : tr('New sequence')}
                     </h2>
                     <button
                         type="button"
                         onClick={onClose}
-                        aria-label="Close"
+                        aria-label={tr('Close')}
                         className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-muted"
                     >
                         <X className="size-4" />
@@ -611,7 +624,7 @@ function SetEditor({
                 <div className="flex flex-col gap-4 overflow-y-auto px-5 py-4">
                     <div className="grid gap-3 sm:grid-cols-2">
                         <Field
-                            label="Title (Indonesian)"
+                            label={tr('Title (Indonesian)')}
                             error={errors.title_id}
                         >
                             <input
@@ -623,7 +636,10 @@ function SetEditor({
                                 required
                             />
                         </Field>
-                        <Field label="Title (English)" error={errors.title_en}>
+                        <Field
+                            label={tr('Title (English)')}
+                            error={errors.title_en}
+                        >
                             <input
                                 className={fieldClass}
                                 value={draft.title_en ?? ''}
@@ -633,8 +649,8 @@ function SetEditor({
                             />
                         </Field>
                         <Field
-                            label="Category code"
-                            hint="e.g. UTP_T568B"
+                            label={tr('Category code')}
+                            hint={tr('e.g. UTP_T568B')}
                             error={errors.category}
                         >
                             <input
@@ -646,7 +662,7 @@ function SetEditor({
                                 required
                             />
                         </Field>
-                        <Field label="Validator" error={errors.kind}>
+                        <Field label={tr('Validator')} error={errors.kind}>
                             <select
                                 className={fieldClass}
                                 value={draft.kind}
@@ -657,14 +673,14 @@ function SetEditor({
                                 {kinds.map((kind) => (
                                     <option key={kind} value={kind}>
                                         {kind === 'cable'
-                                            ? 'Cable / fibre (LAN tester)'
-                                            : 'Protocol (packet animation)'}
+                                            ? tr('Cable / fibre (LAN tester)')
+                                            : tr('Protocol (packet animation)')}
                                     </option>
                                 ))}
                             </select>
                         </Field>
                         <Field
-                            label="Instruction (Indonesian)"
+                            label={tr('Instruction (Indonesian)')}
                             error={errors.description_id}
                         >
                             <input
@@ -676,7 +692,7 @@ function SetEditor({
                             />
                         </Field>
                         <Field
-                            label="Instruction (English)"
+                            label={tr('Instruction (English)')}
                             error={errors.description_en}
                         >
                             <input
@@ -700,11 +716,12 @@ function SetEditor({
                                     }
                                     data-testid="sequence-two-end"
                                 />
-                                Crimp both ends (straight / cross cable)
+                                {tr('Crimp both ends (straight / cross cable)')}
                             </label>
                             <p className="text-xs text-muted-foreground">
-                                Players wire end A, then end B. The first half
-                                of the pieces is end A, the second half end B.
+                                {tr(
+                                    'Players wire end A, then end B. The first half of the pieces is end A, the second half end B.',
+                                )}
                             </p>
                             {twoEnd && (
                                 <div className="grid gap-2 sm:grid-cols-2">
@@ -715,8 +732,22 @@ function SetEditor({
                                                 className="flex flex-col gap-1"
                                             >
                                                 <input
-                                                    aria-label={`End ${String.fromCharCode(65 + index)} name (Indonesian)`}
-                                                    placeholder={`Ujung ${String.fromCharCode(65 + index)} (T568B)`}
+                                                    aria-label={tr(
+                                                        'End {0} name (Indonesian)',
+                                                        [
+                                                            String.fromCharCode(
+                                                                65 + index,
+                                                            ),
+                                                        ],
+                                                    )}
+                                                    placeholder={tr(
+                                                        'Ujung {0} (T568B)',
+                                                        [
+                                                            String.fromCharCode(
+                                                                65 + index,
+                                                            ),
+                                                        ],
+                                                    )}
                                                     className={fieldClass}
                                                     value={end.id}
                                                     onChange={(e) =>
@@ -727,8 +758,22 @@ function SetEditor({
                                                     required
                                                 />
                                                 <input
-                                                    aria-label={`End ${String.fromCharCode(65 + index)} name (English)`}
-                                                    placeholder={`End ${String.fromCharCode(65 + index)} (T568B)`}
+                                                    aria-label={tr(
+                                                        'End {0} name (English)',
+                                                        [
+                                                            String.fromCharCode(
+                                                                65 + index,
+                                                            ),
+                                                        ],
+                                                    )}
+                                                    placeholder={tr(
+                                                        'End {0} (T568B)',
+                                                        [
+                                                            String.fromCharCode(
+                                                                65 + index,
+                                                            ),
+                                                        ],
+                                                    )}
                                                     className={fieldClass}
                                                     value={end.en ?? ''}
                                                     onChange={(e) =>
@@ -753,7 +798,7 @@ function SetEditor({
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm font-semibold text-foreground">
-                                Pieces in the correct order
+                                {tr('Pieces in the correct order')}
                             </h3>
                             <span className="text-xs text-muted-foreground">
                                 {draft.items.length}/{maxItems}
@@ -775,8 +820,11 @@ function SetEditor({
                                         : index + 1}
                                 </span>
                                 <input
-                                    aria-label={`Piece ${index + 1} label (Indonesian)`}
-                                    placeholder="Label (ID)"
+                                    aria-label={tr(
+                                        'Piece {0} label (Indonesian)',
+                                        [index + 1],
+                                    )}
+                                    placeholder={tr('Label (ID)')}
                                     className={cn(fieldClass, 'min-w-0 flex-1')}
                                     value={item.label_id}
                                     onChange={(e) =>
@@ -787,8 +835,11 @@ function SetEditor({
                                     required
                                 />
                                 <input
-                                    aria-label={`Piece ${index + 1} label (English)`}
-                                    placeholder="Label (EN)"
+                                    aria-label={tr(
+                                        'Piece {0} label (English)',
+                                        [index + 1],
+                                    )}
+                                    placeholder={tr('Label (EN)')}
                                     className={cn(fieldClass, 'min-w-0 flex-1')}
                                     value={item.label_en ?? ''}
                                     onChange={(e) =>
@@ -801,7 +852,9 @@ function SetEditor({
                                     <>
                                         <input
                                             type="color"
-                                            aria-label={`Piece ${index + 1} colour`}
+                                            aria-label={tr('Piece {0} colour', [
+                                                index + 1,
+                                            ])}
                                             className="h-9 w-10 cursor-pointer rounded-lg border border-border bg-background"
                                             value={item.color || '#f8fafc'}
                                             onChange={(e) =>
@@ -822,12 +875,15 @@ function SetEditor({
                                                     })
                                                 }
                                             />
-                                            Stripe
+                                            {tr('Stripe')}
                                         </label>
                                         {item.stripe && (
                                             <input
                                                 type="color"
-                                                aria-label={`Piece ${index + 1} stripe colour`}
+                                                aria-label={tr(
+                                                    'Piece {0} stripe colour',
+                                                    [index + 1],
+                                                )}
                                                 className="h-9 w-10 cursor-pointer rounded-lg border border-border bg-background"
                                                 value={item.stripe}
                                                 onChange={(e) =>
@@ -842,14 +898,14 @@ function SetEditor({
                                 )}
                                 <div className="flex gap-1">
                                     <IconButton
-                                        label="Move up"
+                                        label={tr('Move up')}
                                         disabled={index === 0}
                                         onClick={() => move(index, -1)}
                                     >
                                         <ArrowUp className="size-3.5" />
                                     </IconButton>
                                     <IconButton
-                                        label="Move down"
+                                        label={tr('Move down')}
                                         disabled={
                                             index === draft.items.length - 1
                                         }
@@ -858,7 +914,7 @@ function SetEditor({
                                         <ArrowDown className="size-3.5" />
                                     </IconButton>
                                     <IconButton
-                                        label="Remove"
+                                        label={tr('Remove')}
                                         disabled={
                                             draft.items.length <= limits.min
                                         }
@@ -898,7 +954,7 @@ function SetEditor({
                             className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-dashed border-border text-sm text-foreground hover:bg-muted disabled:opacity-50"
                         >
                             <Plus className="size-4" />
-                            Add piece
+                            {tr('Add piece')}
                         </button>
                     </div>
                     <label className="flex items-center gap-2 text-sm text-foreground">
@@ -907,7 +963,7 @@ function SetEditor({
                             checked={draft.is_active}
                             onChange={(e) => set('is_active', e.target.checked)}
                         />
-                        Active in games
+                        {tr('Active in games')}
                     </label>
                 </div>
                 <footer className="flex justify-end gap-2 border-t border-border px-5 py-3">
@@ -916,7 +972,7 @@ function SetEditor({
                         onClick={onClose}
                         className="h-9 rounded-lg border border-border px-4 text-sm text-foreground hover:bg-muted"
                     >
-                        Cancel
+                        {tr('Cancel')}
                     </button>
                     <button
                         type="submit"
@@ -924,7 +980,7 @@ function SetEditor({
                         data-testid="sequence-save"
                         className="h-9 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                     >
-                        Save
+                        {tr('Save')}
                     </button>
                 </footer>
             </form>
@@ -946,10 +1002,10 @@ function Field({
     return (
         <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-foreground">
-                {label}
+                {tr(label)}
                 {hint && (
                     <span className="ml-1 text-xs font-normal text-muted-foreground">
-                        {hint}
+                        {tr(hint)}
                     </span>
                 )}
             </span>
@@ -973,8 +1029,8 @@ function IconButton({
     return (
         <button
             type="button"
-            aria-label={label}
-            title={label}
+            aria-label={tr(label)}
+            title={tr(label)}
             disabled={disabled}
             onClick={onClick}
             className="grid size-8 place-items-center rounded-lg border border-border text-foreground hover:bg-muted disabled:opacity-40"

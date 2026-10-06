@@ -26,6 +26,7 @@ import {
     gameLabel,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
 import {
@@ -120,17 +121,18 @@ export default function AdsIndex({
 
     return (
         <AdminLayout>
-            <Head title="Advertising" />
+            <Head title={tr('Advertising')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                         <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
                             <Megaphone className="size-6 text-primary" />
-                            Advertising
+                            {tr('Advertising')}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Sell logo placements, mottos, jingles and sponsored
-                            character items across every game.
+                            {tr(
+                                'Sell logo placements, mottos, jingles and sponsored character items across every game.',
+                            )}
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -140,7 +142,7 @@ export default function AdsIndex({
                             data-testid="ads-new-advertiser"
                         >
                             <Building2 className="size-4" />
-                            New advertiser
+                            {tr('New advertiser')}
                         </Link>
                         <Link
                             href="/admin/ads/campaigns/create"
@@ -148,7 +150,7 @@ export default function AdsIndex({
                             data-testid="ads-new-campaign"
                         >
                             <Plus className="size-4" />
-                            New campaign
+                            {tr('New campaign')}
                         </Link>
                     </div>
                 </div>
@@ -163,8 +165,9 @@ export default function AdsIndex({
                         data-testid="ads-off-notice"
                     >
                         <Power className="size-4 shrink-0" />
-                        Ads are currently disabled for all users. Open delivery
-                        settings to turn them back on.
+                        {tr(
+                            'Ads are currently disabled for all users. Open delivery settings to turn them back on.',
+                        )}
                     </button>
                 )}
 
@@ -187,7 +190,7 @@ export default function AdsIndex({
                                     : 'text-muted-foreground hover:text-foreground',
                             )}
                         >
-                            {item.label}
+                            {tr(item.label)}
                         </button>
                     ))}
                 </div>
@@ -226,30 +229,43 @@ function Overview({
         <div className="flex flex-col gap-6">
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <StatTile
-                    label="Live campaigns"
+                    label={tr('Live campaigns')}
                     value={formatNumber(summary.live_campaigns)}
-                    hint={`${summary.advertisers} active advertiser${summary.advertisers === 1 ? '' : 's'}`}
+                    hint={tr(
+                        summary.advertisers === 1
+                            ? '{0} active advertiser'
+                            : '{0} active advertisers',
+                        [summary.advertisers],
+                    )}
                     icon={Megaphone}
                     color="bg-violet-500"
                 />
                 <StatTile
-                    label="Contract value (live)"
+                    label={tr('Contract value (live)')}
                     value={formatRupiah(summary.contract_value_live)}
-                    hint={`This year: ${formatRupiah(summary.contract_value_year)}`}
+                    hint={tr('This year: {0}', [
+                        formatRupiah(summary.contract_value_year),
+                    ])}
                     icon={BadgeDollarSign}
                     color="bg-emerald-500"
                 />
                 <StatTile
-                    label="Impressions · 30 days"
+                    label={tr('Impressions · 30 days')}
                     value={formatNumber(summary.impressions_30d)}
-                    hint={`CTR ${ctr({ impressions: summary.impressions_30d, clicks: summary.clicks_30d, plays: 0 })}`}
+                    hint={tr('CTR {0}', [
+                        ctr({
+                            impressions: summary.impressions_30d,
+                            clicks: summary.clicks_30d,
+                            plays: 0,
+                        }),
+                    ])}
                     icon={Eye}
                     color="bg-sky-500"
                 />
                 <StatTile
-                    label="Clicks · jingle plays (30d)"
+                    label={tr('Clicks · jingle plays (30d)')}
                     value={`${formatNumber(summary.clicks_30d)} · ${formatNumber(summary.plays_30d)}`}
-                    hint="Click-throughs and sponsor jingles heard"
+                    hint={tr('Click-throughs and sponsor jingles heard')}
                     icon={MousePointerClick}
                     color="bg-amber-500"
                 />
@@ -257,8 +273,10 @@ function Overview({
 
             <div className="grid gap-6 xl:grid-cols-3">
                 <Panel
-                    title="Delivery"
-                    description="Impressions, clicks and jingle plays per day (last 30 days)"
+                    title={tr('Delivery')}
+                    description={tr(
+                        'Impressions, clicks and jingle plays per day (last 30 days)',
+                    )}
                     icon={Eye}
                     className="xl:col-span-2"
                 >
@@ -318,13 +336,15 @@ function Overview({
                     </div>
                 </Panel>
                 <Panel
-                    title="Ending within 7 days"
-                    description="Renew or replace before the slot goes empty"
+                    title={tr('Ending within 7 days')}
+                    description={tr(
+                        'Renew or replace before the slot goes empty',
+                    )}
                     icon={CalendarClock}
                 >
                     {summary.ending_soon.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            No live campaign ends this week.
+                            {tr('No live campaign ends this week.')}
                         </p>
                     ) : (
                         <ul className="flex flex-col gap-3">
@@ -343,9 +363,10 @@ function Overview({
                                                 {campaign.name}
                                             </span>
                                             <span className="block text-xs text-muted-foreground">
-                                                Ends{' '}
+                                                {tr('Ends')}{' '}
                                                 {formatDate(campaign.ends_on)} ·{' '}
-                                                {campaign.days_left} day(s) left
+                                                {campaign.days_left}{' '}
+                                                {tr('day(s) left')}
                                             </span>
                                         </span>
                                     </Link>
@@ -375,8 +396,8 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
 
     return (
         <Panel
-            title="Campaigns"
-            description={`${campaigns.length} total`}
+            title={tr('Campaigns')}
+            description={tr('{0} total', [campaigns.length])}
             icon={Megaphone}
             actions={
                 <div className="flex flex-wrap items-center gap-2">
@@ -385,7 +406,7 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
                         <input
                             value={query}
                             onChange={(event) => setQuery(event.target.value)}
-                            placeholder="Search campaign or advertiser"
+                            placeholder={tr('Search campaign or advertiser')}
                             className="h-9 w-64 rounded-lg border border-input bg-background pr-3 pl-8 text-sm"
                             data-testid="ads-campaign-search"
                         />
@@ -394,7 +415,7 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
                         value={status}
                         onChange={(event) => setStatus(event.target.value)}
                         className="h-9 rounded-lg border border-input bg-background px-3 text-sm"
-                        aria-label="Status"
+                        aria-label={tr('Status')}
                     >
                         {[
                             'all',
@@ -406,7 +427,7 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
                             'ended',
                         ].map((value) => (
                             <option key={value} value={value}>
-                                {value === 'all' ? 'All statuses' : value}
+                                {value === 'all' ? tr('All statuses') : value}
                             </option>
                         ))}
                     </select>
@@ -416,8 +437,10 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
             {shown.length === 0 ? (
                 <EmptyState
                     icon={Megaphone}
-                    title="No campaigns"
-                    description="Create a campaign for an advertiser, then add its creatives."
+                    title={tr('No campaigns')}
+                    description={tr(
+                        'Create a campaign for an advertiser, then add its creatives.',
+                    )}
                 />
             ) : (
                 <div className="-mx-5 -my-5 overflow-x-auto">
@@ -428,25 +451,25 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
                         <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
                             <tr>
                                 <th className="px-5 py-3 font-medium">
-                                    Campaign
+                                    {tr('Campaign')}
                                 </th>
                                 <th className="px-3 py-3 font-medium">
-                                    Flight
+                                    {tr('Flight')}
                                 </th>
                                 <th className="px-3 py-3 font-medium">
-                                    Targeting
+                                    {tr('Targeting')}
                                 </th>
                                 <th className="px-3 py-3 text-right font-medium">
-                                    Contract
+                                    {tr('Contract')}
                                 </th>
                                 <th className="px-3 py-3 text-right font-medium">
-                                    Impressions
+                                    {tr('Impressions')}
                                 </th>
                                 <th className="px-3 py-3 text-right font-medium">
-                                    CTR
+                                    {tr('CTR')}
                                 </th>
                                 <th className="px-3 py-3 font-medium">
-                                    Status
+                                    {tr('Status')}
                                 </th>
                                 <th className="px-5 py-3" />
                             </tr>
@@ -476,7 +499,7 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
                                                 <p className="truncate text-xs text-muted-foreground">
                                                     {c.advertiser_name} ·{' '}
                                                     {c.creatives_count}{' '}
-                                                    creative(s)
+                                                    {tr('creative(s)')}
                                                 </p>
                                             </div>
                                         </div>
@@ -487,24 +510,29 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
                                             {formatDate(c.ends_on)}
                                         </p>
                                         <p className="text-muted-foreground">
-                                            {c.duration_days} days
+                                            {c.duration_days} {tr('days')}
                                             {c.display_status === 'live' &&
-                                                ` · ${c.days_left} left`}
+                                                tr(' · {0} left', [
+                                                    c.days_left,
+                                                ])}
                                         </p>
                                     </td>
                                     <td className="px-3 py-2.5 text-xs text-muted-foreground">
                                         <p>
                                             {c.target_games.length === 0
-                                                ? 'All games'
+                                                ? tr('All games')
                                                 : c.target_games
                                                       .map(gameLabel)
                                                       .join(', ')}
                                         </p>
                                         <p>
                                             {c.grade_min || c.grade_max
-                                                ? `Grade ${c.grade_min ?? 1}–${c.grade_max ?? 12}`
-                                                : 'All grades'}{' '}
-                                            · weight {c.weight}
+                                                ? tr('Grade {0}–{1}', [
+                                                      c.grade_min ?? 1,
+                                                      c.grade_max ?? 12,
+                                                  ])
+                                                : tr('All grades')}{' '}
+                                            {tr('· weight')} {c.weight}
                                         </p>
                                     </td>
                                     <td className="px-3 py-2.5 text-right">
@@ -512,11 +540,11 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
                                             {formatRupiah(c.contract_value)}
                                         </p>
                                         <p className="text-xs text-muted-foreground">
-                                            {
+                                            {tr(
                                                 PRICING_LABELS[
                                                     c.pricing_model
-                                                ].split(' ')[0]
-                                            }
+                                                ].split(' ')[0],
+                                            )}
                                         </p>
                                     </td>
                                     <td className="px-3 py-2.5 text-right tabular-nums">
@@ -533,7 +561,7 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
                                             )}
                                         </p>
                                         <p className="text-xs text-muted-foreground">
-                                            today{' '}
+                                            {tr('today')}{' '}
                                             {formatNumber(c.stats.today ?? 0)}
                                         </p>
                                     </td>
@@ -552,7 +580,9 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
                                                 event.stopPropagation()
                                             }
                                             className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                                            aria-label={`Edit ${c.name}`}
+                                            aria-label={tr('Edit {0}', [
+                                                c.name,
+                                            ])}
                                         >
                                             <Pencil className="size-4" />
                                         </Link>
@@ -570,11 +600,11 @@ function Campaigns({ campaigns }: { campaigns: Props['campaigns'] }) {
 function Advertisers({ advertisers }: { advertisers: AdvertiserRow[] }) {
     if (advertisers.length === 0) {
         return (
-            <Panel title="Advertisers" icon={Building2}>
+            <Panel title={tr('Advertisers')} icon={Building2}>
                 <EmptyState
                     icon={Building2}
-                    title="No advertisers yet"
-                    description="Add the brands that buy ad space."
+                    title={tr('No advertisers yet')}
+                    description={tr('Add the brands that buy ad space.')}
                 />
             </Panel>
         );
@@ -613,37 +643,47 @@ function Advertisers({ advertisers }: { advertisers: AdvertiserRow[] }) {
                                         : 'bg-muted text-muted-foreground',
                                 )}
                             >
-                                {a.is_active ? 'Active' : 'Inactive'}
+                                {a.is_active ? tr('Active') : tr('Inactive')}
                             </span>
                         </div>
                     </div>
                     <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
                         <div className="min-w-0">
-                            <dt className="text-muted-foreground">Contact</dt>
+                            <dt className="text-muted-foreground">
+                                {tr('Contact')}
+                            </dt>
                             <dd className="truncate text-foreground">
                                 {a.contact_name ?? '—'}
                             </dd>
                         </div>
                         <div className="min-w-0">
-                            <dt className="text-muted-foreground">Phone</dt>
+                            <dt className="text-muted-foreground">
+                                {tr('Phone')}
+                            </dt>
                             <dd className="truncate text-foreground">
                                 {a.phone ?? '—'}
                             </dd>
                         </div>
                         <div className="col-span-2 min-w-0">
-                            <dt className="text-muted-foreground">Email</dt>
+                            <dt className="text-muted-foreground">
+                                {tr('Email')}
+                            </dt>
                             <dd className="truncate text-foreground">
                                 {a.email ?? '—'}
                             </dd>
                         </div>
                         <div>
-                            <dt className="text-muted-foreground">Campaigns</dt>
+                            <dt className="text-muted-foreground">
+                                {tr('Campaigns')}
+                            </dt>
                             <dd className="text-foreground tabular-nums">
                                 {a.campaigns_count ?? 0}
                             </dd>
                         </div>
                         <div>
-                            <dt className="text-muted-foreground">Live now</dt>
+                            <dt className="text-muted-foreground">
+                                {tr('Live now')}
+                            </dt>
                             <dd className="text-foreground tabular-nums">
                                 {a.live_campaigns ?? 0}
                             </dd>
@@ -658,7 +698,7 @@ function Advertisers({ advertisers }: { advertisers: AdvertiserRow[] }) {
                             )}
                         >
                             <Pencil className="size-3.5" />
-                            Edit
+                            {tr('Edit')}
                         </Link>
                         <Link
                             href={`/admin/ads/campaigns/create?advertiser=${a.id}`}
@@ -668,7 +708,7 @@ function Advertisers({ advertisers }: { advertisers: AdvertiserRow[] }) {
                             )}
                         >
                             <Plus className="size-3.5" />
-                            Campaign
+                            {tr('Campaign')}
                         </Link>
                     </div>
                 </article>
@@ -687,8 +727,10 @@ function Inventory({
     return (
         <div className="grid gap-6 xl:grid-cols-3">
             <Panel
-                title="Placements"
-                description="Where ads appear. Every game exposes the same placements."
+                title={tr('Placements')}
+                description={tr(
+                    'Where ads appear. Every game exposes the same placements.',
+                )}
                 icon={LayoutGrid}
                 className="xl:col-span-2"
             >
@@ -700,16 +742,16 @@ function Inventory({
                         <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
                             <tr>
                                 <th className="px-5 py-3 font-medium">
-                                    Placement
+                                    {tr('Placement')}
                                 </th>
                                 <th className="px-3 py-3 font-medium">
-                                    Accepts
+                                    {tr('Accepts')}
                                 </th>
                                 <th className="px-3 py-3 text-right font-medium">
-                                    Live creatives
+                                    {tr('Live creatives')}
                                 </th>
                                 <th className="px-5 py-3 text-right font-medium">
-                                    30-day delivery
+                                    {tr('30-day delivery')}
                                 </th>
                             </tr>
                         </thead>
@@ -718,7 +760,7 @@ function Inventory({
                                 <tr key={row.key}>
                                     <td className="px-5 py-2.5">
                                         <p className="font-medium text-foreground">
-                                            {row.label}
+                                            {tr(row.label)}
                                         </p>
                                         <p className="font-mono text-xs text-muted-foreground">
                                             {row.key}
@@ -741,14 +783,14 @@ function Inventory({
                                         {row.moment && (
                                             <p className="inline-flex items-center gap-1">
                                                 <Music className="size-3" />
-                                                plays at {row.moment}
+                                                {tr('plays at')} {row.moment}
                                             </p>
                                         )}
                                     </td>
                                     <td className="px-3 py-2.5 text-right tabular-nums">
                                         {row.live_creatives === 0 ? (
                                             <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-                                                Available
+                                                {tr('Available')}
                                             </span>
                                         ) : (
                                             row.live_creatives
@@ -757,12 +799,13 @@ function Inventory({
                                     <td className="px-5 py-2.5 text-right text-xs tabular-nums">
                                         <p className="text-foreground">
                                             {formatNumber(row.impressions_30d)}{' '}
-                                            impressions
+                                            {tr('impressions')}
                                         </p>
                                         <p className="text-muted-foreground">
                                             {formatNumber(row.clicks_30d)}{' '}
-                                            clicks ·{' '}
-                                            {formatNumber(row.plays_30d)} plays
+                                            {tr('clicks ·')}{' '}
+                                            {formatNumber(row.plays_30d)}{' '}
+                                            {tr('plays')}
                                         </p>
                                     </td>
                                 </tr>
@@ -772,8 +815,8 @@ function Inventory({
                 </div>
             </Panel>
             <Panel
-                title="Creative sizes"
-                description="Pixel dimensions for logo artwork"
+                title={tr('Creative sizes')}
+                description={tr('Pixel dimensions for logo artwork')}
                 icon={LayoutGrid}
             >
                 <ul className="flex flex-col gap-3">
@@ -796,7 +839,7 @@ function Inventory({
                             </span>
                             <span className="min-w-0">
                                 <span className="block text-sm font-medium text-foreground">
-                                    {size.label}
+                                    {tr(size.label)}
                                 </span>
                                 <span className="font-mono text-xs text-muted-foreground">
                                     {key}

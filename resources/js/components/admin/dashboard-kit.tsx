@@ -1,4 +1,5 @@
 import { formatNumber, gameLabel } from '@/components/admin/game-stats';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
@@ -33,6 +34,7 @@ export const GAME_COLORS: Record<string, string> = {
     'economy-heist': '#b45309',
     'order-rush': '#0f766e',
     'port-sorter': '#0d9488',
+    'turbo-trivia': '#e11d48',
     'knowledge-train': 'var(--color-bubble-purple)',
 };
 
@@ -50,12 +52,12 @@ export const axisTick = { fill: 'var(--muted-foreground)', fontSize: 11 };
 export function timeAgo(value: string | null | undefined): string {
     if (!value) return '—';
     const mins = Math.floor((Date.now() - new Date(value).getTime()) / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return tr('just now');
+    if (mins < 60) return tr('{0}m ago', [mins]);
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
+    if (hrs < 24) return tr('{0}h ago', [hrs]);
     const days = Math.floor(hrs / 24);
-    if (days < 30) return `${days}d ago`;
+    if (days < 30) return tr('{0}d ago', [days]);
     return new Date(value).toLocaleDateString(undefined, {
         day: 'numeric',
         month: 'short',
@@ -84,7 +86,7 @@ export function Delta({
     if (value === null || value === undefined) {
         return (
             <span className="text-xs text-muted-foreground">
-                No comparison yet
+                {tr('No comparison yet')}
             </span>
         );
     }
@@ -108,6 +110,16 @@ export function Delta({
         </span>
     );
 }
+
+/**
+ * Shared curve style for admin line/area charts: a monotone spline (smooth,
+ * passes through every point, never overshoots below zero) with rounded joins.
+ */
+export const smoothLine = {
+    type: 'monotone',
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+} as const;
 
 export function Sparkline({
     data,
@@ -142,7 +154,7 @@ export function Sparkline({
                         </linearGradient>
                     </defs>
                     <Area
-                        type="monotone"
+                        {...smoothLine}
                         dataKey={dataKey}
                         stroke={color}
                         strokeWidth={2}
@@ -180,7 +192,7 @@ export function KpiCard({
             <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 flex-col gap-1">
                     <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                        {label}
+                        {tr(label)}
                     </span>
                     <span className="font-display text-3xl leading-none font-bold text-foreground tabular-nums">
                         {value}
@@ -226,10 +238,10 @@ export function KpiCard({
                 'hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
             )}
         >
-            {body}
+            {tr(body)}
         </Link>
     ) : (
-        <div className={classes}>{body}</div>
+        <div className={classes}>{tr(body)}</div>
     );
 }
 
@@ -288,11 +300,11 @@ export function ShareBars({
                             style={{ background: row.color }}
                         />
                         <span className="min-w-0 flex-1 truncate text-foreground">
-                            {row.label}
+                            {tr(row.label)}
                         </span>
                         {row.hint && (
                             <span className="text-xs text-muted-foreground">
-                                {row.hint}
+                                {tr(row.hint)}
                             </span>
                         )}
                         <span className="font-semibold text-foreground tabular-nums">
@@ -358,11 +370,11 @@ export function SectionHeading({
         <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="flex flex-col gap-0.5">
                 <h3 className="font-display text-lg font-bold text-foreground">
-                    {title}
+                    {tr(title)}
                 </h3>
                 {description && (
                     <p className="text-sm text-muted-foreground">
-                        {description}
+                        {tr(description)}
                     </p>
                 )}
             </div>

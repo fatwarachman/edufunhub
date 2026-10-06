@@ -1,3 +1,4 @@
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 
 export interface CampaignStats {
@@ -111,11 +112,11 @@ export function CampaignStatus({ status }: { status: string }) {
 }
 
 export function formatRupiah(value: number | null | undefined): string {
-    return `Rp ${(value ?? 0).toLocaleString('id-ID')}`;
+    return tr('Rp {0}', [(value ?? 0).toLocaleString('id-ID')]);
 }
 
 export function formatDate(value: string): string {
-    return new Date(`${value}T00:00:00`).toLocaleDateString('en-GB', {
+    return new Date(`${value}T00:00:00`).toLocaleDateString(adminLocale(), {
         day: 'numeric',
         month: 'short',
         year: 'numeric',

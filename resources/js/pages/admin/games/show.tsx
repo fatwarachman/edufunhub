@@ -1,3 +1,4 @@
+import { smoothLine } from '@/components/admin/dashboard-kit';
 import {
     BAND_LABELS,
     BucketTable,
@@ -16,6 +17,7 @@ import {
 } from '@/components/admin/game-stats';
 import { GameTabs } from '@/components/admin/game-tabs';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
 import {
@@ -148,7 +150,7 @@ export default function GameShow({
 
     return (
         <>
-            <Head title={`${gameLabel(game.key)} · Statistics`} />
+            <Head title={tr('{0} · Statistics', [gameLabel(game.key)])} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div className="flex flex-col gap-2">
@@ -157,7 +159,7 @@ export default function GameShow({
                             className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                         >
                             <ArrowLeft className="size-4" />
-                            All games
+                            {tr('All games')}
                         </Link>
                         <div className="flex items-center gap-3">
                             <span
@@ -169,14 +171,15 @@ export default function GameShow({
                             </h2>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            A play counts as successful when more than{' '}
-                            {passPercent}% of its answers are correct.
+                            {tr('A play counts as successful when more than')}{' '}
+                            {passPercent}
+                            {tr('% of its answers are correct.')}
                         </p>
                     </div>
                     <div
                         className="inline-flex w-fit rounded-lg border border-border bg-card p-1"
                         role="group"
-                        aria-label="Time range"
+                        aria-label={tr('Time range')}
                     >
                         {RANGES.map((range) => (
                             <button
@@ -202,7 +205,7 @@ export default function GameShow({
                                         : 'text-muted-foreground hover:text-foreground',
                                 )}
                             >
-                                {range.label}
+                                {tr(range.label)}
                             </button>
                         ))}
                     </div>
@@ -212,28 +215,28 @@ export default function GameShow({
 
                 {!game.tracked && (
                     <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
-                        This game is a client-side practice demo. Its results
-                        are not reported to the server, so no statistics are
-                        collected yet.
+                        {tr(
+                            'This game is a client-side practice demo. Its results are not reported to the server, so no statistics are collected yet.',
+                        )}
                     </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
                     <StatTile
-                        label="Times played"
+                        label={tr('Times played')}
                         value={formatNumber(summary.plays)}
-                        hint={`${summary.plays_per_player} per player`}
+                        hint={tr('{0} per player', [summary.plays_per_player])}
                         icon={ChartColumnBig}
                         color="bg-bubble-blue"
                     />
                     <StatTile
-                        label="Unique players"
+                        label={tr('Unique players')}
                         value={formatNumber(summary.players)}
                         icon={UsersRound}
                         color="bg-bubble-green"
                     />
                     <StatTile
-                        label="Success rate"
+                        label={tr('Success rate')}
                         value={
                             <span className={rateTone(summary.success_rate)}>
                                 {formatPercent(summary.success_rate)}
@@ -243,7 +246,7 @@ export default function GameShow({
                         color="bg-bubble-purple"
                     />
                     <StatTile
-                        label="Answer accuracy"
+                        label={tr('Answer accuracy')}
                         value={
                             <span className={rateTone(summary.accuracy)}>
                                 {formatPercent(summary.accuracy)}
@@ -253,14 +256,14 @@ export default function GameShow({
                         color="bg-bubble-orange"
                     />
                     <StatTile
-                        label="Avg points / play"
+                        label={tr('Avg points / play')}
                         value={summary.avg_points}
-                        hint={`${formatNumber(summary.points)} total`}
+                        hint={tr('{0} total', [formatNumber(summary.points)])}
                         icon={Coins}
                         color="bg-bubble-ink"
                     />
                     <StatTile
-                        label="Avg duration"
+                        label={tr('Avg duration')}
                         value={formatDuration(summary.avg_duration)}
                         hint={
                             <Link
@@ -268,7 +271,7 @@ export default function GameShow({
                                 className="hover:text-foreground hover:underline"
                             >
                                 {formatDuration(summary.total_duration || null)}{' '}
-                                total · per player
+                                {tr('total · per player')}
                             </Link>
                         }
                         icon={Clock}
@@ -277,19 +280,23 @@ export default function GameShow({
                 </div>
 
                 {!hasPlays ? (
-                    <Panel title="No plays yet" icon={ChartColumnBig}>
+                    <Panel title={tr('No plays yet')} icon={ChartColumnBig}>
                         <EmptyState
                             icon={ChartColumnBig}
-                            title="No recorded plays in this period"
-                            description="Statistics appear after signed-in players finish this game."
+                            title={tr('No recorded plays in this period')}
+                            description={tr(
+                                'Statistics appear after signed-in players finish this game.',
+                            )}
                         />
                     </Panel>
                 ) : (
                     <>
                         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                             <Panel
-                                title="Daily activity"
-                                description="Plays and unique players per day"
+                                title={tr('Daily activity')}
+                                description={tr(
+                                    'Plays and unique players per day',
+                                )}
                                 icon={ChartColumnBig}
                                 className="xl:col-span-2"
                             >
@@ -332,7 +339,7 @@ export default function GameShow({
                                                 contentStyle={tooltipStyle}
                                             />
                                             <Area
-                                                type="monotone"
+                                                {...smoothLine}
                                                 dataKey="plays"
                                                 name="Plays"
                                                 stroke="var(--chart-5)"
@@ -341,7 +348,7 @@ export default function GameShow({
                                                 strokeWidth={2}
                                             />
                                             <Area
-                                                type="monotone"
+                                                {...smoothLine}
                                                 dataKey="players"
                                                 name="Players"
                                                 stroke="var(--chart-4)"
@@ -354,8 +361,10 @@ export default function GameShow({
                                 </div>
                             </Panel>
                             <Panel
-                                title="Score distribution"
-                                description="Plays by share of correct answers"
+                                title={tr('Score distribution')}
+                                description={tr(
+                                    'Plays by share of correct answers',
+                                )}
                                 icon={Target}
                             >
                                 <div className="h-64">
@@ -410,47 +419,51 @@ export default function GameShow({
 
                         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                             <Panel
-                                title="By age"
-                                description="Player age when the game was played"
+                                title={tr('By age')}
+                                description={tr(
+                                    'Player age when the game was played',
+                                )}
                                 icon={Cake}
                             >
                                 <BucketTable
                                     rows={stats.byAge}
-                                    labelHeader="Age"
+                                    labelHeader={tr('Age')}
                                     labelFor={(label) =>
                                         label === 'unknown'
-                                            ? 'Unknown'
-                                            : `${label} yrs`
+                                            ? tr('Unknown')
+                                            : tr('{0} yrs', [label])
                                     }
                                 />
                             </Panel>
                             <Panel
-                                title="By education level"
-                                description="Grade used by the game"
+                                title={tr('By education level')}
+                                description={tr('Grade used by the game')}
                                 icon={School}
                             >
                                 <BucketTable
                                     rows={stats.byLevel}
-                                    labelHeader="Level"
+                                    labelHeader={tr('Level')}
                                     labelFor={(label) =>
                                         LEVEL_LABELS[label] ?? label
                                     }
                                 />
                             </Panel>
-                            <Panel title="By grade" icon={GraduationCap}>
+                            <Panel title={tr('By grade')} icon={GraduationCap}>
                                 <BucketTable
                                     rows={stats.byGrade}
-                                    labelHeader="Grade"
-                                    labelFor={(label) => `Grade ${label}`}
+                                    labelHeader={tr('Grade')}
+                                    labelFor={(label) =>
+                                        tr('Grade {0}', [label])
+                                    }
                                 />
                             </Panel>
-                            <Panel title="By mission" icon={Map}>
+                            <Panel title={tr('By mission')} icon={Map}>
                                 <BucketTable
                                     rows={stats.byMission}
-                                    labelHeader="Mission"
+                                    labelHeader={tr('Mission')}
                                     labelFor={(label) =>
                                         label === 'unknown'
-                                            ? 'Unknown'
+                                            ? tr('Unknown')
                                             : label.charAt(0).toUpperCase() +
                                               label.slice(1)
                                     }
@@ -460,40 +473,46 @@ export default function GameShow({
 
                         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                             <Panel
-                                title="Top schools"
-                                description="Most active schools in this game"
+                                title={tr('Top schools')}
+                                description={tr(
+                                    'Most active schools in this game',
+                                )}
                                 icon={School}
                             >
                                 {stats.bySchool.length === 0 ? (
                                     <EmptyState
                                         icon={School}
-                                        title="No school data yet"
+                                        title={tr('No school data yet')}
                                     />
                                 ) : (
                                     <BucketTable
                                         rows={stats.bySchool}
-                                        labelHeader="School"
+                                        labelHeader={tr('School')}
                                     />
                                 )}
                             </Panel>
                             <Panel
-                                title="Hardest questions"
-                                description={`${formatNumber(stats.questions.total_answers)} bank answers recorded`}
+                                title={tr('Hardest questions')}
+                                description={tr('{0} bank answers recorded', [
+                                    formatNumber(stats.questions.total_answers),
+                                ])}
                                 icon={Lightbulb}
                                 actions={
                                     <Link
                                         href={`/admin/questions?game=${game.key}&sort=hardest`}
                                         className="link text-xs"
                                     >
-                                        Manage questions
+                                        {tr('Manage questions')}
                                     </Link>
                                 }
                             >
                                 {stats.questions.hardest.length === 0 ? (
                                     <EmptyState
                                         icon={ListChecks}
-                                        title="No per-question data yet"
-                                        description="Per-question results are recorded for plays finished after this release."
+                                        title={tr('No per-question data yet')}
+                                        description={tr(
+                                            'Per-question results are recorded for plays finished after this release.',
+                                        )}
                                     />
                                 ) : (
                                     <ul className="flex flex-col divide-y divide-border">
@@ -519,7 +538,7 @@ export default function GameShow({
                                                                 ` · ${BAND_LABELS[question.band]}`}{' '}
                                                             ·{' '}
                                                             {question.answered}{' '}
-                                                            answers
+                                                            {tr('answers')}
                                                         </span>
                                                     </div>
                                                     <span
@@ -543,8 +562,10 @@ export default function GameShow({
                         </div>
 
                         <Panel
-                            title="Who played"
-                            description="Top 50 players by number of plays"
+                            title={tr('Who played')}
+                            description={tr(
+                                'Top 50 players by number of plays',
+                            )}
                             icon={UsersRound}
                         >
                             <div className="overflow-x-auto">
@@ -552,31 +573,31 @@ export default function GameShow({
                                     <thead>
                                         <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
                                             <th className="py-2 pr-3 text-left font-medium">
-                                                Player
+                                                {tr('Player')}
                                             </th>
                                             <th className="px-3 py-2 text-left font-medium">
-                                                School
+                                                {tr('School')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Age
+                                                {tr('Age')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Grade
+                                                {tr('Grade')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Plays
+                                                {tr('Plays')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Points
+                                                {tr('Points')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Best
+                                                {tr('Best')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Accuracy
+                                                {tr('Accuracy')}
                                             </th>
                                             <th className="py-2 pl-3 text-right font-medium">
-                                                Last played
+                                                {tr('Last played')}
                                             </th>
                                         </tr>
                                     </thead>
@@ -636,34 +657,34 @@ export default function GameShow({
                             </div>
                         </Panel>
 
-                        <Panel title="Recent plays" icon={History}>
+                        <Panel title={tr('Recent plays')} icon={History}>
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[720px] text-sm">
                                     <thead>
                                         <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
                                             <th className="py-2 pr-3 text-left font-medium">
-                                                Player
+                                                {tr('Player')}
                                             </th>
                                             <th className="px-3 py-2 text-left font-medium">
-                                                Mission
+                                                {tr('Mission')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Grade
+                                                {tr('Grade')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Correct
+                                                {tr('Correct')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Accuracy
+                                                {tr('Accuracy')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Points
+                                                {tr('Points')}
                                             </th>
                                             <th className="px-3 py-2 text-right font-medium">
-                                                Duration
+                                                {tr('Duration')}
                                             </th>
                                             <th className="py-2 pl-3 text-right font-medium">
-                                                Played
+                                                {tr('Played')}
                                             </th>
                                         </tr>
                                     </thead>
@@ -743,5 +764,5 @@ function Cell({
 }
 
 GameShow.layout = (page: ReactNode) => (
-    <AdminLayout title="Game Statistics">{page}</AdminLayout>
+    <AdminLayout title={tr('Game Statistics')}>{page}</AdminLayout>
 );

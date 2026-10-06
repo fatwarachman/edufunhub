@@ -1,5 +1,6 @@
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { type Role } from '@/types/admin';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -36,15 +37,15 @@ export default function CreateUser({ roles }: CreateUserProps) {
 
     return (
         <>
-            <Head title="Create User" />
+            <Head title={tr('Create User')} />
 
             <div className="w-full space-y-6">
                 <div>
                     <h2 className="font-display text-2xl font-bold text-foreground">
-                        Create User
+                        {tr('Create User')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        Add a new user to the platform
+                        {tr('Add a new user to the platform')}
                     </p>
                 </div>
 
@@ -56,7 +57,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                                 htmlFor="name"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Full name
+                                {tr('Full name')}
                             </label>
                             <input
                                 id="name"
@@ -66,7 +67,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                                     setData('name', e.target.value)
                                 }
                                 className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                placeholder="Jane Smith"
+                                placeholder={tr('Jane Smith')}
                                 autoFocus
                                 required
                             />
@@ -79,7 +80,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                                 htmlFor="email"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Email address
+                                {tr('Email address')}
                             </label>
                             <input
                                 id="email"
@@ -89,7 +90,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                                     setData('email', e.target.value)
                                 }
                                 className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                placeholder="you@example.com"
+                                placeholder={tr('you@example.com')}
                                 required
                             />
                             <InputError message={errors.email} />
@@ -101,7 +102,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                                 htmlFor="password"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Password
+                                {tr('Password')}
                             </label>
                             <div className="relative">
                                 <input
@@ -122,8 +123,8 @@ export default function CreateUser({ roles }: CreateUserProps) {
                                     className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                     aria-label={
                                         showPassword
-                                            ? 'Hide password'
-                                            : 'Show password'
+                                            ? tr('Hide password')
+                                            : tr('Show password')
                                     }
                                 >
                                     {showPassword ? (
@@ -142,7 +143,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                                 htmlFor="password_confirmation"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Confirm password
+                                {tr('Confirm password')}
                             </label>
                             <input
                                 id="password_confirmation"
@@ -167,7 +168,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                         {/* Roles */}
                         <fieldset className="flex flex-col gap-2">
                             <legend className="text-sm font-medium text-foreground">
-                                Roles
+                                {tr('Roles')}
                             </legend>
                             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                 {roles.map((role) => (
@@ -189,7 +190,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                                             </p>
                                             {role.description && (
                                                 <p className="text-xs text-muted-foreground">
-                                                    {role.description}
+                                                    {tr(role.description)}
                                                 </p>
                                             )}
                                         </div>
@@ -205,7 +206,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                                 href="/admin/users"
                                 className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                             >
-                                Cancel
+                                {tr('Cancel')}
                             </Link>
                             <button
                                 type="submit"
@@ -215,7 +216,7 @@ export default function CreateUser({ roles }: CreateUserProps) {
                                 {processing && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                Create User
+                                {tr('Create User')}
                             </button>
                         </div>
                     </form>
@@ -226,5 +227,5 @@ export default function CreateUser({ roles }: CreateUserProps) {
 }
 
 CreateUser.layout = (page: ReactNode) => (
-    <AdminLayout title="Create User">{page}</AdminLayout>
+    <AdminLayout title={tr('Create User')}>{page}</AdminLayout>
 );

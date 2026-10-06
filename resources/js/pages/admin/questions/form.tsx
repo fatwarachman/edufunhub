@@ -9,6 +9,7 @@ import {
 } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, CircleCheck, Loader2, Plus, X } from 'lucide-react';
@@ -162,7 +163,7 @@ export default function QuestionForm({
 
     return (
         <>
-            <Head title={editing ? 'Edit question' : 'Add question'} />
+            <Head title={editing ? tr('Edit question') : tr('Add question')} />
             <form
                 onSubmit={submit}
                 className="flex w-full flex-col gap-6"
@@ -174,19 +175,21 @@ export default function QuestionForm({
                         className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        Question bank
+                        {tr('Question bank')}
                         {(question?.subject ?? defaultSubject) &&
                             ` · ${subjectLabel(question?.subject ?? defaultSubject ?? '')}`}
                     </Link>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-3">
                             <h2 className="font-display text-2xl font-bold text-foreground">
-                                {editing ? 'Edit question' : 'Add question'}
+                                {editing
+                                    ? tr('Edit question')
+                                    : tr('Add question')}
                             </h2>
                             <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
                                 {subjectLabel(data.subject)}
                                 {' · '}
-                                {BAND_LABELS[data.band]}
+                                {tr(BAND_LABELS[data.band])}
                             </span>
                         </div>
                         {editing && (
@@ -196,7 +199,7 @@ export default function QuestionForm({
                                 </span>
                                 <span className="text-muted-foreground">
                                     {formatNumber(question.times_answered)}{' '}
-                                    answers ·{' '}
+                                    {tr('answers ·')}{' '}
                                     <span
                                         className={cn(
                                             'font-semibold',
@@ -204,7 +207,7 @@ export default function QuestionForm({
                                         )}
                                     >
                                         {formatPercent(question.success_rate)}{' '}
-                                        correct
+                                        {tr('correct')}
                                     </span>
                                 </span>
                             </div>
@@ -213,11 +216,13 @@ export default function QuestionForm({
                 </div>
 
                 <Section
-                    title="Placement"
-                    description="Which players and games receive this question."
+                    title={tr('Placement')}
+                    description={tr(
+                        'Which players and games receive this question.',
+                    )}
                 >
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <Field label="Question type" error={errors.type}>
+                        <Field label={tr('Question type')} error={errors.type}>
                             <div
                                 className="inline-flex rounded-lg border border-input p-1"
                                 role="group"
@@ -237,15 +242,15 @@ export default function QuestionForm({
                                             )}
                                         >
                                             {type === 'choice'
-                                                ? 'Multiple choice'
-                                                : 'True / false'}
+                                                ? tr('Multiple choice')
+                                                : tr('True / false')}
                                         </button>
                                     ),
                                 )}
                             </div>
                         </Field>
                         <Field
-                            label="Grade band"
+                            label={tr('Grade band')}
                             htmlFor="band"
                             error={errors.band}
                         >
@@ -259,13 +264,13 @@ export default function QuestionForm({
                             >
                                 {bands.map((band) => (
                                     <option key={band.value} value={band.value}>
-                                        {BAND_LABELS[band.value]}
+                                        {tr(BAND_LABELS[band.value])}
                                     </option>
                                 ))}
                             </select>
                         </Field>
                         <Field
-                            label="Subject"
+                            label={tr('Subject')}
                             htmlFor="subject"
                             error={errors.subject}
                         >
@@ -286,7 +291,7 @@ export default function QuestionForm({
                         </Field>
                     </div>
                     <Field
-                        label="Distribute to games"
+                        label={tr('Distribute to games')}
                         error={errors.games ?? errorFor('games.0')}
                     >
                         <div className="flex flex-wrap gap-2">
@@ -320,20 +325,22 @@ export default function QuestionForm({
                         </div>
                         {!isChoice && (
                             <p className="text-xs text-muted-foreground">
-                                {choiceOnlyGames.map(gameLabel).join(', ')} only
-                                use multiple choice questions.
+                                {choiceOnlyGames.map(gameLabel).join(', ')}{' '}
+                                {tr('only use multiple choice questions.')}
                             </p>
                         )}
                     </Field>
                 </Section>
 
                 <Section
-                    title="Question"
-                    description="Indonesian is shown by default; English is used when the player chooses English."
+                    title={tr('Question')}
+                    description={tr(
+                        'Indonesian is shown by default; English is used when the player chooses English.',
+                    )}
                 >
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <Field
-                            label="Question (Indonesian)"
+                            label={tr('Question (Indonesian)')}
                             htmlFor="prompt_id"
                             error={errors.prompt_id}
                         >
@@ -349,7 +356,7 @@ export default function QuestionForm({
                             />
                         </Field>
                         <Field
-                            label="Question (English)"
+                            label={tr('Question (English)')}
                             htmlFor="prompt_en"
                             error={errors.prompt_en}
                         >
@@ -367,11 +374,13 @@ export default function QuestionForm({
                 </Section>
 
                 <Section
-                    title="Answer"
+                    title={tr('Answer')}
                     description={
                         isChoice
-                            ? 'Add 3–6 options and mark the correct one. Options are shuffled in game.'
-                            : 'Is the statement true or false?'
+                            ? tr(
+                                  'Add 3–6 options and mark the correct one. Options are shuffled in game.',
+                              )
+                            : tr('Is the statement true or false?')
                     }
                 >
                     {isChoice ? (
@@ -390,7 +399,10 @@ export default function QuestionForm({
                                         type="button"
                                         onClick={() => setData('answer', index)}
                                         aria-pressed={data.answer === index}
-                                        aria-label={`Mark option ${index + 1} as correct`}
+                                        aria-label={tr(
+                                            'Mark option {0} as correct',
+                                            [index + 1],
+                                        )}
                                         className={cn(
                                             'flex size-8 items-center justify-center rounded-full border',
                                             data.answer === index
@@ -401,7 +413,10 @@ export default function QuestionForm({
                                         <CircleCheck className="size-4" />
                                     </button>
                                     <input
-                                        aria-label={`Option ${index + 1} (Indonesian)`}
+                                        aria-label={tr(
+                                            'Option {0} (Indonesian)',
+                                            [index + 1],
+                                        )}
                                         value={option.id}
                                         onChange={(e) =>
                                             updateOption(
@@ -410,11 +425,15 @@ export default function QuestionForm({
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder={`Option ${index + 1}`}
+                                        placeholder={tr('Option {0}', [
+                                            index + 1,
+                                        ])}
                                         className={cn(fieldClass, 'w-full')}
                                     />
                                     <input
-                                        aria-label={`Option ${index + 1} (English)`}
+                                        aria-label={tr('Option {0} (English)', [
+                                            index + 1,
+                                        ])}
                                         value={option.en}
                                         onChange={(e) =>
                                             updateOption(
@@ -423,7 +442,7 @@ export default function QuestionForm({
                                                 e.target.value,
                                             )
                                         }
-                                        placeholder="English (optional)"
+                                        placeholder={tr('English (optional)')}
                                         className={cn(
                                             fieldClass,
                                             'col-span-2 col-start-2 w-full sm:col-span-1 sm:col-start-auto',
@@ -435,7 +454,9 @@ export default function QuestionForm({
                                         disabled={
                                             data.options.length <= MIN_OPTIONS
                                         }
-                                        aria-label={`Remove option ${index + 1}`}
+                                        aria-label={tr('Remove option {0}', [
+                                            index + 1,
+                                        ])}
                                         className="col-start-3 row-start-1 flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-destructive disabled:opacity-30 sm:col-start-auto"
                                     >
                                         <X className="size-4" />
@@ -454,7 +475,7 @@ export default function QuestionForm({
                                     className="inline-flex w-fit items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10"
                                 >
                                     <Plus className="size-4" />
-                                    Add option
+                                    {tr('Add option')}
                                 </button>
                             )}
                             <InputError
@@ -480,7 +501,7 @@ export default function QuestionForm({
                                             : 'border-input text-muted-foreground hover:text-foreground',
                                     )}
                                 >
-                                    {value === 1 ? 'True' : 'False'}
+                                    {value === 1 ? tr('True') : tr('False')}
                                 </button>
                             ))}
                             <InputError message={errors.answer} />
@@ -489,7 +510,7 @@ export default function QuestionForm({
                     {isChoice && (
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <Field
-                                label="Hint after answering (Indonesian)"
+                                label={tr('Hint after answering (Indonesian)')}
                                 htmlFor="hint_id"
                                 error={errors.hint_id}
                             >
@@ -503,7 +524,7 @@ export default function QuestionForm({
                                 />
                             </Field>
                             <Field
-                                label="Hint (English)"
+                                label={tr('Hint (English)')}
                                 htmlFor="hint_en"
                                 error={errors.hint_en}
                             >
@@ -521,8 +542,11 @@ export default function QuestionForm({
                 </Section>
 
                 <Section
-                    title="Points"
-                    description={`A correct answer earns ${perCorrect} points (Point Rules). Mark special questions as bonus to award more.`}
+                    title={tr('Points')}
+                    description={tr(
+                        'A correct answer earns {0} points (Point Rules). Mark special questions as bonus to award more.',
+                        [perCorrect],
+                    )}
                 >
                     <div className="flex flex-wrap items-center gap-4">
                         <label className="inline-flex items-center gap-2 text-sm text-foreground">
@@ -535,7 +559,7 @@ export default function QuestionForm({
                                 }
                                 data-testid="question-bonus"
                             />
-                            Bonus question
+                            {tr('Bonus question')}
                         </label>
                         {data.bonus && (
                             <label className="inline-flex items-center gap-2 text-sm text-foreground">
@@ -551,10 +575,11 @@ export default function QuestionForm({
                                         )
                                     }
                                     className="h-9 w-24 rounded-lg border border-input bg-background px-3 text-sm text-foreground tabular-nums focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                    aria-label="Bonus points"
+                                    aria-label={tr('Bonus points')}
                                     data-testid="question-points"
                                 />
-                                points (1–{maxPoints})
+                                {tr('points (1–')}
+                                {maxPoints})
                             </label>
                         )}
                     </div>
@@ -571,14 +596,14 @@ export default function QuestionForm({
                                 setData('is_active', e.target.checked)
                             }
                         />
-                        Active (served to players)
+                        {tr('Active (served to players)')}
                     </label>
                     <div className="flex items-center gap-2">
                         <Link
                             href={backHref}
                             className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                         >
-                            Cancel
+                            {tr('Cancel')}
                         </Link>
                         <button
                             type="submit"
@@ -588,7 +613,9 @@ export default function QuestionForm({
                             {processing && (
                                 <Loader2 className="size-4 animate-spin" />
                             )}
-                            {editing ? 'Save changes' : 'Create question'}
+                            {editing
+                                ? tr('Save changes')
+                                : tr('Create question')}
                         </button>
                     </div>
                 </div>
@@ -609,10 +636,10 @@ function Section({
     return (
         <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
             <div className="flex flex-col gap-0.5">
-                <h3 className="font-semibold text-foreground">{title}</h3>
+                <h3 className="font-semibold text-foreground">{tr(title)}</h3>
                 {description && (
                     <p className="text-xs text-muted-foreground">
-                        {description}
+                        {tr(description)}
                     </p>
                 )}
             </div>
@@ -639,11 +666,11 @@ function Field({
                     htmlFor={htmlFor}
                     className="text-sm font-medium text-foreground"
                 >
-                    {label}
+                    {tr(label)}
                 </label>
             ) : (
                 <span className="text-sm font-medium text-foreground">
-                    {label}
+                    {tr(label)}
                 </span>
             )}
             {children}
@@ -653,5 +680,5 @@ function Field({
 }
 
 QuestionForm.layout = (page: ReactNode) => (
-    <AdminLayout title="Question Bank">{page}</AdminLayout>
+    <AdminLayout title={tr('Question Bank')}>{page}</AdminLayout>
 );

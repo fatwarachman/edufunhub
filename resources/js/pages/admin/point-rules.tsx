@@ -2,6 +2,7 @@ import { FlashMessages } from '@/components/admin/admin-kit';
 import { Panel, fieldClass } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
     Award,
@@ -78,70 +79,75 @@ export default function PointRules({
 
     return (
         <AdminLayout>
-            <Head title="Point Rules" />
+            <Head title={tr('Point Rules')} />
             <div className="flex w-full flex-col gap-6">
                 <div>
                     <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
                         <Coins className="size-6 text-amber-500" />
-                        Point Rules
+                        {tr('Point Rules')}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        The guide every game follows. Changes reach the game
-                        server within a minute.
+                        {tr(
+                            'The guide every game follows. Changes reach the game server within a minute.',
+                        )}
                     </p>
                 </div>
 
                 <FlashMessages />
 
                 <Panel
-                    title="Guide"
+                    title={tr('Guide')}
                     icon={BookOpenCheck}
-                    description="How players earn points in every game"
+                    description={tr('How players earn points in every game')}
                 >
                     <ul
                         className="grid gap-3 sm:grid-cols-2"
                         data-testid="point-guide"
                     >
                         <Guide icon={CircleCheck} tone="green">
-                            Correct answer: <b>+{data.per_correct}</b> points
-                            (bonus questions can be worth up to{' '}
+                            {tr('Correct answer:')} <b>+{data.per_correct}</b>{' '}
+                            {tr('points (bonus questions can be worth up to')}{' '}
                             {maxQuestionPoints}).
                         </Guide>
                         <Guide icon={Sparkles} tone="amber">
-                            Bonus questions: set their value on the question
-                            form.{' '}
+                            {tr(
+                                'Bonus questions: set their value on the question form.',
+                            )}{' '}
                             <Link
                                 href="/admin/questions?source=bonus"
                                 className="link"
                             >
-                                {bonusQuestions} bonus questions
+                                {bonusQuestions} {tr('bonus questions')}
                             </Link>
                         </Guide>
                         <Guide icon={Equal} tone="slate">
-                            Draw:{' '}
+                            {tr('Draw:')}{' '}
                             {data.draw > 0 ? (
                                 <>
-                                    <b>+{data.draw}</b> bonus
+                                    <b>+{data.draw}</b> {tr('bonus')}
                                 </>
                             ) : (
-                                <b>0, no extra points</b>
+                                <b>{tr('0, no extra points')}</b>
                             )}
                             .
                         </Guide>
                         <Guide icon={CircleX} tone="red">
-                            Wrong answer: <b>0</b>. Points are never taken away.
+                            {tr('Wrong answer:')} <b>0</b>
+                            {tr('. Points are never taken away.')}
                         </Guide>
                         <Guide icon={Trophy} tone="amber">
-                            Win: <b>+{data.win}</b> bonus on top of the answers.
+                            {tr('Win:')} <b>+{data.win}</b>{' '}
+                            {tr('bonus on top of the answers.')}
                         </Guide>
                         <Guide icon={CircleMinus} tone="slate">
-                            Leaving early pays only after 3 answers (stops point
-                            farming).
+                            {tr(
+                                'Leaving early pays only after 3 answers (stops point farming).',
+                            )}
                         </Guide>
                     </ul>
                 </Panel>
 
-                <Panel title="Values" icon={Coins}>
+                <Panel title={tr('Values')} icon={Coins}>
                     <form
                         onSubmit={submit}
                         className="flex flex-col gap-5"
@@ -155,7 +161,7 @@ export default function PointRules({
                                 >
                                     <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                                         <Icon className="size-4 text-muted-foreground" />
-                                        {label}
+                                        {tr(label)}
                                     </span>
                                     <div className="flex items-center gap-2">
                                         <input
@@ -175,13 +181,13 @@ export default function PointRules({
                                             required
                                         />
                                         <span className="text-xs text-muted-foreground">
-                                            points · {bounds[key][0]}–
-                                            {bounds[key][1]} · default{' '}
+                                            {tr('points ·')} {bounds[key][0]}–
+                                            {bounds[key][1]} {tr('· default')}{' '}
                                             {defaults[key]}
                                         </span>
                                     </div>
                                     <span className="text-xs text-muted-foreground">
-                                        {help}
+                                        {tr(help)}
                                     </span>
                                     <InputError message={errors[key]} />
                                 </label>
@@ -194,7 +200,7 @@ export default function PointRules({
                                 className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-accent"
                             >
                                 <RotateCcw className="size-4" />
-                                Use defaults
+                                {tr('Use defaults')}
                             </button>
                             <button
                                 type="submit"
@@ -205,7 +211,7 @@ export default function PointRules({
                                 {processing && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                Save rules
+                                {tr('Save rules')}
                             </button>
                         </div>
                     </form>

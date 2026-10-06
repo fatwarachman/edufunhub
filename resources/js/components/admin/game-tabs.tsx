@@ -1,3 +1,4 @@
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { ChartColumnBig, Grid3x3 } from 'lucide-react';
@@ -35,7 +36,7 @@ export function GameTabs({ game, active }: { game: string; active: string }) {
 
     return (
         <nav
-            aria-label="Game sections"
+            aria-label={tr('Game sections')}
             className="flex gap-1 overflow-x-auto border-b border-border"
             data-testid="game-tabs"
         >
@@ -55,7 +56,7 @@ export function GameTabs({ game, active }: { game: string; active: string }) {
                         )}
                     >
                         <Icon className="size-4" />
-                        {label}
+                        {tr(label)}
                     </Link>
                 );
             })}

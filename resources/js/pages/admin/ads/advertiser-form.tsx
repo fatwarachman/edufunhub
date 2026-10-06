@@ -7,6 +7,7 @@ import {
 import { Panel, fieldClass } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ArrowLeft, Building2, Loader2, Trash2 } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
@@ -53,7 +54,7 @@ export default function AdvertiserForm({
         label: string,
         props: Record<string, unknown> = {},
     ) => (
-        <Field label={label} error={errors[key]}>
+        <Field label={tr(label)} error={errors[key]}>
             <input
                 value={data[key] as string}
                 onChange={(event) => setData(key, event.target.value)}
@@ -66,7 +67,11 @@ export default function AdvertiserForm({
 
     return (
         <AdminLayout>
-            <Head title={advertiser ? 'Edit advertiser' : 'New advertiser'} />
+            <Head
+                title={
+                    advertiser ? tr('Edit advertiser') : tr('New advertiser')
+                }
+            />
             <div className="flex flex-col gap-6">
                 <div>
                     <Link
@@ -74,12 +79,14 @@ export default function AdvertiserForm({
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        Advertisers
+                        {tr('Advertisers')}
                     </Link>
                     <h1 className="mt-2 text-2xl font-bold text-foreground">
                         {advertiser
-                            ? `Edit ${advertiser.brand ?? advertiser.name}`
-                            : 'New advertiser'}
+                            ? tr('Edit {0}', [
+                                  advertiser.brand ?? advertiser.name,
+                              ])
+                            : tr('New advertiser')}
                     </h1>
                 </div>
 
@@ -88,7 +95,7 @@ export default function AdvertiserForm({
                     className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start"
                     data-testid="advertiser-form"
                 >
-                    <Panel title="Company & contact" icon={Building2}>
+                    <Panel title={tr('Company & contact')} icon={Building2}>
                         <div className="grid gap-5 sm:grid-cols-2">
                             {text('name', 'Company name', {
                                 required: true,
@@ -113,7 +120,10 @@ export default function AdvertiserForm({
                                 maxLength: 255,
                             })}
                             <div className="sm:col-span-2">
-                                <Field label="Address" error={errors.address}>
+                                <Field
+                                    label={tr('Address')}
+                                    error={errors.address}
+                                >
                                     <textarea
                                         value={data.address}
                                         onChange={(event) =>
@@ -130,7 +140,7 @@ export default function AdvertiserForm({
                             </div>
                             <div className="sm:col-span-2">
                                 <Field
-                                    label="Internal notes"
+                                    label={tr('Internal notes')}
                                     error={errors.notes}
                                 >
                                     <textarea
@@ -156,7 +166,9 @@ export default function AdvertiserForm({
                                     }
                                     className="size-4 rounded border-input"
                                 />
-                                Active (inactive advertisers never serve)
+                                {tr(
+                                    'Active (inactive advertisers never serve)',
+                                )}
                             </label>
                         </div>
                         <div className="mt-5 flex flex-wrap justify-between gap-3 border-t border-border pt-5">
@@ -167,7 +179,7 @@ export default function AdvertiserForm({
                                     className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium text-destructive hover:bg-destructive/10"
                                 >
                                     <Trash2 className="size-4" />
-                                    Delete
+                                    {tr('Delete')}
                                 </button>
                             ) : (
                                 <span />
@@ -177,7 +189,7 @@ export default function AdvertiserForm({
                                     href="/admin/ads?tab=advertisers"
                                     className="inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                                 >
-                                    Cancel
+                                    {tr('Cancel')}
                                 </Link>
                                 <button
                                     type="submit"
@@ -189,16 +201,16 @@ export default function AdvertiserForm({
                                         <Loader2 className="size-4 animate-spin" />
                                     )}
                                     {advertiser
-                                        ? 'Save changes'
-                                        : 'Create advertiser'}
+                                        ? tr('Save changes')
+                                        : tr('Create advertiser')}
                                 </button>
                             </div>
                         </div>
                     </Panel>
 
                     <Panel
-                        title="Logo"
-                        description="PNG, JPG or WebP, max 1 MB"
+                        title={tr('Logo')}
+                        description={tr('PNG, JPG or WebP, max 1 MB')}
                     >
                         <div className="flex flex-col items-center gap-4">
                             <BrandMark
@@ -245,7 +257,7 @@ export default function AdvertiserForm({
                                         }}
                                         className="size-4 rounded border-input"
                                     />
-                                    Remove current logo
+                                    {tr('Remove current logo')}
                                 </label>
                             )}
                         </div>
@@ -256,9 +268,12 @@ export default function AdvertiserForm({
             {advertiser && (
                 <ConfirmDialog
                     open={deleting}
-                    title="Delete advertiser?"
-                    message={`“${advertiser.brand ?? advertiser.name}” and its campaigns will be removed. Advertisers with active or paused campaigns cannot be deleted.`}
-                    confirmLabel="Delete"
+                    title={tr('Delete advertiser?')}
+                    message={tr(
+                        '“{0}” and its campaigns will be removed. Advertisers with active or paused campaigns cannot be deleted.',
+                        [advertiser.brand ?? advertiser.name],
+                    )}
+                    confirmLabel={tr('Delete')}
                     processing={removing}
                     onClose={() => setDeleting(false)}
                     onConfirm={() =>
@@ -290,7 +305,9 @@ function Field({
 }) {
     return (
         <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-foreground">{label}</span>
+            <span className="text-sm font-medium text-foreground">
+                {tr(label)}
+            </span>
             {children}
             <InputError message={error} />
         </div>

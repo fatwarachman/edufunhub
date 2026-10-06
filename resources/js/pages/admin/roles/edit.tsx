@@ -1,5 +1,6 @@
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { type Permission, type Role } from '@/types/admin';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
@@ -66,22 +67,24 @@ export default function EditRole({ role, permissions }: EditRoleProps) {
 
     return (
         <>
-            <Head title={`Edit ${role.name}`} />
+            <Head title={tr('Edit {0}', [role.name])} />
 
             <div className="w-full space-y-6">
                 <div>
                     <h2 className="font-display text-2xl font-bold text-foreground">
-                        Edit Role
+                        {tr('Edit Role')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        Update the {role.name} role
+                        {tr('Update the')} {role.name} {tr('role')}
                     </p>
                 </div>
 
                 {role.is_system && (
                     <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800/40 dark:bg-amber-900/20 dark:text-amber-300">
-                        <strong>System role:</strong> Name and slug are locked.
-                        You can still modify permissions.
+                        <strong>{tr('System role:')}</strong>{' '}
+                        {tr(
+                            'Name and slug are locked. You can still modify permissions.',
+                        )}
                     </div>
                 )}
 
@@ -93,7 +96,7 @@ export default function EditRole({ role, permissions }: EditRoleProps) {
                                 htmlFor="name"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Name
+                                {tr('Name')}
                             </label>
                             <input
                                 id="name"
@@ -115,7 +118,7 @@ export default function EditRole({ role, permissions }: EditRoleProps) {
                                 htmlFor="slug"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Slug
+                                {tr('Slug')}
                             </label>
                             <input
                                 id="slug"
@@ -136,7 +139,7 @@ export default function EditRole({ role, permissions }: EditRoleProps) {
                                 htmlFor="description"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Description
+                                {tr('Description')}
                             </label>
                             <textarea
                                 id="description"
@@ -147,13 +150,13 @@ export default function EditRole({ role, permissions }: EditRoleProps) {
                                 className="min-h-[80px] rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                                 rows={3}
                             />
-                            <InputError message={errors.description} />
+                            <InputError message={tr(errors.description)} />
                         </div>
 
                         {/* Permissions */}
                         <fieldset className="flex flex-col gap-3">
                             <legend className="text-sm font-medium text-foreground">
-                                Permissions
+                                {tr('Permissions')}
                             </legend>
                             <InputError message={errors.permissions} />
 
@@ -186,19 +189,22 @@ export default function EditRole({ role, permissions }: EditRoleProps) {
                                                         toggleModule(moduleName)
                                                     }
                                                     className="size-4 rounded border-input accent-primary"
-                                                    aria-label={`Select all ${moduleName} permissions`}
+                                                    aria-label={tr(
+                                                        'Select all {0} permissions',
+                                                        [moduleName],
+                                                    )}
                                                 />
                                                 <span className="text-sm font-semibold text-foreground capitalize">
                                                     {moduleName}
                                                 </span>
                                                 <span className="ml-auto text-xs text-muted-foreground">
-                                                    {
+                                                    {tr(
                                                         moduleIds.filter((id) =>
                                                             data.permissions.includes(
                                                                 id,
                                                             ),
-                                                        ).length
-                                                    }
+                                                        ).length,
+                                                    )}
                                                     /{moduleIds.length}
                                                 </span>
                                             </div>
@@ -226,9 +232,9 @@ export default function EditRole({ role, permissions }: EditRoleProps) {
                                                             </p>
                                                             {perm.description && (
                                                                 <p className="text-xs text-muted-foreground">
-                                                                    {
-                                                                        perm.description
-                                                                    }
+                                                                    {tr(
+                                                                        perm.description,
+                                                                    )}
                                                                 </p>
                                                             )}
                                                         </div>
@@ -247,7 +253,7 @@ export default function EditRole({ role, permissions }: EditRoleProps) {
                                 href={`/admin/roles`}
                                 className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                             >
-                                Cancel
+                                {tr('Cancel')}
                             </Link>
                             <button
                                 type="submit"
@@ -257,7 +263,7 @@ export default function EditRole({ role, permissions }: EditRoleProps) {
                                 {processing && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                Save Changes
+                                {tr('Save Changes')}
                             </button>
                         </div>
                     </form>
@@ -268,5 +274,5 @@ export default function EditRole({ role, permissions }: EditRoleProps) {
 }
 
 EditRole.layout = (page: ReactNode) => (
-    <AdminLayout title="Edit Role">{page}</AdminLayout>
+    <AdminLayout title={tr('Edit Role')}>{page}</AdminLayout>
 );

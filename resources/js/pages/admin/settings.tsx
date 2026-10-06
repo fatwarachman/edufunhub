@@ -1,3 +1,6 @@
+import { tr } from '@/lib/admin-i18n';
+import { LanguageToggle } from '@/components/language-toggle';
+import { useTranslations } from '@/hooks/use-translations';
 import AdminLayout from '@/layouts/admin-layout';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
@@ -48,8 +51,8 @@ function Section({ title, description, children }: { title: string; description?
     return (
         <div className="rounded-2xl border border-border bg-card shadow-sm">
             <div className="border-b border-border px-6 py-4">
-                <h3 className="font-semibold text-foreground">{title}</h3>
-                {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+                <h3 className="font-semibold text-foreground">{tr(title)}</h3>
+                {description && <p className="mt-0.5 text-sm text-muted-foreground">{tr(description)}</p>}
             </div>
             <div className="p-6">{children}</div>
         </div>
@@ -59,9 +62,9 @@ function Section({ title, description, children }: { title: string; description?
 function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
     return (
         <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-foreground">{label}</label>
+            <label className="text-sm font-medium text-foreground">{tr(label)}</label>
             {children}
-            {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+            {hint && <p className="text-xs text-muted-foreground">{tr(hint)}</p>}
         </div>
     );
 }
@@ -129,7 +132,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
                     )}
                 />
             </button>
-            <span className="text-sm text-foreground">{label}</span>
+            <span className="text-sm text-foreground">{tr(label)}</span>
         </label>
     );
 }
@@ -142,7 +145,7 @@ function SaveButton({ processing }: { processing: boolean }) {
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
         >
             <Save className="size-4" />
-            {processing ? 'Saving…' : 'Save Changes'}
+            {processing ? tr("Saving…") : tr("Save Changes")}
         </button>
     );
 }
@@ -166,16 +169,16 @@ function GeneralTab({ data }: { data: Record<string, string> }) {
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <Section title="Application" description="Basic application identity and configuration.">
+            <Section title={tr("Application")} description={tr("Basic application identity and configuration.")}>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                    <Field label="Application Name" hint="Shown in browser title and emails.">
+                    <Field label={tr("Application Name")} hint={tr("Shown in browser title and emails.")}>
                         <Input
                             value={form.app_name}
                             onChange={e => setData('app_name', e.target.value)}
-                            placeholder="EduFunHub"
+                            placeholder={tr("EduFunHub")}
                         />
                     </Field>
-                    <Field label="Application URL" hint="Base URL used for generating links.">
+                    <Field label={tr("Application URL")} hint={tr("Base URL used for generating links.")}>
                         <Input
                             type="url"
                             value={form.app_url}
@@ -183,14 +186,14 @@ function GeneralTab({ data }: { data: Record<string, string> }) {
                             placeholder="https://edufunhub.com"
                         />
                     </Field>
-                    <Field label="Logo URL" hint="Full URL or path to app logo image.">
+                    <Field label={tr("Logo URL")} hint={tr("Full URL or path to app logo image.")}>
                         <Input
                             value={form.app_logo}
                             onChange={e => setData('app_logo', e.target.value)}
                             placeholder="/images/logo.png"
                         />
                     </Field>
-                    <Field label="Timezone" hint="Server-side timezone for dates and times.">
+                    <Field label={tr("Timezone")} hint={tr("Server-side timezone for dates and times.")}>
                         <Select
                             value={form.app_timezone}
                             onChange={e => setData('app_timezone', e.target.value)}
@@ -201,22 +204,22 @@ function GeneralTab({ data }: { data: Record<string, string> }) {
                         </Select>
                     </Field>
                     <div className="sm:col-span-2">
-                        <Field label="Description" hint="Brief tagline shown on landing or emails.">
+                        <Field label={tr("Description")} hint={tr("Brief tagline shown on landing or emails.")}>
                             <Textarea
                                 value={form.app_description}
                                 onChange={e => setData('app_description', e.target.value)}
-                                placeholder="Fun and educational games for students…"
+                                placeholder={tr("Fun and educational games for students…")}
                             />
                         </Field>
                     </div>
                 </div>
             </Section>
 
-            <Section title="Maintenance" description="Temporarily disable public access while updating.">
+            <Section title={tr("Maintenance")} description={tr("Temporarily disable public access while updating.")}>
                 <Toggle
                     checked={form.maintenance_mode}
                     onChange={v => setData('maintenance_mode', v)}
-                    label="Enable maintenance mode (hides the app from public users)"
+                    label={tr("Enable maintenance mode (hides the app from public users)")}
                 />
             </Section>
 
@@ -252,31 +255,31 @@ function MailTab({ data }: { data: Record<string, string> }) {
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <Section title="Mail Driver" description="How outgoing emails are delivered.">
+            <Section title={tr("Mail Driver")} description={tr("How outgoing emails are delivered.")}>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                    <Field label="Mailer">
+                    <Field label={tr("Mailer")}>
                         <Select value={form.mail_mailer} onChange={e => setData('mail_mailer', e.target.value)}>
-                            <option value="log">Log (development)</option>
-                            <option value="smtp">SMTP</option>
-                            <option value="sendmail">Sendmail</option>
-                            <option value="mailgun">Mailgun</option>
-                            <option value="ses">Amazon SES</option>
+                            <option value="log">{tr("Log (development)")}</option>
+                            <option value="smtp">{tr("SMTP")}</option>
+                            <option value="sendmail">{tr("Sendmail")}</option>
+                            <option value="mailgun">{tr("Mailgun")}</option>
+                            <option value="ses">{tr("Amazon SES")}</option>
                         </Select>
                     </Field>
                 </div>
             </Section>
 
             {isSmtp && (
-                <Section title="SMTP Configuration" description="Connection details for your SMTP server.">
+                <Section title={tr("SMTP Configuration")} description={tr("Connection details for your SMTP server.")}>
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                        <Field label="Host">
+                        <Field label={tr("Host")}>
                             <Input
                                 value={form.mail_host}
                                 onChange={e => setData('mail_host', e.target.value)}
                                 placeholder="smtp.mailtrap.io"
                             />
                         </Field>
-                        <Field label="Port">
+                        <Field label={tr("Port")}>
                             <Input
                                 type="number"
                                 value={form.mail_port}
@@ -284,22 +287,22 @@ function MailTab({ data }: { data: Record<string, string> }) {
                                 placeholder="587"
                             />
                         </Field>
-                        <Field label="Encryption">
+                        <Field label={tr("Encryption")}>
                             <Select value={form.mail_encryption} onChange={e => setData('mail_encryption', e.target.value)}>
-                                <option value="">None</option>
-                                <option value="tls">TLS</option>
-                                <option value="ssl">SSL</option>
+                                <option value="">{tr("None")}</option>
+                                <option value="tls">{tr("TLS")}</option>
+                                <option value="ssl">{tr("SSL")}</option>
                             </Select>
                         </Field>
-                        <Field label="Username">
+                        <Field label={tr("Username")}>
                             <Input
                                 value={form.mail_username}
                                 onChange={e => setData('mail_username', e.target.value)}
-                                placeholder="your@email.com"
+                                placeholder={tr("your@email.com")}
                             />
                         </Field>
                         <div className="sm:col-span-2">
-                            <Field label="Password">
+                            <Field label={tr("Password")}>
                                 <div className="relative">
                                     <Input
                                         type={showPass ? 'text' : 'password'}
@@ -322,21 +325,21 @@ function MailTab({ data }: { data: Record<string, string> }) {
                 </Section>
             )}
 
-            <Section title="Sender" description="Default from address for all outgoing emails.">
+            <Section title={tr("Sender")} description={tr("Default from address for all outgoing emails.")}>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                    <Field label="From Address">
+                    <Field label={tr("From Address")}>
                         <Input
                             type="email"
                             value={form.mail_from_address}
                             onChange={e => setData('mail_from_address', e.target.value)}
-                            placeholder="no-reply@edufunhub.com"
+                            placeholder={tr("no-reply@edufunhub.com")}
                         />
                     </Field>
-                    <Field label="From Name">
+                    <Field label={tr("From Name")}>
                         <Input
                             value={form.mail_from_name}
                             onChange={e => setData('mail_from_name', e.target.value)}
-                            placeholder="EduFunHub"
+                            placeholder={tr("EduFunHub")}
                         />
                     </Field>
                 </div>
@@ -369,9 +372,9 @@ function SecurityTab({ data }: { data: Record<string, string> }) {
 
     return (
         <form onSubmit={submit} className="space-y-6">
-            <Section title="Password Policy" description="Rules enforced when users set or change their password.">
+            <Section title={tr("Password Policy")} description={tr("Rules enforced when users set or change their password.")}>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                    <Field label="Minimum Length" hint="Minimum number of characters.">
+                    <Field label={tr("Minimum Length")} hint={tr("Minimum number of characters.")}>
                         <Input
                             type="number"
                             min={6}
@@ -384,25 +387,25 @@ function SecurityTab({ data }: { data: Record<string, string> }) {
                         <Toggle
                             checked={form.password_require_uppercase}
                             onChange={v => setData('password_require_uppercase', v)}
-                            label="Require uppercase letters"
+                            label={tr("Require uppercase letters")}
                         />
                         <Toggle
                             checked={form.password_require_numbers}
                             onChange={v => setData('password_require_numbers', v)}
-                            label="Require numbers"
+                            label={tr("Require numbers")}
                         />
                         <Toggle
                             checked={form.password_require_symbols}
                             onChange={v => setData('password_require_symbols', v)}
-                            label="Require special characters"
+                            label={tr("Require special characters")}
                         />
                     </div>
                 </div>
             </Section>
 
-            <Section title="Session & Auth" description="Login limits and session behaviour.">
+            <Section title={tr("Session & Auth")} description={tr("Login limits and session behaviour.")}>
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                    <Field label="Session Lifetime (minutes)" hint="After this time of inactivity the user is logged out.">
+                    <Field label={tr("Session Lifetime (minutes)")} hint={tr("After this time of inactivity the user is logged out.")}>
                         <Input
                             type="number"
                             min={1}
@@ -411,7 +414,7 @@ function SecurityTab({ data }: { data: Record<string, string> }) {
                             onChange={e => setData('session_lifetime', e.target.value)}
                         />
                     </Field>
-                    <Field label="Max Login Attempts" hint="Lockout after this many failed attempts.">
+                    <Field label={tr("Max Login Attempts")} hint={tr("Lockout after this many failed attempts.")}>
                         <Input
                             type="number"
                             min={1}
@@ -423,11 +426,11 @@ function SecurityTab({ data }: { data: Record<string, string> }) {
                 </div>
             </Section>
 
-            <Section title="Two-Factor Authentication" description="Require users to verify with a second factor.">
+            <Section title={tr("Two-Factor Authentication")} description={tr("Require users to verify with a second factor.")}>
                 <Toggle
                     checked={form.two_factor_enabled}
                     onChange={v => setData('two_factor_enabled', v)}
-                    label="Enforce 2FA for all admin accounts"
+                    label={tr("Enforce 2FA for all admin accounts")}
                 />
             </Section>
 
@@ -470,10 +473,11 @@ function ProfileTab({ profile }: { profile: ProfileData }) {
     };
 
     const initials = profile.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    const { t } = useTranslations();
 
     return (
         <div className="space-y-6">
-            <Section title="My Profile" description="Update your personal information.">
+            <Section title={tr("My Profile")} description={tr("Update your personal information.")}>
                 <form onSubmit={submitProfile} className="space-y-5">
                     {/* Avatar */}
                     <div className="flex items-center gap-4">
@@ -490,14 +494,14 @@ function ProfileTab({ profile }: { profile: ProfileData }) {
                     </div>
 
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                        <Field label="Full Name">
+                        <Field label={tr("Full Name")}>
                             <Input
                                 value={profileForm.data.name}
                                 onChange={e => profileForm.setData('name', e.target.value)}
                             />
                             {profileForm.errors.name && <p className="text-xs text-destructive">{profileForm.errors.name}</p>}
                         </Field>
-                        <Field label="Email Address">
+                        <Field label={tr("Email Address")}>
                             <Input
                                 type="email"
                                 value={profileForm.data.email}
@@ -505,7 +509,7 @@ function ProfileTab({ profile }: { profile: ProfileData }) {
                             />
                             {profileForm.errors.email && <p className="text-xs text-destructive">{profileForm.errors.email}</p>}
                         </Field>
-                        <Field label="Timezone">
+                        <Field label={tr("Timezone")}>
                             <Select
                                 value={profileForm.data.timezone}
                                 onChange={e => profileForm.setData('timezone', e.target.value)}
@@ -516,11 +520,11 @@ function ProfileTab({ profile }: { profile: ProfileData }) {
                             </Select>
                         </Field>
                         <div className="sm:col-span-2">
-                            <Field label="Bio" hint="Short description about yourself.">
+                            <Field label={tr("Bio")} hint={tr("Short description about yourself.")}>
                                 <Textarea
                                     value={profileForm.data.bio}
                                     onChange={e => profileForm.setData('bio', e.target.value)}
-                                    placeholder="Admin of EduFunHub…"
+                                    placeholder={tr("Admin of EduFunHub…")}
                                 />
                             </Field>
                         </div>
@@ -532,11 +536,15 @@ function ProfileTab({ profile }: { profile: ProfileData }) {
                 </form>
             </Section>
 
-            <Section title="Change Password" description="Use a strong password you don't use elsewhere.">
+            <Section title={t('language.label')} description={t('language.description')}>
+                <LanguageToggle variant="admin" />
+            </Section>
+
+            <Section title={tr("Change Password")} description={tr("Use a strong password you don't use elsewhere.")}>
                 <form onSubmit={submitPassword} className="space-y-5">
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div className="sm:col-span-2">
-                            <Field label="Current Password">
+                            <Field label={tr("Current Password")}>
                                 <div className="relative">
                                     <Input
                                         type={showCurrentPass ? 'text' : 'password'}
@@ -553,7 +561,7 @@ function ProfileTab({ profile }: { profile: ProfileData }) {
                                 {passwordForm.errors.current_password && <p className="text-xs text-destructive mt-1">{passwordForm.errors.current_password}</p>}
                             </Field>
                         </div>
-                        <Field label="New Password">
+                        <Field label={tr("New Password")}>
                             <div className="relative">
                                 <Input
                                     type={showNewPass ? 'text' : 'password'}
@@ -569,7 +577,7 @@ function ProfileTab({ profile }: { profile: ProfileData }) {
                             </div>
                             {passwordForm.errors.password && <p className="text-xs text-destructive mt-1">{passwordForm.errors.password}</p>}
                         </Field>
-                        <Field label="Confirm New Password">
+                        <Field label={tr("Confirm New Password")}>
                             <Input
                                 type="password"
                                 value={passwordForm.data.password_confirmation}
@@ -603,12 +611,12 @@ export default function Settings({ tab, general, mail, security, profile }: Sett
     };
 
     return (
-        <AdminLayout title="Settings">
-            <Head title="Settings" />
+        <AdminLayout title={tr("Settings")}>
+            <Head title={tr("Settings")} />
 
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-                <p className="mt-1 text-sm text-muted-foreground">Manage application configuration and your account.</p>
+                <h1 className="text-2xl font-bold text-foreground">{tr("Settings")}</h1>
+                <p className="mt-1 text-sm text-muted-foreground">{tr("Manage application configuration and your account.")}</p>
             </div>
 
             {flash?.success && (
@@ -633,7 +641,7 @@ export default function Settings({ tab, general, mail, security, profile }: Sett
                                     )}
                                 >
                                     <Icon className="size-4 shrink-0" />
-                                    {label}
+                                    {tr(label)}
                                     {activeTab === key && <ChevronRight className="ml-auto size-3.5 opacity-60 lg:block hidden" />}
                                 </button>
                             </li>

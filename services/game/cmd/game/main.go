@@ -63,6 +63,7 @@ func main() {
 	go srv.RunFloorDrop(ctx, time.Second)
 	go srv.RunHeist(ctx, time.Second)
 	go srv.RunOrderRush(ctx, time.Second)
+	go srv.RunTurboTrivia(ctx, time.Second)
 	if bankURL := os.Getenv("GAME_QUESTION_BANK_URL"); bankURL != "" {
 		syncer := &questions.Syncer{URL: bankURL, Secret: []byte(secret), Logger: logger}
 		go syncer.Run(ctx, time.Minute)
