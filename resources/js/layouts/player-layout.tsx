@@ -1,3 +1,4 @@
+import { BrandWordmark } from '@/components/brand-wordmark';
 import { SiteNav } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
@@ -46,9 +47,7 @@ export default function PlayerLayout({
                     <span className="auth-brand-mark">
                         <Gamepad2 className="size-6" />
                     </span>
-                    <span className="edu-brand-text">
-                        edufun<span>hub</span>.com
-                    </span>
+                    <BrandWordmark hideOnPhone />
                 </Link>
                 <SiteNav compact />
             </header>

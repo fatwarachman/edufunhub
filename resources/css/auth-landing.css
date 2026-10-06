@@ -47,6 +47,47 @@
 .auth-brand span span {
     color: #e85d75;
 }
+/* Wordmark with the tagline stacked underneath (BrandWordmark). */
+.auth-brand .edu-brand-wordmark {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    line-height: 1.1;
+}
+.auth-brand .edu-brand-name {
+    color: inherit;
+    white-space: nowrap;
+}
+.auth-brand .edu-brand-tagline {
+    color: var(--muted-foreground, #515667);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+/*
+ * Phones (360-479px): compact wordmark + tagline fit next to the bell and
+ * menu button. Below 360px and in the 640-767px band (every nav button shows
+ * again) only the brand mark stays.
+ */
+@media (max-width: 479px) {
+    .auth-brand .edu-brand-wordmark.edu-brand-text {
+        display: inline-flex;
+    }
+    .auth-brand .edu-brand-wordmark .edu-brand-name {
+        font-size: 16px;
+    }
+    .auth-brand .edu-brand-wordmark .edu-brand-tagline {
+        font-size: 10px;
+    }
+}
+@media (max-width: 359px), (min-width: 640px) and (max-width: 767px) {
+    .auth-brand .edu-brand-wordmark.edu-brand-text {
+        display: none;
+    }
+}
 .auth-brand-mark {
     display: grid;
     place-items: center;

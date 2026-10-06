@@ -1,3 +1,4 @@
+import { BrandWordmark } from '@/components/brand-wordmark';
 import { BackButton, NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
@@ -40,9 +41,7 @@ export default function AuthShell({
                         <span className="auth-brand-mark">
                             <Gamepad2 className="size-6" />
                         </span>
-                        <span>
-                            edufun<span>hub</span>.com
-                        </span>
+                        <BrandWordmark />
                     </a>
                     <div className="edu-nav-bar">
                         <BackButton
