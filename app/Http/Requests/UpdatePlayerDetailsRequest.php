@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\PlayerDetailsRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 
 class UpdatePlayerDetailsRequest extends FormRequest
 {
@@ -16,7 +17,12 @@ class UpdatePlayerDetailsRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge(['school_name' => trim((string) $this->input('school_name'))]);
+        $city = Str::squish((string) $this->input('school_city'));
+
+        $this->merge([
+            'school_name' => Str::squish((string) $this->input('school_name')),
+            'school_city' => $city === '' ? null : $city,
+        ]);
     }
 
     /** @return array<string, array<mixed>> */

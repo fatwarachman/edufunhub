@@ -17,6 +17,7 @@ trait PlayerDetailsRules
                 'after_or_equal:'.now()->subYears(PlayerProfile::MAX_AGE)->toDateString(),
             ],
             'school_name' => ['required', 'string', 'min:3', 'max:'.PlayerProfile::SCHOOL_NAME_MAX],
+            'school_city' => ['nullable', 'string', 'min:3', 'max:'.PlayerProfile::SCHOOL_CITY_MAX],
         ];
     }
 
@@ -32,6 +33,9 @@ trait PlayerDetailsRules
             'school_name.string' => __('character.school_name_invalid'),
             'school_name.min' => __('character.school_name_invalid'),
             'school_name.max' => __('character.school_name_invalid'),
+            'school_city.string' => __('character.school_city_invalid'),
+            'school_city.min' => __('character.school_city_invalid'),
+            'school_city.max' => __('character.school_city_invalid'),
         ];
     }
 }

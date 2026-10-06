@@ -9,7 +9,7 @@ class PlayerDetailsController extends Controller
 {
     public function update(UpdatePlayerDetailsRequest $request): RedirectResponse
     {
-        $request->user()->playerProfile()->updateOrCreate([], $request->safe()->only(['birth_date', 'school_name']));
+        $request->user()->playerProfile()->updateOrCreate([], $request->safe()->only(['birth_date', 'school_name', 'school_city']));
 
         return back();
     }

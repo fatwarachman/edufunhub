@@ -21,7 +21,7 @@ class PlayerBadges
     /** Tier order, rarest last. */
     public const TIERS = ['bronze', 'silver', 'gold', 'legend'];
 
-    public function __construct(private PlayerNotifications $notifications) {}
+    public function __construct(private PlayerNotifications $notifications, private UserActivity $activity) {}
 
     /**
      * @return array<string, array{icon: string, tier: string, rules: array<string, int>}>
@@ -95,6 +95,7 @@ class PlayerBadges
             );
             if ($created->wasRecentlyCreated) {
                 $earned[] = $key;
+                $this->activity->badgeEarned($user, $key);
             }
         }
 

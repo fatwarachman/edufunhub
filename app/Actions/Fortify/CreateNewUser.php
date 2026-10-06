@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\WorkspaceService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 
@@ -25,7 +26,8 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input): User
     {
-        $input['school_name'] = trim((string) ($input['school_name'] ?? ''));
+        $input['school_name'] = Str::squish((string) ($input['school_name'] ?? ''));
+        $input['school_city'] = Str::squish((string) ($input['school_city'] ?? '')) ?: null;
 
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
@@ -51,6 +53,7 @@ class CreateNewUser implements CreatesNewUsers
             $user->playerProfile()->create([
                 'birth_date' => $input['birth_date'],
                 'school_name' => $input['school_name'],
+                'school_city' => $input['school_city'],
             ]);
 
             // Workspace creation is now handled exclusively via the Onboarding Wizard

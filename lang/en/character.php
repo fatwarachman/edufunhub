@@ -12,6 +12,7 @@ return [
     'birth_date_range' => 'Age must be between :min and :max years.',
     'school_name_required' => 'Enter your last school.',
     'school_name_invalid' => 'School name must be 3 to 120 characters.',
+    'school_city_invalid' => 'City or regency must be 3 to 100 characters.',
     'player_details_required' => 'Complete your date of birth and last school before playing.',
     'gender_invalid' => 'Choose boy or girl.',
     'skin_invalid' => 'Choose an available skin tone.',

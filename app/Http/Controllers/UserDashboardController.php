@@ -6,6 +6,7 @@ use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Services\CharacterShop;
 use App\Services\PlayerBadges;
+use App\Services\PlayerDashboardStats;
 use App\Services\PlayerPortal;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,7 +14,7 @@ use Inertia\Response;
 
 class UserDashboardController extends Controller
 {
-    public function __invoke(Request $request, PlayerPortal $portal, CharacterShop $shop, PlayerBadges $badges): Response
+    public function __invoke(Request $request, PlayerPortal $portal, CharacterShop $shop, PlayerBadges $badges, PlayerDashboardStats $stats): Response
     {
         $user = $request->user();
         $profile = $user->playerProfile()->first() ?? new PlayerProfile;
@@ -29,14 +30,20 @@ class UserDashboardController extends Controller
             'playerDetails' => [
                 'birth_date' => $profile->birth_date?->toDateString(),
                 'school_name' => $profile->school_name,
+                'school_city' => $profile->school_city,
             ],
             'categories' => $portal->catalog($profile->grade),
             'progress' => $portal->progress($points),
+            'rank' => $portal->rankOf($user, $points),
             'badges' => $badges->summary($user),
             'history' => $history->getCollection()->map(fn (GameHistory $game): array => [
                 'id' => $game->id,
+                'game_key' => $game->game_key,
                 'game_name' => $game->game_name,
                 'points' => $game->points,
+                'correct' => $game->correct,
+                'wrong' => $game->wrong,
+                'duration_seconds' => $game->duration_seconds,
                 'played_at' => $game->played_at->toIso8601String(),
             ])->all(),
             'historyPagination' => [
@@ -46,6 +53,8 @@ class UserDashboardController extends Controller
                 'prev_page_url' => $history->previousPageUrl(),
                 'next_page_url' => $history->nextPageUrl(),
             ],
+            'leaderboards' => Inertia::defer(fn (): array => $portal->leaderboards($user), 'board'),
+            'stats' => Inertia::defer(fn (): array => $stats->for($user), 'stats'),
         ]);
     }
 }
