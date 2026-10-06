@@ -39,6 +39,7 @@ dataset('multiplayer games', [
     'floor drop' => ['floor-drop', '/games/floor-drop'],
     'economy heist' => ['economy-heist', '/games/economy-heist'],
     'order rush' => ['order-rush', '/games/order-rush'],
+    'turbo trivia' => ['turbo-trivia', '/games/turbo-trivia'],
 ]);
 
 it('marks every multiplayer game in the catalog', function (string $key): void {
@@ -107,6 +108,7 @@ it('records results for room games and adds them to the point total', function (
     'floor drop' => ['floor-drop', 'fd-%d-room-1790000000000', 'room', 45, 'Lantai Runtuh'],
     'economy heist' => ['economy-heist', 'eh-%d-room-1790000000000', 'room', 45, 'Peti Emas Misteri'],
     'order rush' => ['order-rush', 'or-%d-room-1790000000000', 'room', 45, 'Order Rush TKJ'],
+    'turbo trivia' => ['turbo-trivia', 'tt-%d-room-1790000000000', 'room', 45, 'Turbo Trivia'],
 ]);
 
 it('caps room game points and missions', function (array $override): void {

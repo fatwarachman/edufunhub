@@ -77,6 +77,11 @@ func (s *Server) Snapshot() Stats {
 	s.mu.Unlock()
 	rushRooms, _ := s.rush.Counts()
 	games = append(games, Usage{Game: "order-rush", Connections: rushConns, Sessions: rushRooms})
+	s.mu.Lock()
+	turboConns := len(s.turboConns)
+	s.mu.Unlock()
+	turboRooms, _ := s.turbo.Counts()
+	games = append(games, Usage{Game: "turbo-trivia", Connections: turboConns, Sessions: turboRooms})
 	return Stats{
 		Service:        "edufunhub-game",
 		GoVersion:      runtime.Version(),

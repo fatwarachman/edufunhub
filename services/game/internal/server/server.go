@@ -31,6 +31,7 @@ import (
 	"edufunhub/game/internal/sky"
 	"edufunhub/game/internal/snakes"
 	"edufunhub/game/internal/train"
+	"edufunhub/game/internal/turbotrivia"
 )
 
 // Config for the server.
@@ -47,6 +48,8 @@ type Config struct {
 	Heist heist.Config
 	// OrderRush timings (zero = orderrush.Defaults).
 	OrderRush orderrush.Config
+	// TurboTrivia timings (zero = turbotrivia.Defaults).
+	TurboTrivia turbotrivia.Config
 }
 
 type connection struct{ cancel context.CancelFunc }
@@ -78,6 +81,8 @@ type Server struct {
 	heistConns    map[floorKey]*heist.Client
 	rush          *orderrush.Hub
 	rushConns     map[floorKey]*orderrush.Client
+	turbo         *turbotrivia.Hub
+	turboConns    map[floorKey]*turbotrivia.Client
 	started       time.Time
 }
 
@@ -101,6 +106,9 @@ func New(cfg Config) *Server {
 	if cfg.OrderRush.Tick == 0 {
 		cfg.OrderRush = orderrush.Defaults
 	}
+	if cfg.TurboTrivia.Tick == 0 {
+		cfg.TurboTrivia = turbotrivia.Defaults
+	}
 	s := &Server{
 		cfg: cfg, sessions: map[int64]*session.Session{}, conns: map[int64]*connection{},
 		skies: map[int64]*sky.Session{}, skyConns: map[int64]*connection{},
@@ -117,6 +125,8 @@ func New(cfg Config) *Server {
 		heistConns: map[floorKey]*heist.Client{},
 		rush:       orderrush.NewHub(cfg.OrderRush, uint64(cfg.Now().UnixNano())^0x0d3e),
 		rushConns:  map[floorKey]*orderrush.Client{},
+		turbo:      turbotrivia.NewHub(cfg.TurboTrivia, uint64(cfg.Now().UnixNano())^0x7b70),
+		turboConns: map[floorKey]*turbotrivia.Client{},
 		started:    cfg.Now(),
 	}
 	for i, key := range minigames.Keys {
@@ -146,6 +156,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /ws/floor-drop", s.serveFloorDrop)
 	mux.HandleFunc("GET /ws/economy-heist", s.serveHeist)
 	mux.HandleFunc("GET /ws/order-rush", s.serveOrderRush)
+	mux.HandleFunc("GET /ws/turbo-trivia", s.serveTurboTrivia)
 	mux.HandleFunc("GET /internal/stats", s.serveStats)
 	return mux
 }

@@ -1,6 +1,7 @@
 import { type GameMenuCategory, type GameMenuGame } from '@/types';
 import {
     Cable,
+    CarFront,
     Dice5,
     Flag,
     FlaskConical,
@@ -35,6 +36,7 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
     vault: Vault,
     cable: Cable,
     network: Network,
+    kart: CarFront,
 };
 
 export function gameIcon(icon: string): LucideIcon {

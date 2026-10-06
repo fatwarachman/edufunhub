@@ -1,7 +1,7 @@
 # Standar game multiplayer dan poin
 
 **Status:** Accepted (2026-10-04)
-Berlaku untuk semua game baru. Game lama yang sudah memakai standar ini: Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang, Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini, Lantai Runtuh, Peti Emas Misteri, Order Rush TKJ.
+Berlaku untuk semua game baru. Game lama yang sudah memakai standar ini: Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang, Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini, Lantai Runtuh, Peti Emas Misteri, Order Rush TKJ, Turbo Trivia.
 
 ## 1. Undangan (PIN + link)
 
@@ -75,6 +75,7 @@ Setiap hasil game ruang/duel membawa ringkasan `match` yang sama untuk semua pem
 | Lantai Runtuh | 5 | benar × 10 (+20 juara) | 2150 |
 | Peti Emas Misteri | 5 | benar × 10, maks. 40 jawaban (+20 juara emas) | 4150 |
 | Order Rush TKJ | 5 | modul benar × 10, maks. 40 (+20 juara) | 4150 |
+| Turbo Trivia | 5 | benar × 10, maks. 15 soal (+20 juara 1) | 1650 |
 
 ### Game kuis ruang (`internal/minigames`)
 
@@ -253,6 +254,63 @@ Kontrak WebSocket `GET /game-ws/order-rush?token=…&locale=id|en`:
 | server → klien | `action_broadcast` | feed sabotase (host semua, pemain yang terlibat) |
 | server → klien | `race_progress_broadcast` | `{leaderboard[{id, username, avatar, score, step, streak}], remaining_ms}` (maks. 4×/detik) |
 | server → klien | `podium_result` | `{podium[3], ranking[] (akurasi, rata-rata waktu), you}` |
+| server → klien | `error` | `{code, for}` → `room.errors.*` |
+
+### Turbo Trivia / Kart Racer (`internal/turbotrivia`)
+
+Balap gokart kuis kelas untuk 2–40 murid. Dua layar: proyektor/Smart TV
+(`/arena/turbo-trivia/{pin}`, token `turbo-trivia-host`) dan HP murid
+(`/play/turbo-trivia/{pin}`, token `turbo-trivia`). Arena menampilkan PIN dan
+QR (`/games/turbo-trivia/qr/{pin}`) yang membuka kontroler; `?pin=` dan link
+undangan standar `/games/turbo-trivia/join/{pin}` juga membuka kontroler.
+
+- **Goroutine per ruang + tick 20 Hz** (`Config.Tick` 50 ms). Setiap tick
+  menggerakkan kart (`progress` dalam lap, 3 lap), cek tabrakan pisang, rudal
+  yang mendarat, garis finish, lalu broadcast `tick` ke proyektor. HP menerima
+  status kart pribadi `kart` maks. 5×/detik.
+- **Kecepatan:** dasar 50 km/j. Benar → Nitro 120 km/j selama
+  `2,5 + 2 × S` detik (`S` = sisa waktu jawab / batas waktu, jam server).
+  Salah → Engine Stutter 30 km/j selama 2 detik. Panjang lap dihitung dari
+  jumlah soal sehingga kart rata-rata finish sekitar soal terakhir.
+- **Soal:** 10/12/15 soal (host memilih), mapel dari `SubjectPicker`, semua
+  murid menjawab soal yang sama. Waktu jawab 15 detik (20 detik bila ada murid
+  kelas 0–2), selesai lebih cepat bila semua sudah menjawab. Jawaban < 300 ms
+  ditolak `too_early`. Bank soal: soal pilihan ganda yang didistribusikan ke
+  `turbo-trivia` (migrasi menyalin semua soal Sky Quiz).
+- **Item Box** (maks. 2 disimpan, diundi saat jawaban benar):
+  `BANANA` (jatuh 0,006 lap di belakang kart, lawan yang melintas berhenti
+  3 detik), `MISSILE` (homing ke pemimpin selain penembak, mendarat 1,2 detik,
+  stagger 2,5 detik), `LIGHTNING` (semua lawan menyusut, kecepatan ×0,6 selama
+  4 detik), `SHIELD` (8 detik, menyerap 1 pisang/rudal lalu pecah, kebal petir).
+  Posisi 1–3 tidak bisa mendapat Rudal/Petir; makin belakang makin besar
+  peluangnya (`ItemWeights`).
+- **Akhir balapan:** semua kart finish, 30 detik setelah kart pertama finish,
+  batas aman waktu, atau host `end_game`. Peringkat: waktu finish, lalu jarak.
+- **Hasil:** `event_id` `tt-{user}-room-{nanos}`, misi `room`, maks. 40 pemain,
+  `points.Cap(15) = 1650`. `match.players[].score` = persen jarak tempuh,
+  `survival_ms` = waktu balap, `accuracy` = benar / soal.
+
+Kontrak WebSocket `GET /game-ws/turbo-trivia?token=…&locale=id|en`:
+
+| Arah | Pesan | Isi |
+| --- | --- | --- |
+| klien → server | `create_room`, `start_game`, `end_game` | host saja |
+| klien → server | `configure` | host, `{questions: 10\|12\|15}` |
+| klien → server | `set_subject` | host, `{subject}` |
+| klien → server | `join_room` | `{room_code, player_id, avatar}` |
+| klien → server | `submit_answer` (SUBMIT_ANSWER) | `{qid, choice_index}` |
+| klien → server | `use_item` (USE_ITEM) | `{item: BANANA\|MISSILE\|LIGHTNING\|SHIELD}` |
+| klien → server | `leave_room`, `sync`, `locale`, `ping` | |
+| server → klien | `state_sync` | snapshot (fase `LOBBY\|COUNTDOWN\|RACE\|GAME_OVER`, roster, kart, hazard, `quiz`, `you`, podium) |
+| server → proyektor | `tick` (TICK, 20 Hz) | `{seq, race_ms, karts[{id,p,v,fx,rank,fin,...}], bananas[], missiles[], answered}` |
+| server → HP | `kart` | `{speed, fx, rank, of, progress, lap, items, remaining_ms}` |
+| server → klien | `question_start`, `question_end` | soal (tanpa kunci) / `{correct_index, hint}` |
+| server → HP | `answer_result` | `{correct, nitro_ms?, stutter_ms?, item?, items}` |
+| server → HP | `item_gained` (ITEM_GAINED) | `{item, items}` |
+| server → semua | `item_triggered` (ITEM_TRIGGERED) | `{event: {kind: item\|banana_hit\|missile_hit, item, by, target, struck[], immune[], blocked}}` |
+| server → HP | `hit`, `item_used`, `finished` | efek ke kart sendiri |
+| server → semua | `race_event` | `finish`, `left` (ticker) |
+| server → klien | `podium_result` | `{podium[3], ranking[], you}` |
 | server → klien | `error` | `{code, for}` → `room.errors.*` |
 
 ## 3. Poin vs saldo toko

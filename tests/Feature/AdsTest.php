@@ -4,6 +4,7 @@ use App\Models\AdCampaign;
 use App\Models\AdCreative;
 use App\Models\AdDailyStat;
 use App\Models\AdEvent;
+use App\Models\AdPlacementSetting;
 use App\Models\Advertiser;
 use App\Models\CharacterItem;
 use App\Models\PlayerProfile;
@@ -177,7 +178,7 @@ it('serves live campaigns into every game page through the game middleware', fun
     AdCampaign::factory()->withCreative()->create();
     $player = adsPlayer();
 
-    foreach (['quiz-duel', 'sky-quiz', 'knowledge-train', 'crossword', 'snakes-and-ladders', 'market-math', 'flag-quest', 'port-sorter'] as $game) {
+    foreach (['quiz-duel', 'sky-quiz', 'knowledge-train', 'crossword', 'snakes-and-ladders', 'market-math', 'flag-quest', 'port-sorter', 'turbo-trivia'] as $game) {
         $this->actingAs($player)->get('/games/'.$game)->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('adGame', $game)
@@ -374,7 +375,7 @@ it('serves a rotating placement with several creatives and a static one with one
             'placements' => ['arena.header', 'arena.result'], 'display_seconds' => 8, 'is_active' => true,
         ]);
     }
-    $rules = collect(App\Models\AdPlacementSetting::resolved())->map(fn (array $r) => $r)->all();
+    $rules = collect(AdPlacementSetting::resolved())->map(fn (array $r) => $r)->all();
     $rules['arena.header'] = ['is_enabled' => true, 'mode' => 'rotate', 'rotate_seconds' => 6, 'max_creatives' => 2];
     $rules['arena.loading']['is_enabled'] = false;
 
@@ -393,7 +394,7 @@ it('serves a rotating placement with several creatives and a static one with one
 
 it('validates placement rules and keeps jingles static', function () {
     $admin = adsAdmin();
-    $rules = App\Models\AdPlacementSetting::resolved();
+    $rules = AdPlacementSetting::resolved();
 
     $bad = $rules;
     $bad['arena.header'] = ['is_enabled' => true, 'mode' => 'carousel', 'rotate_seconds' => 1, 'max_creatives' => 50];
@@ -402,7 +403,7 @@ it('validates placement rules and keeps jingles static', function () {
 
     $rules['jingle.win']['mode'] = 'rotate';
     $this->actingAs($admin)->put('/admin/ads/settings/placements', ['placements' => $rules])->assertSessionHas('success');
-    expect(App\Models\AdPlacementSetting::resolved()['jingle.win']['mode'])->toBe('static');
+    expect(AdPlacementSetting::resolved()['jingle.win']['mode'])->toBe('static');
 });
 
 it('reports reach, frequency, CTR, devices, grades and hours', function () {

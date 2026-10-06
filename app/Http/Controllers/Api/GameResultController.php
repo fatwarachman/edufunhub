@@ -179,6 +179,10 @@ class GameResultController extends Controller
             return __('order_rush.history_name', [], $locale);
         }
 
+        if ($gameKey === 'turbo-trivia') {
+            return __('turbo_trivia.history_name', [], $locale);
+        }
+
         if ($gameKey === 'crossword') {
             return __('crossword.history_name', ['level' => substr($mission, strlen('level-'))], $locale);
         }
