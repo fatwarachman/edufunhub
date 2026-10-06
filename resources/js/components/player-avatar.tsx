@@ -1,3 +1,4 @@
+import { OnlineDot } from '@/components/online-dot';
 import PlayerCharacter from '@/components/player-character';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { cn } from '@/lib/utils';
@@ -45,11 +46,14 @@ export function avatarTint(
 export function PlayerAvatar({
     character,
     seat = 0,
+    userId,
     walking = false,
     className,
 }: {
     character?: CharacterLook | null;
     seat?: number;
+    /** Account behind the avatar: shows the online dot while connected. */
+    userId?: number | null;
     walking?: boolean;
     className?: string;
 }) {
@@ -57,7 +61,7 @@ export function PlayerAvatar({
     return (
         <span
             className={cn(
-                'block size-full',
+                'relative block size-full',
                 walking && 'edu-avatar-hop',
                 className,
             )}
@@ -69,6 +73,7 @@ export function PlayerAvatar({
                 backdrop={false}
                 className="size-full"
             />
+            <OnlineDot userId={userId} />
         </span>
     );
 }

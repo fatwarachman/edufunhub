@@ -1,3 +1,4 @@
+import { chatLive } from '@/hooks/use-chat-socket';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
 import { router, usePage } from '@inertiajs/react';
@@ -144,8 +145,13 @@ export function NotificationBell() {
             }
             const next = (await response.json()) as Feed;
             if (seen.current !== null) {
+                // Live chat messages already pop up via <ChatLive>.
+                const chatIsLive = chatLive.getStatus() === 'online';
                 const fresh = next.items.find(
-                    (item) => !item.read && !seen.current?.has(item.id),
+                    (item) =>
+                        !item.read &&
+                        !seen.current?.has(item.id) &&
+                        !(chatIsLive && item.kind === 'chat'),
                 );
                 if (fresh) {
                     setToast(fresh);

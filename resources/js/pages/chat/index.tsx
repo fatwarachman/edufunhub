@@ -1,5 +1,5 @@
 import { PlayerAvatar } from '@/components/player-avatar';
-import { useChatSocket } from '@/hooks/use-chat-socket';
+import { chatLive, useChatSocket } from '@/hooks/use-chat-socket';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { type CharacterLook } from '@/lib/character/draw-character';
@@ -137,6 +137,7 @@ function ConversationAvatar({
                 <PlayerAvatar
                     character={conversation.character ?? other?.character}
                     seat={other?.id ?? 0}
+                    userId={other?.id}
                 />
             </span>
         );
@@ -155,7 +156,11 @@ function ConversationAvatar({
                 <span className="flex -space-x-3">
                     {faces.map((m) => (
                         <span key={m.id} className="size-7">
-                            <PlayerAvatar character={m.character} seat={m.id} />
+                            <PlayerAvatar
+                                character={m.character}
+                                seat={m.id}
+                                userId={m.id}
+                            />
                         </span>
                     ))}
                 </span>
@@ -308,6 +313,7 @@ function PeoplePicker({
                                         <PlayerAvatar
                                             character={p.character}
                                             seat={p.id}
+                                            userId={p.id}
                                         />
                                     </span>
                                     <span className="min-w-0 flex-1 truncate">
@@ -366,6 +372,10 @@ export default function ChatIndex({
 
     useEffect(() => {
         activeRef.current = activeId;
+        chatLive.activeConversation = activeId;
+        return () => {
+            chatLive.activeConversation = null;
+        };
     }, [activeId]);
 
     const active = conversations.find((c) => c.id === activeId) ?? null;
@@ -943,6 +953,9 @@ export default function ChatIndex({
                                                                             m.user_id ??
                                                                             0
                                                                         }
+                                                                        userId={
+                                                                            m.user_id
+                                                                        }
                                                                     />
                                                                 )}
                                                             </span>
@@ -1375,7 +1388,11 @@ function GroupInfoModal({
                         className="flex items-center gap-3 rounded-2xl px-2 py-1.5"
                     >
                         <span className="size-10 shrink-0">
-                            <PlayerAvatar character={m.character} seat={m.id} />
+                            <PlayerAvatar
+                                character={m.character}
+                                seat={m.id}
+                                userId={m.id}
+                            />
                         </span>
                         <span className="min-w-0 flex-1 truncate font-bold">
                             {m.name}
