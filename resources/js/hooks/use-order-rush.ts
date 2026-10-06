@@ -55,6 +55,8 @@ export interface SequenceQuestion {
     title: string;
     description: string;
     total_slots: number;
+    /** Two connector ends (cable crimped on both sides): slots split in half. */
+    ends?: string[];
     pool_items: SequenceItem[];
 }
 
@@ -64,6 +66,8 @@ export interface CatalogEntry {
     kind: SequenceKind;
     title: string;
     slots: number;
+    /** 2 for a cable crimped on both ends, otherwise 0. */
+    ends?: number;
 }
 
 export interface RushYou extends RushPlayerRef {
@@ -88,6 +92,7 @@ export interface Validation {
     score: number;
     step: number;
     total_slots: number;
+    ends?: number;
     kind: SequenceKind;
     duration_ms: number;
     powerup_granted?: PowerUp;

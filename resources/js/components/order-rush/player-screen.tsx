@@ -390,6 +390,13 @@ function Arena({
     }
     const lastKind = v?.kind ?? question.kind;
     const lastSlots = v?.total_slots ?? question.total_slots;
+    const lastEnds = Math.max(
+        1,
+        v ? (v.ends ?? 0) : (question.ends?.length ?? 0),
+    );
+    /** Connector ends of the current module: each holds an equal share of slots. */
+    const endCount = Math.max(1, question.ends?.length ?? 0);
+    const perEnd = Math.ceil(question.total_slots / endCount);
     const combo =
         v?.is_correct &&
         v.streak > 0 &&
@@ -516,62 +523,111 @@ function Arena({
                     </p>
                 </div>
 
-                {/* Target slots */}
-                <ol
+                {/* Target slots (one group per connector end) */}
+                <div
                     className={cn(
-                        'grid gap-1.5',
-                        question.total_slots > 8
-                            ? 'grid-cols-4'
-                            : question.total_slots > 5
-                              ? 'grid-cols-4'
-                              : question.total_slots === 3
-                                ? 'grid-cols-3'
-                                : 'grid-cols-2 sm:grid-cols-5',
+                        'flex flex-col gap-2.5',
+                        endCount > 1 && 'gap-3',
                     )}
                     data-testid="or-slots"
-                    aria-label={t('orderRush.slotsLabel')}
                 >
-                    {slots.map((id, index) => {
-                        const item = id ? byId.get(id) : undefined;
-                        return (
-                            <li key={index}>
-                                <button
-                                    type="button"
-                                    onClick={() => unplace(index)}
-                                    disabled={!item || locked}
-                                    data-testid={`or-slot-${index}`}
-                                    data-error={
-                                        errorSlot === index ? 'true' : 'false'
-                                    }
-                                    aria-label={
-                                        item
-                                            ? t('orderRush.slotFilled', {
-                                                  slot: index + 1,
-                                                  label: item.label,
-                                              })
-                                            : t('orderRush.slotEmpty', {
-                                                  slot: index + 1,
-                                              })
-                                    }
-                                    className="or-piece or-slot relative flex w-full flex-col items-stretch gap-0.5 rounded-xl border-2 border-dashed border-[#1f2a44]/50 bg-[#f8fafc] p-1 disabled:cursor-default"
-                                >
-                                    <span className="absolute -top-2 -left-1.5 z-10 grid size-5 place-items-center rounded-full border-2 border-[#1f2a44] bg-white text-[10px] font-black tabular-nums">
-                                        {index + 1}
+                    {Array.from({ length: endCount }, (_, end) => (
+                        <div
+                            key={end}
+                            className={cn(
+                                endCount > 1 &&
+                                    'rounded-2xl border-2 border-[#1f2a44]/15 bg-[#f0fdfa] p-2 pt-1.5',
+                            )}
+                            data-testid={
+                                endCount > 1 ? `or-end-${end}` : undefined
+                            }
+                        >
+                            {endCount > 1 && (
+                                <p className="mb-2 flex items-center gap-1.5 text-xs font-black">
+                                    <span className="grid size-5 place-items-center rounded-md bg-[#0f766e] text-[10px] text-white">
+                                        {String.fromCharCode(65 + end)}
                                     </span>
-                                    {item ? (
-                                        <Piece
-                                            item={item}
-                                            kind={question.kind}
-                                            size="sm"
-                                        />
-                                    ) : (
-                                        <span className="min-h-9" />
-                                    )}
-                                </button>
-                            </li>
-                        );
-                    })}
-                </ol>
+                                    {question.ends?.[end]}
+                                </p>
+                            )}
+                            <ol
+                                className={cn(
+                                    'grid gap-1.5',
+                                    perEnd > 5
+                                        ? 'grid-cols-4'
+                                        : perEnd === 3
+                                          ? 'grid-cols-3'
+                                          : 'grid-cols-2 sm:grid-cols-5',
+                                )}
+                                aria-label={
+                                    endCount > 1
+                                        ? (question.ends?.[end] ?? '')
+                                        : t('orderRush.slotsLabel')
+                                }
+                            >
+                                {slots
+                                    .slice(end * perEnd, (end + 1) * perEnd)
+                                    .map((id, offset) => {
+                                        const index = end * perEnd + offset;
+                                        const item = id
+                                            ? byId.get(id)
+                                            : undefined;
+                                        return (
+                                            <li key={index}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        unplace(index)
+                                                    }
+                                                    disabled={!item || locked}
+                                                    data-testid={`or-slot-${index}`}
+                                                    data-error={
+                                                        errorSlot === index
+                                                            ? 'true'
+                                                            : 'false'
+                                                    }
+                                                    aria-label={
+                                                        item
+                                                            ? t(
+                                                                  'orderRush.slotFilled',
+                                                                  {
+                                                                      slot:
+                                                                          offset +
+                                                                          1,
+                                                                      label: item.label,
+                                                                  },
+                                                              )
+                                                            : t(
+                                                                  'orderRush.slotEmpty',
+                                                                  {
+                                                                      slot:
+                                                                          offset +
+                                                                          1,
+                                                                  },
+                                                              )
+                                                    }
+                                                    className="or-piece or-slot relative flex w-full flex-col items-stretch gap-0.5 rounded-xl border-2 border-dashed border-[#1f2a44]/50 bg-[#f8fafc] p-1 disabled:cursor-default"
+                                                >
+                                                    <span className="absolute -top-2 -left-1.5 z-10 grid size-5 place-items-center rounded-full border-2 border-[#1f2a44] bg-white text-[10px] font-black tabular-nums">
+                                                        {offset + 1}
+                                                    </span>
+                                                    {item ? (
+                                                        <Piece
+                                                            item={item}
+                                                            kind={question.kind}
+                                                            size="sm"
+                                                        />
+                                                    ) : (
+                                                        <span className="min-h-9" />
+                                                    )}
+                                                </button>
+                                            </li>
+                                        );
+                                    })}
+                            </ol>
+                        </div>
+                    ))}
+                </div>
 
                 {/* Validator */}
                 {lastKind === 'cable' ? (
@@ -581,6 +637,7 @@ function Arena({
                         errorSlot={testerSlot}
                         startedAt={testerAt}
                         stepMs={result === 'running' ? 90 : 55}
+                        ends={lastEnds}
                     />
                 ) : (
                     <PacketValidator
@@ -597,9 +654,11 @@ function Arena({
                 <div
                     className={cn(
                         'grid gap-1.5',
-                        question.total_slots > 6
-                            ? 'grid-cols-3 sm:grid-cols-4'
-                            : 'grid-cols-2 sm:grid-cols-3',
+                        question.total_slots > 12
+                            ? 'grid-cols-4'
+                            : question.total_slots > 6
+                              ? 'grid-cols-3 sm:grid-cols-4'
+                              : 'grid-cols-2 sm:grid-cols-3',
                     )}
                     data-testid="or-pool"
                     aria-label={t('orderRush.poolLabel')}

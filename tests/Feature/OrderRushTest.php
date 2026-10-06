@@ -118,7 +118,7 @@ it('serves the seeded TKJ bank to the signed game service only', function (): vo
     $sets = collect($response->json('sets'))->keyBy('key');
 
     expect($response->json('version'))->toBeString()
-        ->and($sets)->toHaveCount(9)
+        ->and($sets)->toHaveCount(11)
         ->and(collect($sets['utp-t568b']['items'])->pluck('label.id')->all())
         ->toBe(['Putih-Orange', 'Orange', 'Putih-Hijau', 'Biru', 'Putih-Biru', 'Hijau', 'Putih-Cokelat', 'Cokelat'])
         ->and($sets['utp-t568b']['items'][0])->toMatchArray(['color' => '#f8fafc', 'stripe' => '#f97316'])
@@ -128,7 +128,7 @@ it('serves the seeded TKJ bank to the signed game service only', function (): vo
         ->and($sets['tcp-handshake']['kind'])->toBe('protocol');
 
     SequenceSet::query()->where('key', 'pdu')->update(['is_active' => false]);
-    expect(signedRushGet('/api/internal/sequence-bank')->json('sets'))->toHaveCount(8);
+    expect(signedRushGet('/api/internal/sequence-bank')->json('sets'))->toHaveCount(10);
 });
 
 it('records order rush results with match accuracy and per-set analytics', function (): void {
@@ -163,7 +163,7 @@ it('rejects forged or out-of-range order rush results', function (array $overrid
 })->with([
     'points above cap' => [['points' => 4151]],
     'foreign event id' => [['event_id' => 'eh-1-room-1']],
-    'too many slots' => [['sequence_stats' => [['set' => 'x', 'category' => 'X', 'attempts' => 1, 'solved' => 0, 'wrong' => 1, 'total_ms' => 0, 'slot_errors' => array_fill(0, 13, 1)]]]],
+    'too many slots' => [['sequence_stats' => [['set' => 'x', 'category' => 'X', 'attempts' => 1, 'solved' => 0, 'wrong' => 1, 'total_ms' => 0, 'slot_errors' => array_fill(0, 25, 1)]]]],
     'negative attempts' => [['sequence_stats' => [['set' => 'x', 'category' => 'X', 'attempts' => -1, 'solved' => 0, 'wrong' => 0, 'total_ms' => 0, 'slot_errors' => []]]]],
 ]);
 
@@ -173,7 +173,7 @@ it('lets super admins manage the sequence bank', function (): void {
     $this->actingAs($admin)->get('/admin/sequence-sets')->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/sequence-sets/index')
-            ->has('sets', 9)
+            ->has('sets', 11)
             ->where('days', 30));
 
     $this->actingAs($admin)->post('/admin/sequence-sets', [
@@ -240,4 +240,67 @@ it('hides the sequence bank from regular users', function (): void {
 
     $this->actingAs($user)->get('/admin/sequence-sets')->assertForbidden();
     $this->actingAs($user)->post('/admin/sequence-sets', [])->assertForbidden();
+});
+
+it('ships the how-to-play video and slides', function (string $file, string $signature) {
+    $path = public_path('tutorials/'.$file);
+
+    expect($path)->toBeFile()
+        ->and(file_get_contents($path, length: 12))->toContain($signature);
+})->with([
+    'video' => ['cara-bermain-order-rush.mp4', 'ftyp'],
+    'slides' => ['cara-bermain-order-rush.pdf', '%PDF'],
+]);
+
+it('seeds straight and crossover cables crimped on both ends', function (): void {
+    $sets = collect(signedRushGet('/api/internal/sequence-bank')->json('sets'))->keyBy('key');
+    $t568b = ['Putih-Orange', 'Orange', 'Putih-Hijau', 'Biru', 'Putih-Biru', 'Hijau', 'Putih-Cokelat', 'Cokelat'];
+    $t568a = ['Putih-Hijau', 'Hijau', 'Putih-Orange', 'Biru', 'Putih-Biru', 'Orange', 'Putih-Cokelat', 'Cokelat'];
+
+    expect(collect($sets['utp-straight']['items'])->pluck('label.id')->all())->toBe([...$t568b, ...$t568b])
+        ->and(collect($sets['utp-cross']['items'])->pluck('label.id')->all())->toBe([...$t568b, ...$t568a])
+        ->and($sets['utp-cross']['ends'])->toBe([
+            ['id' => 'Ujung A (T568B)', 'en' => 'End A (T568B)'],
+            ['id' => 'Ujung B (T568A)', 'en' => 'End B (T568A)'],
+        ])
+        ->and($sets['utp-t568b'])->not->toHaveKey('ends');
+});
+
+it('validates two-end cable sets in the admin editor', function (array $override, string $error): void {
+    $admin = User::factory()->superadmin()->create();
+    $wire = fn (string $label): array => ['label_id' => $label, 'color' => '#2563eb'];
+
+    $this->actingAs($admin)->post('/admin/sequence-sets', [
+        'title_id' => 'Kabel Rollover',
+        'category' => 'UTP_ROLLOVER',
+        'kind' => 'cable',
+        'ends' => [['id' => 'Ujung A'], ['id' => 'Ujung B']],
+        'items' => array_map($wire, ['A', 'B', 'C', 'B', 'A', 'C']),
+        ...$override,
+    ])->assertSessionHasErrors($error);
+
+    expect(SequenceSet::query()->where('key', 'kabel-rollover')->exists())->toBeFalse();
+})->with([
+    'odd piece count' => [['items' => [['label_id' => 'A', 'color' => '#2563eb'], ['label_id' => 'B', 'color' => '#2563eb'], ['label_id' => 'C', 'color' => '#2563eb']]], 'items'],
+    'duplicate in one end' => [['items' => [['label_id' => 'A', 'color' => '#2563eb'], ['label_id' => 'A', 'color' => '#2563eb'], ['label_id' => 'B', 'color' => '#2563eb'], ['label_id' => 'C', 'color' => '#2563eb']]], 'items'],
+    'protocol with ends' => [['kind' => 'protocol'], 'ends'],
+    'three ends' => [['ends' => [['id' => 'A'], ['id' => 'B'], ['id' => 'C']]], 'ends'],
+    'unnamed end' => [['ends' => [['id' => 'Ujung A'], ['id' => '']]], 'ends.1.id'],
+]);
+
+it('saves a two-end cable set and sends its ends to the game service', function (): void {
+    $admin = User::factory()->superadmin()->create();
+    $wire = fn (string $label): array => ['label_id' => $label, 'color' => '#2563eb'];
+
+    $this->actingAs($admin)->post('/admin/sequence-sets', [
+        'title_id' => 'Kabel Rollover',
+        'category' => 'UTP_ROLLOVER',
+        'kind' => 'cable',
+        'ends' => [['id' => 'Ujung A', 'en' => 'End A'], ['id' => 'Ujung B']],
+        'items' => array_map($wire, ['1', '2', '3', '3', '2', '1']),
+    ])->assertRedirect()->assertSessionHasNoErrors();
+
+    $payload = SequenceSet::query()->where('key', 'kabel-rollover')->sole()->toGamePayload();
+    expect($payload['ends'])->toBe([['id' => 'Ujung A', 'en' => 'End A'], ['id' => 'Ujung B', 'en' => 'Ujung B']])
+        ->and($payload['items'])->toHaveCount(6);
 });

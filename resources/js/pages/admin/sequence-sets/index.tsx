@@ -35,6 +35,11 @@ interface Item {
     stripe?: string | null;
 }
 
+interface End {
+    id: string;
+    en: string | null;
+}
+
 interface SetStats {
     key: string;
     attempts: number;
@@ -60,6 +65,8 @@ interface SequenceSet {
     description_id: string | null;
     description_en: string | null;
     items: Item[];
+    /** Cable crimped on both sides: end A pieces, then end B pieces. */
+    ends: End[] | null;
     is_active: boolean;
     stats: SetStats | null;
 }
@@ -88,8 +95,21 @@ const EMPTY: Draft = {
         { label_id: '', label_en: '' },
         { label_id: '', label_en: '' },
     ],
+    ends: null,
     is_active: true,
 };
+
+const DEFAULT_ENDS: End[] = [
+    { id: 'Ujung A', en: 'End A' },
+    { id: 'Ujung B', en: 'End B' },
+];
+
+/** Pieces per connector end (the whole set when it has one end). */
+function piecesPerEnd(set: { items: unknown[]; ends: End[] | null }): number {
+    return set.ends
+        ? Math.ceil(set.items.length / set.ends.length)
+        : set.items.length;
+}
 
 /** Small cable swatch: solid core, or white with a coloured stripe. */
 export function Swatch({ item }: { item: Item }) {
@@ -315,10 +335,23 @@ export default function SequenceSetsIndex({
                                 {set.items.map((item, index) => (
                                     <li
                                         key={index}
-                                        className="flex items-center gap-2"
+                                        className="flex flex-wrap items-center gap-2"
                                     >
+                                        {set.ends &&
+                                            index % piecesPerEnd(set) === 0 && (
+                                                <span className="mt-1 w-full text-xs font-semibold text-teal-700 dark:text-teal-300">
+                                                    {
+                                                        set.ends[
+                                                            index /
+                                                                piecesPerEnd(
+                                                                    set,
+                                                                )
+                                                        ]?.id
+                                                    }
+                                                </span>
+                                            )}
                                         <span className="w-5 text-right text-xs text-muted-foreground tabular-nums">
-                                            {index + 1}
+                                            {(index % piecesPerEnd(set)) + 1}
                                         </span>
                                         <Swatch item={item} />
                                         <span className="truncate text-foreground">
@@ -342,6 +375,11 @@ export default function SequenceSetsIndex({
                                             items: set.items.map((item) => ({
                                                 ...item,
                                             })),
+                                            ends: set.ends
+                                                ? set.ends.map((end) => ({
+                                                      ...end,
+                                                  }))
+                                                : null,
                                         })
                                     }
                                     className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-foreground hover:bg-muted"
@@ -499,6 +537,9 @@ function SetEditor({
         };
         const payload = { ...draft } as Record<string, unknown>;
         delete payload.id;
+        if (draft.kind !== 'cable') {
+            payload.ends = null;
+        }
         if (draft.id) {
             router.put(
                 `/admin/sequence-sets/${draft.id}`,
@@ -511,6 +552,28 @@ function SetEditor({
     };
 
     const cable = draft.kind === 'cable';
+    const twoEnd = cable && draft.ends !== null;
+    const perEnd = twoEnd ? Math.ceil(draft.items.length / 2) : 0;
+    const maxItems = twoEnd ? limits.max * 2 : limits.max;
+    const setEnd = (index: number, patch: Partial<End>) =>
+        setDraft((current) => ({
+            ...current,
+            ends: (current.ends ?? DEFAULT_ENDS).map((end, i) =>
+                i === index ? { ...end, ...patch } : end,
+            ),
+        }));
+    /** Two ends: copy end A so end B starts from the same wiring. */
+    const toggleTwoEnd = (on: boolean) =>
+        setDraft((current) => ({
+            ...current,
+            ends: on ? DEFAULT_ENDS.map((end) => ({ ...end })) : null,
+            items: on
+                ? [
+                      ...current.items,
+                      ...current.items.map((item) => ({ ...item })),
+                  ]
+                : current.items.slice(0, Math.ceil(current.items.length / 2)),
+        }));
 
     return (
         <div
@@ -626,13 +689,74 @@ function SetEditor({
                         </Field>
                     </div>
 
+                    {cable && (
+                        <div className="flex flex-col gap-2 rounded-xl border border-border p-3">
+                            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                                <input
+                                    type="checkbox"
+                                    checked={twoEnd}
+                                    onChange={(e) =>
+                                        toggleTwoEnd(e.target.checked)
+                                    }
+                                    data-testid="sequence-two-end"
+                                />
+                                Crimp both ends (straight / cross cable)
+                            </label>
+                            <p className="text-xs text-muted-foreground">
+                                Players wire end A, then end B. The first half
+                                of the pieces is end A, the second half end B.
+                            </p>
+                            {twoEnd && (
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                    {(draft.ends ?? DEFAULT_ENDS).map(
+                                        (end, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex flex-col gap-1"
+                                            >
+                                                <input
+                                                    aria-label={`End ${String.fromCharCode(65 + index)} name (Indonesian)`}
+                                                    placeholder={`Ujung ${String.fromCharCode(65 + index)} (T568B)`}
+                                                    className={fieldClass}
+                                                    value={end.id}
+                                                    onChange={(e) =>
+                                                        setEnd(index, {
+                                                            id: e.target.value,
+                                                        })
+                                                    }
+                                                    required
+                                                />
+                                                <input
+                                                    aria-label={`End ${String.fromCharCode(65 + index)} name (English)`}
+                                                    placeholder={`End ${String.fromCharCode(65 + index)} (T568B)`}
+                                                    className={fieldClass}
+                                                    value={end.en ?? ''}
+                                                    onChange={(e) =>
+                                                        setEnd(index, {
+                                                            en: e.target.value,
+                                                        })
+                                                    }
+                                                />
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+                            )}
+                            {errors.ends && (
+                                <p className="text-xs text-red-600">
+                                    {errors.ends}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm font-semibold text-foreground">
                                 Pieces in the correct order
                             </h3>
                             <span className="text-xs text-muted-foreground">
-                                {draft.items.length}/{limits.max}
+                                {draft.items.length}/{maxItems}
                             </span>
                         </div>
                         {errors.items && (
@@ -645,8 +769,10 @@ function SetEditor({
                                 key={index}
                                 className="flex flex-wrap items-center gap-2 rounded-xl border border-border p-2"
                             >
-                                <span className="w-5 text-right text-xs font-semibold text-muted-foreground tabular-nums">
-                                    {index + 1}
+                                <span className="min-w-5 text-right text-xs font-semibold text-muted-foreground tabular-nums">
+                                    {twoEnd
+                                        ? `${String.fromCharCode(65 + Math.floor(index / perEnd))}${(index % perEnd) + 1}`
+                                        : index + 1}
                                 </span>
                                 <input
                                     aria-label={`Piece ${index + 1} label (Indonesian)`}
@@ -759,7 +885,7 @@ function SetEditor({
                         ))}
                         <button
                             type="button"
-                            disabled={draft.items.length >= limits.max}
+                            disabled={draft.items.length >= maxItems}
                             onClick={() =>
                                 setDraft((current) => ({
                                     ...current,

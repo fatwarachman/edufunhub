@@ -1,6 +1,7 @@
 import GameAdStrip from '@/components/ads/game-ad-strip';
 import { useRoomPin } from '@/components/multiplayer/room';
 import { HostScreen } from '@/components/order-rush/host-screen';
+import { HowToPlay } from '@/components/order-rush/how-to-play';
 import { PlayerScreen } from '@/components/order-rush/player-screen';
 import { ACCENT, BG, Panel } from '@/components/order-rush/shared';
 import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
@@ -244,6 +245,9 @@ export default function OrderRush({
             <main className="mx-auto flex flex-col gap-4 px-3 py-5 sm:px-6 lg:px-8">
                 <GameAdStrip />
                 {body}
+                {state.phase !== 'RACE_ACTIVE' && (
+                    <HowToPlay className="mx-auto w-full max-w-3xl" />
+                )}
             </main>
         </div>
     );

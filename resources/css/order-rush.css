@@ -224,3 +224,281 @@
         animation-duration: 0.01s;
     }
 }
+
+/* How-to-play walkthrough (auto-playing illustrated scenes). */
+.or-howto-scene {
+    animation: or-howto-in 0.45s ease-out;
+}
+
+.or-howto-progress {
+    width: 0;
+    animation-name: or-howto-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+.or-howto-pop {
+    animation: or-pop 0.4s ease-out both;
+}
+
+.or-howto-rise {
+    animation: or-howto-rise 0.45s ease-out both;
+}
+
+/* Tap demo: a pool piece fades out as its twin drops into the next slot. */
+.or-howto-take {
+    animation: or-howto-take 0.3s ease-in both;
+}
+
+.or-howto-fill {
+    animation: or-howto-fill 0.3s ease-out both;
+}
+
+.or-howto-finger {
+    left: 12%;
+    bottom: 12%;
+    animation: or-howto-finger 3.6s ease-in-out 0.5s both;
+}
+
+/* LAN tester demo: each LED runs yellow, then settles to its final state. */
+.or-howto-led {
+    background: #475569;
+    color: #f1f5f9;
+    animation:
+        or-howto-led-run 0.01s linear var(--or-run) forwards,
+        or-howto-led-ok 0.01s linear var(--or-settle) forwards;
+}
+
+.or-howto-led[data-final='bad'] {
+    animation:
+        or-howto-led-run 0.01s linear var(--or-run) forwards,
+        or-howto-led-bad 0.3s steps(2) var(--or-settle) 4 forwards;
+}
+
+.or-howto-led[data-final='off'] {
+    animation: none;
+}
+
+.or-howto-shake {
+    animation: or-shake 0.42s ease-in-out both;
+}
+
+.or-howto-tangle {
+    animation: or-zap 0.5s ease-in-out 4;
+}
+
+.or-howto-freeze {
+    animation: or-howto-freeze 1.6s ease-in-out both;
+}
+
+.or-howto-shield {
+    animation: or-howto-shield 1.2s ease-out both;
+}
+
+.or-howto-lane {
+    width: 0;
+    animation: or-howto-lane 3s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+.or-howto-runner {
+    left: 0;
+    animation: or-howto-runner 3s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+
+@keyframes or-howto-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes or-howto-progress {
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes or-howto-rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes or-howto-take {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    40% {
+        transform: scale(0.88);
+        box-shadow: 0 0 0 3px #facc15;
+    }
+    100% {
+        opacity: 0.4;
+        transform: scale(0.9);
+        filter: grayscale(0.6);
+    }
+}
+
+@keyframes or-howto-fill {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes or-howto-finger {
+    0% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+    10%,
+    90% {
+        opacity: 1;
+    }
+    25% {
+        transform: translate(160%, -20%);
+    }
+    50% {
+        transform: translate(40%, -60%);
+    }
+    75% {
+        transform: translate(200%, -40%);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(100%, 0);
+    }
+}
+
+@keyframes or-howto-led-run {
+    to {
+        background: #facc15;
+        box-shadow: 0 0 10px #facc15;
+        color: #1f2a44;
+    }
+}
+
+@keyframes or-howto-led-ok {
+    to {
+        background: #22c55e;
+        box-shadow: 0 0 12px #22c55e;
+        color: #1f2a44;
+    }
+}
+
+@keyframes or-howto-led-bad {
+    0% {
+        background: #ef4444;
+        box-shadow: 0 0 14px #ef4444;
+        color: #fff;
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.35;
+    }
+    100% {
+        background: #ef4444;
+        box-shadow: 0 0 14px #ef4444;
+        color: #fff;
+        opacity: 1;
+    }
+}
+
+@keyframes or-howto-freeze {
+    0%,
+    100% {
+        filter: none;
+    }
+    40%,
+    70% {
+        filter: brightness(1.35) saturate(0.4);
+        box-shadow: 0 0 0 4px #bae6fd;
+    }
+}
+
+@keyframes or-howto-shield {
+    0% {
+        transform: scale(0.7);
+    }
+    50% {
+        transform: scale(1.12);
+        box-shadow: 0 0 0 6px #c7d2fe;
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes or-howto-lane {
+    to {
+        width: calc(var(--or-to) + 1.4rem);
+    }
+}
+
+@keyframes or-howto-runner {
+    to {
+        left: var(--or-to);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .or-howto-scene,
+    .or-howto-pop,
+    .or-howto-rise,
+    .or-howto-take,
+    .or-howto-fill,
+    .or-howto-shake,
+    .or-howto-tangle,
+    .or-howto-freeze,
+    .or-howto-shield {
+        animation: none;
+    }
+
+    .or-howto-finger {
+        display: none;
+    }
+
+    .or-howto-take {
+        opacity: 0.4;
+    }
+
+    .or-howto-led {
+        animation: none;
+        background: #22c55e;
+        color: #1f2a44;
+    }
+
+    .or-howto-led[data-final='bad'] {
+        background: #ef4444;
+        color: #fff;
+    }
+
+    .or-howto-led[data-final='off'] {
+        background: #475569;
+        color: #f1f5f9;
+    }
+
+    .or-howto-lane {
+        animation: none;
+        width: calc(var(--or-to) + 1.4rem);
+    }
+
+    .or-howto-runner {
+        animation: none;
+        left: var(--or-to);
+    }
+}
