@@ -26,7 +26,7 @@ class SequenceSetController extends Controller
 
         return Inertia::render('admin/sequence-sets/index', [
             'sets' => SequenceSet::query()->ordered()->get()->map(fn (SequenceSet $set): array => [
-                ...$set->only(['id', 'key', 'category', 'kind', 'title_id', 'title_en', 'description_id', 'description_en', 'items', 'is_active']),
+                ...$set->only(['id', 'key', 'category', 'kind', 'title_id', 'title_en', 'description_id', 'description_en', 'items', 'ends', 'is_active']),
                 'stats' => $stats->get($set->key),
             ])->values(),
             'analytics' => $stats->values(),

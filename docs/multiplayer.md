@@ -206,7 +206,12 @@ koneksi hanya mengirim intent lewat channel, host memakai token terpisah
 - **Bank urutan:** `sequence_sets` (admin `/admin/sequence-sets`), disinkron Go
   tiap menit lewat `GET /api/internal/sequence-bank` (HMAC). Bawaan: UTP T568B,
   UTP T568A, Fiber 12 core, OSI atas-bawah, OSI bawah-atas, PDU, DHCP DORA, TCP
-  3-way handshake, troubleshooting. Item disimpan dalam urutan benar; Go
+  3-way handshake, troubleshooting, plus kabel dua ujung **Straight (T568B ↔
+  T568B)** dan **Cross (T568B ↔ T568A)**. Set dua ujung punya `ends` (2 nama
+  ujung) dan item = ujung A lalu ujung B (masing-masing 2–12); pemain mengisi
+  kedua ujung dan LAN tester memakai 2 baris. Validasi membandingkan nilai
+  kepingan, jadi dua kabel identik (mis. Putih-Orange di A1 dan B1) boleh
+  tertukar. Item disimpan dalam urutan benar; Go
   membagikan kepingan dengan id acak per modul dan **tidak pernah** mengirim
   urutan benar ke klien.
 - **Validasi (authoritative):** `submit_sequence` harus permutasi lengkap dari

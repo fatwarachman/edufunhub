@@ -1567,7 +1567,68 @@
         "modules": "Modul",
         "accuracy": "Akurasi",
         "avgTime": "Rata-rata",
-        "hit": "Terkena sabotase"
+        "hit": "Terkena sabotase",
+        "goalModules": "Target modul",
+        "goalMinutes": "Durasi",
+        "unitModules": "modul",
+        "unitMinutes": "menit",
+        "allShort": "Semua",
+        "allTopics": "Semua materi",
+        "allTopicsHint": "Soal diacak dari semua materi",
+        "groupCable": "Kabel & Fiber",
+        "groupProtocol": "Protokol & OSI",
+        "slotsCount": "{{count}} keping",
+        "howTo": {
+            "title": "Cara bermain",
+            "step": "Langkah {{current}}/{{total}}",
+            "prev": "Sebelumnya",
+            "next": "Berikutnya",
+            "play": "Putar",
+            "pause": "Jeda",
+            "replay": "Putar ulang",
+            "goTo": "Ke langkah {{number}}",
+            "demoProjector": "Layar proyektor",
+            "demoJoined": "Teman sudah masuk",
+            "demoTarget": "Slot 1–8 (T568B)",
+            "demoCorrect": "Benar! Semua hijau",
+            "demoWrong": "Salah di pin {{pin}}",
+            "demoStreak": "Streak 3 beruntun!",
+            "demoModule": "Modul {{n}}",
+            "demoTangle": "Kepingan lawan teracak 3 detik.",
+            "demoFreeze": "Layar lawan beku 1,5 detik.",
+            "demoShield": "Menahan 1 serangan berikutnya.",
+            "demoWinner": "{{name}} juara 1!",
+            "scenes": {
+                "join": {
+                    "title": "1. Guru buka ruang, siswa masuk",
+                    "body": "Guru membuka Layar Guru di proyektor, memilih mode (Race atau Time Attack) dan materi, lalu membagikan PIN 6 digit. Siswa masuk dari HP dengan avatarnya sendiri."
+                },
+                "tap": {
+                    "title": "2. Ketuk kepingan sesuai urutan",
+                    "body": "Ketuk kepingan di bawah: otomatis mengisi slot kosong pertama (1, 2, 3, …). Salah ketuk? Ketuk kepingan di slot untuk mengembalikannya."
+                },
+                "test": {
+                    "title": "3. Tekan TEST",
+                    "body": "LAN tester menyalakan LED pin satu per satu. Benar = semua hijau dan langsung lanjut ke modul berikutnya. Salah = LED berhenti merah di pin pertama yang salah."
+                },
+                "score": {
+                    "title": "4. Cepat = skor besar",
+                    "body": "Setiap urutan benar 100 poin, ditambah bonus kecepatan sampai +100 jika selesai di bawah 5 detik. Benar 3 kali beruntun = kombo dan power-up acak."
+                },
+                "power": {
+                    "title": "5. Pakai power-up",
+                    "body": "Kirim Kabel Kusut atau Freeze ke lawan untuk memperlambatnya, atau pasang Shield untuk berjaga. Tanpa memilih target, serangan diarahkan ke pemimpin."
+                },
+                "win": {
+                    "title": "6. Juara lintasan",
+                    "body": "Avatarmu maju di lintasan fiber setiap modul benar. Race: pertama menyelesaikan target modul menang. Time Attack: skor tertinggi saat waktu habis. Podium menampilkan 3 juara."
+                }
+            },
+            "downloadVideo": "Unduh video",
+            "downloadSlides": "Unduh slide (PDF)"
+        },
+        "testerBadEnd": "Ujung {{end}} pin {{pin}} salah!",
+        "twoEnds": "2 ujung"
     },
     "portSorter": {
         "title": "Pilah Port & Protokol",

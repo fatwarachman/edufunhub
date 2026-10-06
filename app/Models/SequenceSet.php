@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * sends the order to players.
  *
  * @property list<array{label_id: string, label_en: ?string, color?: ?string, stripe?: ?string}> $items
+ * @property list<array{id: string, en: ?string}>|null $ends Two connector ends (end A items, then end B)
  */
 class SequenceSet extends Model
 {
@@ -29,6 +30,9 @@ class SequenceSet extends Model
 
     public const MAX_ITEMS = 12;
 
+    /** Mirrors Go orderrush.EndCount: a cable crimped on both sides. */
+    public const END_COUNT = 2;
+
     public const KEY_PATTERN = '/^[a-z][a-z0-9-]{1,39}$/';
 
     public const CATEGORY_PATTERN = '/^[A-Z][A-Z0-9_]{1,39}$/';
@@ -36,7 +40,7 @@ class SequenceSet extends Model
     /** @var list<string> */
     protected $fillable = [
         'key', 'category', 'kind', 'title_id', 'title_en', 'description_id', 'description_en',
-        'items', 'sort_order', 'is_active', 'created_by',
+        'items', 'ends', 'sort_order', 'is_active', 'created_by',
     ];
 
     /** @var array<string, mixed> */
@@ -45,7 +49,7 @@ class SequenceSet extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['items' => 'array', 'sort_order' => 'integer', 'is_active' => 'boolean'];
+        return ['items' => 'array', 'ends' => 'array', 'sort_order' => 'integer', 'is_active' => 'boolean'];
     }
 
     /** @param Builder<SequenceSet> $query */
@@ -72,14 +76,20 @@ class SequenceSet extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** Whether the set is a cable crimped on both ends (end A, then end B). */
+    public function isTwoEnd(): bool
+    {
+        return count($this->ends ?? []) === self::END_COUNT;
+    }
+
     /**
      * Payload for the Go referee (orderrush.Set).
      *
-     * @return array{key: string, category: string, kind: string, title: array{id: string, en: string}, description: array{id: string, en: string}, items: list<array{label: array{id: string, en: string}, color?: string, stripe?: string}>}
+     * @return array{key: string, category: string, kind: string, title: array{id: string, en: string}, description: array{id: string, en: string}, items: list<array{label: array{id: string, en: string}, color?: string, stripe?: string}>, ends?: list<array{id: string, en: string}>}
      */
     public function toGamePayload(): array
     {
-        return [
+        return array_filter([
             'key' => $this->key,
             'category' => $this->category,
             'kind' => $this->kind,
@@ -90,6 +100,9 @@ class SequenceSet extends Model
                 'color' => $item['color'] ?? null,
                 'stripe' => $item['stripe'] ?? null,
             ], fn (mixed $value): bool => $value !== null && $value !== ''), $this->items)),
-        ];
+            'ends' => $this->isTwoEnd()
+                ? array_map(fn (array $end): array => ['id' => $end['id'], 'en' => ($end['en'] ?? null) ?: $end['id']], array_values($this->ends))
+                : null,
+        ], fn (mixed $value): bool => $value !== null);
     }
 }

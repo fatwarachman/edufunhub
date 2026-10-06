@@ -18,11 +18,14 @@ const (
 	KindProtocol = "protocol"
 )
 
-// MinSlots and MaxSlots bound a sequence set (the LAN tester shows up to 12
-// LEDs for a 12-core fibre).
+// MinSlots and MaxSlots bound a sequence set, or each end of a two-end set
+// (the LAN tester shows up to 12 LEDs for a 12-core fibre).
 const (
 	MinSlots = 2
 	MaxSlots = 12
+	// EndCount is the number of connector ends of a two-end set (a patch
+	// cable crimped on both sides: straight or cross).
+	EndCount = 2
 )
 
 // SetItem is one piece of a sequence in its correct position.
@@ -43,6 +46,11 @@ type Set struct {
 	Title       questions.Text `json:"title"`
 	Description questions.Text `json:"description"`
 	Items       []SetItem      `json:"items"`
+	// Ends names the two connector ends of a cable crimped on both sides
+	// (e.g. "End A (T568B)" / "End B (T568A)"). Items then hold end A
+	// followed by end B, half each; identical pieces may swap within the
+	// answer because the referee compares piece values, not ids.
+	Ends []questions.Text `json:"ends,omitempty"`
 }
 
 // SequenceItem is a piece as clients see it: an opaque id per module, so
@@ -54,8 +62,8 @@ type SequenceItem struct {
 	Stripe string `json:"stripe,omitempty"`
 }
 
-// SequenceQuestion is one module dealt to a player. CorrectOrder stays on
-// the server (json "-"); PoolItems are shuffled.
+// SequenceQuestion is one module dealt to a player. CorrectOrder and the
+// answer values stay on the server (json "-"); PoolItems are shuffled.
 type SequenceQuestion struct {
 	ID           string         `json:"id"`
 	Set          string         `json:"set"`
@@ -64,8 +72,27 @@ type SequenceQuestion struct {
 	Title        string         `json:"title"`
 	Description  string         `json:"description"`
 	TotalSlots   int            `json:"total_slots"`
+	Ends         []string       `json:"ends,omitempty"`
 	CorrectOrder []string       `json:"-"`
 	PoolItems    []SequenceItem `json:"pool_items"`
+	// answer is the piece value expected in each slot; valueOf maps a piece
+	// id to its value. Two identical wires (same colour on both ends) are
+	// interchangeable.
+	answer  []string
+	valueOf map[string]string
+}
+
+// value identifies a piece by what the player sees (label and colours).
+func (it SetItem) value() string { return it.Label.ID + "|" + it.Color + "|" + it.Stripe }
+
+// Check returns the first wrong slot of a well-formed submission, or -1
+// when every slot holds the expected piece value.
+func (q SequenceQuestion) Check(submitted []string) int {
+	got := make([]string, len(submitted))
+	for i, id := range submitted {
+		got[i] = q.valueOf[id]
+	}
+	return FirstMismatch(got, q.answer)
 }
 
 // Validate checks a set: known kind, 2 to 12 items, non-empty unique labels
@@ -80,20 +107,32 @@ func (s Set) Validate() error {
 	if s.Title.ID == "" {
 		return fmt.Errorf("%s: missing title", s.Key)
 	}
-	if len(s.Items) < MinSlots || len(s.Items) > MaxSlots {
-		return fmt.Errorf("%s: %d items, want %d..%d", s.Key, len(s.Items), MinSlots, MaxSlots)
+	ends := max(1, len(s.Ends))
+	if len(s.Ends) != 0 && len(s.Ends) != EndCount {
+		return fmt.Errorf("%s: %d ends, want %d", s.Key, len(s.Ends), EndCount)
 	}
-	seen := map[string]bool{}
-	for _, it := range s.Items {
-		if it.Label.ID == "" || len(it.Label.ID) > 60 || len(it.Label.EN) > 60 {
-			return fmt.Errorf("%s: invalid label", s.Key)
+	for _, e := range s.Ends {
+		if e.ID == "" || len(e.ID) > 40 || len(e.EN) > 40 {
+			return fmt.Errorf("%s: invalid end title", s.Key)
 		}
-		if seen[it.Label.ID] {
-			return fmt.Errorf("%s: duplicate label %q", s.Key, it.Label.ID)
-		}
-		seen[it.Label.ID] = true
-		if !validHex(it.Color) || !validHex(it.Stripe) {
-			return fmt.Errorf("%s: invalid colour", s.Key)
+	}
+	per := len(s.Items) / ends
+	if len(s.Items)%ends != 0 || per < MinSlots || per > MaxSlots {
+		return fmt.Errorf("%s: %d items over %d ends, want %d..%d per end", s.Key, len(s.Items), ends, MinSlots, MaxSlots)
+	}
+	for e := range ends {
+		seen := map[string]bool{}
+		for _, it := range s.Items[e*per : (e+1)*per] {
+			if it.Label.ID == "" || len(it.Label.ID) > 60 || len(it.Label.EN) > 60 {
+				return fmt.Errorf("%s: invalid label", s.Key)
+			}
+			if seen[it.Label.ID] {
+				return fmt.Errorf("%s: duplicate label %q", s.Key, it.Label.ID)
+			}
+			seen[it.Label.ID] = true
+			if !validHex(it.Color) || !validHex(it.Stripe) {
+				return fmt.Errorf("%s: invalid colour", s.Key)
+			}
 		}
 	}
 	return nil
@@ -130,19 +169,41 @@ func (s Set) Deal(id string, locale string, rng *rand.Rand) SequenceQuestion {
 	for i := range pool {
 		pool[i] = i
 	}
+	answer := make([]string, n)
+	valueOf := make(map[string]string, n)
+	for i, it := range s.Items {
+		answer[i] = it.value()
+		valueOf[ids[i]] = answer[i]
+	}
+	solved := func() bool {
+		for i, idx := range pool {
+			if answer[idx] != answer[i] {
+				return false
+			}
+		}
+		return true
+	}
 	for tries := 0; tries < 8; tries++ {
 		rng.Shuffle(n, func(i, j int) { pool[i], pool[j] = pool[j], pool[i] })
-		if !sorted(pool) {
+		if !solved() {
 			break
 		}
 	}
-	if sorted(pool) && n > 1 {
-		pool[0], pool[1] = pool[1], pool[0]
+	if solved() && n > 1 {
+		// Swap two slots holding different values so the pool never reads
+		// as the answer.
+		for j := 1; j < n; j++ {
+			if answer[pool[j]] != answer[pool[0]] {
+				pool[0], pool[j] = pool[j], pool[0]
+				break
+			}
+		}
 	}
 	q := SequenceQuestion{
 		ID: id, Set: s.Key, Category: s.Category, Kind: s.Kind,
 		Title: s.Title.Get(locale), Description: s.Description.Get(locale),
-		TotalSlots: n, CorrectOrder: ids,
+		TotalSlots: n, Ends: s.endTitles(locale), CorrectOrder: ids,
+		answer: answer, valueOf: valueOf,
 	}
 	q.PoolItems = make([]SequenceItem, n)
 	for i, idx := range pool {
@@ -152,13 +213,15 @@ func (s Set) Deal(id string, locale string, rng *rand.Rand) SequenceQuestion {
 	return q
 }
 
-func sorted(a []int) bool {
-	for i := range a {
-		if a[i] != i {
-			return false
-		}
+func (s Set) endTitles(locale string) []string {
+	if len(s.Ends) == 0 {
+		return nil
 	}
-	return true
+	out := make([]string, len(s.Ends))
+	for i, e := range s.Ends {
+		out[i] = e.Get(locale)
+	}
+	return out
 }
 
 // Relabel returns the module in another locale with the same ids and pool
@@ -166,6 +229,7 @@ func sorted(a []int) bool {
 func (q SequenceQuestion) Relabel(s Set, locale string) SequenceQuestion {
 	out := q
 	out.Title, out.Description = s.Title.Get(locale), s.Description.Get(locale)
+	out.Ends = s.endTitles(locale)
 	pos := map[string]int{}
 	for i, id := range q.CorrectOrder {
 		pos[id] = i
@@ -262,7 +326,7 @@ func (b *Bank) Keys() []string {
 func (b *Bank) Catalog(locale string) []Message {
 	out := make([]Message, len(b.Sets))
 	for i, s := range b.Sets {
-		out[i] = Message{"key": s.Key, "category": s.Category, "kind": s.Kind, "title": s.Title.Get(locale), "slots": len(s.Items)}
+		out[i] = Message{"key": s.Key, "category": s.Category, "kind": s.Kind, "title": s.Title.Get(locale), "slots": len(s.Items), "ends": len(s.Ends)}
 	}
 	return out
 }
@@ -322,29 +386,52 @@ func solid(id, en, color string) SetItem { return SetItem{Label: t(id, en), Colo
 
 func word(id, en string) SetItem { return SetItem{Label: t(id, en)} }
 
+// t568b and t568a list pins 1–8 of each TIA-568 wiring standard.
+func t568b() []SetItem {
+	return []SetItem{
+		striped("Putih-Orange", "White-Orange", cOrange), solid("Orange", "Orange", cOrange),
+		striped("Putih-Hijau", "White-Green", cGreen), solid("Biru", "Blue", cBlue),
+		striped("Putih-Biru", "White-Blue", cBlue), solid("Hijau", "Green", cGreen),
+		striped("Putih-Cokelat", "White-Brown", cBrown), solid("Cokelat", "Brown", cBrown),
+	}
+}
+
+func t568a() []SetItem {
+	return []SetItem{
+		striped("Putih-Hijau", "White-Green", cGreen), solid("Hijau", "Green", cGreen),
+		striped("Putih-Orange", "White-Orange", cOrange), solid("Biru", "Blue", cBlue),
+		striped("Putih-Biru", "White-Blue", cBlue), solid("Orange", "Orange", cOrange),
+		striped("Putih-Cokelat", "White-Brown", cBrown), solid("Cokelat", "Brown", cBrown),
+	}
+}
+
 // BuiltinSets is the TKJ sequence bank (Laravel seeds the same sets).
 var BuiltinSets = []Set{
 	{
 		Key: "utp-t568b", Category: "UTP_T568B", Kind: KindCable,
 		Title:       t("Kabel UTP T568B (Straight)", "UTP cable T568B (straight)"),
 		Description: t("Urutkan warna pin 1–8 standar T568B.", "Order pins 1–8 of the T568B standard."),
-		Items: []SetItem{
-			striped("Putih-Orange", "White-Orange", cOrange), solid("Orange", "Orange", cOrange),
-			striped("Putih-Hijau", "White-Green", cGreen), solid("Biru", "Blue", cBlue),
-			striped("Putih-Biru", "White-Blue", cBlue), solid("Hijau", "Green", cGreen),
-			striped("Putih-Cokelat", "White-Brown", cBrown), solid("Cokelat", "Brown", cBrown),
-		},
+		Items:       t568b(),
 	},
 	{
 		Key: "utp-t568a", Category: "UTP_T568A", Kind: KindCable,
 		Title:       t("Kabel UTP T568A (Cross-end)", "UTP cable T568A (cross end)"),
 		Description: t("Urutkan warna pin 1–8 standar T568A.", "Order pins 1–8 of the T568A standard."),
-		Items: []SetItem{
-			striped("Putih-Hijau", "White-Green", cGreen), solid("Hijau", "Green", cGreen),
-			striped("Putih-Orange", "White-Orange", cOrange), solid("Biru", "Blue", cBlue),
-			striped("Putih-Biru", "White-Blue", cBlue), solid("Orange", "Orange", cOrange),
-			striped("Putih-Cokelat", "White-Brown", cBrown), solid("Cokelat", "Brown", cBrown),
-		},
+		Items:       t568a(),
+	},
+	{
+		Key: "utp-straight", Category: "UTP_STRAIGHT", Kind: KindCable,
+		Title:       t("Kabel Straight (T568B ↔ T568B)", "Straight cable (T568B ↔ T568B)"),
+		Description: t("Crimping kedua ujung: PC ke switch/router. Ujung A dan B sama-sama T568B.", "Crimp both ends: PC to switch/router. Ends A and B are both T568B."),
+		Ends:        []questions.Text{t("Ujung A (T568B)", "End A (T568B)"), t("Ujung B (T568B)", "End B (T568B)")},
+		Items:       slices.Concat(t568b(), t568b()),
+	},
+	{
+		Key: "utp-cross", Category: "UTP_CROSS", Kind: KindCable,
+		Title:       t("Kabel Cross (T568B ↔ T568A)", "Crossover cable (T568B ↔ T568A)"),
+		Description: t("Crimping kedua ujung: PC ke PC, switch ke switch. Ujung A T568B, ujung B T568A.", "Crimp both ends: PC to PC, switch to switch. End A is T568B, end B is T568A."),
+		Ends:        []questions.Text{t("Ujung A (T568B)", "End A (T568B)"), t("Ujung B (T568A)", "End B (T568A)")},
+		Items:       slices.Concat(t568b(), t568a()),
 	},
 	{
 		Key: "fiber-12", Category: "FIBER_12_CORE", Kind: KindCable,

@@ -503,13 +503,13 @@ func (r *Room) submit(c *Client, questionID string, order []string, at, now time
 	}
 	p.lastSubmit = at
 	q := p.question
-	slot := FirstMismatch(order, q.CorrectOrder)
+	slot := q.Check(order)
 	st := p.stat(q)
 	st.Attempts++
 	elapsed := at.Sub(p.askedAt)
 	msg := Message{
 		"t": "sequence_validated", "question_id": q.ID, "category": q.Category, "kind": q.Kind,
-		"total_slots": q.TotalSlots, "duration_ms": elapsed.Milliseconds(),
+		"total_slots": q.TotalSlots, "ends": len(q.Ends), "duration_ms": elapsed.Milliseconds(),
 	}
 	if slot >= 0 {
 		p.wrong++

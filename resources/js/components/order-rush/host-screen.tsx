@@ -5,7 +5,6 @@ import {
     RoomError,
 } from '@/components/multiplayer/room';
 import {
-    ACCENT,
     clock,
     FeedItem,
     formatScore,
@@ -30,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { router } from '@inertiajs/react';
 import {
     Cable,
+    Check,
     Copy,
     DoorOpen,
     Flag,
@@ -38,6 +38,7 @@ import {
     MonitorPlay,
     Network,
     Play,
+    Shuffle,
     Timer,
     UsersRound,
 } from 'lucide-react';
@@ -154,8 +155,8 @@ export function HostScreen({
                 <HostHeader state={state} status={status} />
             </Panel>
             <Marquee feed={state.feed} />
-            <div className="grid gap-4 xl:grid-cols-12">
-                <Panel className="flex flex-col gap-3 xl:col-span-9">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+                <Panel className="flex min-w-0 flex-col gap-3 xl:col-span-9">
                     <h2 className="flex items-center justify-between gap-2 font-display text-xl font-black">
                         {t('orderRush.track')}
                         <span className="inline-flex items-center gap-1.5 text-sm">
@@ -516,15 +517,18 @@ function HostLobby({
         );
 
     return (
-        <div className="grid gap-5 lg:grid-cols-12" data-testid="or-host-lobby">
-            <Panel className="flex flex-col gap-4 lg:col-span-5">
+        <div
+            className="grid grid-cols-1 gap-5 lg:grid-cols-12"
+            data-testid="or-host-lobby"
+        >
+            <Panel className="flex min-w-0 flex-col gap-4 lg:col-span-5">
                 <HostHeader state={state} status={status} />
                 <div className="rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#FFFDE6] p-4 text-center">
                     <p className="text-sm font-black">{t('room.shareTitle')}</p>
-                    <p className="mt-2 font-display text-5xl font-black tracking-[0.25em]">
+                    <p className="mt-2 font-display text-4xl font-black tracking-[0.2em] sm:text-5xl sm:tracking-[0.25em]">
                         {state.pin}
                     </p>
-                    <p className="mt-1 text-xs font-bold [overflow-wrap:anywhere] text-slate-600">
+                    <p className="mt-1 truncate text-xs font-bold text-slate-600">
                         {link}
                     </p>
                     <div className="mt-3 flex flex-wrap justify-center gap-2">
@@ -585,20 +589,49 @@ function HostLobby({
                             </button>
                         ))}
                     </div>
-                    <div className="flex flex-wrap gap-1.5" role="group">
+                    <div
+                        className={cn(
+                            'grid gap-1.5',
+                            (state.mode === 'RACE'
+                                ? state.race_targets
+                                : state.time_limits
+                            ).length > 3
+                                ? 'grid-cols-4'
+                                : 'grid-cols-3',
+                        )}
+                        role="group"
+                        aria-label={
+                            state.mode === 'RACE'
+                                ? t('orderRush.goalModules')
+                                : t('orderRush.goalMinutes')
+                        }
+                        data-testid="or-goal"
+                    >
                         {(state.mode === 'RACE'
                             ? state.race_targets
                             : state.time_limits
                         ).map((n) => (
-                            <Chip
+                            <button
                                 key={n}
-                                active={value === n}
+                                type="button"
+                                aria-pressed={value === n}
                                 onClick={() => configure(state.mode, n)}
+                                className={cn(
+                                    'flex min-h-14 flex-col items-center justify-center rounded-xl border-2 border-[#1f2a44] leading-none transition-colors',
+                                    value === n
+                                        ? 'bg-[#99f6e4] shadow-[2px_2px_0px_#1f2a44]'
+                                        : 'bg-white hover:bg-[#ccfbf1]',
+                                )}
                             >
-                                {state.mode === 'RACE'
-                                    ? t('orderRush.modulesCount', { count: n })
-                                    : t('orderRush.minutes', { count: n })}
-                            </Chip>
+                                <span className="font-display text-xl font-black tabular-nums">
+                                    {n}
+                                </span>
+                                <span className="mt-1 text-[11px] font-bold text-slate-600">
+                                    {state.mode === 'RACE'
+                                        ? t('orderRush.unitModules')
+                                        : t('orderRush.unitMinutes')}
+                                </span>
+                            </button>
                         ))}
                     </div>
                 </fieldset>
@@ -608,66 +641,101 @@ function HostLobby({
                     disabled={!online}
                     data-testid="or-set-picker"
                 >
-                    <legend className="mb-1 text-sm font-black">
+                    <legend className="mb-1 flex w-full items-center justify-between gap-2 text-sm font-black">
                         {t('orderRush.categories')}
+                        <span className="rounded-full border-2 border-[#1f2a44] bg-[#ccfbf1] px-2 py-0.5 text-xs tabular-nums">
+                            {selected.length === 0
+                                ? t('orderRush.allShort')
+                                : `${selected.length}/${state.catalog.length}`}
+                        </span>
                     </legend>
-                    <p className="text-xs font-bold text-slate-600">
-                        {selected.length === 0
-                            ? t('orderRush.allCategories')
-                            : t('orderRush.someCategories', {
-                                  count: selected.length,
-                              })}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                        {state.catalog.map((entry) => (
-                            <Chip
-                                key={entry.key}
-                                active={selected.includes(entry.key)}
-                                onClick={() => toggleSet(entry.key)}
-                            >
-                                {entry.kind === 'cable' ? (
-                                    <Cable
-                                        className="mr-1 size-3.5"
-                                        aria-hidden="true"
-                                    />
-                                ) : (
-                                    <Network
-                                        className="mr-1 size-3.5"
-                                        aria-hidden="true"
-                                    />
-                                )}
-                                {entry.title}
-                            </Chip>
-                        ))}
-                    </div>
+                    <TopicOption
+                        active={selected.length === 0}
+                        onClick={() => configure(state.mode, value, [])}
+                        icon={Shuffle}
+                        title={t('orderRush.allTopics')}
+                        meta={t('orderRush.allTopicsHint')}
+                        testId="or-topic-all"
+                    />
+                    {(['cable', 'protocol'] as const).map((kind) => {
+                        const entries = state.catalog.filter(
+                            (entry) => entry.kind === kind,
+                        );
+                        if (entries.length === 0) {
+                            return null;
+                        }
+                        return (
+                            <div key={kind} className="flex flex-col gap-1.5">
+                                <p className="mt-1 text-[11px] font-black tracking-wide text-slate-600 uppercase">
+                                    {kind === 'cable'
+                                        ? t('orderRush.groupCable')
+                                        : t('orderRush.groupProtocol')}
+                                </p>
+                                <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                                    {entries.map((entry) => (
+                                        <TopicOption
+                                            key={entry.key}
+                                            active={selected.includes(
+                                                entry.key,
+                                            )}
+                                            onClick={() => toggleSet(entry.key)}
+                                            icon={
+                                                kind === 'cable'
+                                                    ? Cable
+                                                    : Network
+                                            }
+                                            title={entry.title}
+                                            meta={
+                                                entry.ends
+                                                    ? `${t('orderRush.twoEnds')} · ${t('orderRush.slotsCount', { count: entry.slots })}`
+                                                    : t(
+                                                          'orderRush.slotsCount',
+                                                          {
+                                                              count: entry.slots,
+                                                          },
+                                                      )
+                                            }
+                                            testId={`or-topic-${entry.key}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </fieldset>
 
                 {error && <RoomError code={error} />}
-                <div className="flex flex-wrap justify-center gap-2">
+                <div className="sticky bottom-0 z-10 -mx-5 -mb-5 flex gap-2 rounded-b-3xl border-t-2 border-[#1f2a44]/15 bg-white px-5 py-3 shadow-[0_-6px_12px_-8px_rgb(31_42_68/0.35)] sm:-mx-6 sm:-mb-6 sm:px-6 lg:static lg:m-0 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
                     <Button
                         onClick={() => act({ t: 'start_game' })}
                         disabled={!online || !enough}
                         data-testid="or-start"
-                        className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#0f766e] px-6 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#115e59] disabled:opacity-50"
+                        className="min-h-12 min-w-0 flex-1 rounded-2xl border-3 border-[#1f2a44] bg-[#0f766e] px-4 font-display text-base font-black whitespace-normal text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#115e59] disabled:border-[#1f2a44]/40 disabled:bg-[#e2e8f0] disabled:text-[#334155] disabled:opacity-100 disabled:shadow-none sm:px-6 sm:text-lg"
                     >
-                        <Play className="size-5" />
-                        {enough
-                            ? t('orderRush.start')
-                            : t('orderRush.needPlayers', {
-                                  min: state.min_players,
-                              })}
+                        <Play className="size-5 shrink-0" />
+                        <span className="truncate">
+                            {enough
+                                ? t('orderRush.start')
+                                : t('orderRush.needPlayers', {
+                                      min: state.min_players,
+                                  })}
+                        </span>
                     </Button>
                     <Button
                         variant="outline"
                         onClick={() => act({ t: 'leave_room' })}
-                        className="min-h-12 rounded-2xl border-2 border-[#1f2a44] bg-white px-4 font-black text-[#1f2a44]"
+                        aria-label={t('orderRush.closeRoom')}
+                        title={t('orderRush.closeRoom')}
+                        className="min-h-12 shrink-0 rounded-2xl border-2 border-[#1f2a44] bg-white px-3 font-black text-[#1f2a44] sm:px-4"
                     >
                         <DoorOpen className="size-4" />
-                        {t('orderRush.closeRoom')}
+                        <span className="hidden sm:inline">
+                            {t('orderRush.closeRoom')}
+                        </span>
                     </Button>
                 </div>
             </Panel>
-            <Panel className="flex flex-col gap-3 lg:col-span-7">
+            <Panel className="flex min-w-0 flex-col gap-3 lg:col-span-7">
                 <h2 className="flex items-center justify-between gap-2 font-display text-lg font-black">
                     {t('orderRush.joined')}
                     <span className="text-sm tabular-nums">
@@ -709,29 +777,55 @@ function HostLobby({
     );
 }
 
-function Chip({
+function TopicOption({
     active,
     onClick,
-    children,
+    icon: Icon,
+    title,
+    meta,
+    testId,
 }: {
     active: boolean;
     onClick: () => void;
-    children: ReactNode;
+    icon: typeof Cable;
+    title: string;
+    meta: string;
+    testId: string;
 }) {
     return (
         <button
             type="button"
             aria-pressed={active}
             onClick={onClick}
+            data-testid={testId}
             className={cn(
-                'inline-flex min-h-11 items-center rounded-xl border-2 border-[#1f2a44] px-3 text-sm font-black tabular-nums transition-colors',
+                'flex min-h-14 w-full items-center gap-3 rounded-xl border-2 border-[#1f2a44] px-3 py-2 text-left transition-colors',
                 active
-                    ? 'bg-[#99f6e4] shadow-[2px_2px_0px_#1f2a44]'
-                    : 'bg-white hover:bg-[#ccfbf1]',
+                    ? 'bg-[#ccfbf1] shadow-[2px_2px_0px_#1f2a44]'
+                    : 'bg-white hover:bg-[#f0fdfa]',
             )}
-            style={active ? { borderColor: ACCENT } : undefined}
         >
-            {children}
+            <span
+                className={cn(
+                    'grid size-9 shrink-0 place-items-center rounded-lg border-2 border-[#1f2a44]',
+                    active ? 'bg-[#0f766e] text-white' : 'bg-[#f0fdfa]',
+                )}
+            >
+                <Icon className="size-4" aria-hidden="true" />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-sm leading-snug font-black">{title}</span>
+                <span className="text-xs font-bold text-slate-600">{meta}</span>
+            </span>
+            <span
+                aria-hidden="true"
+                className={cn(
+                    'grid size-6 shrink-0 place-items-center rounded-md border-2 border-[#1f2a44]',
+                    active ? 'bg-[#0f766e] text-white' : 'bg-white',
+                )}
+            >
+                {active && <Check className="size-4" strokeWidth={3} />}
+            </span>
         </button>
     );
 }

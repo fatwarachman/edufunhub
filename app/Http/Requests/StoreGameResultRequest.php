@@ -98,7 +98,7 @@ class StoreGameResultRequest extends FormRequest
             'sequence_stats.*.solved' => ['required', 'integer', 'min:0', 'max:1000'],
             'sequence_stats.*.wrong' => ['required', 'integer', 'min:0', 'max:1000'],
             'sequence_stats.*.total_ms' => ['required', 'integer', 'min:0', 'max:86400000'],
-            'sequence_stats.*.slot_errors' => ['present', 'nullable', 'array', 'max:12'],
+            'sequence_stats.*.slot_errors' => ['present', 'nullable', 'array', 'max:24'],
             'sequence_stats.*.slot_errors.*' => ['integer', 'min:0', 'max:1000'],
         ];
     }

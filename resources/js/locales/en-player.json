@@ -1568,7 +1568,68 @@
         "modules": "Modules",
         "accuracy": "Accuracy",
         "avgTime": "Average",
-        "hit": "Hit by sabotage"
+        "hit": "Hit by sabotage",
+        "goalModules": "Module goal",
+        "goalMinutes": "Duration",
+        "unitModules": "modules",
+        "unitMinutes": "min",
+        "allShort": "All",
+        "allTopics": "All topics",
+        "allTopicsHint": "Modules are shuffled from every topic",
+        "groupCable": "Cables & fibre",
+        "groupProtocol": "Protocols & OSI",
+        "slotsCount": "{{count}} pieces",
+        "howTo": {
+            "title": "How to play",
+            "step": "Step {{current}}/{{total}}",
+            "prev": "Previous",
+            "next": "Next",
+            "play": "Play",
+            "pause": "Pause",
+            "replay": "Replay",
+            "goTo": "Go to step {{number}}",
+            "demoProjector": "Projector screen",
+            "demoJoined": "Friends joined",
+            "demoTarget": "Slots 1–8 (T568B)",
+            "demoCorrect": "Correct! All green",
+            "demoWrong": "Wrong at pin {{pin}}",
+            "demoStreak": "3 in a row!",
+            "demoModule": "Module {{n}}",
+            "demoTangle": "Scrambles a rival's pieces for 3 seconds.",
+            "demoFreeze": "Freezes a rival's screen for 1.5 seconds.",
+            "demoShield": "Blocks the next attack.",
+            "demoWinner": "{{name}} takes 1st place!",
+            "scenes": {
+                "join": {
+                    "title": "1. Teacher opens a room, students join",
+                    "body": "The teacher opens the Teacher Screen on the projector, picks a mode (Race or Time Attack) and topics, then shares the 6-digit PIN. Students join from their phones with their own avatar."
+                },
+                "tap": {
+                    "title": "2. Tap the pieces in order",
+                    "body": "Tap a piece below and it fills the first empty slot (1, 2, 3, …). Tapped the wrong one? Tap it in its slot to send it back."
+                },
+                "test": {
+                    "title": "3. Press TEST",
+                    "body": "The LAN tester lights the pins one by one. Correct = all green and you jump straight to the next module. Wrong = the LEDs stop red at the first wrong pin."
+                },
+                "score": {
+                    "title": "4. Fast = big score",
+                    "body": "Every correct order scores 100 points, plus a speed bonus of up to +100 under 5 seconds. Three correct in a row = combo and a random power-up."
+                },
+                "power": {
+                    "title": "5. Use power-ups",
+                    "body": "Send Tangle or Freeze to slow a rival down, or raise a Shield to stay safe. With no target picked, the attack goes to the leader."
+                },
+                "win": {
+                    "title": "6. Win the track",
+                    "body": "Your avatar moves along the fibre track with every correct module. Race: first to finish the module goal wins. Time Attack: highest score when time runs out. The podium shows the top 3."
+                }
+            },
+            "downloadVideo": "Download video",
+            "downloadSlides": "Download slides (PDF)"
+        },
+        "testerBadEnd": "End {{end}} pin {{pin}} is wrong!",
+        "twoEnds": "2 ends"
     },
     "portSorter": {
         "title": "Port Sorter",

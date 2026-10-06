@@ -163,12 +163,15 @@ export function LanTester({
     errorSlot,
     startedAt,
     stepMs = 70,
+    ends = 1,
 }: {
     slots: number;
     result: TesterResult;
     errorSlot: number;
     startedAt: number;
     stepMs?: number;
+    /** 2 = master and remote unit of a cable crimped on both ends. */
+    ends?: number;
 }) {
     const { t } = useTranslations();
     const running = result !== 'idle';
@@ -188,34 +191,52 @@ export function LanTester({
             <span className="text-[10px] font-black tracking-widest text-slate-300 uppercase">
                 {t('orderRush.lanTester')}
             </span>
-            <div className="flex flex-wrap justify-center gap-1">
-                {Array.from({ length: slots }, (_, i) => {
-                    let state = 'off';
-                    if (result === 'running') {
-                        state = i < lit % (slots + 1) ? 'run' : 'off';
-                    } else if (running) {
-                        if (done && result === 'ok') {
-                            state = 'ok';
-                        } else if (done && result === 'bad') {
-                            state =
-                                i < errorSlot
-                                    ? 'ok'
-                                    : i === errorSlot
-                                      ? 'bad'
-                                      : 'off';
-                        } else if (i < lit) {
-                            state = 'run';
-                        }
-                    }
+            <div className="flex flex-col items-center gap-1">
+                {Array.from({ length: Math.max(1, ends) }, (_, end) => {
+                    const per = Math.ceil(slots / Math.max(1, ends));
                     return (
-                        <span
-                            key={i}
-                            className="or-led grid size-6 place-items-center rounded-full border border-black/40 text-[10px] font-black text-[#1f2a44]"
-                            data-state={state}
-                            data-testid={`or-led-${i}`}
+                        <div
+                            key={end}
+                            className="flex flex-wrap items-center justify-center gap-1"
+                            data-testid={`or-tester-end-${end}`}
                         >
-                            {i + 1}
-                        </span>
+                            {ends > 1 && (
+                                <span className="w-5 text-center text-[10px] font-black text-slate-300">
+                                    {String.fromCharCode(65 + end)}
+                                </span>
+                            )}
+                            {Array.from({ length: per }, (_, k) => {
+                                const i = end * per + k;
+                                let state = 'off';
+                                if (result === 'running') {
+                                    state =
+                                        i < lit % (slots + 1) ? 'run' : 'off';
+                                } else if (running) {
+                                    if (done && result === 'ok') {
+                                        state = 'ok';
+                                    } else if (done && result === 'bad') {
+                                        state =
+                                            i < errorSlot
+                                                ? 'ok'
+                                                : i === errorSlot
+                                                  ? 'bad'
+                                                  : 'off';
+                                    } else if (i < lit) {
+                                        state = 'run';
+                                    }
+                                }
+                                return (
+                                    <span
+                                        key={i}
+                                        className="or-led grid size-6 place-items-center rounded-full border border-black/40 text-[10px] font-black text-[#1f2a44]"
+                                        data-state={state}
+                                        data-testid={`or-led-${i}`}
+                                    >
+                                        {ends > 1 ? k + 1 : i + 1}
+                                    </span>
+                                );
+                            })}
+                        </div>
                     );
                 })}
             </div>
@@ -226,7 +247,17 @@ export function LanTester({
                       ? t('orderRush.testing')
                       : result === 'ok'
                         ? t('orderRush.testerOk')
-                        : t('orderRush.testerBad', { pin: errorSlot + 1 })}
+                        : ends > 1
+                          ? t('orderRush.testerBadEnd', {
+                                end: String.fromCharCode(
+                                    65 +
+                                        Math.floor(
+                                            errorSlot / Math.ceil(slots / ends),
+                                        ),
+                                ),
+                                pin: (errorSlot % Math.ceil(slots / ends)) + 1,
+                            })
+                          : t('orderRush.testerBad', { pin: errorSlot + 1 })}
             </span>
         </div>
     );

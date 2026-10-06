@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"edufunhub/game/internal/auth"
+	"edufunhub/game/internal/questions"
 )
 
 func fast() Config {
@@ -133,8 +134,12 @@ func TestWellFormedRejectsMalformedOrders(t *testing.T) {
 
 func TestBuiltinBankMatchesTKJMaterial(t *testing.T) {
 	want := map[string][]string{
-		"utp-t568b":       {"Putih-Orange", "Orange", "Putih-Hijau", "Biru", "Putih-Biru", "Hijau", "Putih-Cokelat", "Cokelat"},
-		"utp-t568a":       {"Putih-Hijau", "Hijau", "Putih-Orange", "Biru", "Putih-Biru", "Orange", "Putih-Cokelat", "Cokelat"},
+		"utp-t568b": {"Putih-Orange", "Orange", "Putih-Hijau", "Biru", "Putih-Biru", "Hijau", "Putih-Cokelat", "Cokelat"},
+		"utp-t568a": {"Putih-Hijau", "Hijau", "Putih-Orange", "Biru", "Putih-Biru", "Orange", "Putih-Cokelat", "Cokelat"},
+		"utp-straight": {"Putih-Orange", "Orange", "Putih-Hijau", "Biru", "Putih-Biru", "Hijau", "Putih-Cokelat", "Cokelat",
+			"Putih-Orange", "Orange", "Putih-Hijau", "Biru", "Putih-Biru", "Hijau", "Putih-Cokelat", "Cokelat"},
+		"utp-cross": {"Putih-Orange", "Orange", "Putih-Hijau", "Biru", "Putih-Biru", "Hijau", "Putih-Cokelat", "Cokelat",
+			"Putih-Hijau", "Hijau", "Putih-Orange", "Biru", "Putih-Biru", "Orange", "Putih-Cokelat", "Cokelat"},
 		"fiber-12":        {"Biru", "Orange", "Hijau", "Cokelat", "Abu-abu", "Putih", "Merah", "Hitam", "Kuning", "Ungu", "Pink", "Tosca"},
 		"osi-top-down":    {"Application", "Presentation", "Session", "Transport", "Network", "Data Link", "Physical"},
 		"osi-bottom-up":   {"Physical", "Data Link", "Network", "Transport", "Session", "Presentation", "Application"},
@@ -494,5 +499,85 @@ func TestAvatarPrefersSignedClaim(t *testing.T) {
 	}
 	if string(avatarOf(auth.Claims{}, []byte(`{"color":"coral"}`))) != `{"color":"coral"}` {
 		t.Fatal("dropped valid look")
+	}
+}
+
+// Two-end cables: the answer is checked by piece value, so the two
+// identical white-orange wires of a straight cable may swap, but a cross
+// cable whose end B is crimped T568B fails at the first wrong pin of end B.
+func TestTwoEndCableChecksByValue(t *testing.T) {
+	rng := rand.New(rand.NewPCG(3, 4))
+	for _, key := range []string{"utp-straight", "utp-cross"} {
+		s, _ := Builtin().Get(key)
+		q := s.Deal("q", "id", rng)
+		if q.TotalSlots != 16 || len(q.Ends) != 2 || q.Ends[0] != "Ujung A (T568B)" {
+			t.Fatalf("%s: slots %d ends %v", key, q.TotalSlots, q.Ends)
+		}
+		if q.Check(q.CorrectOrder) != -1 {
+			t.Fatalf("%s: correct order rejected", key)
+		}
+		raw, _ := json.Marshal(q)
+		var out map[string]any
+		_ = json.Unmarshal(raw, &out)
+		for _, leak := range []string{"correct_order", "answer", "value_of"} {
+			if _, ok := out[leak]; ok {
+				t.Fatalf("%s leaked %s", key, leak)
+			}
+		}
+		// Pool is a permutation and never already solved.
+		pool := make([]string, len(q.PoolItems))
+		for i, it := range q.PoolItems {
+			pool[i] = it.ID
+		}
+		if !WellFormed(pool, q.CorrectOrder) || q.Check(pool) == -1 {
+			t.Fatalf("%s: bad pool", key)
+		}
+	}
+
+	straight, _ := Builtin().Get("utp-straight")
+	q := straight.Deal("q", "id", rng)
+	swapped := slices.Clone(q.CorrectOrder)
+	swapped[0], swapped[8] = swapped[8], swapped[0] // both white-orange
+	if got := q.Check(swapped); got != -1 {
+		t.Fatalf("identical wires must be interchangeable, wrong at %d", got)
+	}
+	swapped[1], swapped[2] = swapped[2], swapped[1]
+	if got := q.Check(swapped); got != 1 {
+		t.Fatalf("swapped pins 2/3: wrong at %d", got)
+	}
+
+	// Cross cable crimped T568B on both ends: first wrong pin is end B pin 1.
+	cross, _ := Builtin().Get("utp-cross")
+	q = cross.Deal("q", "id", rng)
+	byValue := map[string][]string{}
+	for i, id := range q.CorrectOrder {
+		byValue[cross.Items[i].value()] = append(byValue[cross.Items[i].value()], id)
+	}
+	asStraight := make([]string, 0, 16)
+	for _, it := range slices.Concat(t568b(), t568b()) {
+		v := it.value()
+		asStraight = append(asStraight, byValue[v][0])
+		byValue[v] = byValue[v][1:]
+	}
+	if got := q.Check(asStraight); got != 8 {
+		t.Fatalf("cross crimped straight: wrong at %d, want 8", got)
+	}
+}
+
+func TestTwoEndValidation(tt *testing.T) {
+	odd := Set{Key: "x", Category: "X", Kind: KindCable, Title: questions.Text{ID: "X", EN: "X"}, Ends: []questions.Text{questions.Text{ID: "A", EN: "A"}, questions.Text{ID: "B", EN: "B"}}, Items: t568b()[:5]}
+	if odd.Validate() == nil {
+		tt.Fatal("odd item count over two ends accepted")
+	}
+	three := Set{Key: "x", Category: "X", Kind: KindCable, Title: questions.Text{ID: "X", EN: "X"}, Ends: []questions.Text{questions.Text{ID: "A", EN: "A"}, questions.Text{ID: "B", EN: "B"}, questions.Text{ID: "C", EN: "C"}}, Items: t568b()[:6]}
+	if three.Validate() == nil {
+		tt.Fatal("three ends accepted")
+	}
+	dupInEnd := Set{Key: "x", Category: "X", Kind: KindCable, Title: questions.Text{ID: "X", EN: "X"}, Ends: []questions.Text{questions.Text{ID: "A", EN: "A"}, questions.Text{ID: "B", EN: "B"}}, Items: slices.Concat(t568b()[:2], t568b()[:1], t568b()[:1])}
+	if dupInEnd.Validate() == nil {
+		tt.Fatal("duplicate label inside one end accepted")
+	}
+	if _, err := NewBank("v", []Set{{Key: "x", Category: "X", Kind: KindCable, Title: questions.Text{ID: "X", EN: "X"}, Ends: []questions.Text{questions.Text{ID: "A", EN: "A"}, questions.Text{ID: "B", EN: "B"}}, Items: slices.Concat(t568b(), t568a())}}); err != nil {
+		tt.Fatalf("valid two-end set: %v", err)
 	}
 }
