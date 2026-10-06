@@ -51,6 +51,8 @@ class PlayerPortal
                 'accent' => $game['accent'] ?? '#f5a623',
                 'minGrade' => $game['min_grade'] ?? 1,
                 'maxGrade' => $game['max_grade'] ?? 12,
+                'minPlayers' => (int) ($game['min_players'] ?? 1),
+                'maxPlayers' => (int) ($game['max_players'] ?? 1),
                 'awardsPoints' => (bool) ($game['awards_points'] ?? false),
                 'requiresGrade' => (bool) ($game['requires_grade'] ?? false),
                 'guestPlayable' => (bool) ($game['guest_playable'] ?? false),
@@ -80,14 +82,14 @@ class PlayerPortal
     /**
      * Lightweight catalog for the site navigation menu and the public game list.
      *
-     * @return list<array{key: string, titleKey: string, games: list<array{key: string, titleKey: string, descriptionKey: ?string, url: string, icon: string, accent: string, minGrade: int, maxGrade: int, awardsPoints: bool, guestPlayable: bool}>}>
+     * @return list<array{key: string, titleKey: string, games: list<array{key: string, titleKey: string, descriptionKey: ?string, url: string, icon: string, accent: string, minGrade: int, maxGrade: int, minPlayers: int, maxPlayers: int, awardsPoints: bool, guestPlayable: bool}>}>
      */
     public function menu(): array
     {
         return collect($this->catalog())->map(fn (array $category): array => [
             ...$category,
             'games' => collect($category['games'])->map(fn (array $game): array => collect($game)->only([
-                'key', 'titleKey', 'descriptionKey', 'url', 'icon', 'accent', 'minGrade', 'maxGrade', 'awardsPoints', 'guestPlayable',
+                'key', 'titleKey', 'descriptionKey', 'url', 'icon', 'accent', 'minGrade', 'maxGrade', 'minPlayers', 'maxPlayers', 'awardsPoints', 'guestPlayable',
             ])->all())->values()->all(),
         ])->values()->all();
     }

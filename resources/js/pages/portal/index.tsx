@@ -1,17 +1,20 @@
+import { OnlineDot } from '@/components/online-dot';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
+import { PlayerCountBadge } from '@/components/player-count-badge';
 import { NavButton } from '@/components/site-nav';
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { gameIcon } from '@/lib/games';
 import { gradeLabel, hasGrade } from '@/lib/grade';
-import { router } from '@inertiajs/react';
+import { Deferred, Link, router } from '@inertiajs/react';
 import {
     CircleAlert,
     Coins,
@@ -63,11 +66,24 @@ interface PortalGame {
     accent: string;
     minGrade: number;
     maxGrade: number;
+    minPlayers: number;
+    maxPlayers: number;
     awardsPoints: boolean;
     requiresGrade: boolean;
     recommended: boolean;
     plays: number;
     popularRank: number | null;
+}
+
+interface ActiveGame {
+    game_key: string;
+    titleKey: string;
+    icon: string;
+    accent: string;
+    pin: string | null;
+    phase: string;
+    host: boolean;
+    url: string;
 }
 
 interface PortalProps {
@@ -96,6 +112,8 @@ interface PortalProps {
         points: number;
         played_at: string;
     }[];
+    /** Deferred: rooms the player is still seated in on the game service. */
+    activeGames?: ActiveGame[];
 }
 
 export default function Portal({
@@ -107,8 +125,10 @@ export default function Portal({
     popularityDays,
     leaderboards,
     recent,
+    activeGames,
 }: PortalProps) {
     const { t, i18n } = useTranslations();
+    const myId = useMyUserId();
     const [filter, setFilter] = useState<string>('all');
     const numberFormat = useMemo(
         () => new Intl.NumberFormat(i18n.language),
@@ -137,8 +157,9 @@ export default function Portal({
                 className="auth-card grid items-center gap-6 !bg-[#fff4d6] md:grid-cols-[200px_minmax(0,1fr)] lg:grid-cols-[220px_minmax(0,1fr)_280px]"
                 aria-labelledby="portal-hero-title"
             >
-                <div className="mx-auto w-32 sm:w-40 md:w-full">
+                <div className="relative mx-auto w-32 sm:w-40 md:w-full">
                     <PlayerCharacter character={player.character} />
+                    <OnlineDot userId={myId} className="edu-online-dot--lg" />
                 </div>
                 <div className="flex min-w-0 flex-col gap-3">
                     <span className="auth-badge self-start">
@@ -215,6 +236,17 @@ export default function Portal({
                     <p className="text-sm">{t('portal.pointsNote')}</p>
                 </div>
             </section>
+
+            <Deferred
+                data="activeGames"
+                fallback={
+                    <span className="sr-only">
+                        {t('portal.activeGames.loading')}
+                    </span>
+                }
+            >
+                <ActiveGames games={activeGames ?? []} />
+            </Deferred>
 
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
                 <section
@@ -312,6 +344,11 @@ export default function Portal({
                                                 {t(game.titleKey)}
                                             </h3>
                                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                <PlayerCountBadge
+                                                    minPlayers={game.minPlayers}
+                                                    maxPlayers={game.maxPlayers}
+                                                    testId={`portal-players-${game.key}`}
+                                                />
                                                 {game.popularRank !== null && (
                                                     <span
                                                         className="inline-flex items-center gap-1 rounded-full border-2 border-[#151b2e] bg-[#ffe1e6] px-2 py-0.5 text-[11px] font-bold text-[#9b1c3a]"
@@ -548,12 +585,14 @@ function Leaderboard({
                                 >
                                     {row.rank}
                                 </span>
-                                <PlayerCharacter
-                                    character={row.character}
-                                    size={36}
-                                    backdrop={false}
-                                    className="shrink-0"
-                                />
+                                <span className="relative shrink-0">
+                                    <PlayerCharacter
+                                        character={row.character}
+                                        size={36}
+                                        backdrop={false}
+                                    />
+                                    <OnlineDot userId={row.userId} />
+                                </span>
                                 {row.isMe ? (
                                     <span className="min-w-0 flex-1 truncate text-sm font-bold">
                                         {row.name}
@@ -742,6 +781,88 @@ function PlayerDetailsNotice({ emphasized }: { emphasized: boolean }) {
                 className="shrink-0 self-start sm:self-center"
                 testId="portal-details-notice-action"
             />
+        </section>
+    );
+}
+
+/**
+ * Rooms the player is still seated in, so closing the browser by accident
+ * never costs a running game: one tap returns to the room.
+ */
+function ActiveGames({ games }: { games: ActiveGame[] }) {
+    const { t } = useTranslations();
+    if (games.length === 0) {
+        return null;
+    }
+    return (
+        <section
+            className="auth-card flex flex-col gap-3 !border-[#116a56] !bg-[#e8faf6] !p-5"
+            aria-labelledby="portal-active-title"
+            data-testid="portal-active-games"
+        >
+            <div className="flex flex-col gap-1">
+                <h2
+                    id="portal-active-title"
+                    className="flex items-center gap-2 text-xl font-bold"
+                >
+                    <Play className="size-5" />
+                    {t('portal.activeGames.title')}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                    {t('portal.activeGames.intro')}
+                </p>
+            </div>
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {games.map((game) => {
+                    const Icon = gameIcon(game.icon);
+                    return (
+                        <li
+                            key={`${game.game_key}-${game.pin ?? 'none'}`}
+                            className="flex min-w-0 items-center gap-3 rounded-2xl border-2 border-[#151b2e] bg-white p-3"
+                            data-testid={`portal-active-${game.game_key}`}
+                        >
+                            <span
+                                className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[#151b2e] text-white"
+                                style={{ backgroundColor: game.accent }}
+                            >
+                                <Icon className="size-5" aria-hidden="true" />
+                            </span>
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate font-bold">
+                                    {t(game.titleKey)}
+                                </p>
+                                <p className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
+                                    {game.pin && (
+                                        <span className="font-semibold tabular-nums">
+                                            {t('portal.activeGames.pin', {
+                                                pin: game.pin,
+                                            })}
+                                        </span>
+                                    )}
+                                    <span>
+                                        {t(
+                                            `portal.activeGames.phase.${game.phase === 'lobby' ? 'lobby' : 'playing'}`,
+                                        )}
+                                    </span>
+                                    {game.host && (
+                                        <span>
+                                            {t('portal.activeGames.host')}
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
+                            <Link
+                                href={game.url}
+                                className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border-2 border-[#151b2e] bg-[#116a56] px-3.5 text-sm font-bold text-white shadow-[2px_2px_0_#151b2e]"
+                                data-testid={`portal-active-resume-${game.game_key}`}
+                            >
+                                <Play className="size-4" aria-hidden="true" />
+                                {t('portal.activeGames.resume')}
+                            </Link>
+                        </li>
+                    );
+                })}
+            </ul>
         </section>
     );
 }

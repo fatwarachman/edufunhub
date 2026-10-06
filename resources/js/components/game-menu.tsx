@@ -1,3 +1,4 @@
+import { playerCountLabel } from '@/components/player-count-badge';
 import { useTranslations } from '@/hooks/use-translations';
 import { gameIcon } from '@/lib/games';
 import { gradeShortLabel } from '@/lib/grade';
@@ -141,6 +142,12 @@ export function GameMenu({ active }: { active: boolean }) {
                                                             game.maxGrade,
                                                         ),
                                                     })}
+                                                    {' · '}
+                                                    {playerCountLabel(
+                                                        t,
+                                                        game.minPlayers,
+                                                        game.maxPlayers,
+                                                    )}
                                                     {' · '}
                                                     {locked
                                                         ? t('nav.loginToPlay')
