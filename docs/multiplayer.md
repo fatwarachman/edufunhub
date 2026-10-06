@@ -10,7 +10,7 @@ Setiap game multiplayer memakai alur yang sama:
 1. Host menekan **Buat ruang**. Go membuat **PIN 6 digit** unik.
 2. Host membagikan PIN atau link `https://<host>/games/{game}/join/{pin}` (Salin PIN, Salin link, atau share bawaan HP).
 3. Teman memasukkan PIN, atau membuka link. Tamu diminta login dulu, lalu kembali ke ruang.
-4. Hanya **host** yang bisa mengubah pengaturan (misalnya level) dan menekan **Mulai**. Kalau host keluar, peran host pindah ke pemain berikutnya.
+4. Hanya **host** yang bisa mengubah pengaturan (misalnya level) dan menekan **Mulai**. Kalau host keluar, peran host pindah ke pemain berikutnya. Kalau host **terputus** lebih dari `lobby.HostGrace` (10 detik), permainan tetap berjalan dan peran host pindah ke pemain yang masih terhubung (`Hub.HandOver`). Kursi lokal tetap milik perangkat yang menambahkannya (`Seat.Owner`).
 5. Ruang dengan satu kursi = main sendiri. Game boleh mengizinkan **pemain di satu perangkat** (kursi lokal milik host).
 
 ### Komponen yang wajib dipakai
@@ -58,7 +58,8 @@ Setiap hasil game ruang/duel membawa ringkasan `match` yang sama untuk semua pem
 ## 2. Poin: setiap permainan menambah poin
 
 - Pemain login **selalu** dapat poin setiap kali permainan selesai: `points.Participation` (5) ditambah poin pencapaian game (jawaban benar, menang, bonus).
-- Keluar sebelum selesai tetap dibayar `Participation + pencapaian`, asalkan sudah menjawab minimal `points.MinAnswersForAbandon` (3) soal. Ini mencegah farming buat-ruang/keluar.
+- Keluar sebelum selesai tetap dibayar **pencapaian** (jawaban benar). `Participation` hanya ditambahkan bila sudah menjawab minimal `points.MinAnswersForAbandon` (3) soal, supaya buat-ruang/keluar tidak bisa di-farm.
+- Portal menampilkan **Lanjutkan permainan** dari `GET /internal/presence?user=ID` (HMAC sama dengan `/internal/stats`): semua ruang/match yang masih berjalan untuk akun itu, jadi browser yang tertutup tidak sengaja bisa kembali ke ruang.
 - Poin dihitung dan dikirim oleh Go (hasil bertanda tangan HMAC), lalu Laravel mencatatnya di `game_histories` dan `point_ledgers`. Total poin akun adalah jumlah ledger.
 - Kursi lokal (tanpa akun) dan mode latihan tamu tidak menghasilkan poin.
 
@@ -69,13 +70,21 @@ Setiap hasil game ruang/duel membawa ringkasan `match` yang sama untuk semua pem
 | Kereta Pengetahuan | 5 | benar × 10 (+20 selesai, +20 sempurna) | 145 |
 | Pilah Port & Protokol (solo) | 5 | paket benar × 10, 30 paket (+20 selesai, +20 sempurna) | 3190 |
 | Duel Kuis Kelas | 5 | benar × 10 (+20 menang / +10 seri) | 75 |
-| Ular Tangga | 5 | benar × 10 (+20 menang) | 150 |
+| Ular Tangga | 5 | benar × 10 (+20 menang, +100 pertama finish) | 3250 |
 | Teka-Teki Silang | 5 | kata × (5 + 5 × level) (+20 juara) | 5 + kata × poin per kata + 20 |
 | Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini | 5 | benar × 10 (+20 juara / lulus solo ≥ 70%) | 950 |
 | Lantai Runtuh | 5 | benar × 10 (+20 juara) | 2150 |
 | Peti Emas Misteri | 5 | benar × 10, maks. 40 jawaban (+20 juara emas) | 4150 |
 | Order Rush TKJ | 5 | modul benar × 10, maks. 40 (+20 juara) | 4150 |
 | Turbo Trivia | 5 | benar × 10, maks. 15 soal (+20 juara 1) | 1650 |
+
+### Ular Tangga (`internal/snakes`)
+
+- **Lama bermain (host, sebelum mulai):** `duration{minutes}` dengan pilihan `0` (sampai ada yang finish), 5, 10, 15, 20, 30 menit. Mode berwaktu: pemain yang finish berhenti mendapat giliran, sisanya lanjut sampai waktu habis; peringkat = urutan finish, lalu petak terjauh.
+- **Bonus finish:** pemain pertama yang mencapai petak 100 mendapat `FinishBonus` (+100 poin portal).
+- **Waktu tunggu giliran:** dadu dikocok otomatis setelah `RollTime` (10 detik). Setelah kocok otomatis, waktu jawab jadi `IdleAnswerTime` (10 detik) supaya HP yang ditinggal tidak menahan pemain lain.
+- **Keluar di tengah permainan:** konfirmasi di UI, server membalas `{t: "left", points}` dengan poin yang tetap masuk akun.
+- **`sync`:** client meminta state terbaru bila deadline langkah sudah lewat tanpa update (jaring pengaman dialog dadu/soal yang macet). `useGameSocket` juga reconnect saat tab kembali terlihat atau socket diam > 25 detik (`lib/socket-watchdog.ts`).
 
 ### Game kuis ruang (`internal/minigames`)
 
@@ -204,7 +213,7 @@ koneksi hanya mengirim intent lewat channel, host memakai token terpisah
 - **Mode (host):** `RACE` (pertama menyelesaikan 5/10/15/20 modul; batas aman
   15 menit) atau `TIME_ATTACK` (3/4/5 menit, skor terbanyak). Host memilih
   materi (set urutan); kosong = semua materi diacak.
-- **Bank urutan:** `sequence_sets` (admin `/admin/sequence-sets`), disinkron Go
+- **Bank urutan:** `sequence_sets` (admin `/admin/games/order-rush/sequences`, tab di halaman game), disinkron Go
   tiap menit lewat `GET /api/internal/sequence-bank` (HMAC). Bawaan: UTP T568B,
   UTP T568A, Fiber 12 core, OSI atas-bawah, OSI bawah-atas, PDU, DHCP DORA, TCP
   3-way handshake, troubleshooting, plus kabel dua ujung **Straight (T568B ↔

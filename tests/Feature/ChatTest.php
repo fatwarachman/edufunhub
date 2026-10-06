@@ -239,3 +239,46 @@ it('rate limits message floods', function (): void {
 
     expect($statuses->filter(fn (int $s): bool => $s === 429)->count())->toBeGreaterThan(0);
 });
+
+it('publishes the sender and conversation with each live message for the chat popup', function (): void {
+    $rani = chatPlayer('Rani');
+    $budi = chatPlayer('Budi');
+    $conversation = ChatConversationFactory::between($rani, $budi);
+
+    $this->actingAs($rani)->postJson("/chat/conversations/{$conversation->id}/messages", ['body' => 'Main yuk'])->assertCreated();
+
+    Http::assertSent(function (HttpRequest $request) use ($rani, $conversation): bool {
+        $event = json_decode($request->body(), true)['event'];
+
+        return $event['t'] === 'message'
+            && $event['conversation'] === ['id' => $conversation->id, 'type' => 'direct', 'name' => null]
+            && $event['sender']['id'] === $rani->id
+            && $event['sender']['name'] === 'Rani'
+            && is_array($event['sender']['character']);
+    });
+});
+
+it('names the group in live group messages', function (): void {
+    $rani = chatPlayer('Rani');
+    $budi = chatPlayer('Budi');
+    $group = $this->actingAs($rani)->postJson('/chat/groups', ['name' => 'Kelas 5A', 'member_ids' => [$budi->id]])->assertCreated()->json('conversation.id');
+
+    $this->actingAs($rani)->postJson("/chat/conversations/{$group}/messages", ['body' => 'Halo kelas'])->assertCreated();
+
+    Http::assertSent(fn (HttpRequest $request): bool => (json_decode($request->body(), true)['event']['message']['body'] ?? null) === 'Halo kelas'
+        && json_decode($request->body(), true)['event']['conversation']['name'] === 'Kelas 5A');
+});
+
+it('shares the live chat socket with signed-in players on every page', function (): void {
+    $rani = chatPlayer('Rani');
+
+    $this->actingAs($rani)->get('/portal')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('chatLive.wsUrl', '/chat-ws/ws'));
+});
+
+it('does not share the live chat socket with guests or when the chat service is off', function (): void {
+    $this->get('/gamelist')->assertOk()->assertInertia(fn (Assert $page) => $page->where('chatLive', null));
+
+    config(['chat-service.secret' => 'short']);
+    $this->actingAs(chatPlayer('Rani'))->get('/portal')->assertOk()->assertInertia(fn (Assert $page) => $page->where('chatLive', null));
+});

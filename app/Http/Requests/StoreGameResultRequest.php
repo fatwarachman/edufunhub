@@ -26,7 +26,7 @@ class StoreGameResultRequest extends FormRequest
         'quiz-duel' => ['event_id' => '/^qd-[0-9]+-duel-[0-9]+$/', 'missions' => ['duel'], 'max_points' => 650],
         'knowledge-train' => ['event_id' => '/^kt-[0-9]+-train-[0-9]+$/', 'missions' => ['train'], 'max_points' => 1190],
         'port-sorter' => ['event_id' => '/^ps-[0-9]+-sort-[0-9]+$/', 'missions' => ['sort'], 'max_points' => 3190],
-        'snakes-and-ladders' => ['event_id' => '/^sl-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 3150],
+        'snakes-and-ladders' => ['event_id' => '/^sl-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 3250],
         'crossword' => ['event_id' => '/^cw-[0-9]+-level-[0-9]+$/', 'missions' => ['level-1', 'level-2', 'level-3', 'level-4'], 'max_points' => 1415],
         'market-math' => ['event_id' => '/^mm-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 950],
         'number-garden' => ['event_id' => '/^ng-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 950],

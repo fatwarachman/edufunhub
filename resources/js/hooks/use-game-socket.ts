@@ -1,3 +1,4 @@
+import { watchSocket } from '@/lib/socket-watchdog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type GameSocketStatus =
@@ -23,6 +24,13 @@ function resolveWsUrl(base: string): string {
  * `tokenUrl`, connects, reconnects with backoff and forwards messages of
  * `stateType` to `onState`. A 422 from the token endpoint means the player
  * has no grade yet.
+ *
+ * Phones often keep a dead socket "open" after the screen was locked or the
+ * app was switched (no close event ever fires), which left players looking
+ * at a stale dice/question dialog. `watchSocket` reconnects as soon as the
+ * page becomes visible again or the network returns, and whenever the link
+ * has been silent despite pings. A reconnect makes the server send the
+ * current state again.
  */
 export function useGameSocket<State>(
     wsUrl: string | null,
@@ -66,7 +74,9 @@ export function useGameSocket<State>(
             return;
         }
         let closed = false;
+        let connecting = false;
         let timer: ReturnType<typeof setTimeout> | undefined;
+        const seen = { current: () => {} };
 
         const schedule = () => {
             if (closed) {
@@ -81,6 +91,11 @@ export function useGameSocket<State>(
         };
 
         const connect = async () => {
+            if (connecting || closed) {
+                return;
+            }
+            connecting = true;
+            clearTimeout(timer);
             let token: string;
             try {
                 const res = await fetch(tokenUrl, {
@@ -93,6 +108,7 @@ export function useGameSocket<State>(
                     },
                 });
                 if (res.status === 422) {
+                    connecting = false;
                     setStatus('grade_required');
                     return;
                 }
@@ -101,9 +117,11 @@ export function useGameSocket<State>(
                 }
                 token = (await res.json()).token;
             } catch {
+                connecting = false;
                 schedule();
                 return;
             }
+            connecting = false;
             if (closed) {
                 return;
             }
@@ -111,11 +129,14 @@ export function useGameSocket<State>(
                 `${resolveWsUrl(wsUrl)}?locale=${encodeURIComponent(localeRef.current)}&token=${encodeURIComponent(token)}`,
             );
             socket.current = ws;
+            seen.current();
             ws.onopen = () => {
                 attempts.current = 0;
+                seen.current();
                 setStatus('online');
             };
             ws.onmessage = (event: MessageEvent<string>) => {
+                seen.current();
                 let msg: Record<string, unknown>;
                 try {
                     msg = JSON.parse(event.data);
@@ -140,13 +161,36 @@ export function useGameSocket<State>(
             };
         };
 
+        /** Drops the current socket without waiting for its close event and connects again. */
+        const reconnect = () => {
+            const ws = socket.current;
+            if (ws) {
+                ws.onclose = null;
+                ws.onmessage = null;
+                ws.close();
+                socket.current = null;
+            }
+            attempts.current = 0;
+            setStatus('reconnecting');
+            void connect();
+        };
+        const watchdog = watchSocket({
+            current: () => socket.current,
+            ping: () => send({ t: 'ping' }),
+            reconnect,
+        });
+        seen.current = watchdog.seen;
+
         void connect();
-        const ping = setInterval(() => send({ t: 'ping' }), 20000);
         return () => {
             closed = true;
             clearTimeout(timer);
-            clearInterval(ping);
-            socket.current?.close();
+            watchdog.stop();
+            const ws = socket.current;
+            if (ws) {
+                ws.onclose = null;
+                ws.close();
+            }
             socket.current = null;
         };
     }, [enabled, wsUrl, tokenUrl, stateType, send]);

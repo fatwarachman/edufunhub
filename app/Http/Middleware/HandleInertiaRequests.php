@@ -6,6 +6,7 @@ use App\Models\Announcement;
 use App\Models\SeoMetadata;
 use App\Models\Subject;
 use App\Services\Chat\ChatService;
+use App\Services\Chat\ChatServiceClient;
 use App\Services\FeatureService;
 use App\Services\GameSounds;
 use App\Services\PlayerNotifications;
@@ -105,6 +106,9 @@ class HandleInertiaRequests extends Middleware
             ],
             'unreadNotifications' => fn (): int => $user ? app(PlayerNotifications::class)->unreadCount($user) : 0,
             'unreadChats' => fn (): int => $user ? app(ChatService::class)->unreadTotal($user) : 0,
+            'chatLive' => fn (): ?array => $user && app(ChatServiceClient::class)->isConfigured()
+                ? ['wsUrl' => (string) config('chat-service.public_ws_url')]
+                : null,
             'show_experience_survey' => $showExperienceSurvey,
             'locale' => $locale,
             'currentWorkspace' => $currentWorkspace ? [

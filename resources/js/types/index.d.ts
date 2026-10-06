@@ -114,6 +114,8 @@ export interface GameMenuGame {
     accent: string;
     minGrade: number;
     maxGrade: number;
+    minPlayers: number;
+    maxPlayers: number;
     awardsPoints: boolean;
     guestPlayable: boolean;
 }

@@ -9,11 +9,13 @@ use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\Chat\ChatController;
 use App\Http\Controllers\CrosswordController;
 use App\Http\Controllers\EconomyHeistController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FlagQuestController;
 use App\Http\Controllers\FloorDropController;
 use App\Http\Controllers\GameInviteController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\KnowledgeTrainController;
+use App\Http\Controllers\LandingStatsController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MiniGameController;
 use App\Http\Controllers\OrderRushController;
@@ -22,6 +24,9 @@ use App\Http\Controllers\PlayerNotificationController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\PortSorterController;
 use App\Http\Controllers\QuizDuelController;
+use App\Http\Controllers\RegencyController;
+use App\Http\Controllers\SchoolSuggestionController;
+use App\Http\Controllers\ScreenTimeController;
 use App\Http\Controllers\SkyQuizController;
 use App\Http\Controllers\SnakesAndLaddersController;
 use App\Http\Controllers\Teacher\TeacherQuestionController;
@@ -41,6 +46,9 @@ Route::get('/', function () {
     return response()->file(public_path('new-landing/index.html'));
 })->name('home');
 
+Route::get('/landing/stats', LandingStatsController::class)->middleware('throttle:60,1')->name('landing.stats');
+Route::get('/player-details/regencies', RegencyController::class)->middleware('throttle:30,1')->name('player-details.regencies');
+
 Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): void {
     Route::get('/dashboard', UserDashboardController::class)->name('dashboard');
     Route::get('/portal', PortalController::class)->name('portal');
@@ -53,6 +61,10 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::post('/notifications/{id}/read', [PlayerNotificationController::class, 'read'])->whereUuid('id')->name('player-notifications.read');
     Route::patch('/grade', [GradeController::class, 'update'])->name('grade.update');
     Route::patch('/player-details', [PlayerDetailsController::class, 'update'])->name('player-details.update');
+    Route::post('/screen-time/beat', [ScreenTimeController::class, 'beat'])->middleware('throttle:10,1')->name('screen-time.beat');
+    Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
+    Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('throttle:feedback')->name('feedback.store');
+    Route::get('/player-details/schools', SchoolSuggestionController::class)->middleware('throttle:60,1')->name('player-details.schools');
 
     // Player chat: Laravel stores, the Go chat container delivers live.
     Route::prefix('chat')->name('chat.')->group(function (): void {
@@ -147,6 +159,7 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:10,1')->name('google.callback');
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
+    Route::get('/register/schools', SchoolSuggestionController::class)->middleware('throttle:30,1')->name('register.schools');
 });
 
 // POST /logout is handled by Fortify automatically.

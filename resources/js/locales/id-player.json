@@ -307,6 +307,18 @@
             "summary": "Peringkat #{{rank}} · {{points}} poin",
             "chat": "Chat",
             "chatError": "Chat belum bisa dibuka. Coba lagi."
+        },
+        "activeGames": {
+            "title": "Lanjutkan permainan",
+            "intro": "Kamu masih tercatat di permainan ini. Tutup browser tidak sengaja? Masuk lagi di sini.",
+            "resume": "Lanjutkan",
+            "pin": "PIN {{pin}}",
+            "host": "Kamu host",
+            "phase": {
+                "lobby": "Menunggu pemain",
+                "playing": "Sedang berlangsung"
+            },
+            "loading": "Memeriksa permainan yang berjalan…"
         }
     },
     "nav": {
@@ -331,7 +343,8 @@
         "menu": "Menu",
         "admin": "Admin",
         "chat": "Chat",
-        "clock": "Jam sekarang {{time}}"
+        "clock": "Jam sekarang {{time}}",
+        "feedback": "Kirim masukan"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -766,7 +779,19 @@
                     "fun": "Empat tombol besar dan reaksi cepat membuat hafalan 7 layer OSI terasa seperti pertandingan, bukan pelajaran kaku."
                 }
             }
-        }
+        },
+        "searchLabel": "Cari permainan",
+        "searchPlaceholder": "Cari judul, jenis, atau materi…",
+        "clearSearch": "Hapus pencarian",
+        "resultCount_one": "{{count}} permainan cocok dengan \"{{query}}\"",
+        "resultCount_other": "{{count}} permainan cocok dengan \"{{query}}\"",
+        "noResults": "Tidak ada permainan yang cocok dengan \"{{query}}\"",
+        "noResultsHint": "Coba kata lain yang lebih pendek atau pilih jenis \"Semua\".",
+        "resetSearch": "Tampilkan semua permainan",
+        "viewLabel": "Tampilan daftar",
+        "viewGrid": "Tampilan kartu",
+        "viewList": "Tampilan daftar ringkas",
+        "filterCount": "{{count}} permainan"
     },
     "snakes": {
         "title": "Ular Tangga Edukasi",
@@ -816,7 +841,9 @@
             "rollingHint": "Bersiaplah menjawab soal!",
             "openingQuestion": "Membuka soal…",
             "autoRoll": "Dadu otomatis dikocok dalam {{seconds}} detik",
-            "rollFor": "Kocok dadu untuk {{name}}"
+            "rollFor": "Kocok dadu untuk {{name}}",
+            "autoRolled": "Dadu dikocok otomatis karena {{name}} tidak bergerak.",
+            "turnTimer": "Sisa {{seconds}} detik untuk mengocok"
         },
         "question": {
             "turnOf": "Giliran {{name}}",
@@ -854,13 +881,44 @@
             "you": "Kamu juara!",
             "again": "Main lagi",
             "waitingHost": "Menunggu host memulai lagi…",
-            "forfeit": "Pemain lain keluar dari ruang. Skor akhir {{score}}."
+            "forfeit": "Pemain lain keluar dari ruang. Skor akhir {{score}}.",
+            "time": "Waktu habis! Skor akhir {{score}}.",
+            "timeNoWinner": "Waktu habis!"
         },
         "online": {
             "intro": "Main sendiri, tambah pemain di perangkat ini, atau buat ruang lalu bagikan PIN dan link ke teman (maksimal {{max}} pemain). Setiap permainan yang selesai menambah poin akunmu.",
             "needGrade": "Atur kelasmu dulu supaya soal sesuai tingkatanmu.",
             "setGrade": "Atur kelas",
             "soloHint": "Kamu bisa langsung main sendiri, menambah pemain di perangkat ini, atau menunggu teman bergabung."
+        },
+        "duration": {
+            "label": "Lama bermain",
+            "untilFinish": "Sampai ada yang finish",
+            "minutes": "{{count}} menit",
+            "minutesShort": "menit",
+            "hintUntilFinish": "Permainan selesai saat pemain pertama mencapai petak 100.",
+            "hintTimed": "Permainan berjalan {{count}} menit. Yang finish duluan dapat bonus, sisanya terus bermain sampai waktu habis.",
+            "host": "Hanya host yang bisa mengubah lama bermain.",
+            "timeLeft": "Sisa waktu {{time}}",
+            "untilFinishBadge": "Sampai finish"
+        },
+        "finishBonus": {
+            "rule": "Pertama finish: +{{points}} poin bonus",
+            "won": "Bonus finish pertama +{{points}} poin!",
+            "finished": "Finish #{{rank}}",
+            "log": "{{name}} finish di urutan {{rank}}!"
+        },
+        "leave": {
+            "button": "Keluar permainan",
+            "title": "Keluar dari permainan?",
+            "body": "Poin dari jawaban benar yang sudah kamu kumpulkan tetap masuk ke akunmu. Kamu tidak bisa kembali ke permainan ini.",
+            "confirm": "Ya, keluar",
+            "cancel": "Tetap main",
+            "done": "Kamu keluar dari permainan. {{points}} poin tetap masuk ke akunmu.",
+            "doneNone": "Kamu keluar dari permainan."
+        },
+        "host": {
+            "handedOver": "Host terputus. Peran host pindah ke {{name}}; permainan tetap berjalan."
         }
     },
     "room": {
@@ -1080,6 +1138,17 @@
         "close": "Tutup notifikasi",
         "justNow": "baru saja",
         "messages": "{{count}} pesan"
+    },
+    "chatNotice": {
+        "newMessage": "Pesan baru",
+        "inGroup": "{{name}} di {{group}}",
+        "more": "{{count}} pesan baru",
+        "open": "Buka chat",
+        "later": "Nanti",
+        "close": "Tutup notifikasi"
+    },
+    "presence": {
+        "online": "Sedang online"
     },
     "vault": {
         "title": "Brankas Item",
@@ -1867,5 +1936,173 @@
         "description": "Pilih bahasa tampilan akunmu. Bawaannya Bahasa Indonesia.",
         "id": "Bahasa Indonesia",
         "en": "English"
+    },
+    "games": {
+        "players": {
+            "label": "Jumlah pemain",
+            "solo": "Solo",
+            "exact": "{{players}} pemain",
+            "range": "{{min}}–{{max}} pemain",
+            "min": "Min. {{min}} · maks {{max}} pemain"
+        }
+    },
+    "schoolPicker": {
+        "school": "Sekolah terakhir",
+        "schoolPlaceholder": "Ketik nama sekolah, contoh: SDN 1 Bogor",
+        "city": "Kota/Kabupaten sekolah",
+        "cityPlaceholder": "Pilih kota/kabupaten",
+        "suggestions": "Saran sekolah",
+        "searching": "Mencari sekolah…",
+        "players_one": "{{formatted}} pemain",
+        "players_other": "{{formatted}} pemain",
+        "hint": "Pilih dari saran agar nama sekolahmu sama dengan teman satu sekolah.",
+        "newSchool": "Sekolah belum ada di daftar. Lanjutkan mengetik untuk menambahkannya.",
+        "citySearch": "Cari kota/kabupaten, contoh: Bogor",
+        "cityEmpty": "Kota/kabupaten tidak ditemukan.",
+        "cityClear": "Hapus kota/kabupaten",
+        "cityLoading": "Memuat daftar kota/kabupaten…"
+    },
+    "playerDash": {
+        "title": "Beranda pemain",
+        "badge": "STATISTIK & PERINGKAT",
+        "greeting": "Halo, {{name}}!",
+        "intro": "Lihat perkembanganmu, posisimu di papan peringkat, dan lanjutkan bermain.",
+        "school": "{{school}} · {{city}}",
+        "noRank": "Belum masuk peringkat",
+        "balance": "Saldo belanja",
+        "actions": {
+            "portal": "Portal game",
+            "games": "Semua game",
+            "character": "Karakter & toko"
+        },
+        "kpi": {
+            "label": "Ringkasan statistik",
+            "plays": "Total main",
+            "accuracy": "Akurasi",
+            "time": "Waktu bermain",
+            "streak": "Hari beruntun",
+            "activeDays": "Hari aktif",
+            "favourite": "Game favorit",
+            "noData": "—",
+            "streakValue": "{{count}} hari",
+            "playsValue": "{{formatted}}×"
+        },
+        "duration": {
+            "hm": "{{h}} jam {{m}} mnt",
+            "m": "{{m}} mnt",
+            "s": "{{s}} dtk",
+            "none": "0 mnt"
+        },
+        "activity": {
+            "title": "Aktivitas 14 hari",
+            "note": "Jumlah permainan per hari.",
+            "empty": "Belum ada permainan dalam 14 hari terakhir.",
+            "bar": "{{date}}: {{plays}} permainan, {{points}} poin",
+            "total": "{{plays}} permainan · {{points}} poin"
+        },
+        "subjects": {
+            "title": "Akurasi per mata pelajaran",
+            "note": "Dari soal yang sudah kamu jawab di game.",
+            "empty": "Jawab soal di game kuis untuk melihat akurasi per mata pelajaran.",
+            "answered": "{{correct}}/{{answered}} benar"
+        },
+        "games": {
+            "title": "Statistik per game",
+            "empty": "Mainkan game pertamamu untuk melihat statistik di sini.",
+            "plays": "Main",
+            "best": "Skor terbaik",
+            "accuracy": "Akurasi",
+            "time": "Waktu",
+            "points": "Poin",
+            "last": "Terakhir {{date}}",
+            "play": "Main lagi"
+        },
+        "continue": {
+            "title": "Lanjutkan bermain",
+            "empty": "Belum ada game yang dimainkan. Pilih game di portal.",
+            "explore": "Jelajahi game lain"
+        },
+        "board": {
+            "title": "Papan peringkat",
+            "podium": "Podium",
+            "loading": "Memuat papan peringkat…",
+            "points": "{{formatted}} poin"
+        },
+        "history": {
+            "title": "Hasil terbaru",
+            "accuracy": "{{correct}}/{{total}} benar",
+            "prev": "Sebelumnya",
+            "next": "Berikutnya",
+            "page": "Halaman {{page}} dari {{last}}"
+        },
+        "loadingStats": "Memuat statistik…",
+        "settings": "Profil & pengaturan",
+        "explore": "Kategori permainan"
+    },
+    "feedback": {
+        "title": "Kirim Masukan",
+        "intro": "Ceritakan masalah yang kamu temui atau ide supaya EduFunHub makin seru. Tim kami membaca setiap masukan.",
+        "types": {
+            "bug": {
+                "label": "Bug / masalah",
+                "hint": "Ada yang error, macet, atau tidak bisa dipakai"
+            },
+            "feature": {
+                "label": "Saran fitur",
+                "hint": "Ide fitur baru atau perbaikan"
+            },
+            "question": {
+                "label": "Soal salah / tidak tepat",
+                "hint": "Jawaban atau isi soal keliru"
+            },
+            "content": {
+                "label": "Konten / game",
+                "hint": "Masukan tentang game, materi, atau tampilan"
+            },
+            "account": {
+                "label": "Akun & login",
+                "hint": "Masalah masuk, profil, atau poin"
+            },
+            "other": {
+                "label": "Lainnya",
+                "hint": "Hal lain yang ingin kamu sampaikan"
+            }
+        },
+        "form": {
+            "type": "Jenis masukan",
+            "game": "Game terkait",
+            "noGame": "Tidak terkait game",
+            "gameSearch": "Cari game…",
+            "gameEmpty": "Game tidak ditemukan",
+            "gameClear": "Hapus pilihan game",
+            "optional": "(opsional)",
+            "page": "Halaman",
+            "pagePlaceholder": "Contoh: /games/sky-quiz",
+            "message": "Pesan",
+            "messagePlaceholder": "Tulis sejelas mungkin: apa yang terjadi, di mana, dan apa yang kamu harapkan.",
+            "counter": "{{count}}/{{max}} karakter",
+            "mayContact": "Boleh dihubungi",
+            "mayContactHint": "Tim kami boleh menghubungimu lewat email akun bila perlu info tambahan.",
+            "submit": "Kirim masukan",
+            "sending": "Mengirim…"
+        },
+        "success": {
+            "title": "Masukan terkirim!",
+            "body": "Terima kasih sudah membantu. Status masukanmu bisa dilihat di daftar riwayat.",
+            "again": "Kirim masukan lain"
+        },
+        "history": {
+            "title": "Masukan kamu",
+            "empty": "Belum ada masukan yang kamu kirim."
+        },
+        "status": {
+            "new": "Baru",
+            "in_progress": "Diproses",
+            "resolved": "Selesai",
+            "dismissed": "Ditutup"
+        }
+    },
+    "brand": {
+        "tagline": "Bermain sambil Belajar"
     }
 }

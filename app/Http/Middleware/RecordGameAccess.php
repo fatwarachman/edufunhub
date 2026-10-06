@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\GameAccess;
 use App\Services\Ads\AdServer;
 use App\Services\DeviceDetector;
+use App\Services\UserActivity;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -21,7 +22,7 @@ class RecordGameAccess
 {
     public const DEDUPE_MINUTES = 10;
 
-    public function __construct(private DeviceDetector $detector, private AdServer $ads) {}
+    public function __construct(private DeviceDetector $detector, private AdServer $ads, private UserActivity $activity) {}
 
     public function handle(Request $request, Closure $next, string $game): Response
     {
@@ -48,17 +49,23 @@ class RecordGameAccess
             return $response;
         }
 
+        $device = $this->detector->detect(
+            $request->userAgent(),
+            $request->header('Sec-CH-UA-Mobile'),
+            $request->header('Sec-CH-UA-Platform'),
+        );
+
         GameAccess::query()->create([
             'user_id' => $request->user()?->id,
             'game_key' => $game,
-            ...$this->detector->detect(
-                $request->userAgent(),
-                $request->header('Sec-CH-UA-Mobile'),
-                $request->header('Sec-CH-UA-Platform'),
-            ),
+            ...$device,
             'user_agent' => Str::limit((string) $request->userAgent(), 497),
             'accessed_at' => now(),
         ]);
+
+        if ($request->user() !== null) {
+            $this->activity->gameOpened($request->user(), $game, $device['device_type']);
+        }
 
         if ($request->hasSession()) {
             $request->session()->put($sessionKey, now()->getTimestamp());
