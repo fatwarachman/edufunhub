@@ -16,6 +16,7 @@ import {
     rateTone,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
 import {
@@ -133,23 +134,24 @@ export default function UserStatistics({ filters, stats }: Props) {
 
     return (
         <>
-            <Head title="User Statistics" />
+            <Head title={tr('User Statistics')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div className="flex flex-col gap-1">
                         <h2 className="font-display text-2xl font-bold text-foreground">
-                            User Statistics
+                            {tr('User Statistics')}
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            Learner profiles by school, grade and age with their
-                            game results (super admins excluded).
+                            {tr(
+                                'Learner profiles by school, grade and age with their game results (super admins excluded).',
+                            )}
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <div
                             className="inline-flex rounded-lg border border-border bg-card p-1"
                             role="group"
-                            aria-label="School level"
+                            aria-label={tr('School level')}
                         >
                             {['', 'sd', 'smp', 'sma'].map((level) => (
                                 <button
@@ -168,7 +170,9 @@ export default function UserStatistics({ filters, stats }: Props) {
                                             : 'text-muted-foreground hover:text-foreground',
                                     )}
                                 >
-                                    {level ? LEVEL_SHORT[level] : 'All levels'}
+                                    {level
+                                        ? LEVEL_SHORT[level]
+                                        : tr('All levels')}
                                 </button>
                             ))}
                         </div>
@@ -176,10 +180,10 @@ export default function UserStatistics({ filters, stats }: Props) {
                             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                             <input
                                 type="search"
-                                aria-label="Filter by school"
+                                aria-label={tr('Filter by school')}
                                 value={school}
                                 onChange={(e) => setSchool(e.target.value)}
-                                placeholder="Filter by school…"
+                                placeholder={tr('Filter by school…')}
                                 className={cn(fieldClass, 'w-56 pl-9')}
                             />
                         </div>
@@ -197,7 +201,7 @@ export default function UserStatistics({ filters, stats }: Props) {
                                 className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                             >
                                 <RotateCcw className="size-4" />
-                                Reset
+                                {tr('Reset')}
                             </button>
                         )}
                     </div>
@@ -205,14 +209,14 @@ export default function UserStatistics({ filters, stats }: Props) {
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <KpiCard
-                        label="Learners"
+                        label={tr('Learners')}
                         value={formatNumber(summary.users)}
                         icon={Users}
                         accent="var(--color-bubble-orange)"
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                {formatNumber(summary.complete)} complete
-                                profiles (
+                                {formatNumber(summary.complete)}{' '}
+                                {tr('complete profiles (')}
                                 {summary.users
                                     ? Math.round(
                                           (summary.complete / summary.users) *
@@ -224,19 +228,20 @@ export default function UserStatistics({ filters, stats }: Props) {
                         }
                     />
                     <KpiCard
-                        label="Have played"
+                        label={tr('Have played')}
                         value={formatNumber(summary.players)}
                         icon={UserCheck}
                         accent="var(--color-bubble-green)"
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                {formatNumber(summary.active_30d)} active in 30
-                                days · {formatNumber(summary.plays)} plays
+                                {formatNumber(summary.active_30d)}{' '}
+                                {tr('active in 30 days ·')}{' '}
+                                {formatNumber(summary.plays)} {tr('plays')}
                             </span>
                         }
                     />
                     <KpiCard
-                        label="Schools"
+                        label={tr('Schools')}
                         value={formatNumber(summary.schools)}
                         icon={School}
                         accent="var(--color-bubble-blue)"
@@ -247,18 +252,19 @@ export default function UserStatistics({ filters, stats }: Props) {
                                           1,
                                       )
                                     : 0}{' '}
-                                learners per school
+                                {tr('learners per school')}
                             </span>
                         }
                     />
                     <KpiCard
-                        label="Average age"
+                        label={tr('Average age')}
                         value={summary.avg_age ?? '—'}
                         icon={Cake}
                         accent="var(--color-bubble-purple)"
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                Median {summary.median_age ?? '—'} years
+                                {tr('Median')} {summary.median_age ?? '—'}{' '}
+                                {tr('years')}
                             </span>
                         }
                     />
@@ -266,8 +272,8 @@ export default function UserStatistics({ filters, stats }: Props) {
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <Panel
-                        title="School level"
-                        description="Share of learners per school level"
+                        title={tr('School level')}
+                        description={tr('Share of learners per school level')}
                         icon={GraduationCap}
                     >
                         <ShareBars
@@ -277,12 +283,14 @@ export default function UserStatistics({ filters, stats }: Props) {
                                 value: row.users,
                                 color: LEVEL_COLORS[row.label],
                             }))}
-                            emptyLabel="No learners match these filters"
+                            emptyLabel={tr('No learners match these filters')}
                         />
                     </Panel>
                     <Panel
-                        title="Learners per grade"
-                        description="Registered learners vs. learners who have played"
+                        title={tr('Learners per grade')}
+                        description={tr(
+                            'Registered learners vs. learners who have played',
+                        )}
                         icon={ChartNoAxesColumn}
                         className="lg:col-span-2"
                         actions={
@@ -300,13 +308,13 @@ export default function UserStatistics({ filters, stats }: Props) {
                                                         LEVEL_COLORS[level],
                                                 }}
                                             />
-                                            {LEVEL_SHORT[level]}
+                                            {tr(LEVEL_SHORT[level])}
                                         </span>
                                     ),
                                 )}
                                 <span className="inline-flex items-center gap-1">
                                     <span className="size-2 rounded-full bg-bubble-orange/60" />
-                                    Have played
+                                    {tr('Have played')}
                                 </span>
                             </span>
                         }
@@ -348,7 +356,9 @@ export default function UserStatistics({ filters, stats }: Props) {
                                     <Tooltip
                                         contentStyle={chartTooltipStyle}
                                         cursor={{ fill: 'var(--muted)' }}
-                                        labelFormatter={(v) => `Grade ${v}`}
+                                        labelFormatter={(v) =>
+                                            tr('Grade {0}', [v])
+                                        }
                                     />
                                     <Bar
                                         dataKey="users"
@@ -384,8 +394,8 @@ export default function UserStatistics({ filters, stats }: Props) {
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
                     <Panel
-                        title="Age distribution"
-                        description="Learners per year of age"
+                        title={tr('Age distribution')}
+                        description={tr('Learners per year of age')}
                         icon={Cake}
                         className="lg:col-span-3"
                     >
@@ -425,7 +435,9 @@ export default function UserStatistics({ filters, stats }: Props) {
                                     <Tooltip
                                         contentStyle={chartTooltipStyle}
                                         cursor={{ fill: 'var(--muted)' }}
-                                        labelFormatter={(v) => `Age ${v}`}
+                                        labelFormatter={(v) =>
+                                            tr('Age {0}', [v])
+                                        }
                                     />
                                     <Bar
                                         dataKey="users"
@@ -438,8 +450,10 @@ export default function UserStatistics({ filters, stats }: Props) {
                         </div>
                     </Panel>
                     <Panel
-                        title="Grade × age"
-                        description="Spot learners whose age does not fit their grade"
+                        title={tr('Grade × age')}
+                        description={tr(
+                            'Spot learners whose age does not fit their grade',
+                        )}
                         icon={Grid3x3}
                         className="lg:col-span-2"
                     >
@@ -452,7 +466,7 @@ export default function UserStatistics({ filters, stats }: Props) {
                         <div
                             className="inline-flex rounded-lg border border-border bg-background p-1"
                             role="tablist"
-                            aria-label="Breakdown"
+                            aria-label={tr('Breakdown')}
                         >
                             {TABS.map((item) => (
                                 <button
@@ -469,13 +483,14 @@ export default function UserStatistics({ filters, stats }: Props) {
                                     )}
                                 >
                                     <item.icon className="size-4" />
-                                    {item.label}
+                                    {tr(item.label)}
                                 </button>
                             ))}
                         </div>
                         <span className="text-xs text-muted-foreground">
-                            Accuracy = correct answers ÷ all answers in recorded
-                            games
+                            {tr(
+                                'Accuracy = correct answers ÷ all answers in recorded games',
+                            )}
                         </span>
                     </header>
                     <div className="p-5">
@@ -485,22 +500,22 @@ export default function UserStatistics({ filters, stats }: Props) {
                         {tab === 'grade' && (
                             <SegmentTable
                                 rows={stats.byGrade}
-                                header="Grade"
+                                header={tr('Grade')}
                                 labelFor={(label) =>
                                     label === 'unknown'
-                                        ? 'Not set'
-                                        : `Grade ${label}`
+                                        ? tr('Not set')
+                                        : tr('Grade {0}', [label])
                                 }
                             />
                         )}
                         {tab === 'age' && (
                             <SegmentTable
                                 rows={stats.byAgeGroup}
-                                header="Age group"
+                                header={tr('Age group')}
                                 labelFor={(label) =>
                                     label === 'unknown'
-                                        ? 'Not set'
-                                        : `${label} years`
+                                        ? tr('Not set')
+                                        : tr('{0} years', [label])
                                 }
                             />
                         )}
@@ -522,7 +537,7 @@ function Matrix({ matrix }: { matrix: Stats['matrix'] }) {
         return (
             <EmptyState
                 icon={Grid3x3}
-                title="No learners with both grade and age"
+                title={tr('No learners with both grade and age')}
             />
         );
     }
@@ -533,7 +548,7 @@ function Matrix({ matrix }: { matrix: Stats['matrix'] }) {
                 <thead>
                     <tr>
                         <th className="text-left font-medium text-muted-foreground">
-                            Grade
+                            {tr('Grade')}
                         </th>
                         {matrix.columns.map((column) => (
                             <th
@@ -554,7 +569,11 @@ function Matrix({ matrix }: { matrix: Stats['matrix'] }) {
                             {row.counts.map((count, index) => (
                                 <td
                                     key={index}
-                                    title={`Grade ${row.grade}, age ${matrix.columns[index]}: ${count}`}
+                                    title={tr('Grade {0}, age {1}: {2}', [
+                                        row.grade,
+                                        matrix.columns[index],
+                                        count,
+                                    ])}
                                     className={cn(
                                         'h-6 rounded-md text-center tabular-nums',
                                         count === 0
@@ -596,7 +615,7 @@ function SegmentTable({
         return (
             <EmptyState
                 icon={UsersRound}
-                title="No learners match these filters"
+                title={tr('No learners match these filters')}
             />
         );
     }
@@ -610,22 +629,22 @@ function SegmentTable({
                             {header}
                         </th>
                         <th className="px-3 py-2 text-left font-medium">
-                            Learners
+                            {tr('Learners')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Have played
+                            {tr('Have played')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Plays
+                            {tr('Plays')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Avg points
+                            {tr('Avg points')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Avg age
+                            {tr('Avg age')}
                         </th>
                         <th className="py-2 pl-3 text-right font-medium">
-                            Accuracy
+                            {tr('Accuracy')}
                         </th>
                     </tr>
                 </thead>
@@ -690,7 +709,10 @@ function SchoolTable({ rows }: { rows: SchoolSegment[] }) {
 
     if (rows.length === 0) {
         return (
-            <EmptyState icon={School} title="No schools match these filters" />
+            <EmptyState
+                icon={School}
+                title={tr('No schools match these filters')}
+            />
         );
     }
 
@@ -700,28 +722,28 @@ function SchoolTable({ rows }: { rows: SchoolSegment[] }) {
                 <thead>
                     <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
                         <th className="py-2 pr-3 text-left font-medium">
-                            School
+                            {tr('School')}
                         </th>
                         <th className="px-3 py-2 text-left font-medium">
-                            Level
+                            {tr('Level')}
                         </th>
                         <th className="px-3 py-2 text-left font-medium">
-                            Learners
+                            {tr('Learners')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Grades
+                            {tr('Grades')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Avg age
+                            {tr('Avg age')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Plays
+                            {tr('Plays')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Points
+                            {tr('Points')}
                         </th>
                         <th className="py-2 pl-3 text-right font-medium">
-                            Accuracy
+                            {tr('Accuracy')}
                         </th>
                     </tr>
                 </thead>
@@ -732,9 +754,9 @@ function SchoolTable({ rows }: { rows: SchoolSegment[] }) {
                                 <Link
                                     href={`/admin/leaderboard?school=${encodeURIComponent(row.label)}`}
                                     className="block truncate font-medium text-foreground hover:underline"
-                                    title={row.label}
+                                    title={tr(row.label)}
                                 >
-                                    {row.label}
+                                    {tr(row.label)}
                                 </Link>
                             </td>
                             <td className="px-3 py-2.5">
@@ -748,9 +770,11 @@ function SchoolTable({ rows }: { rows: SchoolSegment[] }) {
                                                     background: `color-mix(in oklab, ${LEVEL_COLORS[level]} 16%, transparent)`,
                                                     color: LEVEL_COLORS[level],
                                                 }}
-                                                title={`${count} learners`}
+                                                title={tr('{0} learners', [
+                                                    count,
+                                                ])}
                                             >
-                                                {LEVEL_SHORT[level]}
+                                                {tr(LEVEL_SHORT[level])}
                                             </span>
                                         ),
                                     )}
@@ -807,5 +831,5 @@ function SchoolTable({ rows }: { rows: SchoolSegment[] }) {
 }
 
 UserStatistics.layout = (page: ReactNode) => (
-    <AdminLayout title="User Statistics">{page}</AdminLayout>
+    <AdminLayout title={tr('User Statistics')}>{page}</AdminLayout>
 );

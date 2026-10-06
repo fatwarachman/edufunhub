@@ -88,6 +88,7 @@ class HandleInertiaRequests extends Middleware
                     'email_verified_at' => $user->email_verified_at,
                     'is_superadmin' => (bool) $user->is_superadmin,
                     'is_teacher' => $user->isTeacher(),
+                    'is_admin' => $user->is_superadmin || $user->hasRole('admin'),
                     'locale' => $user->locale,
                     'onboarded_at' => $user->onboarded_at,
                     'avatar_url' => $user->avatar_url,

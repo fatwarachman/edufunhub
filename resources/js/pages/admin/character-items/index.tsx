@@ -6,6 +6,7 @@ import {
 import { Panel, StatTile, formatNumber } from '@/components/admin/game-stats';
 import PlayerCharacter from '@/components/player-character';
 import AdminLayout from '@/layouts/admin-layout';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { type ItemSlot } from '@/lib/character/draw-character';
 import { SLOT_LABELS, itemPreview } from '@/lib/character/items';
 import { cn } from '@/lib/utils';
@@ -75,16 +76,17 @@ export default function CharacterItemsIndex({
 
     return (
         <AdminLayout>
-            <Head title="Character Items" />
+            <Head title={tr('Character Items')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">
-                            Character Items
+                            {tr('Character Items')}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Shop items players buy with points. Price changes
-                            apply to new purchases; owners keep their items.
+                            {tr(
+                                'Shop items players buy with points. Price changes apply to new purchases; owners keep their items.',
+                            )}
                         </p>
                     </div>
                     <Link
@@ -92,7 +94,7 @@ export default function CharacterItemsIndex({
                         className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                     >
                         <Plus className="size-4" />
-                        New item
+                        {tr('New item')}
                     </Link>
                 </div>
 
@@ -100,25 +102,25 @@ export default function CharacterItemsIndex({
 
                 <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                     <StatTile
-                        label="Items in shop"
+                        label={tr('Items in shop')}
                         value={`${summary.active} / ${summary.items}`}
                         icon={Package}
                         color="bg-indigo-500"
                     />
                     <StatTile
-                        label="Purchases"
+                        label={tr('Purchases')}
                         value={formatNumber(summary.purchases)}
                         icon={ShoppingBag}
                         color="bg-emerald-500"
                     />
                     <StatTile
-                        label="Buyers"
+                        label={tr('Buyers')}
                         value={formatNumber(summary.buyers)}
                         icon={Users}
                         color="bg-sky-500"
                     />
                     <StatTile
-                        label="Points spent"
+                        label={tr('Points spent')}
                         value={formatNumber(summary.points_spent)}
                         icon={Coins}
                         color="bg-amber-500"
@@ -126,7 +128,7 @@ export default function CharacterItemsIndex({
                 </div>
 
                 <Panel
-                    title="Items"
+                    title={tr('Items')}
                     icon={Package}
                     actions={
                         <div className="flex flex-wrap gap-1.5">
@@ -143,7 +145,7 @@ export default function CharacterItemsIndex({
                                             : 'bg-muted text-muted-foreground hover:text-foreground',
                                     )}
                                 >
-                                    {slot ? SLOT_LABELS[slot] : 'All'}
+                                    {slot ? SLOT_LABELS[slot] : tr('All')}
                                 </button>
                             ))}
                         </div>
@@ -154,25 +156,25 @@ export default function CharacterItemsIndex({
                             <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
                                 <tr>
                                     <th className="px-5 py-3 font-medium">
-                                        Item
+                                        {tr('Item')}
                                     </th>
                                     <th className="px-3 py-3 font-medium">
-                                        Slot
+                                        {tr('Slot')}
                                     </th>
                                     <th className="px-3 py-3 text-right font-medium">
-                                        Price
+                                        {tr('Price')}
                                     </th>
                                     <th className="px-3 py-3 text-right font-medium">
-                                        Owners
+                                        {tr('Owners')}
                                     </th>
                                     <th className="px-3 py-3 text-right font-medium">
-                                        Wearing now
+                                        {tr('Wearing now')}
                                     </th>
                                     <th className="px-3 py-3 text-right font-medium">
-                                        Points spent
+                                        {tr('Points spent')}
                                     </th>
                                     <th className="px-3 py-3 font-medium">
-                                        Status
+                                        {tr('Status')}
                                     </th>
                                     <th className="px-5 py-3" />
                                 </tr>
@@ -193,7 +195,10 @@ export default function CharacterItemsIndex({
                                                     setViewingId(item.id);
                                                 }}
                                                 className="flex items-center gap-3 rounded-lg text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                                aria-label={`View ${item.name_en ?? item.name_id}`}
+                                                aria-label={tr('View {0}', [
+                                                    item.name_en ??
+                                                        item.name_id,
+                                                ])}
                                                 data-testid={`item-open-${item.key}`}
                                             >
                                                 <div className="size-12 shrink-0 overflow-hidden rounded-xl bg-[#d8c7a4]/60">
@@ -218,11 +223,11 @@ export default function CharacterItemsIndex({
                                             </button>
                                         </td>
                                         <td className="px-3 py-2.5 text-muted-foreground">
-                                            {SLOT_LABELS[item.slot]}
+                                            {tr(SLOT_LABELS[item.slot])}
                                         </td>
                                         <td className="px-3 py-2.5 text-right font-medium tabular-nums">
                                             {item.price === 0
-                                                ? 'Free'
+                                                ? tr('Free')
                                                 : formatNumber(item.price)}
                                         </td>
                                         <td
@@ -230,7 +235,7 @@ export default function CharacterItemsIndex({
                                             data-testid={`item-owners-${item.key}`}
                                         >
                                             {item.owners === null
-                                                ? 'Everyone'
+                                                ? tr('Everyone')
                                                 : formatNumber(item.owners)}
                                         </td>
                                         <td
@@ -257,7 +262,9 @@ export default function CharacterItemsIndex({
                                                 <Link
                                                     href={`/admin/character-items/${item.id}/edit`}
                                                     className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                    aria-label={`Edit ${item.name_id}`}
+                                                    aria-label={tr('Edit {0}', [
+                                                        item.name_id,
+                                                    ])}
                                                 >
                                                     <Pencil className="size-4" />
                                                 </Link>
@@ -275,8 +282,12 @@ export default function CharacterItemsIndex({
                                                     className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                                                     aria-label={
                                                         item.is_active
-                                                            ? `Hide ${item.name_id}`
-                                                            : `Show ${item.name_id}`
+                                                            ? tr('Hide {0}', [
+                                                                  item.name_id,
+                                                              ])
+                                                            : tr('Show {0}', [
+                                                                  item.name_id,
+                                                              ])
                                                     }
                                                 >
                                                     {item.is_active ? (
@@ -291,7 +302,10 @@ export default function CharacterItemsIndex({
                                                         setDeleting(item)
                                                     }
                                                     className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                                    aria-label={`Delete ${item.name_id}`}
+                                                    aria-label={tr(
+                                                        'Delete {0}',
+                                                        [item.name_id],
+                                                    )}
                                                 >
                                                     <Trash2 className="size-4" />
                                                 </button>
@@ -316,12 +330,15 @@ export default function CharacterItemsIndex({
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete item?"
+                title={tr('Delete item?')}
                 message={
                     deleting &&
-                    `“${deleting.name_en ?? deleting.name_id}” will be removed. Items that players own or wear cannot be deleted; hide them instead.`
+                    tr(
+                        '“{0}” will be removed. Items that players own or wear cannot be deleted; hide them instead.',
+                        [deleting.name_en ?? deleting.name_id],
+                    )
                 }
-                confirmLabel="Delete"
+                confirmLabel={tr('Delete')}
                 processing={processing}
                 onClose={() => setDeleting(null)}
                 onConfirm={() =>
@@ -349,7 +366,7 @@ function DetailRow({
 }) {
     return (
         <div className="flex items-center justify-between gap-3 py-2 text-sm">
-            <dt className="text-muted-foreground">{label}</dt>
+            <dt className="text-muted-foreground">{tr(label)}</dt>
             <dd className="min-w-0 truncate text-right font-medium text-foreground">
                 {children}
             </dd>
@@ -426,7 +443,7 @@ function ItemDetailDialog({
                         type="button"
                         onClick={onClose}
                         className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                        aria-label="Close"
+                        aria-label={tr('Close')}
                         data-testid="item-detail-close"
                     >
                         <X className="size-4" />
@@ -476,11 +493,13 @@ function ItemDetailDialog({
                     </div>
                     <div className="flex min-w-0 flex-col gap-4">
                         <dl className="divide-y divide-border">
-                            <DetailRow label="Slot">
-                                {SLOT_LABELS[item.slot]}
+                            <DetailRow label={tr('Slot')}>
+                                {tr(SLOT_LABELS[item.slot])}
                             </DetailRow>
-                            <DetailRow label="Style">{item.style}</DetailRow>
-                            <DetailRow label="Color">
+                            <DetailRow label={tr('Style')}>
+                                {item.style}
+                            </DetailRow>
+                            <DetailRow label={tr('Color')}>
                                 {item.color ? (
                                     <span className="inline-flex items-center gap-2">
                                         <span
@@ -492,24 +511,24 @@ function ItemDetailDialog({
                                         {item.color}
                                     </span>
                                 ) : (
-                                    'Default'
+                                    tr('Default')
                                 )}
                             </DetailRow>
-                            <DetailRow label="Price">
+                            <DetailRow label={tr('Price')}>
                                 {item.price === 0
-                                    ? 'Free'
-                                    : `${formatNumber(item.price)} pts`}
+                                    ? tr('Free')
+                                    : tr('{0} pts', [formatNumber(item.price)])}
                             </DetailRow>
-                            <DetailRow label="Status">
+                            <DetailRow label={tr('Status')}>
                                 <StatusPill active={item.is_active} />
                             </DetailRow>
-                            <DetailRow label="Sort order">
+                            <DetailRow label={tr('Sort order')}>
                                 {item.sort_order}
                             </DetailRow>
                             {item.updated_at && (
-                                <DetailRow label="Updated">
+                                <DetailRow label={tr('Updated')}>
                                     {new Date(item.updated_at).toLocaleString(
-                                        'en-GB',
+                                        adminLocale(),
                                         {
                                             dateStyle: 'medium',
                                             timeStyle: 'short',
@@ -521,18 +540,18 @@ function ItemDetailDialog({
                         <div className="grid grid-cols-3 gap-2 text-center">
                             {[
                                 {
-                                    label: 'Owners',
+                                    label: tr('Owners'),
                                     value:
                                         item.owners === null
                                             ? 'All'
                                             : formatNumber(item.owners),
                                 },
                                 {
-                                    label: 'Wearing',
+                                    label: tr('Wearing'),
                                     value: formatNumber(item.wearing),
                                 },
                                 {
-                                    label: 'Points spent',
+                                    label: tr('Points spent'),
                                     value: formatNumber(item.points_spent),
                                 },
                             ].map((stat) => (
@@ -544,7 +563,7 @@ function ItemDetailDialog({
                                         {stat.value}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                        {stat.label}
+                                        {tr(stat.label)}
                                     </p>
                                 </div>
                             ))}
@@ -559,7 +578,7 @@ function ItemDetailDialog({
                         data-testid="item-detail-delete"
                     >
                         <Trash2 className="size-4" />
-                        Delete
+                        {tr('Delete')}
                     </button>
                     <button
                         type="button"
@@ -572,7 +591,7 @@ function ItemDetailDialog({
                         ) : (
                             <Eye className="size-4" />
                         )}
-                        {item.is_active ? 'Hide' : 'Show'}
+                        {item.is_active ? tr('Hide') : tr('Show')}
                     </button>
                     <Link
                         href={`/admin/character-items/${item.id}/edit`}
@@ -580,7 +599,7 @@ function ItemDetailDialog({
                         data-testid="item-detail-edit"
                     >
                         <Pencil className="size-4" />
-                        Edit
+                        {tr('Edit')}
                     </Link>
                 </div>
             </div>

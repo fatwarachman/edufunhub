@@ -9,6 +9,7 @@ import {
     LEVEL_SHORT,
     SectionHeading,
     ShareBars,
+    smoothLine,
     timeAgo,
     UserAvatar,
 } from '@/components/admin/dashboard-kit';
@@ -25,6 +26,7 @@ import {
     rateTone,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
@@ -181,10 +183,10 @@ const PODIUM = [
 
 function greeting(): string {
     const hour = new Date().getHours();
-    if (hour < 11) return 'Good morning';
-    if (hour < 15) return 'Good afternoon';
-    if (hour < 19) return 'Good evening';
-    return 'Good night';
+    if (hour < 11) return tr('Good morning');
+    if (hour < 15) return tr('Good afternoon');
+    if (hour < 19) return tr('Good evening');
+    return tr('Good night');
 }
 
 export default function Dashboard(props: DashboardProps) {
@@ -207,7 +209,7 @@ export default function Dashboard(props: DashboardProps) {
 
     return (
         <>
-            <Head title="Admin Dashboard" />
+            <Head title={tr('Admin Dashboard')} />
             <div className="flex flex-col gap-6">
                 {/* Pulse header */}
                 <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
@@ -232,20 +234,23 @@ export default function Dashboard(props: DashboardProps) {
                                 {greeting()}, {auth.user.name.split(' ')[0]}
                             </h2>
                             <p className="max-w-2xl text-sm text-muted-foreground">
-                                Today:{' '}
-                                <strong className="text-foreground">
-                                    {formatNumber(kpis.plays_today)}
-                                </strong>{' '}
-                                {kpis.plays_today === 1 ? 'game' : 'games'}{' '}
-                                played and{' '}
-                                <strong className="text-foreground">
-                                    {formatNumber(kpis.signups_today)}
-                                </strong>{' '}
-                                new{' '}
-                                {kpis.signups_today === 1
-                                    ? 'learner'
-                                    : 'learners'}{' '}
-                                joined.
+                                {tr(
+                                    'Today: {0} {1} played and {2} new {3} joined.',
+                                    [
+                                        formatNumber(kpis.plays_today),
+                                        tr(
+                                            kpis.plays_today === 1
+                                                ? 'game'
+                                                : 'games',
+                                        ),
+                                        formatNumber(kpis.signups_today),
+                                        tr(
+                                            kpis.signups_today === 1
+                                                ? 'learner'
+                                                : 'learners',
+                                        ),
+                                    ],
+                                )}
                                 {kpis.profiles - kpis.profile_complete > 0 && (
                                     <span className="mt-1 block">
                                         {formatNumber(
@@ -255,9 +260,9 @@ export default function Dashboard(props: DashboardProps) {
                                         {kpis.profiles -
                                             kpis.profile_complete ===
                                         1
-                                            ? 'player still needs'
-                                            : 'players still need'}{' '}
-                                        to complete their profile.
+                                            ? tr('player still needs')
+                                            : tr('players still need')}{' '}
+                                        {tr('to complete their profile.')}
                                     </span>
                                 )}
                             </p>
@@ -265,19 +270,19 @@ export default function Dashboard(props: DashboardProps) {
                         <div className="grid grid-cols-3 gap-2 sm:gap-3">
                             <PulseStat
                                 icon={Gamepad2}
-                                label="Plays today"
+                                label={tr('Plays today')}
                                 value={kpis.plays_today}
                                 color="var(--color-bubble-blue)"
                             />
                             <PulseStat
                                 icon={UserPlus}
-                                label="New today"
+                                label={tr('New today')}
                                 value={kpis.signups_today}
                                 color="var(--color-bubble-orange)"
                             />
                             <PulseStat
                                 icon={Radio}
-                                label="Online"
+                                label={tr('Online')}
                                 value={kpis.online_15m}
                                 color="var(--color-bubble-green)"
                             />
@@ -288,7 +293,7 @@ export default function Dashboard(props: DashboardProps) {
                 {/* KPI row */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
                     <KpiCard
-                        label="Games"
+                        label={tr('Games')}
                         value={formatNumber(gameCatalog.total)}
                         icon={Puzzle}
                         accent="var(--color-bubble-pink)"
@@ -311,7 +316,7 @@ export default function Dashboard(props: DashboardProps) {
                                     ))}
                                 </span>
                                 <span className="text-[11px] text-muted-foreground">
-                                    Games per category
+                                    {tr('Games per category')}
                                 </span>
                             </div>
                         }
@@ -321,18 +326,20 @@ export default function Dashboard(props: DashboardProps) {
                                 data-testid="kpi-games"
                             >
                                 <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 font-semibold text-foreground tabular-nums">
-                                    {gameCatalog.played_7d} played · 7d
+                                    {gameCatalog.played_7d} {tr('played · 7d')}
                                 </span>
                                 <span className="truncate text-muted-foreground">
-                                    {gameCatalog.categories} categories ·{' '}
-                                    {gameCatalog.multiplayer} multiplayer
+                                    {gameCatalog.categories}{' '}
+                                    {tr('categories ·')}{' '}
+                                    {gameCatalog.multiplayer}{' '}
+                                    {tr('multiplayer')}
                                 </span>
                             </span>
                         }
                         href={superadmin ? '/admin/games' : undefined}
                     />
                     <KpiCard
-                        label="Registered users"
+                        label={tr('Registered users')}
                         value={formatNumber(kpis.users)}
                         icon={Users}
                         accent="var(--color-bubble-orange)"
@@ -340,13 +347,13 @@ export default function Dashboard(props: DashboardProps) {
                         footer={
                             <Delta
                                 value={kpis.signups_delta}
-                                suffix={`${kpis.signups_7d} this week`}
+                                suffix={tr('{0} this week', [kpis.signups_7d])}
                             />
                         }
                         href="/admin/users"
                     />
                     <KpiCard
-                        label="Active players · 7d"
+                        label={tr('Active players · 7d')}
                         value={formatNumber(kpis.active_players_7d)}
                         icon={UsersRound}
                         accent="var(--color-bubble-green)"
@@ -355,7 +362,7 @@ export default function Dashboard(props: DashboardProps) {
                         href={superadmin ? '/admin/user-statistics' : undefined}
                     />
                     <KpiCard
-                        label="Games played"
+                        label={tr('Games played')}
                         value={formatNumber(kpis.plays)}
                         icon={Gamepad2}
                         accent="var(--color-bubble-blue)"
@@ -363,13 +370,13 @@ export default function Dashboard(props: DashboardProps) {
                         footer={
                             <Delta
                                 value={kpis.plays_delta}
-                                suffix={`${kpis.plays_7d} this week`}
+                                suffix={tr('{0} this week', [kpis.plays_7d])}
                             />
                         }
                         href={superadmin ? '/admin/games' : undefined}
                     />
                     <KpiCard
-                        label="Answer accuracy"
+                        label={tr('Answer accuracy')}
                         value={
                             <span className={rateTone(kpis.accuracy)}>
                                 {formatPercent(kpis.accuracy)}
@@ -380,8 +387,10 @@ export default function Dashboard(props: DashboardProps) {
                         spark={{ data: daily, dataKey: 'points' }}
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                {formatNumber(kpis.points)} points earned ·{' '}
-                                {formatNumber(kpis.players)} players all-time
+                                {formatNumber(kpis.points)}{' '}
+                                {tr('points earned ·')}{' '}
+                                {formatNumber(kpis.players)}{' '}
+                                {tr('players all-time')}
                             </span>
                         }
                         href={superadmin ? '/admin/leaderboard' : undefined}
@@ -391,15 +400,18 @@ export default function Dashboard(props: DashboardProps) {
                 {/* Trend + games */}
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                     <Panel
-                        title="Last 30 days"
-                        description={`${formatNumber(periodTotal)} ${active.label.toLowerCase()} in this period`}
+                        title={tr('Last 30 days')}
+                        description={tr('{0} {1} in this period', [
+                            formatNumber(periodTotal),
+                            tr(active.label).toLowerCase(),
+                        ])}
                         icon={ChartColumnBig}
                         className="xl:col-span-2"
                         actions={
                             <div
                                 className="inline-flex flex-wrap rounded-lg border border-border bg-background p-1"
                                 role="group"
-                                aria-label="Chart metric"
+                                aria-label={tr('Chart metric')}
                             >
                                 {METRICS.map((m) => (
                                     <button
@@ -418,7 +430,7 @@ export default function Dashboard(props: DashboardProps) {
                                             className="size-2 rounded-full"
                                             style={{ background: m.color }}
                                         />
-                                        {m.label}
+                                        {tr(m.label)}
                                     </button>
                                 ))}
                             </div>
@@ -498,7 +510,7 @@ export default function Dashboard(props: DashboardProps) {
                                         }
                                     />
                                     <Area
-                                        type="linear"
+                                        {...smoothLine}
                                         dataKey={metric}
                                         name={active.label}
                                         stroke={active.color}
@@ -511,13 +523,15 @@ export default function Dashboard(props: DashboardProps) {
                     </Panel>
 
                     <Panel
-                        title="Games"
-                        description="Top 5 most played games · all-time plays and success rate"
+                        title={tr('Games')}
+                        description={tr(
+                            'Top 5 most played games · all-time plays and success rate',
+                        )}
                         icon={Gamepad2}
                         actions={
                             superadmin ? (
                                 <PanelLink href="/admin/games">
-                                    Details
+                                    {tr('Details')}
                                 </PanelLink>
                             ) : undefined
                         }
@@ -552,7 +566,7 @@ export default function Dashboard(props: DashboardProps) {
                                                         {formatNumber(
                                                             game.players,
                                                         )}{' '}
-                                                        players ·{' '}
+                                                        {tr('players ·')}{' '}
                                                         <span
                                                             className={cn(
                                                                 'font-semibold',
@@ -568,7 +582,9 @@ export default function Dashboard(props: DashboardProps) {
                                                     </>
                                                 ) : (
                                                     <span className="rounded-full bg-secondary px-2 py-0.5 font-medium text-secondary-foreground">
-                                                        Demo · not tracked
+                                                        {tr(
+                                                            'Demo · not tracked',
+                                                        )}
                                                     </span>
                                                 )}
                                             </span>
@@ -599,14 +615,17 @@ export default function Dashboard(props: DashboardProps) {
                         </ul>
                         <div className="mt-5 grid grid-cols-2 gap-3 border-t border-border pt-4">
                             <MiniStat
-                                label="Profile complete"
+                                label={tr('Profile complete')}
                                 value={`${completeRate}%`}
-                                hint={`${kpis.profile_complete}/${kpis.profiles} players`}
+                                hint={tr('{0}/{1} players', [
+                                    kpis.profile_complete,
+                                    kpis.profiles,
+                                ])}
                             />
                             <MiniStat
-                                label="Schools"
+                                label={tr('Schools')}
                                 value={formatNumber(kpis.schools)}
-                                hint="distinct names"
+                                hint={tr('distinct names')}
                             />
                         </div>
                     </Panel>
@@ -614,18 +633,20 @@ export default function Dashboard(props: DashboardProps) {
 
                 {/* Demographics */}
                 <SectionHeading
-                    title="Who is learning"
-                    description="Player profiles by school level, grade and age"
+                    title={tr('Who is learning')}
+                    description={tr(
+                        'Player profiles by school level, grade and age',
+                    )}
                     actions={
                         superadmin ? (
                             <PanelLink href="/admin/user-statistics">
-                                Open user statistics
+                                {tr('Open user statistics')}
                             </PanelLink>
                         ) : undefined
                     }
                 />
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    <Panel title="School level" icon={School}>
+                    <Panel title={tr('School level')} icon={School}>
                         <ShareBars
                             rows={props.levels.map((level) => ({
                                 key: level.key,
@@ -633,11 +654,11 @@ export default function Dashboard(props: DashboardProps) {
                                 value: level.users,
                                 color: LEVEL_COLORS[level.key],
                             }))}
-                            emptyLabel="No player profiles yet"
+                            emptyLabel={tr('No player profiles yet')}
                         />
                     </Panel>
                     <Panel
-                        title="Grade"
+                        title={tr('Grade')}
                         icon={GraduationCap}
                         actions={
                             <span className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -654,7 +675,7 @@ export default function Dashboard(props: DashboardProps) {
                                                         LEVEL_COLORS[level],
                                                 }}
                                             />
-                                            {LEVEL_SHORT[level]}
+                                            {tr(LEVEL_SHORT[level])}
                                         </span>
                                     ),
                                 )}
@@ -695,7 +716,9 @@ export default function Dashboard(props: DashboardProps) {
                                     <Tooltip
                                         contentStyle={chartTooltipStyle}
                                         cursor={{ fill: 'var(--muted)' }}
-                                        labelFormatter={(v) => `Grade ${v}`}
+                                        labelFormatter={(v) =>
+                                            tr('Grade {0}', [v])
+                                        }
                                     />
                                     <Bar
                                         dataKey="users"
@@ -719,7 +742,7 @@ export default function Dashboard(props: DashboardProps) {
                             </ResponsiveContainer>
                         </div>
                     </Panel>
-                    <Panel title="Age" icon={Cake}>
+                    <Panel title={tr('Age')} icon={Cake}>
                         <div className="h-48">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
@@ -754,7 +777,9 @@ export default function Dashboard(props: DashboardProps) {
                                     <Tooltip
                                         contentStyle={chartTooltipStyle}
                                         cursor={{ fill: 'var(--muted)' }}
-                                        labelFormatter={(v) => `Age ${v}`}
+                                        labelFormatter={(v) =>
+                                            tr('Age {0}', [v])
+                                        }
                                     />
                                     <Bar
                                         dataKey="users"
@@ -770,21 +795,23 @@ export default function Dashboard(props: DashboardProps) {
 
                 {/* Devices */}
                 <SectionHeading
-                    title="How they play"
-                    description="Device type, operating system and browser used to open games"
+                    title={tr('How they play')}
+                    description={tr(
+                        'Device type, operating system and browser used to open games',
+                    )}
                 />
                 <DeviceUsagePanels devices={props.devices} />
 
                 {/* Rankings */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <Panel
-                        title="Top players"
-                        description="All-time points"
+                        title={tr('Top players')}
+                        description={tr('All-time points')}
                         icon={Trophy}
                         actions={
                             superadmin ? (
                                 <PanelLink href="/admin/leaderboard">
-                                    Leaderboard
+                                    {tr('Leaderboard')}
                                 </PanelLink>
                             ) : undefined
                         }
@@ -792,7 +819,7 @@ export default function Dashboard(props: DashboardProps) {
                         {props.topPlayers.length === 0 ? (
                             <EmptyState
                                 icon={Trophy}
-                                title="No ranked players yet"
+                                title={tr('No ranked players yet')}
                             />
                         ) : (
                             <ol className="flex flex-col gap-1">
@@ -833,7 +860,7 @@ export default function Dashboard(props: DashboardProps) {
                                                     )}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">
-                                                    {player.plays} plays
+                                                    {player.plays} {tr('plays')}
                                                 </span>
                                             </span>
                                         </Link>
@@ -843,13 +870,13 @@ export default function Dashboard(props: DashboardProps) {
                         )}
                     </Panel>
                     <Panel
-                        title="Top schools"
-                        description="Total points from their players"
+                        title={tr('Top schools')}
+                        description={tr('Total points from their players')}
                         icon={Medal}
                         actions={
                             superadmin ? (
                                 <PanelLink href="/admin/user-statistics">
-                                    By school
+                                    {tr('By school')}
                                 </PanelLink>
                             ) : undefined
                         }
@@ -857,7 +884,7 @@ export default function Dashboard(props: DashboardProps) {
                         {props.topSchools.length === 0 ? (
                             <EmptyState
                                 icon={School}
-                                title="No school results yet"
+                                title={tr('No school results yet')}
                             />
                         ) : (
                             <ol className="flex flex-col gap-3">
@@ -883,13 +910,14 @@ export default function Dashboard(props: DashboardProps) {
                                                     </span>
                                                 </span>
                                                 <span className="shrink-0 text-xs text-muted-foreground">
-                                                    {school.players} players ·{' '}
+                                                    {school.players}{' '}
+                                                    {tr('players ·')}{' '}
                                                     <span className="font-semibold text-foreground">
                                                         {formatNumber(
                                                             school.points,
                                                         )}
                                                     </span>{' '}
-                                                    pts
+                                                    {tr('pts')}
                                                 </span>
                                             </div>
                                             <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -910,11 +938,11 @@ export default function Dashboard(props: DashboardProps) {
 
                 {/* Live feeds */}
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-                    <Panel title="Latest plays" icon={Gamepad2}>
+                    <Panel title={tr('Latest plays')} icon={Gamepad2}>
                         {props.recentPlays.length === 0 ? (
                             <EmptyState
                                 icon={Gamepad2}
-                                title="No games played yet"
+                                title={tr('No games played yet')}
                             />
                         ) : (
                             <ul className="flex flex-col divide-y divide-border">
@@ -938,7 +966,8 @@ export default function Dashboard(props: DashboardProps) {
                                                 href={`/admin/users/${play.user_id}`}
                                                 className="truncate text-sm font-medium text-foreground hover:underline"
                                             >
-                                                {play.name ?? 'Deleted user'}
+                                                {play.name ??
+                                                    tr('Deleted user')}
                                             </Link>
                                             <span className="truncate text-xs text-muted-foreground">
                                                 {gameLabel(play.game)} ·{' '}
@@ -964,14 +993,19 @@ export default function Dashboard(props: DashboardProps) {
                         )}
                     </Panel>
                     <Panel
-                        title="New learners"
+                        title={tr('New learners')}
                         icon={Sparkles}
                         actions={
-                            <PanelLink href="/admin/users">All users</PanelLink>
+                            <PanelLink href="/admin/users">
+                                {tr('All users')}
+                            </PanelLink>
                         }
                     >
                         {props.recentUsers.length === 0 ? (
-                            <EmptyState icon={UserPlus} title="No users yet" />
+                            <EmptyState
+                                icon={UserPlus}
+                                title={tr('No users yet')}
+                            />
                         ) : (
                             <ul className="flex flex-col divide-y divide-border">
                                 {props.recentUsers.map((user) => (
@@ -1000,7 +1034,9 @@ export default function Dashboard(props: DashboardProps) {
                                                     ]
                                                         .filter(Boolean)
                                                         .join(' · ') ||
-                                                        'Profile not completed'}
+                                                        tr(
+                                                            'Profile not completed',
+                                                        )}
                                                 </span>
                                             </span>
                                             <span className="shrink-0 text-xs text-muted-foreground">
@@ -1013,18 +1049,18 @@ export default function Dashboard(props: DashboardProps) {
                         )}
                     </Panel>
                     <Panel
-                        title="Admin activity"
+                        title={tr('Admin activity')}
                         icon={Activity}
                         actions={
                             <PanelLink href="/admin/activity-log">
-                                Log
+                                {tr('Log')}
                             </PanelLink>
                         }
                     >
                         {props.recentActivity.length === 0 ? (
                             <EmptyState
                                 icon={Activity}
-                                title="No recent activity"
+                                title={tr('No recent activity')}
                             />
                         ) : (
                             <ol className="relative flex flex-col gap-4 border-l border-border pl-4">
@@ -1033,7 +1069,8 @@ export default function Dashboard(props: DashboardProps) {
                                         <span className="absolute top-1.5 -left-[21px] size-2.5 rounded-full border-2 border-card bg-primary" />
                                         <p className="text-sm text-foreground">
                                             <span className="font-medium">
-                                                {log.causer_name ?? 'System'}
+                                                {log.causer_name ??
+                                                    tr('System')}
                                             </span>{' '}
                                             <span className="text-muted-foreground">
                                                 {log.description.toLowerCase()}
@@ -1060,25 +1097,25 @@ export default function Dashboard(props: DashboardProps) {
                         <QuickLink
                             href="/admin/users/create"
                             icon={UserPlus}
-                            label="Add user"
+                            label={tr('Add user')}
                             color="var(--color-bubble-orange)"
                         />
                         <QuickLink
                             href="/admin/questions/create"
                             icon={ListChecks}
-                            label="Add question"
+                            label={tr('Add question')}
                             color="var(--color-bubble-blue)"
                         />
                         <QuickLink
                             href="/admin/user-statistics"
                             icon={UsersRound}
-                            label="User statistics"
+                            label={tr('User statistics')}
                             color="var(--color-bubble-green)"
                         />
                         <QuickLink
                             href="/admin/leaderboard"
                             icon={Trophy}
-                            label="Leaderboard"
+                            label={tr('Leaderboard')}
                             color="var(--color-bubble-purple)"
                         />
                     </div>
@@ -1105,7 +1142,7 @@ function PulseStat({
             <span className="font-display text-2xl leading-none font-bold text-foreground tabular-nums">
                 {formatNumber(value)}
             </span>
-            <span className="text-xs text-muted-foreground">{label}</span>
+            <span className="text-xs text-muted-foreground">{tr(label)}</span>
         </div>
     );
 }
@@ -1121,11 +1158,11 @@ function MiniStat({
 }) {
     return (
         <div className="flex flex-col gap-0.5 rounded-xl bg-muted/50 px-3 py-2.5">
-            <span className="text-xs text-muted-foreground">{label}</span>
+            <span className="text-xs text-muted-foreground">{tr(label)}</span>
             <span className="font-display text-xl font-bold text-foreground tabular-nums">
                 {value}
             </span>
-            <span className="text-xs text-muted-foreground">{hint}</span>
+            <span className="text-xs text-muted-foreground">{tr(hint)}</span>
         </div>
     );
 }
@@ -1167,12 +1204,12 @@ function QuickLink({
             >
                 <Icon className="size-4" />
             </span>
-            {label}
+            {tr(label)}
             <ArrowRight className="ml-auto size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
         </Link>
     );
 }
 
 Dashboard.layout = (page: ReactNode) => (
-    <AdminLayout title="Dashboard">{page}</AdminLayout>
+    <AdminLayout title={tr('Dashboard')}>{page}</AdminLayout>
 );

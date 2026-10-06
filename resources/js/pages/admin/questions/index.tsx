@@ -10,6 +10,7 @@ import {
     useSubjectLabel,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { type PaginatedData } from '@/types/admin';
 import { Head, Link, router } from '@inertiajs/react';
@@ -131,14 +132,14 @@ const BAND_LEVEL: Record<number, string> = {
 
 function correctAnswer(question: QuestionRow): string {
     if (question.type === 'true_false')
-        return question.answer === 1 ? 'True' : 'False';
+        return question.answer === 1 ? tr('True') : tr('False');
     return question.options?.[question.answer]?.id ?? '—';
 }
 
 export default function QuestionsIndex(props: QuestionsProps) {
     return (
         <>
-            <Head title="Question Bank" />
+            <Head title={tr('Question Bank')} />
             {props.mode === 'subjects' ? (
                 <SubjectOverview {...props} />
             ) : (
@@ -162,18 +163,18 @@ function SubjectOverview({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div className="flex flex-col gap-1">
                     <h2 className="font-display text-2xl font-bold text-foreground">
-                        Question Bank
+                        {tr('Question Bank')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        {formatNumber(summary.total)} questions ·{' '}
-                        {formatNumber(summary.active)} active ·{' '}
+                        {formatNumber(summary.total)} {tr('questions ·')}{' '}
+                        {formatNumber(summary.active)} {tr('active ·')}{' '}
                         {games
                             .map(
                                 (game) =>
                                     `${gameLabel(game)} ${summary.byGame[game] ?? 0}`,
                             )
                             .join(' · ')}
-                        . Choose a subject to manage its questions.
+                        {tr('. Choose a subject to manage its questions.')}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -191,10 +192,10 @@ function SubjectOverview({
                         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                         <input
                             type="search"
-                            aria-label="Search all questions"
+                            aria-label={tr('Search all questions')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search all questions…"
+                            placeholder={tr('Search all questions…')}
                             className={cn(fieldClass, 'w-64 pl-9')}
                         />
                     </form>
@@ -204,14 +205,14 @@ function SubjectOverview({
                         data-testid="questions-generate"
                     >
                         <Sparkles className="size-4" />
-                        Generate with AI
+                        {tr('Generate with AI')}
                     </Link>
                     <Link
                         href="/admin/questions/create"
                         className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                         <Plus className="size-4" />
-                        Add question
+                        {tr('Add question')}
                     </Link>
                 </div>
             </div>
@@ -225,11 +226,11 @@ function SubjectOverview({
                             data-testid="questions-ai-link"
                         >
                             <AiBadge />
-                            {formatNumber(summary.ai)} AI-created
+                            {formatNumber(summary.ai)} {tr('AI-created')}
                             {summary.ai_pending > 0 && (
                                 <span className="text-xs text-amber-700 dark:text-amber-300">
-                                    · {formatNumber(summary.ai_pending)} waiting
-                                    for review
+                                    · {formatNumber(summary.ai_pending)}{' '}
+                                    {tr('waiting for review')}
                                 </span>
                             )}
                         </Link>
@@ -240,7 +241,8 @@ function SubjectOverview({
                             className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 hover:bg-accent"
                         >
                             <Coins className="size-4 text-amber-500" />
-                            {formatNumber(summary.bonus)} bonus questions
+                            {formatNumber(summary.bonus)}{' '}
+                            {tr('bonus questions')}
                         </Link>
                     )}
                 </div>
@@ -277,8 +279,8 @@ function SubjectOverview({
                                                 {subjectLabel(stat.subject)}
                                             </span>
                                             <span className="text-xs text-muted-foreground">
-                                                {stat.total} questions ·{' '}
-                                                {stat.active} active
+                                                {stat.total} {tr('questions ·')}{' '}
+                                                {stat.active} {tr('active')}
                                             </span>
                                         </div>
                                     </div>
@@ -288,7 +290,7 @@ function SubjectOverview({
                                 <div className="flex flex-col gap-2">
                                     <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                                         <GraduationCap className="size-3.5" />
-                                        Questions per grade
+                                        {tr('Questions per grade')}
                                     </span>
                                     <ul className="flex flex-col gap-1.5">
                                         {bands.map((band) => {
@@ -300,11 +302,11 @@ function SubjectOverview({
                                                     className="grid grid-cols-[6.5rem_1fr_2rem] items-center gap-2 text-xs"
                                                 >
                                                     <span className="text-foreground">
-                                                        {
+                                                        {tr(
                                                             BAND_LABELS[
                                                                 band.value
-                                                            ]
-                                                        }
+                                                            ],
+                                                        )}
                                                     </span>
                                                     <span className="h-2 overflow-hidden rounded-full bg-muted">
                                                         <span
@@ -325,11 +327,11 @@ function SubjectOverview({
 
                                 <div className="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
                                     <span>
-                                        {formatNumber(stat.answered)} answers
-                                        recorded
+                                        {formatNumber(stat.answered)}{' '}
+                                        {tr('answers recorded')}
                                     </span>
                                     <span>
-                                        Correct:{' '}
+                                        {tr('Correct:')}{' '}
                                         <span
                                             className={cn(
                                                 'font-semibold',
@@ -351,7 +353,7 @@ function SubjectOverview({
                 className="inline-flex w-fit items-center gap-1.5 link text-sm"
             >
                 <Layers className="size-4" />
-                View all questions in one list
+                {tr('View all questions in one list')}
             </Link>
         </div>
     );
@@ -476,15 +478,17 @@ function QuestionList({
                         className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        All subjects
+                        {tr('All subjects')}
                     </Link>
                     <h2 className="font-display text-2xl font-bold text-foreground">
-                        {title}
+                        {tr(title)}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        {formatNumber(questions.total)} questions
-                        {stat ? ` · ${stat.active} active` : ''}. Changes reach
-                        running games within about a minute.
+                        {formatNumber(questions.total)} {tr('questions')}
+                        {stat ? tr(' · {0} active', [stat.active]) : ''}
+                        {tr(
+                            '. Changes reach running games within about a minute.',
+                        )}
                     </p>
                 </div>
                 <Link
@@ -496,20 +500,20 @@ function QuestionList({
                     className="inline-flex w-fit items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                     <Plus className="size-4" />
-                    Add question
+                    {tr('Add question')}
                 </Link>
             </div>
 
             <div
                 className="flex flex-wrap items-center gap-2"
                 role="group"
-                aria-label="Filter by grade"
+                aria-label={tr('Filter by grade')}
             >
                 <GradeTab
                     active={!filters.band}
                     onClick={() => apply({ band: undefined })}
                 >
-                    All grades
+                    {tr('All grades')}
                     {stat && <Count>{stat.total}</Count>}
                 </GradeTab>
                 {bands.map((band) => (
@@ -518,7 +522,7 @@ function QuestionList({
                         active={filters.band === String(band.value)}
                         onClick={() => apply({ band: String(band.value) })}
                     >
-                        {BAND_LABELS[band.value]}
+                        {tr(BAND_LABELS[band.value])}
                         {stat && <Count>{stat.bands[band.value] ?? 0}</Count>}
                     </GradeTab>
                 ))}
@@ -529,22 +533,22 @@ function QuestionList({
                     <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                         type="search"
-                        aria-label="Search questions"
+                        aria-label={tr('Search questions')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search question text or key…"
+                        placeholder={tr('Search question text or key…')}
                         className={cn(fieldClass, 'w-full pl-9')}
                     />
                 </div>
                 <select
-                    aria-label="Subject"
+                    aria-label={tr('Subject')}
                     value={filters.subject ?? 'all'}
                     onChange={(e) =>
                         apply({ subject: e.target.value, band: undefined })
                     }
                     className={fieldClass}
                 >
-                    <option value="all">All subjects</option>
+                    <option value="all">{tr('All subjects')}</option>
                     {subjects.map((value) => (
                         <option key={value} value={value}>
                             {subjectLabel(value)}
@@ -552,14 +556,14 @@ function QuestionList({
                     ))}
                 </select>
                 <select
-                    aria-label="Game"
+                    aria-label={tr('Game')}
                     value={filters.game ?? ''}
                     onChange={(e) =>
                         apply({ game: e.target.value || undefined })
                     }
                     className={fieldClass}
                 >
-                    <option value="">All games</option>
+                    <option value="">{tr('All games')}</option>
                     {games.map((game) => (
                         <option key={game} value={game}>
                             {gameLabel(game)}
@@ -567,31 +571,31 @@ function QuestionList({
                     ))}
                 </select>
                 <select
-                    aria-label="Type"
+                    aria-label={tr('Type')}
                     value={filters.type ?? ''}
                     onChange={(e) =>
                         apply({ type: e.target.value || undefined })
                     }
                     className={fieldClass}
                 >
-                    <option value="">All types</option>
-                    <option value="choice">Multiple choice</option>
-                    <option value="true_false">True / false</option>
+                    <option value="">{tr('All types')}</option>
+                    <option value="choice">{tr('Multiple choice')}</option>
+                    <option value="true_false">{tr('True / false')}</option>
                 </select>
                 <select
-                    aria-label="Status"
+                    aria-label={tr('Status')}
                     value={filters.status ?? ''}
                     onChange={(e) =>
                         apply({ status: e.target.value || undefined })
                     }
                     className={fieldClass}
                 >
-                    <option value="">Any status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="">{tr('Any status')}</option>
+                    <option value="active">{tr('Active')}</option>
+                    <option value="inactive">{tr('Inactive')}</option>
                 </select>
                 <select
-                    aria-label="Source"
+                    aria-label={tr('Source')}
                     value={filters.source ?? ''}
                     onChange={(e) =>
                         apply({ source: e.target.value || undefined })
@@ -599,21 +603,21 @@ function QuestionList({
                     className={fieldClass}
                     data-testid="questions-source-filter"
                 >
-                    <option value="">Any source</option>
-                    <option value="ai">AI-created</option>
-                    <option value="bonus">Bonus questions</option>
+                    <option value="">{tr('Any source')}</option>
+                    <option value="ai">{tr('AI-created')}</option>
+                    <option value="bonus">{tr('Bonus questions')}</option>
                 </select>
                 <select
-                    aria-label="Sort"
+                    aria-label={tr('Sort')}
                     value={filters.sort ?? ''}
                     onChange={(e) =>
                         apply({ sort: e.target.value || undefined })
                     }
                     className={fieldClass}
                 >
-                    <option value="">Sort by grade</option>
-                    <option value="hardest">Hardest first</option>
-                    <option value="most_answered">Most answered</option>
+                    <option value="">{tr('Sort by grade')}</option>
+                    <option value="hardest">{tr('Hardest first')}</option>
+                    <option value="most_answered">{tr('Most answered')}</option>
                 </select>
                 {narrowed && (
                     <button
@@ -629,7 +633,7 @@ function QuestionList({
                         className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                     >
                         <RotateCcw className="size-4" />
-                        Reset
+                        {tr('Reset')}
                     </button>
                 )}
             </div>
@@ -653,17 +657,23 @@ function QuestionList({
                                 }}
                                 onChange={toggleAll}
                                 className="size-4 rounded border-border accent-primary"
-                                aria-label="Select all questions on this page"
+                                aria-label={tr(
+                                    'Select all questions on this page',
+                                )}
                                 data-testid="questions-select-all"
                             />
                             {selectedVisible.length > 0
-                                ? `${formatNumber(selectedVisible.length)} selected`
-                                : `Select all (${formatNumber(visibleIds.length)})`}
+                                ? tr('{0} selected', [
+                                      formatNumber(selectedVisible.length),
+                                  ])
+                                : tr('Select all ({0})', [
+                                      formatNumber(visibleIds.length),
+                                  ])}
                         </label>
                         <div className="ml-auto flex flex-wrap items-center gap-2">
                             <BulkButton
                                 icon={Power}
-                                label="Activate"
+                                label={tr('Activate')}
                                 tone="success"
                                 busy={bulkBusy === 'activate'}
                                 disabled={
@@ -675,7 +685,7 @@ function QuestionList({
                             />
                             <BulkButton
                                 icon={PowerOff}
-                                label="Deactivate"
+                                label={tr('Deactivate')}
                                 busy={bulkBusy === 'deactivate'}
                                 disabled={
                                     selectedVisible.length === 0 ||
@@ -686,7 +696,7 @@ function QuestionList({
                             />
                             <BulkButton
                                 icon={Trash2}
-                                label="Delete"
+                                label={tr('Delete')}
                                 tone="danger"
                                 disabled={
                                     selectedVisible.length === 0 ||
@@ -701,8 +711,10 @@ function QuestionList({
                 {questions.data.length === 0 ? (
                     <EmptyState
                         icon={ListChecks}
-                        title="No questions found"
-                        description="Adjust the filters or add a new question."
+                        title={tr('No questions found')}
+                        description={tr(
+                            'Adjust the filters or add a new question.',
+                        )}
                     />
                 ) : (
                     <ul className="divide-y divide-border">
@@ -721,7 +733,9 @@ function QuestionList({
                                     checked={selected.has(question.id)}
                                     onChange={() => toggleOne(question.id)}
                                     className="mt-1 size-4 shrink-0 rounded border-border accent-primary"
-                                    aria-label={`Select question ${question.key}`}
+                                    aria-label={tr('Select question {0}', [
+                                        question.key,
+                                    ])}
                                     data-testid="question-select"
                                 />
                                 <div
@@ -732,10 +746,10 @@ function QuestionList({
                                     data-testid="question-grade"
                                 >
                                     <span className="text-[10px] font-semibold tracking-wider uppercase opacity-80">
-                                        {BAND_LEVEL[question.band]}
+                                        {tr(BAND_LEVEL[question.band])}
                                     </span>
                                     <span className="text-sm leading-tight font-bold">
-                                        Grade
+                                        {tr('Grade')}
                                     </span>
                                     <span className="text-base leading-tight font-bold tabular-nums">
                                         {bands[question.band]
@@ -752,7 +766,7 @@ function QuestionList({
                                             {question.prompt_id}
                                         </Link>
                                         <p className="text-xs text-muted-foreground">
-                                            Answer:{' '}
+                                            {tr('Answer:')}{' '}
                                             <span className="font-medium text-foreground">
                                                 {correctAnswer(question)}
                                             </span>
@@ -763,7 +777,8 @@ function QuestionList({
                                             )}
                                             {(question.points ?? 0) > 0 && (
                                                 <Badge tone="amber">
-                                                    Bonus +{question.points}
+                                                    {tr('Bonus +')}
+                                                    {question.points}
                                                 </Badge>
                                             )}
                                             {!subject && (
@@ -775,8 +790,8 @@ function QuestionList({
                                             )}
                                             <Badge>
                                                 {question.type === 'choice'
-                                                    ? 'Multiple choice'
-                                                    : 'True / false'}
+                                                    ? tr('Multiple choice')
+                                                    : tr('True / false')}
                                             </Badge>
                                             {question.games.map((game) => (
                                                 <Badge
@@ -787,16 +802,16 @@ function QuestionList({
                                                 </Badge>
                                             ))}
                                             <span className="text-muted-foreground">
-                                                by{' '}
+                                                {tr('by')}{' '}
                                                 {question.author ??
                                                     (question.source ===
                                                     'system'
-                                                        ? 'EduFunHub'
-                                                        : 'Unknown')}
+                                                        ? tr('EduFunHub')
+                                                        : tr('Unknown'))}
                                             </span>
                                             {!question.is_active && (
                                                 <Badge tone="muted">
-                                                    Inactive
+                                                    {tr('Inactive')}
                                                 </Badge>
                                             )}
                                             <span className="font-mono text-muted-foreground">
@@ -822,25 +837,25 @@ function QuestionList({
                                                 {formatNumber(
                                                     question.times_answered,
                                                 )}{' '}
-                                                answers
+                                                {tr('answers')}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <IconButton
-                                                label="Statistics"
+                                                label={tr('Statistics')}
                                                 href={`/admin/questions/${question.id}`}
                                                 icon={ChartNoAxesColumn}
                                             />
                                             <IconButton
-                                                label="Edit"
+                                                label={tr('Edit')}
                                                 href={`/admin/questions/${question.id}/edit`}
                                                 icon={Pencil}
                                             />
                                             <IconButton
                                                 label={
                                                     question.is_active
-                                                        ? 'Deactivate'
-                                                        : 'Activate'
+                                                        ? tr('Deactivate')
+                                                        : tr('Activate')
                                                 }
                                                 icon={Power}
                                                 onClick={() =>
@@ -859,7 +874,7 @@ function QuestionList({
                                                 }
                                             />
                                             <IconButton
-                                                label="Delete"
+                                                label={tr('Delete')}
                                                 icon={Trash2}
                                                 onClick={() =>
                                                     setDeleteTarget(question)
@@ -878,18 +893,18 @@ function QuestionList({
             {questions.total > 0 && questions.last_page > 1 && (
                 <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
                     <span>
-                        Showing {questions.from}–{questions.to} of{' '}
-                        {questions.total}
+                        {tr('Showing')} {questions.from}–{questions.to}{' '}
+                        {tr('of')} {questions.total}
                     </span>
                     <div className="flex items-center gap-1">
                         <PageLink
                             href={prev?.url ?? null}
-                            label="Previous"
+                            label={tr('Previous')}
                             icon={ChevronLeft}
                         />
                         <PageLink
                             href={next?.url ?? null}
-                            label="Next"
+                            label={tr('Next')}
                             icon={ChevronRight}
                         />
                     </div>
@@ -913,13 +928,14 @@ function QuestionList({
                             id="bulk-delete-title"
                             className="text-lg font-semibold text-foreground"
                         >
-                            Delete {formatNumber(selectedVisible.length)}{' '}
-                            questions?
+                            {tr('Delete')}{' '}
+                            {formatNumber(selectedVisible.length)}{' '}
+                            {tr('questions?')}
                         </h3>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            The selected questions and their recorded answers
-                            will be removed. Deactivate them instead to keep
-                            their statistics.
+                            {tr(
+                                'The selected questions and their recorded answers will be removed. Deactivate them instead to keep their statistics.',
+                            )}
                         </p>
                         <div className="mt-6 flex items-center justify-end gap-3">
                             <button
@@ -928,7 +944,7 @@ function QuestionList({
                                 disabled={bulkBusy !== null}
                                 className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                             >
-                                Cancel
+                                {tr('Cancel')}
                             </button>
                             <button
                                 type="button"
@@ -940,7 +956,7 @@ function QuestionList({
                                 {bulkBusy === 'delete' && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                Delete
+                                {tr('Delete')}
                             </button>
                         </div>
                     </div>
@@ -963,13 +979,15 @@ function QuestionList({
                             id="delete-question-title"
                             className="text-lg font-semibold text-foreground"
                         >
-                            Delete question?
+                            {tr('Delete question?')}
                         </h3>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            “{deleteTarget.prompt_id}” and its{' '}
-                            {formatNumber(deleteTarget.times_answered)} recorded
-                            answers will be removed. Deactivate it instead to
-                            keep its statistics.
+                            “{deleteTarget.prompt_id}
+                            {tr('” and its')}{' '}
+                            {formatNumber(deleteTarget.times_answered)}{' '}
+                            {tr(
+                                'recorded answers will be removed. Deactivate it instead to keep its statistics.',
+                            )}
                         </p>
                         <div className="mt-6 flex items-center justify-end gap-3">
                             <button
@@ -978,7 +996,7 @@ function QuestionList({
                                 disabled={deleting}
                                 className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                             >
-                                Cancel
+                                {tr('Cancel')}
                             </button>
                             <button
                                 type="button"
@@ -1001,7 +1019,7 @@ function QuestionList({
                                 {deleting && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                Delete
+                                {tr('Delete')}
                             </button>
                         </div>
                     </div>
@@ -1049,7 +1067,7 @@ function BulkButton({
             ) : (
                 <Icon className="size-4" />
             )}
-            {label}
+            {tr(label)}
         </button>
     );
 }
@@ -1130,7 +1148,12 @@ function IconButton({
     );
 
     return href ? (
-        <Link href={href} className={classes} aria-label={label} title={label}>
+        <Link
+            href={href}
+            className={classes}
+            aria-label={tr(label)}
+            title={tr(label)}
+        >
             <Icon className="size-4" />
         </Link>
     ) : (
@@ -1138,8 +1161,8 @@ function IconButton({
             type="button"
             onClick={onClick}
             className={classes}
-            aria-label={label}
-            title={label}
+            aria-label={tr(label)}
+            title={tr(label)}
         >
             <Icon className="size-4" />
         </button>
@@ -1163,7 +1186,7 @@ function PageLink({
             href={href}
             preserveScroll
             className={cn(classes, 'text-foreground hover:bg-muted')}
-            aria-label={label}
+            aria-label={tr(label)}
         >
             <Icon className="size-4" />
         </Link>
@@ -1178,5 +1201,5 @@ function PageLink({
 }
 
 QuestionsIndex.layout = (page: ReactNode) => (
-    <AdminLayout title="Question Bank">{page}</AdminLayout>
+    <AdminLayout title={tr('Question Bank')}>{page}</AdminLayout>
 );

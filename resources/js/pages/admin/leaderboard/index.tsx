@@ -10,6 +10,7 @@ import {
     rateTone,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
 import { Crown, Medal, RotateCcw, School, Search, Trophy } from 'lucide-react';
@@ -116,28 +117,29 @@ export default function Leaderboard({
 
     return (
         <>
-            <Head title="Leaderboard" />
+            <Head title={tr('Leaderboard')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-1">
                     <h2 className="font-display text-2xl font-bold text-foreground">
-                        Leaderboard
+                        {tr('Leaderboard')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        Top 100 active players by points. Filter by game,
-                        education level, grade, age or school.
+                        {tr(
+                            'Top 100 active players by points. Filter by game, education level, grade, age or school.',
+                        )}
                     </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm">
                     <select
-                        aria-label="Game"
+                        aria-label={tr('Game')}
                         value={filters.game ?? ''}
                         onChange={(e) =>
                             apply({ game: e.target.value || null })
                         }
                         className={fieldClass}
                     >
-                        <option value="">All games</option>
+                        <option value="">{tr('All games')}</option>
                         {games
                             .filter((game) => game.tracked)
                             .map((game) => (
@@ -147,14 +149,14 @@ export default function Leaderboard({
                             ))}
                     </select>
                     <select
-                        aria-label="Education level"
+                        aria-label={tr('Education level')}
                         value={filters.level ?? ''}
                         onChange={(e) =>
                             apply({ level: e.target.value || null })
                         }
                         className={fieldClass}
                     >
-                        <option value="">All levels</option>
+                        <option value="">{tr('All levels')}</option>
                         {levels.map((level) => (
                             <option key={level} value={level}>
                                 {LEVEL_LABELS[level] ?? level}
@@ -162,7 +164,7 @@ export default function Leaderboard({
                         ))}
                     </select>
                     <select
-                        aria-label="Grade"
+                        aria-label={tr('Grade')}
                         value={filters.grade ?? ''}
                         onChange={(e) =>
                             apply({
@@ -173,49 +175,49 @@ export default function Leaderboard({
                         }
                         className={fieldClass}
                     >
-                        <option value="">All grades</option>
+                        <option value="">{tr('All grades')}</option>
                         {Array.from({ length: 12 }, (_, i) => i + 1).map(
                             (grade) => (
                                 <option key={grade} value={grade}>
-                                    Grade {grade}
+                                    {tr('Grade')} {grade}
                                 </option>
                             ),
                         )}
                     </select>
                     <select
-                        aria-label="Age group"
+                        aria-label={tr('Age group')}
                         value={filters.age ?? ''}
                         onChange={(e) => apply({ age: e.target.value || null })}
                         className={fieldClass}
                     >
-                        <option value="">All ages</option>
+                        <option value="">{tr('All ages')}</option>
                         {ageGroups.map((group) => (
                             <option key={group} value={group}>
-                                {group} yrs
+                                {group} {tr('yrs')}
                             </option>
                         ))}
                     </select>
                     <select
-                        aria-label="Period"
+                        aria-label={tr('Period')}
                         value={filters.days}
                         onChange={(e) =>
                             apply({ days: Number(e.target.value) })
                         }
                         className={fieldClass}
                     >
-                        <option value={0}>All time</option>
-                        <option value={7}>Last 7 days</option>
-                        <option value={30}>Last 30 days</option>
-                        <option value={90}>Last 90 days</option>
+                        <option value={0}>{tr('All time')}</option>
+                        <option value={7}>{tr('Last 7 days')}</option>
+                        <option value={30}>{tr('Last 30 days')}</option>
+                        <option value={90}>{tr('Last 90 days')}</option>
                     </select>
                     <div className="relative min-w-48 flex-1">
                         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                         <input
                             type="search"
-                            aria-label="School"
+                            aria-label={tr('School')}
                             value={school}
                             onChange={(e) => setSchool(e.target.value)}
-                            placeholder="Filter by school…"
+                            placeholder={tr('Filter by school…')}
                             className={cn(fieldClass, 'w-full pl-9')}
                         />
                     </div>
@@ -233,17 +235,19 @@ export default function Leaderboard({
                             className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                         >
                             <RotateCcw className="size-4" />
-                            Reset
+                            {tr('Reset')}
                         </button>
                     )}
                 </div>
 
                 {entries.length === 0 ? (
-                    <Panel title="Rankings" icon={Trophy}>
+                    <Panel title={tr('Rankings')} icon={Trophy}>
                         <EmptyState
                             icon={Trophy}
-                            title="No players match these filters"
-                            description="Try another game, level or period."
+                            title={tr('No players match these filters')}
+                            description={tr(
+                                'Try another game, level or period.',
+                            )}
                         />
                     </Panel>
                 ) : (
@@ -284,7 +288,8 @@ export default function Leaderboard({
                                                 .join(' · ') || '—'}
                                         </span>
                                         <span className="mt-1 text-lg font-bold text-foreground tabular-nums">
-                                            {formatNumber(entry.points)} pts
+                                            {formatNumber(entry.points)}{' '}
+                                            {tr('pts')}
                                         </span>
                                     </div>
                                 </li>
@@ -293,8 +298,10 @@ export default function Leaderboard({
 
                         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
                             <Panel
-                                title="Rankings"
-                                description={`${entries.length} players`}
+                                title={tr('Rankings')}
+                                description={tr('{0} players', [
+                                    entries.length,
+                                ])}
                                 icon={Medal}
                                 className="xl:col-span-2"
                             >
@@ -306,28 +313,28 @@ export default function Leaderboard({
                                                     #
                                                 </th>
                                                 <th className="px-3 py-2 text-left font-medium">
-                                                    Player
+                                                    {tr('Player')}
                                                 </th>
                                                 <th className="px-3 py-2 text-left font-medium">
-                                                    School
+                                                    {tr('School')}
                                                 </th>
                                                 <th className="px-3 py-2 text-right font-medium">
-                                                    Age
+                                                    {tr('Age')}
                                                 </th>
                                                 <th className="px-3 py-2 text-right font-medium">
-                                                    Grade
+                                                    {tr('Grade')}
                                                 </th>
                                                 <th className="px-3 py-2 text-right font-medium">
-                                                    Plays
+                                                    {tr('Plays')}
                                                 </th>
                                                 <th className="px-3 py-2 text-right font-medium">
-                                                    Accuracy
+                                                    {tr('Accuracy')}
                                                 </th>
                                                 <th className="px-3 py-2 text-right font-medium">
-                                                    Points
+                                                    {tr('Points')}
                                                 </th>
                                                 <th className="py-2 pl-3 text-right font-medium">
-                                                    Last played
+                                                    {tr('Last played')}
                                                 </th>
                                             </tr>
                                         </thead>
@@ -414,18 +421,18 @@ export default function Leaderboard({
                             </Panel>
 
                             <Panel
-                                title="Top schools"
+                                title={tr('Top schools')}
                                 description={
                                     filters.game
                                         ? gameLabel(filters.game)
-                                        : 'All games'
+                                        : tr('All games')
                                 }
                                 icon={School}
                             >
                                 {schools.length === 0 ? (
                                     <EmptyState
                                         icon={School}
-                                        title="No school data yet"
+                                        title={tr('No school data yet')}
                                     />
                                 ) : (
                                     <ol className="flex flex-col divide-y divide-border">
@@ -450,11 +457,12 @@ export default function Leaderboard({
                                                         {row.school}
                                                     </span>
                                                     <span className="text-xs text-muted-foreground">
-                                                        {row.players} players ·{' '}
+                                                        {row.players}{' '}
+                                                        {tr('players ·')}{' '}
                                                         {formatNumber(
                                                             row.plays,
                                                         )}{' '}
-                                                        plays
+                                                        {tr('plays')}
                                                     </span>
                                                 </div>
                                                 <span className="text-sm font-semibold text-foreground tabular-nums">
@@ -474,5 +482,5 @@ export default function Leaderboard({
 }
 
 Leaderboard.layout = (page: ReactNode) => (
-    <AdminLayout title="Leaderboard">{page}</AdminLayout>
+    <AdminLayout title={tr('Leaderboard')}>{page}</AdminLayout>
 );

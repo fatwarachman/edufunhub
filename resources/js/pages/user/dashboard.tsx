@@ -2,6 +2,7 @@ import { BadgeCollection } from '@/components/badge-collection';
 import { type BadgeProgress } from '@/components/badges';
 import InputError from '@/components/input-error';
 import { InstallAppCard } from '@/components/install-app-card';
+import { LanguageToggle } from '@/components/language-toggle';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
@@ -70,7 +71,7 @@ export default function Dashboard({
                     {t('player.welcome', { name: auth.user.name })}
                 </h1>
                 <p className="text-muted-foreground">{t('player.intro')}</p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <NavButton
                         href="/portal"
                         icon={Trophy}
@@ -82,6 +83,7 @@ export default function Dashboard({
                         icon={Gamepad2}
                         label={t('nav.games')}
                     />
+                    <LanguageToggle />
                 </div>
             </div>
             <div className="grid gap-7 lg:grid-cols-[320px_minmax(0,1fr)]">

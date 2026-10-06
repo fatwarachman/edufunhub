@@ -1,5 +1,6 @@
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { type AdminUser, type Role } from '@/types/admin';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -45,15 +46,15 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
 
     return (
         <>
-            <Head title={`Edit ${user.name}`} />
+            <Head title={tr('Edit {0}', [user.name])} />
 
             <div className="w-full space-y-6">
                 <div>
                     <h2 className="font-display text-2xl font-bold text-foreground">
-                        Edit User
+                        {tr('Edit User')}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                        Update information for {user.name}
+                        {tr('Update information for')} {user.name}
                     </p>
                 </div>
 
@@ -61,21 +62,21 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                 <div className="flex flex-wrap gap-4 rounded-xl border border-border bg-muted/40 px-5 py-3 text-xs text-muted-foreground">
                     <span>
                         <span className="font-medium text-foreground">
-                            Joined:
+                            {tr('Joined:')}
                         </span>{' '}
                         {formatDate(user.created_at)}
                     </span>
                     {user.last_seen_at && (
                         <span>
                             <span className="font-medium text-foreground">
-                                Last seen:
+                                {tr('Last seen:')}
                             </span>{' '}
                             {formatDate(user.last_seen_at)}
                         </span>
                     )}
                     {user.email_verified_at && (
                         <span className="text-green-600 dark:text-green-400">
-                            ✓ Email verified
+                            {tr('✓ Email verified')}
                         </span>
                     )}
                 </div>
@@ -88,7 +89,7 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                                 htmlFor="name"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Full name
+                                {tr('Full name')}
                             </label>
                             <input
                                 id="name"
@@ -109,7 +110,7 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                                 htmlFor="email"
                                 className="text-sm font-medium text-foreground"
                             >
-                                Email address
+                                {tr('Email address')}
                             </label>
                             <input
                                 id="email"
@@ -130,9 +131,9 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                                 htmlFor="password"
                                 className="text-sm font-medium text-foreground"
                             >
-                                New password{' '}
+                                {tr('New password')}{' '}
                                 <span className="font-normal text-muted-foreground">
-                                    (leave blank to keep current)
+                                    {tr('(leave blank to keep current)')}
                                 </span>
                             </label>
                             <div className="relative">
@@ -144,7 +145,9 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                                         setData('password', e.target.value)
                                     }
                                     className="h-9 w-full rounded-lg border border-input bg-background px-3 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                    placeholder="Leave blank to keep current"
+                                    placeholder={tr(
+                                        'Leave blank to keep current',
+                                    )}
                                     autoComplete="new-password"
                                 />
                                 <button
@@ -153,8 +156,8 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                                     className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                     aria-label={
                                         showPassword
-                                            ? 'Hide password'
-                                            : 'Show password'
+                                            ? tr('Hide password')
+                                            : tr('Show password')
                                     }
                                 >
                                     {showPassword ? (
@@ -173,7 +176,7 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                                     htmlFor="password_confirmation"
                                     className="text-sm font-medium text-foreground"
                                 >
-                                    Confirm new password
+                                    {tr('Confirm new password')}
                                 </label>
                                 <input
                                     id="password_confirmation"
@@ -197,7 +200,7 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                         {/* Roles */}
                         <fieldset className="flex flex-col gap-2">
                             <legend className="text-sm font-medium text-foreground">
-                                Roles
+                                {tr('Roles')}
                             </legend>
                             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                 {roles.map((role) => (
@@ -218,13 +221,13 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                                                 {role.name}
                                                 {role.is_system && (
                                                     <span className="ml-1.5 rounded-full bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
-                                                        System
+                                                        {tr('System')}
                                                     </span>
                                                 )}
                                             </p>
                                             {role.description && (
                                                 <p className="text-xs text-muted-foreground">
-                                                    {role.description}
+                                                    {tr(role.description)}
                                                 </p>
                                             )}
                                         </div>
@@ -240,7 +243,7 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                                 href={`/admin/users/${user.id}`}
                                 className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                             >
-                                Cancel
+                                {tr('Cancel')}
                             </Link>
                             <button
                                 type="submit"
@@ -250,7 +253,7 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                                 {processing && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                Save Changes
+                                {tr('Save Changes')}
                             </button>
                         </div>
                     </form>
@@ -261,5 +264,5 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
 }
 
 EditUser.layout = (page: ReactNode) => (
-    <AdminLayout title="Edit User">{page}</AdminLayout>
+    <AdminLayout title={tr('Edit User')}>{page}</AdminLayout>
 );

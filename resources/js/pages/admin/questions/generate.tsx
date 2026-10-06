@@ -8,6 +8,7 @@ import {
 } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
@@ -51,7 +52,8 @@ interface Props {
     errors?: Record<string, string>;
 }
 
-const gradeLabel = (grade: number) => (grade === 0 ? 'TK' : `Grade ${grade}`);
+const gradeLabel = (grade: number) =>
+    grade === 0 ? tr('TK') : tr('Grade {0}', [grade]);
 
 export default function GenerateQuestions({
     ai,
@@ -108,7 +110,7 @@ export default function GenerateQuestions({
 
     return (
         <AdminLayout>
-            <Head title="Generate questions" />
+            <Head title={tr('Generate questions')} />
             <div className="flex w-full flex-col gap-6">
                 <div>
                     <Link
@@ -116,16 +118,18 @@ export default function GenerateQuestions({
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        Question Bank
+                        {tr('Question Bank')}
                     </Link>
                     <h1 className="mt-2 flex items-center gap-2 text-2xl font-bold text-foreground">
                         <Sparkles className="size-6 text-violet-500" />
-                        Generate questions with AI
+                        {tr('Generate questions with AI')}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Bilingual multiple choice questions per subject and
-                        grade. Every generated question is flagged <AiBadge />{' '}
-                        in the bank ({aiTotal} so far).
+                        {tr(
+                            'Bilingual multiple choice questions per subject and grade. Every generated question is flagged',
+                        )}{' '}
+                        <AiBadge /> {tr('in the bank (')}
+                        {aiTotal} {tr('so far).')}
                     </p>
                 </div>
 
@@ -135,27 +139,29 @@ export default function GenerateQuestions({
                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
                         <span className="flex items-center gap-2">
                             <CircleAlert className="size-4 shrink-0" />
-                            Connect an AI server and choose a model first.
+                            {tr(
+                                'Connect an AI server and choose a model first.',
+                            )}
                         </span>
                         <Link href="/admin/ai-settings" className="link">
-                            Open AI Settings
+                            {tr('Open AI Settings')}
                         </Link>
                     </div>
                 ) : (
                     <p className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Bot className="size-4" />
-                        Model{' '}
+                        {tr('Model')}{' '}
                         <span className="font-mono text-foreground">
                             {ai.model}
                         </span>
                         ·{' '}
                         <Link href="/admin/ai-settings" className="link">
-                            change
+                            {tr('change')}
                         </Link>
                     </p>
                 )}
 
-                <Panel title="What to generate" icon={Sparkles}>
+                <Panel title={tr('What to generate')} icon={Sparkles}>
                     <form
                         onSubmit={submit}
                         className="flex flex-col gap-6"
@@ -164,20 +170,23 @@ export default function GenerateQuestions({
                         <div
                             className="grid gap-2 sm:grid-cols-2"
                             role="radiogroup"
-                            aria-label="Scope"
+                            aria-label={tr('Scope')}
                         >
                             <ScopeCard
                                 selected={data.scope === 'all'}
                                 onSelect={() => setData('scope', 'all')}
-                                title="Every subject and grade"
-                                detail={`${subjects.length} subjects × ${grades.length} grades (TK–12)`}
+                                title={tr('Every subject and grade')}
+                                detail={tr(
+                                    '{0} subjects × {1} grades (TK–12)',
+                                    [subjects.length, grades.length],
+                                )}
                                 testId="scope-all"
                             />
                             <ScopeCard
                                 selected={data.scope === 'custom'}
                                 onSelect={() => setData('scope', 'custom')}
-                                title="Chosen subjects and grades"
-                                detail="Pick below"
+                                title={tr('Chosen subjects and grades')}
+                                detail={tr('Pick below')}
                                 testId="scope-custom"
                             />
                         </div>
@@ -185,7 +194,7 @@ export default function GenerateQuestions({
                         {data.scope === 'custom' && (
                             <>
                                 <ChipGroup
-                                    label="Subjects"
+                                    label={tr('Subjects')}
                                     error={errors.subjects}
                                     onAll={() =>
                                         setData(
@@ -219,7 +228,7 @@ export default function GenerateQuestions({
                                     ))}
                                 </ChipGroup>
                                 <ChipGroup
-                                    label="Grades"
+                                    label={tr('Grades')}
                                     error={errors.grades}
                                     onAll={() =>
                                         setData(
@@ -254,7 +263,7 @@ export default function GenerateQuestions({
                         <div className="grid gap-5 sm:grid-cols-[200px_minmax(0,1fr)]">
                             <label className="flex flex-col gap-1.5">
                                 <span className="text-sm font-medium text-foreground">
-                                    Questions per subject & grade
+                                    {tr('Questions per subject & grade')}
                                 </span>
                                 <input
                                     type="number"
@@ -273,7 +282,7 @@ export default function GenerateQuestions({
                                 <InputError message={errors.per_combination} />
                             </label>
                             <ChipGroup
-                                label="Use in games"
+                                label={tr('Use in games')}
                                 error={errors.games}
                             >
                                 {games.map((game) => (
@@ -303,10 +312,11 @@ export default function GenerateQuestions({
                                 className="mt-0.5 size-4 rounded border-input"
                             />
                             <span>
-                                Activate immediately
+                                {tr('Activate immediately')}
                                 <span className="block text-xs text-muted-foreground">
-                                    Off: questions wait inactive so you can
-                                    review them first (recommended).
+                                    {tr(
+                                        'Off: questions wait inactive so you can review them first (recommended).',
+                                    )}
                                 </span>
                             </span>
                         </label>
@@ -321,10 +331,10 @@ export default function GenerateQuestions({
                                 )}
                                 data-testid="gen-total"
                             >
-                                {pickedSubjects.length} subjects ×{' '}
-                                {pickedGrades.length} grades ×{' '}
+                                {pickedSubjects.length} {tr('subjects ×')}{' '}
+                                {pickedGrades.length} {tr('grades ×')}{' '}
                                 {data.per_combination} = <b>{total}</b>{' '}
-                                questions (max {maxTotal})
+                                {tr('questions (max')} {maxTotal})
                             </p>
                             <button
                                 type="submit"
@@ -343,22 +353,22 @@ export default function GenerateQuestions({
                                 ) : (
                                     <Sparkles className="size-4" />
                                 )}
-                                Generate {total} questions
+                                {tr('Generate')} {total} {tr('questions')}
                             </button>
                         </div>
                     </form>
                 </Panel>
 
                 <Panel
-                    title="Recent requests"
+                    title={tr('Recent requests')}
                     icon={History}
                     description={
-                        running ? 'Updating every few seconds…' : undefined
+                        running ? tr('Updating every few seconds…') : undefined
                     }
                 >
                     {generations.length === 0 ? (
                         <p className="py-4 text-center text-sm text-muted-foreground">
-                            Nothing generated yet.
+                            {tr('Nothing generated yet.')}
                         </p>
                     ) : (
                         <ul
@@ -396,10 +406,11 @@ function GenerationRow({ generation: g }: { generation: Generation }) {
                     ) : (
                         <CircleCheck className="size-4 text-emerald-500" />
                     )}
-                    {g.created_count} created
+                    {g.created_count} {tr('created')}
                     {g.skipped_count > 0 && (
                         <span className="text-xs font-normal text-muted-foreground">
-                            · {g.skipped_count} rejected (invalid or duplicate)
+                            · {g.skipped_count}{' '}
+                            {tr('rejected (invalid or duplicate)')}
                         </span>
                     )}
                 </span>
@@ -411,7 +422,8 @@ function GenerationRow({ generation: g }: { generation: Generation }) {
             <p className="text-xs text-muted-foreground">
                 {g.subjects.map((subject) => subjectLabel(subject)).join(', ')}{' '}
                 · {g.grades.map(gradeLabel).join(', ')} · {g.per_combination}{' '}
-                each · {g.activate ? 'active' : 'inactive for review'}
+                {tr('each ·')}{' '}
+                {g.activate ? 'active' : tr('inactive for review')}
             </p>
             {live && (
                 <div
@@ -433,7 +445,7 @@ function GenerationRow({ generation: g }: { generation: Generation }) {
                     href="/admin/questions?source=ai"
                     className="self-start link text-xs"
                 >
-                    Review AI questions
+                    {tr('Review AI questions')}
                 </Link>
             )}
         </li>
@@ -467,8 +479,10 @@ function ScopeCard({
                     : 'border-border hover:bg-accent',
             )}
         >
-            <span className="text-sm font-medium text-foreground">{title}</span>
-            <span className="text-xs text-muted-foreground">{detail}</span>
+            <span className="text-sm font-medium text-foreground">
+                {tr(title)}
+            </span>
+            <span className="text-xs text-muted-foreground">{tr(detail)}</span>
         </button>
     );
 }
@@ -487,14 +501,14 @@ function ChipGroup({
     return (
         <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 flex w-full items-center justify-between gap-2 text-sm font-medium text-foreground">
-                {label}
+                {tr(label)}
                 {onAll && (
                     <button
                         type="button"
                         onClick={onAll}
                         className="text-xs font-normal text-muted-foreground underline underline-offset-2 hover:text-foreground"
                     >
-                        Select all / none
+                        {tr('Select all / none')}
                     </button>
                 )}
             </legend>

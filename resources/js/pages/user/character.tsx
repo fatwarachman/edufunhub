@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import { LanguageToggle } from '@/components/language-toggle';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
@@ -187,11 +188,12 @@ export default function Character({
 
     return (
         <PlayerLayout title={t('shop.title')}>
-            <div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
                 <BackButton
                     href="/dashboard"
                     label={t('nav.backToDashboard')}
                 />
+                <LanguageToggle />
             </div>
             <div className="flex flex-wrap items-end justify-between gap-4">
                 <div className="flex flex-col gap-2">

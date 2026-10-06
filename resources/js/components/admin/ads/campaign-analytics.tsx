@@ -1,5 +1,6 @@
 import { tooltipStyle } from '@/components/admin/ads/shared';
 import { Panel, formatNumber, gameLabel } from '@/components/admin/game-stats';
+import { tr } from '@/lib/admin-i18n';
 import {
     BarChart3,
     Clock,
@@ -75,46 +76,53 @@ export function CampaignAnalyticsPanels({
         <div className="flex flex-col gap-6" data-testid="campaign-analytics">
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 <Metric
-                    label="Reach (unique players)"
+                    label={tr('Reach (unique players)')}
                     value={formatNumber(audience.reach)}
-                    hint={`${formatNumber(audience.guest_impressions)} guest impressions`}
+                    hint={tr('{0} guest impressions', [
+                        formatNumber(audience.guest_impressions),
+                    ])}
                     testId="analytics-reach"
                 />
                 <Metric
-                    label="Avg. frequency"
+                    label={tr('Avg. frequency')}
                     value={
                         audience.frequency === null
                             ? '—'
                             : `${audience.frequency}×`
                     }
-                    hint="Impressions per player"
+                    hint={tr('Impressions per player')}
                     testId="analytics-frequency"
                 />
                 <Metric
-                    label="Unique clickers"
+                    label={tr('Unique clickers')}
                     value={formatNumber(audience.unique_clickers)}
-                    hint={`${pct(clickRate)} of reached players`}
+                    hint={tr('{0} of reached players', [pct(clickRate)])}
                 />
                 <Metric
-                    label="Jingle listeners"
+                    label={tr('Jingle listeners')}
                     value={formatNumber(audience.unique_listeners)}
-                    hint={`${formatNumber(totals.plays)} plays in total`}
+                    hint={tr('{0} plays in total', [
+                        formatNumber(totals.plays),
+                    ])}
                 />
                 <Metric
-                    label="Click-through rate"
+                    label={tr('Click-through rate')}
                     value={pct(
                         totals.impressions > 0
                             ? (totals.clicks / totals.impressions) * 100
                             : null,
                     )}
-                    hint={`${formatNumber(totals.clicks)} clicks / ${formatNumber(totals.impressions)} impressions`}
+                    hint={tr('{0} clicks / {1} impressions', [
+                        formatNumber(totals.clicks),
+                        formatNumber(totals.impressions),
+                    ])}
                     testId="analytics-ctr"
                 />
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
                 <Panel
-                    title="Performance by placement"
+                    title={tr('Performance by placement')}
                     icon={BarChart3}
                     className="min-w-0"
                 >
@@ -127,7 +135,7 @@ export function CampaignAnalyticsPanels({
                     />
                 </Panel>
                 <Panel
-                    title="Performance by game"
+                    title={tr('Performance by game')}
                     icon={BarChart3}
                     className="min-w-0"
                 >
@@ -136,7 +144,7 @@ export function CampaignAnalyticsPanels({
                             ...r,
                             label: r.game
                                 ? gameLabel(r.game)
-                                : 'Character shop',
+                                : tr('Character shop'),
                         }))}
                         testId="analytics-games"
                     />
@@ -145,8 +153,8 @@ export function CampaignAnalyticsPanels({
 
             <div className="grid items-start gap-6 xl:grid-cols-3">
                 <Panel
-                    title="Devices"
-                    description="Impressions by device class"
+                    title={tr('Devices')}
+                    description={tr('Impressions by device class')}
                     icon={MonitorSmartphone}
                 >
                     <ShareList
@@ -160,8 +168,8 @@ export function CampaignAnalyticsPanels({
                     />
                 </Panel>
                 <Panel
-                    title="Grades"
-                    description="Impressions by player grade"
+                    title={tr('Grades')}
+                    description={tr('Impressions by player grade')}
                     icon={GraduationCap}
                 >
                     <ShareList
@@ -175,8 +183,10 @@ export function CampaignAnalyticsPanels({
                     />
                 </Panel>
                 <Panel
-                    title="Frequency"
-                    description="How many times each player saw the campaign"
+                    title={tr('Frequency')}
+                    description={tr(
+                        'How many times each player saw the campaign',
+                    )}
                     icon={Users}
                 >
                     <ShareList
@@ -192,8 +202,8 @@ export function CampaignAnalyticsPanels({
             </div>
 
             <Panel
-                title="Impressions by hour of day"
-                description="Server time"
+                title={tr('Impressions by hour of day')}
+                description={tr('Server time')}
                 icon={Clock}
             >
                 <div className="h-48">
@@ -263,12 +273,12 @@ function Metric({
         >
             <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                 <Gauge className="size-3.5" />
-                {label}
+                {tr(label)}
             </span>
             <span className="text-xl font-bold text-foreground tabular-nums">
                 {value}
             </span>
-            <span className="text-xs text-muted-foreground">{hint}</span>
+            <span className="text-xs text-muted-foreground">{tr(hint)}</span>
         </div>
     );
 }
@@ -282,7 +292,9 @@ function PerformanceTable({
 }) {
     if (rows.length === 0) {
         return (
-            <p className="text-sm text-muted-foreground">No delivery yet.</p>
+            <p className="text-sm text-muted-foreground">
+                {tr('No delivery yet.')}
+            </p>
         );
     }
     return (
@@ -293,18 +305,20 @@ function PerformanceTable({
             >
                 <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
                     <tr>
-                        <th className="px-5 py-2.5 font-medium">Name</th>
-                        <th className="px-3 py-2.5 text-right font-medium">
-                            Impressions
+                        <th className="px-5 py-2.5 font-medium">
+                            {tr('Name')}
                         </th>
                         <th className="px-3 py-2.5 text-right font-medium">
-                            Clicks
+                            {tr('Impressions')}
                         </th>
                         <th className="px-3 py-2.5 text-right font-medium">
-                            CTR
+                            {tr('Clicks')}
+                        </th>
+                        <th className="px-3 py-2.5 text-right font-medium">
+                            {tr('CTR')}
                         </th>
                         <th className="px-5 py-2.5 text-right font-medium">
-                            Plays
+                            {tr('Plays')}
                         </th>
                     </tr>
                 </thead>
@@ -312,7 +326,7 @@ function PerformanceTable({
                     {rows.map((row) => (
                         <tr key={row.label}>
                             <td className="px-5 py-2 font-medium text-foreground">
-                                {row.label}
+                                {tr(row.label)}
                             </td>
                             <td className="px-3 py-2 text-right tabular-nums">
                                 {formatNumber(row.impressions)}
@@ -343,7 +357,11 @@ function ShareList({
 }) {
     const total = rows.reduce((sum, row) => sum + row.value, 0);
     if (total === 0) {
-        return <p className="text-sm text-muted-foreground">No data yet.</p>;
+        return (
+            <p className="text-sm text-muted-foreground">
+                {tr('No data yet.')}
+            </p>
+        );
     }
     return (
         <ul className="flex flex-col gap-3" data-testid={testId}>
@@ -353,10 +371,10 @@ function ShareList({
                     <li key={row.label} className="flex flex-col gap-1">
                         <div className="flex justify-between gap-2 text-xs">
                             <span className="font-medium text-foreground">
-                                {row.label}
+                                {tr(row.label)}
                             </span>
                             <span className="text-muted-foreground tabular-nums">
-                                {formatNumber(row.value)} {row.unit} ·{' '}
+                                {formatNumber(row.value)} {tr(row.unit)} ·{' '}
                                 {share.toFixed(0)}%
                                 {row.hint && ` · ${row.hint}`}
                             </span>

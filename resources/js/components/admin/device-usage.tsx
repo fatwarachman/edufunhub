@@ -5,6 +5,7 @@ import {
     gameLabel,
     Panel,
 } from '@/components/admin/game-stats';
+import { tr } from '@/lib/admin-i18n';
 import {
     AppWindow,
     Laptop,
@@ -71,14 +72,18 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
     if (devices.total === 0) {
         return (
             <Panel
-                title="Devices & operating systems"
-                description={`Game opens in the last ${devices.days} days`}
+                title={tr('Devices & operating systems')}
+                description={tr('Game opens in the last {0} days', [
+                    devices.days,
+                ])}
                 icon={MonitorSmartphone}
             >
                 <EmptyState
                     icon={MonitorSmartphone}
-                    title="No game opens recorded yet"
-                    description="Device and OS data is collected each time a player opens a game page."
+                    title={tr('No game opens recorded yet')}
+                    description={tr(
+                        'Device and OS data is collected each time a player opens a game page.',
+                    )}
                 />
             </Panel>
         );
@@ -90,8 +95,11 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
             data-testid="device-usage"
         >
             <Panel
-                title="Device type"
-                description={`${formatNumber(devices.total)} game opens · last ${devices.days} days`}
+                title={tr('Device type')}
+                description={tr('{0} game opens · last {1} days', [
+                    formatNumber(devices.total),
+                    devices.days,
+                ])}
                 icon={MonitorSmartphone}
             >
                 <div className="flex flex-col gap-4">
@@ -111,14 +119,14 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
                                             style={{ color: meta.color }}
                                         />
                                         <span className="truncate">
-                                            {meta.label}
+                                            {tr(meta.label)}
                                         </span>
                                     </span>
                                     <span className="font-display text-xl leading-none font-bold text-foreground tabular-nums">
                                         {share(type.accesses, devices.total)}
                                     </span>
                                     <span className="truncate text-xs text-muted-foreground tabular-nums">
-                                        {formatNumber(type.users)} users
+                                        {formatNumber(type.users)} {tr('users')}
                                     </span>
                                 </div>
                             );
@@ -133,15 +141,16 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
                         }))}
                     />
                     <p className="text-xs text-muted-foreground">
-                        {formatNumber(devices.users)} signed-in players ·{' '}
-                        {formatNumber(devices.guests)} guest opens
+                        {formatNumber(devices.users)}{' '}
+                        {tr('signed-in players ·')}{' '}
+                        {formatNumber(devices.guests)} {tr('guest opens')}
                     </p>
                 </div>
             </Panel>
 
             <Panel
-                title="Operating system"
-                description="Opens per OS, split by device type"
+                title={tr('Operating system')}
+                description={tr('Opens per OS, split by device type')}
                 icon={AppWindow}
             >
                 <ul className="flex flex-col gap-3" data-testid="device-os">
@@ -159,7 +168,7 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
                                     {os.name}
                                 </span>
                                 <span className="text-xs text-muted-foreground tabular-nums">
-                                    {formatNumber(os.users)} users
+                                    {formatNumber(os.users)} {tr('users')}
                                 </span>
                                 <span className="w-12 text-right font-semibold text-foreground tabular-nums">
                                     {formatNumber(os.accesses)}
@@ -172,8 +181,8 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
             </Panel>
 
             <Panel
-                title="Per game & browser"
-                description="Device split for each game"
+                title={tr('Per game & browser')}
+                description={tr('Device split for each game')}
                 icon={Smartphone}
             >
                 <div className="flex flex-col gap-5">
@@ -195,7 +204,7 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
                                                 game.mobile + game.tablet,
                                                 total,
                                             )}{' '}
-                                            mobile/tablet
+                                            {tr('mobile/tablet')}
                                         </span>
                                     </div>
                                     <SplitBar row={game} total={total} />
@@ -263,7 +272,7 @@ function DeviceLegend() {
                         className="size-2 rounded-full"
                         style={{ background: DEVICE_META[type].color }}
                     />
-                    {DEVICE_META[type].label}
+                    {tr(DEVICE_META[type].label)}
                 </span>
             ))}
         </div>

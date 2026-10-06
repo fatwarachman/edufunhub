@@ -1,3 +1,4 @@
+import { tr } from '@/lib/admin-i18n';
 import AdminLayout from '@/layouts/admin-layout';
 import { cn } from '@/lib/utils';
 import { type ActivityLog, type PaginatedData, type PaginationLink } from '@/types/admin';
@@ -35,8 +36,8 @@ function Pagination({ links, from, to, total }: { links: PaginationLink[]; from:
         <div className="flex items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
                 {from && to ? (
-                    <>Showing <span className="font-medium text-foreground">{from}</span> to <span className="font-medium text-foreground">{to}</span> of <span className="font-medium text-foreground">{total}</span></>
-                ) : 'No results'}
+                    <>{tr("Showing")} <span className="font-medium text-foreground">{from}</span> {tr("to")} <span className="font-medium text-foreground">{to}</span> {tr("of")} <span className="font-medium text-foreground">{total}</span></>
+                ) : tr("No results")}
             </p>
             <div className="flex items-center gap-1">
                 {prev?.url && <Link href={prev.url} className="rounded-lg p-2 text-muted-foreground hover:bg-accent" preserveScroll><ChevronLeft className="size-4" /></Link>}
@@ -102,12 +103,12 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
 
     return (
         <>
-            <Head title="Activity Log" />
+            <Head title={tr("Activity Log")} />
 
             <div className="space-y-4">
                 <div>
-                    <h2 className="font-display text-2xl font-bold text-foreground">Activity Log</h2>
-                    <p className="text-sm text-muted-foreground">System-wide activity audit trail</p>
+                    <h2 className="font-display text-2xl font-bold text-foreground">{tr("Activity Log")}</h2>
+                    <p className="text-sm text-muted-foreground">{tr("System-wide activity audit trail")}</p>
                 </div>
 
                 {/* Filters */}
@@ -118,7 +119,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search activity…"
+                            placeholder={tr("Search activity…")}
                             className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
                     </div>
@@ -128,7 +129,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                         onChange={(e) => updateFilters({ user_id: e.target.value || undefined })}
                         className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                        <option value="">All users</option>
+                        <option value="">{tr("All users")}</option>
                         {users.map((u) => (
                             <option key={u.id} value={u.id.toString()}>{u.name}</option>
                         ))}
@@ -139,7 +140,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                         onChange={(e) => updateFilters({ event: e.target.value || undefined })}
                         className="h-9 rounded-lg border border-input bg-background px-3 text-sm capitalize text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
-                        <option value="">All events</option>
+                        <option value="">{tr("All events")}</option>
                         {eventTypes.map((ev) => (
                             <option key={ev} value={ev}>{ev}</option>
                         ))}
@@ -153,7 +154,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                                 value={filters.date_from ?? ''}
                                 onChange={(e) => updateFilters({ date_from: e.target.value || undefined })}
                                 className="h-9 rounded-lg border border-input bg-background pl-9 pr-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                aria-label="From date"
+                                aria-label={tr("From date")}
                             />
                         </div>
                         <span className="text-muted-foreground">–</span>
@@ -162,7 +163,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                             value={filters.date_to ?? ''}
                             onChange={(e) => updateFilters({ date_to: e.target.value || undefined })}
                             className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            aria-label="To date"
+                            aria-label={tr("To date")}
                         />
                     </div>
 
@@ -172,7 +173,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
                         >
                             <X className="size-3.5" />
-                            Clear
+                            {tr("Clear")}
                         </button>
                     )}
                 </div>
@@ -182,17 +183,17 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                     {logs.data.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
                             <Activity className="mb-3 size-10 text-muted-foreground/30" />
-                            <p className="text-sm font-medium text-muted-foreground">No activity found</p>
+                            <p className="text-sm font-medium text-muted-foreground">{tr("No activity found")}</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-border">
-                                        <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">User</th>
-                                        <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Event</th>
-                                        <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Description</th>
-                                        <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</th>
+                                        <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">{tr("User")}</th>
+                                        <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">{tr("Event")}</th>
+                                        <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">{tr("Description")}</th>
+                                        <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">{tr("Date")}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border">
@@ -208,7 +209,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                                                     </div>
                                                 ) : (
                                                     <span className="flex items-center gap-2 text-muted-foreground">
-                                                        <UserIcon className="size-4" /> System
+                                                        <UserIcon className="size-4" /> {tr("System")}
                                                     </span>
                                                 )}
                                             </td>
@@ -226,7 +227,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                                                 )}
                                             </td>
                                             <td className="max-w-sm px-5 py-3 text-muted-foreground">
-                                                <p className="truncate">{log.description}</p>
+                                                <p className="truncate">{tr(log.description)}</p>
                                             </td>
                                             <td className="px-5 py-3 whitespace-nowrap text-muted-foreground">
                                                 {formatDate(log.created_at)}
@@ -244,7 +245,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                     {logs.data.length === 0 ? (
                         <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card py-16 text-center">
                             <Activity className="mb-3 size-10 text-muted-foreground/30" />
-                            <p className="text-sm font-medium text-muted-foreground">No activity found</p>
+                            <p className="text-sm font-medium text-muted-foreground">{tr("No activity found")}</p>
                         </div>
                     ) : (
                         logs.data.map((log) => (
@@ -256,7 +257,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                                         </div>
                                         <div>
                                             <p className="text-sm font-medium text-foreground">
-                                                {log.causer?.name ?? 'System'}
+                                                {log.causer?.name ?? tr("System")}
                                             </p>
                                             <p className="text-xs text-muted-foreground">{formatDate(log.created_at)}</p>
                                         </div>
@@ -273,7 +274,7 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
                                         </span>
                                     )}
                                 </div>
-                                <p className="mt-2 text-sm text-muted-foreground">{log.description}</p>
+                                <p className="mt-2 text-sm text-muted-foreground">{tr(log.description)}</p>
                             </div>
                         ))
                     )}
@@ -286,5 +287,5 @@ export default function ActivityLogPage({ logs, users, filters, eventTypes }: Ac
 }
 
 ActivityLogPage.layout = (page: ReactNode) => (
-    <AdminLayout title="Activity Log">{page}</AdminLayout>
+    <AdminLayout title={tr("Activity Log")}>{page}</AdminLayout>
 );

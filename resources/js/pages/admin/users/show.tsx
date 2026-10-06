@@ -4,6 +4,7 @@ import {
     chartTooltipStyle,
     GameDot,
     KpiCard,
+    smoothLine,
     timeAgo,
     UserAvatar,
 } from '@/components/admin/dashboard-kit';
@@ -22,6 +23,7 @@ import { MatchCard, type MatchRow } from '@/components/admin/match-history';
 import { BadgeMedal, type BadgeProgress } from '@/components/badges';
 import PlayerCharacter from '@/components/player-character';
 import AdminLayout from '@/layouts/admin-layout';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { cn } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
@@ -295,7 +297,7 @@ export default function ShowUser(props: Props) {
                     className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                 >
                     <ArrowLeft className="size-4" />
-                    Back to users
+                    {tr('Back to users')}
                 </Link>
 
                 {/* Identity card */}
@@ -340,10 +342,14 @@ export default function ShowUser(props: Props) {
                                                     : 'bg-green-500',
                                             )}
                                         />
-                                        {suspended ? 'Suspended' : 'Active'}
+                                        {suspended
+                                            ? tr('Suspended')
+                                            : tr('Active')}
                                     </Pill>
                                     {user.is_superadmin && (
-                                        <Pill tone="purple">Super admin</Pill>
+                                        <Pill tone="purple">
+                                            {tr('Super admin')}
+                                        </Pill>
                                     )}
                                     {user.roles.map((role) => (
                                         <Pill key={role.id}>{role.name}</Pill>
@@ -357,13 +363,14 @@ export default function ShowUser(props: Props) {
                                                 .charAt(0)
                                                 .toUpperCase() +
                                                 account.provider.slice(1)}{' '}
-                                            sign-in
+                                            {tr('sign-in')}
                                         </Pill>
                                     ))}
                                     {stats.rank && (
                                         <Pill tone="amber">
                                             <Trophy className="size-3" />
-                                            Rank #{stats.rank}
+                                            {tr('Rank #')}
+                                            {stats.rank}
                                         </Pill>
                                     )}
                                 </div>
@@ -390,15 +397,15 @@ export default function ShowUser(props: Props) {
                             >
                                 <GraduationCap className="size-4" />
                                 {user.is_teacher
-                                    ? 'Remove teacher'
-                                    : 'Make teacher'}
+                                    ? tr('Remove teacher')
+                                    : tr('Make teacher')}
                             </button>
                             <Link
                                 href={`/admin/users/${user.id}/edit`}
                                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                             >
                                 <Edit className="size-4" />
-                                Edit
+                                {tr('Edit')}
                             </Link>
                             {!user.is_superadmin && (
                                 <>
@@ -418,7 +425,9 @@ export default function ShowUser(props: Props) {
                                         ) : (
                                             <ShieldOff className="size-4" />
                                         )}
-                                        {suspended ? 'Activate' : 'Suspend'}
+                                        {suspended
+                                            ? tr('Activate')
+                                            : tr('Suspend')}
                                     </button>
                                     <button
                                         type="button"
@@ -426,7 +435,7 @@ export default function ShowUser(props: Props) {
                                         className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                                     >
                                         <Trash2 className="size-4" />
-                                        Delete
+                                        {tr('Delete')}
                                     </button>
                                 </>
                             )}
@@ -437,19 +446,21 @@ export default function ShowUser(props: Props) {
                 {/* KPIs */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <KpiCard
-                        label="Total points"
+                        label={tr('Total points')}
                         value={formatNumber(stats.points)}
                         icon={Coins}
                         accent="var(--color-bubble-orange)"
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                Spendable {formatNumber(stats.balance)} · spent{' '}
-                                {formatNumber(stats.spent_points)} in shop
+                                {tr('Spendable')} {formatNumber(stats.balance)}{' '}
+                                {tr('· spent')}{' '}
+                                {formatNumber(stats.spent_points)}{' '}
+                                {tr('in shop')}
                             </span>
                         }
                     />
                     <KpiCard
-                        label="Games played"
+                        label={tr('Games played')}
                         value={formatNumber(stats.plays)}
                         icon={Gamepad2}
                         accent="var(--color-bubble-blue)"
@@ -460,12 +471,13 @@ export default function ShowUser(props: Props) {
                         }
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                Last played {timeAgo(stats.last_played_at)}
+                                {tr('Last played')}{' '}
+                                {timeAgo(stats.last_played_at)}
                             </span>
                         }
                     />
                     <KpiCard
-                        label="Accuracy"
+                        label={tr('Accuracy')}
                         value={
                             <span className={rateTone(stats.accuracy)}>
                                 {formatPercent(stats.accuracy)}
@@ -475,13 +487,13 @@ export default function ShowUser(props: Props) {
                         accent="var(--color-bubble-green)"
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                {formatNumber(stats.correct)} correct ·{' '}
-                                {formatNumber(stats.wrong)} wrong
+                                {formatNumber(stats.correct)} {tr('correct ·')}{' '}
+                                {formatNumber(stats.wrong)} {tr('wrong')}
                             </span>
                         }
                     />
                     <KpiCard
-                        label={`Success rate (>${props.passPercent}%)`}
+                        label={tr('Success rate (>{0}%)', [props.passPercent])}
                         value={
                             <span className={rateTone(stats.success_rate)}>
                                 {formatPercent(stats.success_rate)}
@@ -491,7 +503,7 @@ export default function ShowUser(props: Props) {
                         accent="var(--color-bubble-purple)"
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                Time played{' '}
+                                {tr('Time played')}{' '}
                                 {formatDuration(stats.play_seconds || null)}
                             </span>
                         }
@@ -502,18 +514,19 @@ export default function ShowUser(props: Props) {
                     {/* Profile facts */}
                     <div className="flex flex-col gap-6">
                         <Panel
-                            title="Learner profile"
+                            title={tr('Learner profile')}
                             icon={UserRound}
                             actions={
                                 <span className="text-xs text-muted-foreground">
-                                    {completeness}/4 complete
+                                    {completeness}
+                                    {tr('/4 complete')}
                                 </span>
                             }
                         >
                             <dl className="flex flex-col gap-3 text-sm">
                                 <Fact
                                     icon={GraduationCap}
-                                    label="Grade"
+                                    label={tr('Grade')}
                                     value={
                                         profile?.grade
                                             ? `Grade ${profile.grade}`
@@ -522,7 +535,7 @@ export default function ShowUser(props: Props) {
                                 />
                                 <Fact
                                     icon={Cake}
-                                    label="Age"
+                                    label={tr('Age')}
                                     value={
                                         profile?.birth_date
                                             ? `${profile.age} years · ${formatBirthDate(profile.birth_date)}`
@@ -531,17 +544,17 @@ export default function ShowUser(props: Props) {
                                 />
                                 <Fact
                                     icon={School}
-                                    label="Last school"
+                                    label={tr('Last school')}
                                     value={profile?.school_name}
                                 />
                             </dl>
                         </Panel>
                         <Panel
-                            title="Character & items"
+                            title={tr('Character & items')}
                             icon={ShoppingBag}
                             actions={
                                 <span className="text-xs text-muted-foreground">
-                                    {props.shop.items.length} bought
+                                    {props.shop.items.length} {tr('bought')}
                                 </span>
                             }
                         >
@@ -557,7 +570,7 @@ export default function ShowUser(props: Props) {
                                 </div>
                                 {props.shop.items.length === 0 ? (
                                     <p className="text-sm text-muted-foreground">
-                                        No items bought yet.
+                                        {tr('No items bought yet.')}
                                     </p>
                                 ) : (
                                     <ul
@@ -576,7 +589,7 @@ export default function ShowUser(props: Props) {
                                                     {formatNumber(
                                                         item.price_paid,
                                                     )}{' '}
-                                                    pts
+                                                    {tr('pts')}
                                                 </span>
                                             </li>
                                         ))}
@@ -584,16 +597,16 @@ export default function ShowUser(props: Props) {
                                 )}
                             </div>
                         </Panel>
-                        <Panel title="Account" icon={KeyRound}>
+                        <Panel title={tr('Account')} icon={KeyRound}>
                             <dl className="flex flex-col gap-3 text-sm">
                                 <Fact
                                     icon={Calendar}
-                                    label="Joined"
+                                    label={tr('Joined')}
                                     value={formatDate(user.created_at, true)}
                                 />
                                 <Fact
                                     icon={Eye}
-                                    label="Last seen"
+                                    label={tr('Last seen')}
                                     value={
                                         user.last_seen_at
                                             ? `${timeAgo(user.last_seen_at)}`
@@ -602,7 +615,7 @@ export default function ShowUser(props: Props) {
                                 />
                                 <Fact
                                     icon={Mail}
-                                    label="Email verified"
+                                    label={tr('Email verified')}
                                     value={
                                         user.email_verified_at
                                             ? formatDate(user.email_verified_at)
@@ -611,7 +624,7 @@ export default function ShowUser(props: Props) {
                                 />
                                 <Fact
                                     icon={ShieldCheck}
-                                    label="Two-factor"
+                                    label={tr('Two-factor')}
                                     value={
                                         user.two_factor_enabled
                                             ? 'Enabled'
@@ -620,12 +633,12 @@ export default function ShowUser(props: Props) {
                                 />
                                 <Fact
                                     icon={LogIn}
-                                    label="Logins"
+                                    label={tr('Logins')}
                                     value={`${formatNumber(stats.logins)} successful · ${formatNumber(stats.failed_logins)} failed`}
                                 />
                                 <Fact
                                     icon={Clock}
-                                    label="First game"
+                                    label={tr('First game')}
                                     value={formatDate(
                                         stats.first_played_at,
                                         true,
@@ -638,14 +651,17 @@ export default function ShowUser(props: Props) {
                     {/* Learning insight */}
                     <div className="flex flex-col gap-6 xl:col-span-2">
                         <Panel
-                            title="Accuracy trend"
-                            description={`Up to the last 20 scored games · dashed line = ${props.passPercent}% pass mark`}
+                            title={tr('Accuracy trend')}
+                            description={tr(
+                                'Up to the last 20 scored games · dashed line = {0}% pass mark',
+                                [props.passPercent],
+                            )}
                             icon={Target}
                         >
                             {props.trend.length === 0 ? (
                                 <EmptyState
                                     icon={Target}
-                                    title="No scored games yet"
+                                    title={tr('No scored games yet')}
                                 />
                             ) : (
                                 <div className="h-56">
@@ -717,7 +733,7 @@ export default function ShowUser(props: Props) {
                                                 }}
                                             />
                                             <Line
-                                                type="monotone"
+                                                {...smoothLine}
                                                 dataKey="accuracy"
                                                 stroke="var(--color-bubble-orange)"
                                                 strokeWidth={2.5}
@@ -729,11 +745,11 @@ export default function ShowUser(props: Props) {
                             )}
                         </Panel>
                         <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
-                            <Panel title="Per game" icon={Gamepad2}>
+                            <Panel title={tr('Per game')} icon={Gamepad2}>
                                 {props.perGame.length === 0 ? (
                                     <EmptyState
                                         icon={Gamepad2}
-                                        title="Has not played yet"
+                                        title={tr('Has not played yet')}
                                     />
                                 ) : (
                                     <ul className="flex flex-col gap-3">
@@ -763,16 +779,17 @@ export default function ShowUser(props: Props) {
                                                 </div>
                                                 <div className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
                                                     <span>
-                                                        {game.plays} plays
+                                                        {game.plays}{' '}
+                                                        {tr('plays')}
                                                     </span>
                                                     <span>
                                                         {formatNumber(
                                                             game.points,
                                                         )}{' '}
-                                                        pts
+                                                        {tr('pts')}
                                                     </span>
                                                     <span>
-                                                        best {game.best}
+                                                        {tr('best')} {game.best}
                                                     </span>
                                                     <span className="inline-flex items-center gap-1">
                                                         <Clock className="size-3" />
@@ -793,14 +810,18 @@ export default function ShowUser(props: Props) {
                                 )}
                             </Panel>
                             <Panel
-                                title="Subject mastery"
-                                description="From bank questions answered in games"
+                                title={tr('Subject mastery')}
+                                description={tr(
+                                    'From bank questions answered in games',
+                                )}
                                 icon={BookOpenCheck}
                             >
                                 {props.subjects.length === 0 ? (
                                     <EmptyState
                                         icon={BookOpenCheck}
-                                        title="No bank questions answered yet"
+                                        title={tr(
+                                            'No bank questions answered yet',
+                                        )}
                                     />
                                 ) : (
                                     <ul className="flex flex-col gap-3">
@@ -816,8 +837,8 @@ export default function ShowUser(props: Props) {
                                                         )}
                                                     </span>
                                                     <span className="text-xs text-muted-foreground">
-                                                        {row.answered} answered
-                                                        ·{' '}
+                                                        {row.answered}{' '}
+                                                        {tr('answered ·')}{' '}
                                                         <span
                                                             className={cn(
                                                                 'font-semibold',
@@ -855,7 +876,10 @@ export default function ShowUser(props: Props) {
                                 )}
                             </Panel>
                         </div>
-                        <Panel title="Activity · last 30 days" icon={Calendar}>
+                        <Panel
+                            title={tr('Activity · last 30 days')}
+                            icon={Calendar}
+                        >
                             <div className="h-36">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
@@ -914,7 +938,7 @@ export default function ShowUser(props: Props) {
                         <div
                             className="inline-flex rounded-lg border border-border bg-background p-1"
                             role="tablist"
-                            aria-label="User history"
+                            aria-label={tr('User history')}
                         >
                             {(
                                 [
@@ -958,7 +982,7 @@ export default function ShowUser(props: Props) {
                                     )}
                                 >
                                     <item.icon className="size-4" />
-                                    {item.label}
+                                    {tr(item.label)}
                                 </button>
                             ))}
                         </div>
@@ -969,7 +993,7 @@ export default function ShowUser(props: Props) {
                             (props.matches.data.length === 0 ? (
                                 <EmptyState
                                     icon={Swords}
-                                    title="No room or duel matches yet"
+                                    title={tr('No room or duel matches yet')}
                                 />
                             ) : (
                                 <div className="flex flex-col gap-3">
@@ -1010,15 +1034,16 @@ export default function ShowUser(props: Props) {
                             id="delete-user-title"
                             className="text-lg font-semibold text-foreground"
                         >
-                            Delete user
+                            {tr('Delete user')}
                         </h3>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            Delete{' '}
+                            {tr('Delete')}{' '}
                             <strong className="text-foreground">
                                 {user.name}
                             </strong>
-                            ? The account is soft-deleted and can no longer sign
-                            in.
+                            {tr(
+                                '? The account is soft-deleted and can no longer sign in.',
+                            )}
                         </p>
                         <div className="mt-6 flex items-center justify-end gap-3">
                             <button
@@ -1027,7 +1052,7 @@ export default function ShowUser(props: Props) {
                                 disabled={deleting}
                                 className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                             >
-                                Cancel
+                                {tr('Cancel')}
                             </button>
                             <button
                                 type="button"
@@ -1040,7 +1065,7 @@ export default function ShowUser(props: Props) {
                                 }}
                                 className="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-white hover:bg-destructive/90 disabled:opacity-50"
                             >
-                                Delete user
+                                {tr('Delete user')}
                             </button>
                         </div>
                     </div>
@@ -1091,14 +1116,14 @@ function Fact({
     return (
         <div className="flex items-start gap-2">
             <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-            <dt className="shrink-0 text-muted-foreground">{label}</dt>
+            <dt className="shrink-0 text-muted-foreground">{tr(label)}</dt>
             <dd
                 className={cn(
                     'ml-auto min-w-0 text-right font-medium break-words',
                     value ? 'text-foreground' : 'text-muted-foreground',
                 )}
             >
-                {value || 'Not set'}
+                {value || tr('Not set')}
             </dd>
         </div>
     );
@@ -1106,7 +1131,7 @@ function Fact({
 
 function GameHistory({ plays }: { plays: Props['plays'] }) {
     if (plays.data.length === 0) {
-        return <EmptyState icon={Gamepad2} title="No games played yet" />;
+        return <EmptyState icon={Gamepad2} title={tr('No games played yet')} />;
     }
 
     return (
@@ -1116,28 +1141,28 @@ function GameHistory({ plays }: { plays: Props['plays'] }) {
                     <thead>
                         <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
                             <th className="py-2 pr-3 text-left font-medium">
-                                Played
+                                {tr('Played')}
                             </th>
                             <th className="px-3 py-2 text-left font-medium">
-                                Game
+                                {tr('Game')}
                             </th>
                             <th className="px-3 py-2 text-left font-medium">
-                                Mission
+                                {tr('Mission')}
                             </th>
                             <th className="px-3 py-2 text-right font-medium">
-                                Grade
+                                {tr('Grade')}
                             </th>
                             <th className="px-3 py-2 text-right font-medium">
-                                Correct
+                                {tr('Correct')}
                             </th>
                             <th className="px-3 py-2 text-right font-medium">
-                                Accuracy
+                                {tr('Accuracy')}
                             </th>
                             <th className="px-3 py-2 text-right font-medium">
-                                Duration
+                                {tr('Duration')}
                             </th>
                             <th className="py-2 pl-3 text-right font-medium">
-                                Points
+                                {tr('Points')}
                             </th>
                         </tr>
                     </thead>
@@ -1194,12 +1219,13 @@ function GameHistory({ plays }: { plays: Props['plays'] }) {
             {plays.last_page > 1 && (
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                     <span>
-                        Page {plays.current_page} of {plays.last_page}
+                        {tr('Page')} {plays.current_page} {tr('of')}{' '}
+                        {plays.last_page}
                     </span>
                     <div className="flex gap-2">
                         {[
-                            { url: plays.prev_page_url, label: 'Previous' },
-                            { url: plays.next_page_url, label: 'Next' },
+                            { url: plays.prev_page_url, label: tr('Previous') },
+                            { url: plays.next_page_url, label: tr('Next') },
                         ].map((link) =>
                             link.url ? (
                                 <Link
@@ -1210,14 +1236,14 @@ function GameHistory({ plays }: { plays: Props['plays'] }) {
                                     only={['plays']}
                                     className="rounded-lg border border-border px-3 py-1.5 text-foreground hover:bg-muted"
                                 >
-                                    {link.label}
+                                    {tr(link.label)}
                                 </Link>
                             ) : (
                                 <span
                                     key={link.label}
                                     className="rounded-lg border border-border px-3 py-1.5 opacity-40"
                                 >
-                                    {link.label}
+                                    {tr(link.label)}
                                 </span>
                             ),
                         )}
@@ -1241,7 +1267,10 @@ function ActivityTimeline({
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
                 {rows.length === 0 ? (
-                    <EmptyState icon={Activity} title="No activity recorded" />
+                    <EmptyState
+                        icon={Activity}
+                        title={tr('No activity recorded')}
+                    />
                 ) : (
                     <ol className="relative flex flex-col gap-4 border-l border-border pl-5">
                         {rows.map((row) => (
@@ -1257,8 +1286,8 @@ function ActivityTimeline({
                                 <p className="text-sm text-foreground">
                                     <span className="font-medium">
                                         {row.by_self
-                                            ? 'User'
-                                            : (row.causer_name ?? 'System')}
+                                            ? tr('User')
+                                            : (row.causer_name ?? tr('System'))}
                                     </span>{' '}
                                     <span className="text-muted-foreground">
                                         {row.description.toLowerCase()}
@@ -1307,11 +1336,11 @@ function ActivityTimeline({
                 <div className="flex flex-col gap-2">
                     <h4 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                         <Coins className="size-4 text-muted-foreground" />
-                        Points ledger
+                        {tr('Points ledger')}
                     </h4>
                     {ledger.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            No points yet
+                            {tr('No points yet')}
                         </p>
                     ) : (
                         <ul className="flex flex-col divide-y divide-border rounded-xl border border-border">
@@ -1350,11 +1379,11 @@ function ActivityTimeline({
                 <div className="flex flex-col gap-2">
                     <h4 className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                         <Eye className="size-4 text-muted-foreground" />
-                        Impersonation sessions
+                        {tr('Impersonation sessions')}
                     </h4>
                     {impersonations.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
-                            Never impersonated
+                            {tr('Never impersonated')}
                         </p>
                     ) : (
                         <ul className="flex flex-col gap-1 text-xs">
@@ -1364,12 +1393,12 @@ function ActivityTimeline({
                                     className="rounded-lg bg-muted/50 px-3 py-2 text-muted-foreground"
                                 >
                                     <span className="font-medium text-foreground">
-                                        {log.impersonator ?? 'Unknown'}
+                                        {log.impersonator ?? tr('Unknown')}
                                     </span>{' '}
                                     · {formatDateTime(log.started_at)}
                                     {log.ended_at
                                         ? ` – ${formatDateTime(log.ended_at)}`
-                                        : ' (active)'}
+                                        : tr(' (active)')}
                                 </li>
                             ))}
                         </ul>
@@ -1382,7 +1411,7 @@ function ActivityTimeline({
 
 function LoginTable({ rows }: { rows: Props['logins'] }) {
     if (rows.length === 0) {
-        return <EmptyState icon={LogIn} title="No logins recorded" />;
+        return <EmptyState icon={LogIn} title={tr('No logins recorded')} />;
     }
 
     return (
@@ -1391,16 +1420,16 @@ function LoginTable({ rows }: { rows: Props['logins'] }) {
                 <thead>
                     <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
                         <th className="py-2 pr-3 text-left font-medium">
-                            Time
+                            {tr('Time')}
                         </th>
                         <th className="px-3 py-2 text-left font-medium">
-                            Result
+                            {tr('Result')}
                         </th>
                         <th className="px-3 py-2 text-left font-medium">
-                            Device
+                            {tr('Device')}
                         </th>
                         <th className="py-2 pl-3 text-left font-medium">
-                            IP address
+                            {tr('IP address')}
                         </th>
                     </tr>
                 </thead>
@@ -1414,7 +1443,9 @@ function LoginTable({ rows }: { rows: Props['logins'] }) {
                                 <Pill
                                     tone={row.is_successful ? 'green' : 'red'}
                                 >
-                                    {row.is_successful ? 'Success' : 'Failed'}
+                                    {row.is_successful
+                                        ? tr('Success')
+                                        : tr('Failed')}
                                 </Pill>
                             </td>
                             <td className="px-3 py-2.5 text-muted-foreground">
@@ -1432,7 +1463,7 @@ function LoginTable({ rows }: { rows: Props['logins'] }) {
 }
 
 ShowUser.layout = (page: ReactNode) => (
-    <AdminLayout title="User Profile">{page}</AdminLayout>
+    <AdminLayout title={tr('User Profile')}>{page}</AdminLayout>
 );
 
 function MatchProgress({ history }: { history: Props['matchHistory'] }) {
@@ -1440,19 +1471,21 @@ function MatchProgress({ history }: { history: Props['matchHistory'] }) {
 
     return (
         <Panel
-            title="Matches & progress"
+            title={tr('Matches & progress')}
             icon={Swords}
             actions={
                 <span className="text-xs text-muted-foreground">
-                    Rooms, invites and duels
+                    {tr('Rooms, invites and duels')}
                 </span>
             }
         >
             {summary.matches === 0 ? (
                 <EmptyState
                     icon={Swords}
-                    title="No recorded matches yet"
-                    description="Ular Tangga, Teka-Teki Silang and duel matches appear here."
+                    title={tr('No recorded matches yet')}
+                    description={tr(
+                        'Ular Tangga, Teka-Teki Silang and duel matches appear here.',
+                    )}
                 />
             ) : (
                 <div
@@ -1474,7 +1507,7 @@ function MatchProgress({ history }: { history: Props['matchHistory'] }) {
                                 className="rounded-xl border border-border bg-muted/30 px-3 py-2.5"
                             >
                                 <dt className="text-xs text-muted-foreground">
-                                    {label}
+                                    {tr(label)}
                                 </dt>
                                 <dd className="text-lg font-semibold text-foreground tabular-nums">
                                     {value}
@@ -1486,26 +1519,26 @@ function MatchProgress({ history }: { history: Props['matchHistory'] }) {
                     <div className="grid gap-6 lg:grid-cols-2">
                         <div className="flex min-w-0 flex-col gap-2">
                             <h4 className="text-sm font-semibold text-foreground">
-                                Monthly progress
+                                {tr('Monthly progress')}
                             </h4>
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[420px] text-sm">
                                     <thead className="text-left text-xs text-muted-foreground">
                                         <tr>
                                             <th className="py-1.5 font-medium">
-                                                Month
+                                                {tr('Month')}
                                             </th>
                                             <th className="py-1.5 text-right font-medium">
-                                                Matches
+                                                {tr('Matches')}
                                             </th>
                                             <th className="py-1.5 text-right font-medium">
-                                                Win rate
+                                                {tr('Win rate')}
                                             </th>
                                             <th className="py-1.5 text-right font-medium">
-                                                Accuracy
+                                                {tr('Accuracy')}
                                             </th>
                                             <th className="py-1.5 text-right font-medium">
-                                                Avg level
+                                                {tr('Avg level')}
                                             </th>
                                         </tr>
                                     </thead>
@@ -1516,7 +1549,7 @@ function MatchProgress({ history }: { history: Props['matchHistory'] }) {
                                                     {new Date(
                                                         `${row.month}-01T00:00:00`,
                                                     ).toLocaleDateString(
-                                                        'en-GB',
+                                                        adminLocale(),
                                                         {
                                                             month: 'short',
                                                             year: 'numeric',
@@ -1556,10 +1589,12 @@ function MatchProgress({ history }: { history: Props['matchHistory'] }) {
                                         className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground"
                                     >
                                         {gameLabel(game.game_key)}:{' '}
-                                        {game.matches} · avg rank{' '}
+                                        {game.matches} {tr('· avg rank')}{' '}
                                         {game.avg_rank}
                                         {game.best_level !== null &&
-                                            ` · best level ${game.best_level}`}
+                                            tr(' · best level {0}', [
+                                                game.best_level,
+                                            ])}
                                     </span>
                                 ))}
                             </div>
@@ -1567,11 +1602,11 @@ function MatchProgress({ history }: { history: Props['matchHistory'] }) {
 
                         <div className="flex min-w-0 flex-col gap-2">
                             <h4 className="text-sm font-semibold text-foreground">
-                                Played with most
+                                {tr('Played with most')}
                             </h4>
                             {opponents.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">
-                                    Only solo or bot matches so far.
+                                    {tr('Only solo or bot matches so far.')}
                                 </p>
                             ) : (
                                 <ul
@@ -1592,8 +1627,10 @@ function MatchProgress({ history }: { history: Props['matchHistory'] }) {
                                                 </Link>
                                                 <span className="shrink-0 text-xs text-muted-foreground">
                                                     {opponent.grade === 0
-                                                        ? 'TK'
-                                                        : `Grade ${opponent.grade}`}
+                                                        ? tr('TK')
+                                                        : tr('Grade {0}', [
+                                                              opponent.grade,
+                                                          ])}
                                                     {opponent.account &&
                                                         opponent.account !==
                                                             opponent.name &&
@@ -1601,14 +1638,16 @@ function MatchProgress({ history }: { history: Props['matchHistory'] }) {
                                                 </span>
                                             </span>
                                             <span className="text-xs text-muted-foreground tabular-nums">
-                                                {opponent.matches} matches ·{' '}
+                                                {opponent.matches}{' '}
+                                                {tr('matches ·')}{' '}
                                                 <span className="text-emerald-600 dark:text-emerald-400">
                                                     {opponent.wins}W
                                                 </span>{' '}
                                                 <span className="text-red-600 dark:text-red-400">
                                                     {opponent.losses}L
                                                 </span>{' '}
-                                                {opponent.draws}D ·{' '}
+                                                {opponent.draws}
+                                                {tr('D ·')}{' '}
                                                 {timeAgo(
                                                     opponent.last_played_at,
                                                 )}
@@ -1645,14 +1684,17 @@ function BadgePanel({ badges }: { badges: Props['badges'] }) {
         >
             <header className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                    <h3 className="font-semibold text-foreground">Badges</h3>
+                    <h3 className="font-semibold text-foreground">
+                        {tr('Badges')}
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                        Earned from how often the player plays and how many
-                        challenges they complete.
+                        {tr(
+                            'Earned from how often the player plays and how many challenges they complete.',
+                        )}
                     </p>
                 </div>
                 <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-foreground tabular-nums">
-                    {earned.length} / {badges.badges.length} earned
+                    {earned.length} / {badges.badges.length} {tr('earned')}
                 </span>
             </header>
             <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4 2xl:grid-cols-7">
@@ -1662,7 +1704,7 @@ function BadgePanel({ badges }: { badges: Props['badges'] }) {
                         className="flex min-w-0 flex-col gap-0.5 rounded-xl bg-muted/50 px-3 py-2"
                     >
                         <dt className="text-xs leading-tight text-muted-foreground">
-                            {stat.label}
+                            {tr(stat.label)}
                         </dt>
                         <dd className="text-lg font-semibold text-foreground tabular-nums">
                             {badges.stats[stat.key] ?? 0}
@@ -1676,7 +1718,7 @@ function BadgePanel({ badges }: { badges: Props['badges'] }) {
                     <li
                         key={badge.key}
                         className="flex min-w-0 items-center gap-3 rounded-xl border border-border px-3 py-2.5"
-                        title={badge.description}
+                        title={tr(badge.description)}
                     >
                         <BadgeMedal
                             badge={badge}
@@ -1696,7 +1738,7 @@ function BadgePanel({ badges }: { badges: Props['badges'] }) {
                             <span className="text-xs text-foreground/70 tabular-nums">
                                 {badge.earned && badge.earned_at
                                     ? formatDate(badge.earned_at)
-                                    : `${badge.progress}% progress`}
+                                    : tr('{0}% progress', [badge.progress])}
                             </span>
                         </div>
                     </li>

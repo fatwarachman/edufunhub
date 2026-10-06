@@ -14,6 +14,7 @@ use App\Http\Controllers\FloorDropController;
 use App\Http\Controllers\GameInviteController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\KnowledgeTrainController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MiniGameController;
 use App\Http\Controllers\OrderRushController;
 use App\Http\Controllers\PlayerDetailsController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\QuizDuelController;
 use App\Http\Controllers\SkyQuizController;
 use App\Http\Controllers\SnakesAndLaddersController;
 use App\Http\Controllers\Teacher\TeacherQuestionController;
+use App\Http\Controllers\TurboTriviaController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Middleware\EnsurePlayerDetailsComplete;
 use App\Http\Middleware\EnsurePlayerIsActive;
@@ -96,6 +98,11 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::post('/games/order-rush/token', [OrderRushController::class, 'token'])->middleware('throttle:30,1')->name('games.order-rush.token');
         Route::get('/games/port-sorter', [PortSorterController::class, 'show'])->middleware(RecordGameAccess::class.':port-sorter')->name('games.port-sorter');
         Route::post('/games/port-sorter/token', [PortSorterController::class, 'token'])->middleware('throttle:30,1')->name('games.port-sorter.token');
+        Route::get('/games/turbo-trivia', [TurboTriviaController::class, 'show'])->middleware(RecordGameAccess::class.':turbo-trivia')->name('games.turbo-trivia');
+        Route::post('/games/turbo-trivia/token', [TurboTriviaController::class, 'token'])->middleware('throttle:30,1')->name('games.turbo-trivia.token');
+        Route::get('/games/turbo-trivia/qr/{pin}', [TurboTriviaController::class, 'qr'])->where('pin', '[0-9]{6}')->middleware('throttle:60,1')->name('games.turbo-trivia.qr');
+        Route::get('/arena/turbo-trivia/{pin?}', [TurboTriviaController::class, 'arena'])->where('pin', '[0-9]{6}')->middleware(RecordGameAccess::class.':turbo-trivia')->name('games.turbo-trivia.arena');
+        Route::get('/play/turbo-trivia/{pin?}', [TurboTriviaController::class, 'play'])->where('pin', '[0-9]{6}')->middleware(RecordGameAccess::class.':turbo-trivia')->name('games.turbo-trivia.play');
         Route::get('/games/{game}/join/{pin}', GameInviteController::class)->where(['game' => '[a-z-]+', 'pin' => '[0-9]{6}'])->name('games.join');
         Route::post('/games/snakes-and-ladders/token', [SnakesAndLaddersController::class, 'token'])->middleware('throttle:30,1')->name('games.snakes-and-ladders.token');
     });
@@ -108,6 +115,9 @@ Route::post('/admin/impersonate/leave', [ImpersonationController::class, 'leave'
 Route::get('/ads/media/{path}', [AdController::class, 'media'])->where('path', AdMedia::PATH_PATTERN)->name('ads.media');
 Route::post('/ads/track', [AdController::class, 'track'])->middleware('throttle:120,1')->name('ads.track');
 Route::get('/ads/click', [AdController::class, 'click'])->middleware('throttle:60,1')->name('ads.click');
+
+// Language preference: session for guests, saved on the account when signed in.
+Route::patch('/locale', [LocaleController::class, 'update'])->middleware('throttle:30,1')->name('locale.update');
 
 // 2. Legal Pages
 Route::inertia('/privacy', 'legal/privacy')->name('legal.privacy');

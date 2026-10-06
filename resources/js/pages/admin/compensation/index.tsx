@@ -1,6 +1,7 @@
 import { Panel, StatTile } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
@@ -47,7 +48,7 @@ const rupiah = new Intl.NumberFormat('id-ID', {
 });
 
 const gradeName = (grade: number): string =>
-    grade === 0 ? 'TK' : `Grade ${grade}`;
+    grade === 0 ? tr('TK') : tr('Grade {0}', [grade]);
 
 export default function CompensationIndex({
     rates,
@@ -83,17 +84,16 @@ export default function CompensationIndex({
 
     return (
         <>
-            <Head title="Teacher Compensation" />
+            <Head title={tr('Teacher Compensation')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-1">
                     <h2 className="font-display text-2xl font-bold text-foreground">
-                        Teacher Compensation
+                        {tr('Teacher Compensation')}
                     </h2>
                     <p className="max-w-3xl text-sm text-muted-foreground">
-                        Amount a teacher earns each time a player answers one of
-                        the teacher&apos;s questions correctly. The rate follows
-                        the player&apos;s grade and is locked in when the answer
-                        is recorded, so changes only affect future answers.
+                        {tr(
+                            "Amount a teacher earns each time a player answers one of the teacher's questions correctly. The rate follows the player's grade and is locked in when the answer is recorded, so changes only affect future answers.",
+                        )}
                     </p>
                 </div>
 
@@ -111,19 +111,19 @@ export default function CompensationIndex({
                     <StatTile
                         icon={Coins}
                         color="bg-amber-500"
-                        label="Total compensation earned"
+                        label={tr('Total compensation earned')}
                         value={rupiah.format(totalPaid)}
                     />
                     <StatTile
                         icon={Users}
                         color="bg-violet-500"
-                        label="Teachers earning"
+                        label={tr('Teachers earning')}
                         value={teachers.length}
                     />
                     <StatTile
                         icon={GraduationCap}
                         color="bg-sky-500"
-                        label="Last rate change"
+                        label={tr('Last rate change')}
                         value={
                             lastUpdated?.at
                                 ? new Date(lastUpdated.at).toLocaleDateString()
@@ -135,8 +135,8 @@ export default function CompensationIndex({
 
                 <form onSubmit={submit} noValidate>
                     <Panel
-                        title="Rate per correct answer"
-                        description="Set 0 to pay nothing for a grade."
+                        title={tr('Rate per correct answer')}
+                        description={tr('Set 0 to pay nothing for a grade.')}
                         icon={Coins}
                         actions={
                             <button
@@ -148,7 +148,7 @@ export default function CompensationIndex({
                                 {processing && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                Save rates
+                                {tr('Save rates')}
                             </button>
                         }
                     >
@@ -160,7 +160,7 @@ export default function CompensationIndex({
                                 >
                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                         <h4 className="font-semibold text-foreground">
-                                            {level.label}
+                                            {tr(level.label)}
                                         </h4>
                                         {level.grades.length > 1 && (
                                             <ApplyAll
@@ -195,13 +195,15 @@ export default function CompensationIndex({
                 </form>
 
                 <Panel
-                    title="Top earning teachers"
-                    description="Compensation from correct answers to teacher questions."
+                    title={tr('Top earning teachers')}
+                    description={tr(
+                        'Compensation from correct answers to teacher questions.',
+                    )}
                     icon={Users}
                 >
                     {teachers.length === 0 ? (
                         <p className="py-6 text-center text-sm text-muted-foreground">
-                            No teacher has earned compensation yet.
+                            {tr('No teacher has earned compensation yet.')}
                         </p>
                     ) : (
                         <div className="overflow-x-auto">
@@ -209,13 +211,13 @@ export default function CompensationIndex({
                                 <thead>
                                     <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
                                         <th className="py-2 pr-3 text-left font-medium">
-                                            Teacher
+                                            {tr('Teacher')}
                                         </th>
                                         <th className="px-3 py-2 text-right font-medium">
-                                            Paid answers
+                                            {tr('Paid answers')}
                                         </th>
                                         <th className="py-2 pl-3 text-right font-medium">
-                                            Total
+                                            {tr('Total')}
                                         </th>
                                     </tr>
                                 </thead>
@@ -264,7 +266,7 @@ function RateField({
     return (
         <label className="flex flex-col gap-1">
             <span className="text-xs font-medium text-muted-foreground">
-                {label}
+                {tr(label)}
             </span>
             <div
                 className={cn(
@@ -272,7 +274,9 @@ function RateField({
                     error ? 'border-destructive' : 'border-input',
                 )}
             >
-                <span className="pl-3 text-sm text-muted-foreground">Rp</span>
+                <span className="pl-3 text-sm text-muted-foreground">
+                    {tr('Rp')}
+                </span>
                 <input
                     type="number"
                     inputMode="numeric"
@@ -297,10 +301,10 @@ function ApplyAll({ onApply }: { onApply: (value: string) => void }) {
             <input
                 type="number"
                 min={0}
-                placeholder="Rp"
+                placeholder={tr('Rp')}
                 value={value}
                 onChange={(event) => setValue(event.target.value)}
-                aria-label="Amount for every grade in this level"
+                aria-label={tr('Amount for every grade in this level')}
                 className="h-8 w-24 rounded-lg border border-input bg-background px-2 text-right text-xs text-foreground"
             />
             <button
@@ -309,12 +313,12 @@ function ApplyAll({ onApply }: { onApply: (value: string) => void }) {
                 onClick={() => onApply(value)}
                 className="h-8 rounded-lg border border-input px-2 text-xs font-medium text-foreground hover:bg-accent disabled:opacity-50"
             >
-                Apply to all
+                {tr('Apply to all')}
             </button>
         </div>
     );
 }
 
 CompensationIndex.layout = (page: ReactNode) => (
-    <AdminLayout title="Teacher Compensation">{page}</AdminLayout>
+    <AdminLayout title={tr('Teacher Compensation')}>{page}</AdminLayout>
 );

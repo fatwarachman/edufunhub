@@ -5,6 +5,7 @@ import {
 } from '@/components/admin/admin-kit';
 import { fieldClass } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, router, usePage } from '@inertiajs/react';
 import {
@@ -103,19 +104,21 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
 
     return (
         <AdminLayout>
-            <Head title="Sorter Bank" />
+            <Head title={tr('Sorter Bank')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">
-                            Sorter Bank
+                            {tr('Sorter Bank')}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Port Sorter topics. Each set has its own bins (
-                            {limits.minBins}–{limits.maxBins}) and the items
-                            that fall into them. The game service syncs active
-                            sets every minute and never reveals an item&apos;s
-                            bin while it falls.
+                            {tr(
+                                'Port Sorter topics. Each set has its own bins (',
+                            )}
+                            {limits.minBins}–{limits.maxBins}
+                            {tr(
+                                ") and the items that fall into them. The game service syncs active sets every minute and never reveals an item's bin while it falls.",
+                            )}
                         </p>
                     </div>
                     <button
@@ -131,7 +134,7 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
                         className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                     >
                         <Plus className="size-4" />
-                        New sorter set
+                        {tr('New sorter set')}
                     </button>
                 </div>
 
@@ -157,8 +160,8 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
                                             {set.title_id}
                                         </h3>
                                         <p className="text-xs text-muted-foreground">
-                                            {set.bins.length} bins ·{' '}
-                                            {set.items.length} items
+                                            {set.bins.length} {tr('bins ·')}{' '}
+                                            {set.items.length} {tr('items')}
                                         </p>
                                     </div>
                                 </div>
@@ -209,7 +212,7 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
                                     className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-foreground hover:bg-muted"
                                 >
                                     <Pencil className="size-3.5" />
-                                    Edit
+                                    {tr('Edit')}
                                 </button>
                                 <button
                                     type="button"
@@ -227,7 +230,7 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
                                     ) : (
                                         <Eye className="size-3.5" />
                                     )}
-                                    {set.is_active ? 'Hide' : 'Show'}
+                                    {set.is_active ? tr('Hide') : tr('Show')}
                                 </button>
                                 <button
                                     type="button"
@@ -235,7 +238,7 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
                                     className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-red-200 px-3 text-xs font-medium text-red-700 hover:bg-red-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/40"
                                 >
                                     <Trash2 className="size-3.5" />
-                                    Delete
+                                    {tr('Delete')}
                                 </button>
                             </div>
                         </article>
@@ -253,14 +256,16 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete sorter set?"
+                title={tr('Delete sorter set?')}
                 message={
                     <>
-                        <strong>{deleting?.title_id}</strong> is removed from
-                        the bank. Players can no longer pick it.
+                        <strong>{deleting?.title_id}</strong>{' '}
+                        {tr(
+                            'is removed from the bank. Players can no longer pick it.',
+                        )}
                     </>
                 }
-                confirmLabel="Delete"
+                confirmLabel={tr('Delete')}
                 processing={processing}
                 onClose={() => setDeleting(null)}
                 onConfirm={() => {
@@ -411,12 +416,14 @@ function SetEditor({
                         id="sorter-editor-title"
                         className="font-semibold text-foreground"
                     >
-                        {draft.id ? 'Edit sorter set' : 'New sorter set'}
+                        {draft.id
+                            ? tr('Edit sorter set')
+                            : tr('New sorter set')}
                     </h2>
                     <button
                         type="button"
                         onClick={onClose}
-                        aria-label="Close"
+                        aria-label={tr('Close')}
                         className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-muted"
                     >
                         <X className="size-4" />
@@ -425,7 +432,7 @@ function SetEditor({
                 <div className="flex flex-col gap-5 overflow-y-auto px-5 py-4">
                     <div className="grid gap-3 sm:grid-cols-2">
                         <Field
-                            label="Title (Indonesian)"
+                            label={tr('Title (Indonesian)')}
                             error={errors.title_id}
                         >
                             <input
@@ -438,7 +445,10 @@ function SetEditor({
                                 required
                             />
                         </Field>
-                        <Field label="Title (English)" error={errors.title_en}>
+                        <Field
+                            label={tr('Title (English)')}
+                            error={errors.title_en}
+                        >
                             <input
                                 className={fieldClass}
                                 value={draft.title_en ?? ''}
@@ -448,7 +458,7 @@ function SetEditor({
                             />
                         </Field>
                         <Field
-                            label="Instruction (Indonesian)"
+                            label={tr('Instruction (Indonesian)')}
                             error={errors.description_id}
                         >
                             <input
@@ -460,7 +470,7 @@ function SetEditor({
                             />
                         </Field>
                         <Field
-                            label="Instruction (English)"
+                            label={tr('Instruction (English)')}
                             error={errors.description_en}
                         >
                             <input
@@ -476,7 +486,7 @@ function SetEditor({
                     <section className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm font-semibold text-foreground">
-                                Bins (left to right)
+                                {tr('Bins (left to right)')}
                             </h3>
                             <span className="text-xs text-muted-foreground">
                                 {draft.bins.length}/{limits.maxBins}
@@ -495,7 +505,9 @@ function SetEditor({
                             >
                                 <input
                                     type="color"
-                                    aria-label={`Bin ${index + 1} colour`}
+                                    aria-label={tr('Bin {0} colour', [
+                                        index + 1,
+                                    ])}
                                     className="h-9 w-10 cursor-pointer rounded-lg border border-border bg-background"
                                     value={bin.color}
                                     onChange={(e) =>
@@ -503,8 +515,11 @@ function SetEditor({
                                     }
                                 />
                                 <input
-                                    aria-label={`Bin ${index + 1} name (Indonesian)`}
-                                    placeholder="Name (ID), e.g. HTTP/WEB"
+                                    aria-label={tr(
+                                        'Bin {0} name (Indonesian)',
+                                        [index + 1],
+                                    )}
+                                    placeholder={tr('Name (ID), e.g. HTTP/WEB')}
                                     className={cn(fieldClass, 'min-w-0 flex-1')}
                                     value={bin.name_id}
                                     maxLength={24}
@@ -516,8 +531,10 @@ function SetEditor({
                                     required
                                 />
                                 <input
-                                    aria-label={`Bin ${index + 1} name (English)`}
-                                    placeholder="Name (EN)"
+                                    aria-label={tr('Bin {0} name (English)', [
+                                        index + 1,
+                                    ])}
+                                    placeholder={tr('Name (EN)')}
                                     className={cn(fieldClass, 'min-w-0 flex-1')}
                                     value={bin.name_en ?? ''}
                                     maxLength={24}
@@ -531,18 +548,18 @@ function SetEditor({
                                     className="rounded-md px-2 py-1 text-xs font-bold text-white"
                                     style={{ background: bin.color }}
                                 >
-                                    {bin.name_id || `Bin ${index + 1}`}
+                                    {bin.name_id || tr('Bin {0}', [index + 1])}
                                 </span>
                                 <div className="flex gap-1">
                                     <IconButton
-                                        label="Move left"
+                                        label={tr('Move left')}
                                         disabled={index === 0}
                                         onClick={() => moveBin(index, -1)}
                                     >
                                         <ArrowLeft className="size-3.5" />
                                     </IconButton>
                                     <IconButton
-                                        label="Move right"
+                                        label={tr('Move right')}
                                         disabled={
                                             index === draft.bins.length - 1
                                         }
@@ -551,7 +568,7 @@ function SetEditor({
                                         <ArrowRight className="size-3.5" />
                                     </IconButton>
                                     <IconButton
-                                        label="Remove bin and its items"
+                                        label={tr('Remove bin and its items')}
                                         disabled={
                                             draft.bins.length <= limits.minBins
                                         }
@@ -591,18 +608,18 @@ function SetEditor({
                             className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-dashed border-border text-sm text-foreground hover:bg-muted disabled:opacity-50"
                         >
                             <Plus className="size-4" />
-                            Add bin
+                            {tr('Add bin')}
                         </button>
                     </section>
 
                     <section className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm font-semibold text-foreground">
-                                Falling items
+                                {tr('Falling items')}
                             </h3>
                             <span className="text-xs text-muted-foreground">
-                                {draft.items.length}/{limits.maxItems} · level 1
-                                must mix at least two bins
+                                {draft.items.length}/{limits.maxItems}{' '}
+                                {tr('· level 1 must mix at least two bins')}
                             </span>
                         </div>
                         {errors.items && (
@@ -617,8 +634,10 @@ function SetEditor({
                                 data-testid={`sorter-item-${index}`}
                             >
                                 <input
-                                    aria-label={`Item ${index + 1} label`}
-                                    placeholder="Label, e.g. 443"
+                                    aria-label={tr('Item {0} label', [
+                                        index + 1,
+                                    ])}
+                                    placeholder={tr('Label, e.g. 443')}
                                     className={cn(fieldClass, 'w-28')}
                                     value={item.label}
                                     maxLength={limits.maxLabel}
@@ -630,8 +649,11 @@ function SetEditor({
                                     required
                                 />
                                 <input
-                                    aria-label={`Item ${index + 1} hint (Indonesian)`}
-                                    placeholder="Hint (ID), e.g. HTTPS"
+                                    aria-label={tr(
+                                        'Item {0} hint (Indonesian)',
+                                        [index + 1],
+                                    )}
+                                    placeholder={tr('Hint (ID), e.g. HTTPS')}
                                     className={cn(fieldClass, 'min-w-0 flex-1')}
                                     value={item.hint_id ?? ''}
                                     maxLength={40}
@@ -642,8 +664,10 @@ function SetEditor({
                                     }
                                 />
                                 <input
-                                    aria-label={`Item ${index + 1} hint (English)`}
-                                    placeholder="Hint (EN)"
+                                    aria-label={tr('Item {0} hint (English)', [
+                                        index + 1,
+                                    ])}
+                                    placeholder={tr('Hint (EN)')}
                                     className={cn(fieldClass, 'min-w-0 flex-1')}
                                     value={item.hint_en ?? ''}
                                     maxLength={40}
@@ -654,7 +678,7 @@ function SetEditor({
                                     }
                                 />
                                 <select
-                                    aria-label={`Item ${index + 1} bin`}
+                                    aria-label={tr('Item {0} bin', [index + 1])}
                                     className={cn(fieldClass, 'w-36')}
                                     value={item.bin}
                                     onChange={(e) =>
@@ -663,7 +687,7 @@ function SetEditor({
                                     required
                                 >
                                     <option value="" disabled>
-                                        Bin…
+                                        {tr('Bin…')}
                                     </option>
                                     {draft.bins.map((bin, binIndex) => (
                                         <option
@@ -672,12 +696,14 @@ function SetEditor({
                                             disabled={!bin.key}
                                         >
                                             {bin.name_id ||
-                                                `Bin ${binIndex + 1}`}
+                                                tr('Bin {0}', [binIndex + 1])}
                                         </option>
                                     ))}
                                 </select>
                                 <select
-                                    aria-label={`Item ${index + 1} first level`}
+                                    aria-label={tr('Item {0} first level', [
+                                        index + 1,
+                                    ])}
                                     className={cn(fieldClass, 'w-24')}
                                     value={item.level}
                                     onChange={(e) =>
@@ -693,13 +719,13 @@ function SetEditor({
                                                 key={level}
                                                 value={level + 1}
                                             >
-                                                Lv {level + 1}
+                                                {tr('Lv')} {level + 1}
                                             </option>
                                         ),
                                     )}
                                 </select>
                                 <IconButton
-                                    label="Remove item"
+                                    label={tr('Remove item')}
                                     onClick={() =>
                                         setDraft((current) => ({
                                             ...current,
@@ -744,7 +770,7 @@ function SetEditor({
                             className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-dashed border-border text-sm text-foreground hover:bg-muted disabled:opacity-50"
                         >
                             <Plus className="size-4" />
-                            Add item
+                            {tr('Add item')}
                         </button>
                     </section>
 
@@ -754,7 +780,7 @@ function SetEditor({
                             checked={draft.is_active}
                             onChange={(e) => set('is_active', e.target.checked)}
                         />
-                        Active in games
+                        {tr('Active in games')}
                     </label>
                 </div>
                 <footer className="flex justify-end gap-2 border-t border-border px-5 py-3">
@@ -763,7 +789,7 @@ function SetEditor({
                         onClick={onClose}
                         className="h-9 rounded-lg border border-border px-4 text-sm text-foreground hover:bg-muted"
                     >
-                        Cancel
+                        {tr('Cancel')}
                     </button>
                     <button
                         type="submit"
@@ -771,7 +797,7 @@ function SetEditor({
                         data-testid="sorter-save"
                         className="h-9 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                     >
-                        Save
+                        {tr('Save')}
                     </button>
                 </footer>
             </form>
@@ -790,7 +816,7 @@ function Field({
 }) {
     return (
         <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-foreground">{label}</span>
+            <span className="font-medium text-foreground">{tr(label)}</span>
             {children}
             {error && <span className="text-xs text-red-600">{error}</span>}
         </label>
@@ -811,8 +837,8 @@ function IconButton({
     return (
         <button
             type="button"
-            aria-label={label}
-            title={label}
+            aria-label={tr(label)}
+            title={tr(label)}
             disabled={disabled}
             onClick={onClick}
             className="grid size-8 place-items-center rounded-lg border border-border text-foreground hover:bg-muted disabled:opacity-40"

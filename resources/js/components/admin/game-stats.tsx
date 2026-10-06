@@ -1,3 +1,4 @@
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
 import { type ReactNode } from 'react';
@@ -17,6 +18,7 @@ export const GAME_LABELS: Record<string, string> = {
     'economy-heist': 'Economy Heist',
     'order-rush': 'Order Rush TKJ',
     'port-sorter': 'Port Sorter',
+    'turbo-trivia': 'Turbo Trivia',
 };
 
 /**
@@ -111,9 +113,11 @@ export function StatTile({
                 <p className="text-2xl font-bold text-foreground tabular-nums">
                     {value}
                 </p>
-                <p className="text-sm text-muted-foreground">{label}</p>
+                <p className="text-sm text-muted-foreground">{tr(label)}</p>
                 {hint && (
-                    <p className="text-xs text-muted-foreground/80">{hint}</p>
+                    <p className="text-xs text-muted-foreground/80">
+                        {tr(hint)}
+                    </p>
                 )}
             </div>
         </div>
@@ -148,11 +152,11 @@ export function Panel({
                         {Icon && (
                             <Icon className="size-4 shrink-0 text-muted-foreground" />
                         )}
-                        {title}
+                        {tr(title)}
                     </h3>
                     {description && (
                         <p className="text-xs text-muted-foreground">
-                            {description}
+                            {tr(description)}
                         </p>
                     )}
                 </div>
@@ -175,10 +179,12 @@ export function EmptyState({
     return (
         <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
             <Icon className="size-8 text-muted-foreground/40" />
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-sm font-medium text-muted-foreground">
+                {tr(title)}
+            </p>
             {description && (
                 <p className="max-w-sm text-xs text-muted-foreground/70">
-                    {description}
+                    {tr(description)}
                 </p>
             )}
         </div>
@@ -218,19 +224,19 @@ export function BucketTable({
                             {labelHeader}
                         </th>
                         <th className="px-3 py-2 text-left font-medium">
-                            Plays
+                            {tr('Plays')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Players
+                            {tr('Players')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Avg points
+                            {tr('Avg points')}
                         </th>
                         <th className="px-3 py-2 text-right font-medium">
-                            Accuracy
+                            {tr('Accuracy')}
                         </th>
                         <th className="py-2 pl-3 text-right font-medium">
-                            Success
+                            {tr('Success')}
                         </th>
                     </tr>
                 </thead>

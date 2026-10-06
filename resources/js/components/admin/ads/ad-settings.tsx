@@ -1,5 +1,6 @@
 import { buttonPrimary } from '@/components/admin/ads/shared';
 import { Panel, fieldClass } from '@/components/admin/game-stats';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { router, useForm } from '@inertiajs/react';
 import {
@@ -88,13 +89,17 @@ function GlobalSwitch({ enabled }: { enabled: boolean }) {
                 <div>
                     <h3 className="font-semibold text-foreground">
                         {enabled
-                            ? 'Ads are on for all users'
-                            : 'Ads are off for all users'}
+                            ? tr('Ads are on for all users')
+                            : tr('Ads are off for all users')}
                     </h3>
                     <p className="text-sm text-muted-foreground">
                         {enabled
-                            ? 'Turning ads off hides every ad space, sponsor item label and jingle immediately. Campaigns keep their settings.'
-                            : 'No ad space is rendered anywhere. Campaign flights keep running on the calendar but deliver nothing.'}
+                            ? tr(
+                                  'Turning ads off hides every ad space, sponsor item label and jingle immediately. Campaigns keep their settings.',
+                              )
+                            : tr(
+                                  'No ad space is rendered anywhere. Campaign flights keep running on the calendar but deliver nothing.',
+                              )}
                     </p>
                 </div>
             </div>
@@ -123,7 +128,7 @@ function GlobalSwitch({ enabled }: { enabled: boolean }) {
                 data-testid="ads-global-toggle"
             >
                 {processing && <Loader2 className="size-4 animate-spin" />}
-                {enabled ? 'Disable all ads' : 'Enable ads'}
+                {enabled ? tr('Disable all ads') : tr('Enable ads')}
             </button>
         </section>
     );
@@ -148,8 +153,10 @@ function PlacementRules({
 
     return (
         <Panel
-            title="Placement rules"
-            description="Static shows one creative per page view. Rotating cycles through several creatives on the same spot."
+            title={tr('Placement rules')}
+            description={tr(
+                'Static shows one creative per page view. Rotating cycles through several creatives on the same spot.',
+            )}
             icon={SlidersHorizontal}
             actions={
                 <button
@@ -164,7 +171,7 @@ function PlacementRules({
                     data-testid="ads-placements-save"
                 >
                     {processing && <Loader2 className="size-4 animate-spin" />}
-                    Save rules
+                    {tr('Save rules')}
                 </button>
             }
         >
@@ -172,12 +179,20 @@ function PlacementRules({
                 <table className="w-full min-w-[720px] text-sm">
                     <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
                         <tr>
-                            <th className="px-5 py-3 font-medium">Placement</th>
-                            <th className="px-3 py-3 font-medium">Shown</th>
-                            <th className="px-3 py-3 font-medium">Display</th>
-                            <th className="px-3 py-3 font-medium">Every</th>
                             <th className="px-5 py-3 font-medium">
-                                Creatives in rotation
+                                {tr('Placement')}
+                            </th>
+                            <th className="px-3 py-3 font-medium">
+                                {tr('Shown')}
+                            </th>
+                            <th className="px-3 py-3 font-medium">
+                                {tr('Display')}
+                            </th>
+                            <th className="px-3 py-3 font-medium">
+                                {tr('Every')}
+                            </th>
+                            <th className="px-5 py-3 font-medium">
+                                {tr('Creatives in rotation')}
                             </th>
                         </tr>
                     </thead>
@@ -220,8 +235,8 @@ function PlacementRules({
                                             />
                                             <span className="text-xs text-muted-foreground">
                                                 {rule.is_enabled
-                                                    ? 'On'
-                                                    : 'Hidden'}
+                                                    ? tr('On')
+                                                    : tr('Hidden')}
                                             </span>
                                         </label>
                                     </td>
@@ -229,8 +244,8 @@ function PlacementRules({
                                         {fixed ? (
                                             <span className="text-xs text-muted-foreground">
                                                 {key === 'shop.item'
-                                                    ? 'Per item'
-                                                    : 'Once per moment'}
+                                                    ? tr('Per item')
+                                                    : tr('Once per moment')}
                                             </span>
                                         ) : (
                                             <div
@@ -270,8 +285,8 @@ function PlacementRules({
                                                             <Repeat className="size-3" />
                                                         )}
                                                         {mode === 'static'
-                                                            ? 'Static'
-                                                            : 'Rotating'}
+                                                            ? tr('Static')
+                                                            : tr('Rotating')}
                                                     </button>
                                                 ))}
                                             </div>
@@ -310,9 +325,11 @@ function PlacementRules({
                                                             fieldClass,
                                                             'h-8 w-20 disabled:opacity-40',
                                                         )}
-                                                        aria-label="Seconds"
+                                                        aria-label={tr(
+                                                            'Seconds',
+                                                        )}
                                                     />
-                                                    sec
+                                                    {tr('sec')}
                                                 </label>
                                             </td>
                                             <td className="px-5 py-2.5">
@@ -332,7 +349,9 @@ function PlacementRules({
                                                         fieldClass,
                                                         'h-8 disabled:opacity-40',
                                                     )}
-                                                    aria-label="Creatives in rotation"
+                                                    aria-label={tr(
+                                                        'Creatives in rotation',
+                                                    )}
                                                 >
                                                     {Array.from(
                                                         {
@@ -346,7 +365,7 @@ function PlacementRules({
                                                             key={n}
                                                             value={n}
                                                         >
-                                                            up to {n}
+                                                            {tr('up to')} {n}
                                                         </option>
                                                     ))}
                                                 </select>
@@ -361,7 +380,7 @@ function PlacementRules({
             </div>
             {Object.keys(errors).length > 0 && (
                 <p className="mt-6 text-sm text-destructive">
-                    {Object.values(errors)[0]}
+                    {tr(Object.values(errors)[0])}
                 </p>
             )}
         </Panel>
@@ -422,8 +441,11 @@ function ExcludedUsers({
 
     return (
         <Panel
-            title="Users without ads"
-            description={`${total} account(s) never see ads, sponsor labels or jingles`}
+            title={tr('Users without ads')}
+            description={tr(
+                '{0} account(s) never see ads, sponsor labels or jingles',
+                [total],
+            )}
             icon={EyeOff}
         >
             <div className="flex flex-col gap-4">
@@ -432,7 +454,7 @@ function ExcludedUsers({
                     <input
                         value={query}
                         onChange={(event) => setQuery(event.target.value)}
-                        placeholder="Find a user by name or email"
+                        placeholder={tr('Find a user by name or email')}
                         className={cn(fieldClass, 'w-full pl-8')}
                         data-testid="ads-user-search"
                     />
@@ -469,8 +491,8 @@ function ExcludedUsers({
                                     data-testid={`ads-user-toggle-${user.id}`}
                                 >
                                     {user.ads_disabled
-                                        ? 'Show ads'
-                                        : 'Hide ads'}
+                                        ? tr('Show ads')
+                                        : tr('Hide ads')}
                                 </button>
                             </li>
                         ))}
@@ -479,7 +501,7 @@ function ExcludedUsers({
                 {users.length === 0 ? (
                     <p className="flex items-center gap-2 text-sm text-muted-foreground">
                         <UserX className="size-4" />
-                        Everyone sees ads.
+                        {tr('Everyone sees ads.')}
                     </p>
                 ) : (
                     <ul
@@ -499,7 +521,9 @@ function ExcludedUsers({
                                     type="button"
                                     onClick={() => setAds(user.id, false)}
                                     className="inline-flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-                                    aria-label={`Show ads to ${user.name}`}
+                                    aria-label={tr('Show ads to {0}', [
+                                        user.name,
+                                    ])}
                                 >
                                     <X className="size-3.5" />
                                 </button>

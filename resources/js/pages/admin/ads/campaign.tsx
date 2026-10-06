@@ -38,6 +38,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { type AdPlacement } from '@/lib/ads';
 import { cn } from '@/lib/utils';
 import { Head, Link, router, useForm } from '@inertiajs/react';
@@ -155,7 +156,7 @@ export default function CampaignShow(props: Props) {
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        Campaigns
+                        {tr('Campaigns')}
                     </Link>
                     <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
                         <div className="flex min-w-0 items-center gap-3">
@@ -175,7 +176,7 @@ export default function CampaignShow(props: Props) {
                                     {campaign.advertiser_name} ·{' '}
                                     {formatDate(campaign.starts_on)} –{' '}
                                     {formatDate(campaign.ends_on)} (
-                                    {campaign.duration_days} days)
+                                    {campaign.duration_days} {tr('days)')}
                                 </p>
                             </div>
                         </div>
@@ -188,7 +189,7 @@ export default function CampaignShow(props: Props) {
                                     data-testid="campaign-pause"
                                 >
                                     <Pause className="size-4" />
-                                    Pause
+                                    {tr('Pause')}
                                 </button>
                             ) : (
                                 <button
@@ -198,7 +199,7 @@ export default function CampaignShow(props: Props) {
                                     data-testid="campaign-activate"
                                 >
                                     <Play className="size-4" />
-                                    Activate
+                                    {tr('Activate')}
                                 </button>
                             )}
                             <Link
@@ -206,13 +207,13 @@ export default function CampaignShow(props: Props) {
                                 className={buttonGhost}
                             >
                                 <Pencil className="size-4" />
-                                Edit
+                                {tr('Edit')}
                             </Link>
                             <button
                                 type="button"
                                 onClick={() => setDeletingCampaign(true)}
                                 className="inline-flex size-9 items-center justify-center rounded-lg border border-border text-destructive hover:bg-destructive/10"
-                                aria-label="Delete campaign"
+                                aria-label={tr('Delete campaign')}
                             >
                                 <Trash2 className="size-4" />
                             </button>
@@ -224,31 +225,36 @@ export default function CampaignShow(props: Props) {
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <StatTile
-                        label="Impressions"
+                        label={tr('Impressions')}
                         value={formatNumber(campaign.stats.impressions)}
                         hint={
                             capPercent !== null
-                                ? `${capPercent}% of ${formatNumber(campaign.max_impressions)} cap`
-                                : `Today ${formatNumber(campaign.stats.today ?? 0)}`
+                                ? tr('{0}% of {1} cap', [
+                                      capPercent,
+                                      formatNumber(campaign.max_impressions),
+                                  ])
+                                : tr('Today {0}', [
+                                      formatNumber(campaign.stats.today ?? 0),
+                                  ])
                         }
                         icon={Eye}
                         color="bg-sky-500"
                     />
                     <StatTile
-                        label="Clicks"
+                        label={tr('Clicks')}
                         value={formatNumber(campaign.stats.clicks)}
-                        hint={`CTR ${ctr(campaign.stats)}`}
+                        hint={tr('CTR {0}', [ctr(campaign.stats)])}
                         icon={MousePointerClick}
                         color="bg-amber-500"
                     />
                     <StatTile
-                        label="Jingle plays"
+                        label={tr('Jingle plays')}
                         value={formatNumber(campaign.stats.plays)}
                         icon={Music}
                         color="bg-violet-500"
                     />
                     <StatTile
-                        label="Contract value"
+                        label={tr('Contract value')}
                         value={formatRupiah(campaign.contract_value)}
                         hint={`${PRICING_LABELS[campaign.pricing_model]}${campaign.contract_number ? ` · ${campaign.contract_number}` : ''}`}
                         icon={BadgeDollarSign}
@@ -257,8 +263,10 @@ export default function CampaignShow(props: Props) {
                 </div>
 
                 <Panel
-                    title="Creatives"
-                    description="Logo, motto, jingle or sponsored item, and where each may appear"
+                    title={tr('Creatives')}
+                    description={tr(
+                        'Logo, motto, jingle or sponsored item, and where each may appear',
+                    )}
                     icon={ImageIcon}
                     actions={
                         <button
@@ -268,15 +276,17 @@ export default function CampaignShow(props: Props) {
                             data-testid="creative-new"
                         >
                             <Plus className="size-4" />
-                            Add creative
+                            {tr('Add creative')}
                         </button>
                     }
                 >
                     {creatives.length === 0 ? (
                         <EmptyState
                             icon={ImageIcon}
-                            title="No creatives yet"
-                            description="A campaign needs at least one active creative before it can go live."
+                            title={tr('No creatives yet')}
+                            description={tr(
+                                'A campaign needs at least one active creative before it can go live.',
+                            )}
                         />
                     ) : (
                         <div
@@ -298,7 +308,7 @@ export default function CampaignShow(props: Props) {
                 </Panel>
 
                 <div className="grid gap-6">
-                    <Panel title="Daily delivery" icon={Eye}>
+                    <Panel title={tr('Daily delivery')} icon={Eye}>
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
@@ -362,34 +372,34 @@ export default function CampaignShow(props: Props) {
                     totals={campaign.stats}
                 />
 
-                <Panel title="Targeting & contact">
+                <Panel title={tr('Targeting & contact')}>
                     <dl className="grid gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
-                        <Detail label="Games">
+                        <Detail label={tr('Games')}>
                             {campaign.target_games.length === 0
-                                ? 'All games'
+                                ? tr('All games')
                                 : campaign.target_games
                                       .map(gameLabel)
                                       .join(', ')}
                         </Detail>
-                        <Detail label="Grades">
+                        <Detail label={tr('Grades')}>
                             {campaign.grade_min || campaign.grade_max
                                 ? `${campaign.grade_min ?? 1}–${campaign.grade_max ?? 12}`
-                                : 'All grades'}
+                                : tr('All grades')}
                         </Detail>
-                        <Detail label="Weight · daily cap">
+                        <Detail label={tr('Weight · daily cap')}>
                             {campaign.weight}/10 ·{' '}
                             {campaign.daily_max_impressions
                                 ? formatNumber(campaign.daily_max_impressions)
-                                : 'no cap'}
+                                : tr('no cap')}
                         </Detail>
-                        <Detail label="Contact">
+                        <Detail label={tr('Contact')}>
                             {campaign.advertiser.contact_name ?? '—'}
                             {campaign.advertiser.phone &&
                                 ` · ${campaign.advertiser.phone}`}
                         </Detail>
                         {campaign.notes && (
                             <div className="sm:col-span-2 xl:col-span-4">
-                                <Detail label="Notes">
+                                <Detail label={tr('Notes')}>
                                     <span className="whitespace-pre-line">
                                         {campaign.notes}
                                     </span>
@@ -416,12 +426,15 @@ export default function CampaignShow(props: Props) {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete creative?"
+                title={tr('Delete creative?')}
                 message={
                     deleting &&
-                    `“${deleting.name}” and its uploaded files will be removed, together with its delivery statistics.`
+                    tr(
+                        '“{0}” and its uploaded files will be removed, together with its delivery statistics.',
+                        [deleting.name],
+                    )
                 }
-                confirmLabel="Delete"
+                confirmLabel={tr('Delete')}
                 processing={processing}
                 onClose={() => setDeleting(null)}
                 onConfirm={() =>
@@ -441,9 +454,12 @@ export default function CampaignShow(props: Props) {
             />
             <ConfirmDialog
                 open={deletingCampaign}
-                title="Delete campaign?"
-                message={`“${campaign.name}” stops serving immediately and is removed from reports.`}
-                confirmLabel="Delete"
+                title={tr('Delete campaign?')}
+                message={tr(
+                    '“{0}” stops serving immediately and is removed from reports.',
+                    [campaign.name],
+                )}
+                confirmLabel={tr('Delete')}
                 processing={processing}
                 onClose={() => setDeletingCampaign(false)}
                 onConfirm={() =>
@@ -484,7 +500,7 @@ function CreativeCard({
                 <div className="min-w-0">
                     <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                         <Icon className="size-3.5" />
-                        {TYPE_LABELS[creative.type]}
+                        {tr(TYPE_LABELS[creative.type])}
                         {creative.size && ` · ${creative.size}`}
                     </p>
                     <h3 className="truncate font-semibold text-foreground">
@@ -496,7 +512,7 @@ function CreativeCard({
                         type="button"
                         onClick={onEdit}
                         className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                        aria-label={`Edit ${creative.name}`}
+                        aria-label={tr('Edit {0}', [creative.name])}
                         data-testid={`creative-edit-${creative.id}`}
                     >
                         <Pencil className="size-4" />
@@ -505,7 +521,7 @@ function CreativeCard({
                         type="button"
                         onClick={onDelete}
                         className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                        aria-label={`Delete ${creative.name}`}
+                        aria-label={tr('Delete {0}', [creative.name])}
                     >
                         <Trash2 className="size-4" />
                     </button>
@@ -527,19 +543,27 @@ function CreativeCard({
                 ))}
             </div>
             <p className="mt-auto flex flex-wrap gap-x-3 text-xs text-muted-foreground tabular-nums">
-                <span>{formatNumber(creative.stats.impressions)} impr.</span>
-                <span>{formatNumber(creative.stats.clicks)} clicks</span>
                 <span>
-                    CTR{' '}
+                    {formatNumber(creative.stats.impressions)} {tr('impr.')}
+                </span>
+                <span>
+                    {formatNumber(creative.stats.clicks)} {tr('clicks')}
+                </span>
+                <span>
+                    {tr('CTR')}{' '}
                     {creative.stats.ctr === null
                         ? '—'
                         : `${creative.stats.ctr.toFixed(2)}%`}
                 </span>
                 {creative.type === 'jingle' && (
-                    <span>{formatNumber(creative.stats.plays)} plays</span>
+                    <span>
+                        {formatNumber(creative.stats.plays)} {tr('plays')}
+                    </span>
                 )}
                 {!creative.is_active && (
-                    <span className="font-medium text-amber-600">Paused</span>
+                    <span className="font-medium text-amber-600">
+                        {tr('Paused')}
+                    </span>
                 )}
             </p>
         </article>
@@ -572,7 +596,9 @@ function CreativePreview({
                 preload="none"
             />
         ) : (
-            <span className="text-xs text-muted-foreground">No audio</span>
+            <span className="text-xs text-muted-foreground">
+                {tr('No audio')}
+            </span>
         );
     }
     if (creative.type === 'item') {
@@ -715,7 +741,7 @@ function CreativeDialog({
             >
                 <DialogHeader>
                     <DialogTitle>
-                        {creative ? 'Edit creative' : 'Add creative'}
+                        {creative ? tr('Edit creative') : tr('Add creative')}
                     </DialogTitle>
                     <DialogDescription>
                         {campaign.advertiser_name} · {campaign.name}
@@ -748,14 +774,14 @@ function CreativeDialog({
                                         )}
                                     >
                                         <Icon className="size-5" />
-                                        {TYPE_LABELS[type].split(' (')[0]}
+                                        {tr(TYPE_LABELS[type].split(' (')[0])}
                                     </button>
                                 );
                             })}
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-2">
-                            <Field label="Name" error={errors.name}>
+                            <Field label={tr('Name')} error={errors.name}>
                                 <input
                                     value={data.name}
                                     onChange={(event) =>
@@ -768,7 +794,7 @@ function CreativeDialog({
                                 />
                             </Field>
                             {data.type === 'logo' && (
-                                <Field label="Size" error={errors.size}>
+                                <Field label={tr('Size')} error={errors.size}>
                                     <select
                                         value={data.size}
                                         onChange={(event) =>
@@ -780,7 +806,7 @@ function CreativeDialog({
                                         {Object.entries(sizes).map(
                                             ([key, size]) => (
                                                 <option key={key} value={key}>
-                                                    {size.label}
+                                                    {tr(size.label)}
                                                 </option>
                                             ),
                                         )}
@@ -789,7 +815,7 @@ function CreativeDialog({
                             )}
                             {data.type === 'item' && (
                                 <Field
-                                    label="Character item"
+                                    label={tr('Character item')}
                                     error={errors.character_item_id}
                                 >
                                     <select
@@ -804,7 +830,7 @@ function CreativeDialog({
                                         name="character_item_id"
                                     >
                                         <option value="" disabled>
-                                            Choose item…
+                                            {tr('Choose item…')}
                                         </option>
                                         {characterItems.map((item) => (
                                             <option
@@ -823,7 +849,7 @@ function CreativeDialog({
                                                 {item.advertiser_id !== null &&
                                                     item.advertiser_id !==
                                                         campaign.advertiser_id &&
-                                                    ' — sponsored'}
+                                                    tr(' — sponsored')}
                                             </option>
                                         ))}
                                     </select>
@@ -837,11 +863,21 @@ function CreativeDialog({
                             <Field
                                 label={
                                     data.type === 'logo'
-                                        ? 'Logo artwork'
-                                        : 'Logo (optional, defaults to advertiser logo)'
+                                        ? tr('Logo artwork')
+                                        : tr(
+                                              'Logo (optional, defaults to advertiser logo)',
+                                          )
                                 }
                                 error={errors.image}
-                                hint={`PNG, JPG, WebP or GIF · max ${maxImageKb} KB${data.type === 'logo' ? ` · ${sizes[data.size]?.width}×${sizes[data.size]?.height}px` : ''}`}
+                                hint={tr(
+                                    'PNG, JPG, WebP or GIF · max {0} KB{1}',
+                                    [
+                                        maxImageKb,
+                                        data.type === 'logo'
+                                            ? ` · ${sizes[data.size]?.width}×${sizes[data.size]?.height}px`
+                                            : '',
+                                    ],
+                                )}
                             >
                                 <input
                                     type="file"
@@ -866,8 +902,8 @@ function CreativeDialog({
                             <Field
                                 label={
                                     data.type === 'motto'
-                                        ? 'Motto'
-                                        : 'Tagline (optional)'
+                                        ? tr('Motto')
+                                        : tr('Tagline (optional)')
                                 }
                                 error={errors.motto}
                                 hint={`${data.motto.length}/140`}
@@ -880,7 +916,9 @@ function CreativeDialog({
                                     maxLength={140}
                                     className={fieldClass}
                                     name="motto"
-                                    placeholder="Sarapan sehat, belajar semangat!"
+                                    placeholder={tr(
+                                        'Sarapan sehat, belajar semangat!',
+                                    )}
                                 />
                             </Field>
                         )}
@@ -888,9 +926,12 @@ function CreativeDialog({
                         {data.type === 'jingle' && (
                             <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_140px]">
                                 <Field
-                                    label="Jingle audio"
+                                    label={tr('Jingle audio')}
                                     error={errors.audio}
-                                    hint={`MP3, OGG, WAV or M4A · max ${maxAudioKb} KB`}
+                                    hint={tr(
+                                        'MP3, OGG, WAV or M4A · max {0} KB',
+                                        [maxAudioKb],
+                                    )}
                                 >
                                     <input
                                         type="file"
@@ -911,9 +952,9 @@ function CreativeDialog({
                                     />
                                 </Field>
                                 <Field
-                                    label="Length (s)"
+                                    label={tr('Length (s)')}
                                     error={errors.audio_seconds}
-                                    hint={`Max ${maxAudioSeconds}s`}
+                                    hint={tr('Max {0}s', [maxAudioSeconds])}
                                 >
                                     <input
                                         type="number"
@@ -933,7 +974,7 @@ function CreativeDialog({
                         )}
 
                         <Field
-                            label="Placements"
+                            label={tr('Placements')}
                             error={
                                 errors.placements ??
                                 Object.entries(errors).find(([k]) =>
@@ -969,11 +1010,11 @@ function CreativeDialog({
                                                 data-testid={`creative-placement-${p.key}`}
                                             />
                                             <span className="min-w-0 flex-1">
-                                                {p.label}
+                                                {tr(p.label)}
                                             </span>
                                             {!fits && (
                                                 <span className="text-xs text-muted-foreground">
-                                                    size not accepted
+                                                    {tr('size not accepted')}
                                                 </span>
                                             )}
                                         </label>
@@ -985,9 +1026,9 @@ function CreativeDialog({
                         {data.type !== 'jingle' && (
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <Field
-                                    label="Click-through URL"
+                                    label={tr('Click-through URL')}
                                     error={errors.click_url}
-                                    hint="Optional · https only"
+                                    hint={tr('Optional · https only')}
                                 >
                                     <input
                                         type="url"
@@ -1004,7 +1045,7 @@ function CreativeDialog({
                                     />
                                 </Field>
                                 <Field
-                                    label="Rotate after (s)"
+                                    label={tr('Rotate after (s)')}
                                     error={errors.display_seconds}
                                 >
                                     <input
@@ -1022,7 +1063,7 @@ function CreativeDialog({
                                     />
                                 </Field>
                                 <ColorField
-                                    label="Background"
+                                    label={tr('Background')}
                                     value={data.background_color}
                                     error={errors.background_color}
                                     onChange={(value) =>
@@ -1030,7 +1071,7 @@ function CreativeDialog({
                                     }
                                 />
                                 <ColorField
-                                    label="Text colour"
+                                    label={tr('Text colour')}
                                     value={data.text_color}
                                     error={errors.text_color}
                                     onChange={(value) =>
@@ -1049,18 +1090,18 @@ function CreativeDialog({
                                 }
                                 className="size-4 rounded border-input"
                             />
-                            Active
+                            {tr('Active')}
                         </label>
                     </div>
 
                     <div className="flex flex-col gap-3">
                         <span className="text-sm font-medium text-foreground">
-                            Preview
+                            {tr('Preview')}
                         </span>
                         <div className="flex min-h-40 items-center justify-center rounded-xl bg-[#fff8dc] p-3 dark:bg-muted/50">
                             <CreativePreview
                                 advertiser={
-                                    campaign.advertiser_name ?? 'Sponsor'
+                                    campaign.advertiser_name ?? tr('Sponsor')
                                 }
                                 creative={{
                                     type: data.type,
@@ -1096,7 +1137,7 @@ function CreativeDialog({
                                 onClick={onClose}
                                 className="inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                             >
-                                Cancel
+                                {tr('Cancel')}
                             </button>
                             <button
                                 type="submit"
@@ -1107,7 +1148,7 @@ function CreativeDialog({
                                 {processing && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                {creative ? 'Save' : 'Add'}
+                                {creative ? tr('Save') : tr('Add')}
                             </button>
                         </div>
                     </div>
@@ -1129,14 +1170,14 @@ function ColorField({
     onChange: (value: string) => void;
 }) {
     return (
-        <Field label={label} error={error}>
+        <Field label={tr(label)} error={error}>
             <div className="flex items-center gap-2">
                 <input
                     type="color"
                     value={value || '#ffffff'}
                     onChange={(event) => onChange(event.target.value)}
                     className="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-input bg-background p-1"
-                    aria-label={label}
+                    aria-label={tr(label)}
                 />
                 <input
                     value={value}
@@ -1152,7 +1193,7 @@ function ColorField({
 function Detail({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div className="min-w-0">
-            <dt className="text-xs text-muted-foreground">{label}</dt>
+            <dt className="text-xs text-muted-foreground">{tr(label)}</dt>
             <dd className="mt-0.5 text-foreground">{children}</dd>
         </div>
     );
@@ -1171,10 +1212,14 @@ function Field({
 }) {
     return (
         <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-foreground">{label}</span>
+            <span className="text-sm font-medium text-foreground">
+                {tr(label)}
+            </span>
             {children}
             {hint && !error && (
-                <span className="text-xs text-muted-foreground">{hint}</span>
+                <span className="text-xs text-muted-foreground">
+                    {tr(hint)}
+                </span>
             )}
             <InputError message={error} />
         </div>

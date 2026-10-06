@@ -2,6 +2,7 @@ import { FlashMessages } from '@/components/admin/admin-kit';
 import { Panel } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import {
     type CorrectSound,
     type GameSoundSettings,
@@ -75,16 +76,17 @@ export default function SoundSettings({ settings, defaults, options }: Props) {
 
     return (
         <AdminLayout>
-            <Head title="Sound Settings" />
+            <Head title={tr('Sound Settings')} />
             <div className="flex w-full flex-col gap-6">
                 <div>
                     <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
                         <Volume2 className="size-6 text-sky-500" />
-                        Sound Settings
+                        {tr('Sound Settings')}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Answer sounds for every game. Players can still mute
-                        sound on their own device.
+                        {tr(
+                            'Answer sounds for every game. Players can still mute sound on their own device.',
+                        )}
                     </p>
                 </div>
 
@@ -96,18 +98,19 @@ export default function SoundSettings({ settings, defaults, options }: Props) {
                     data-testid="sound-settings-form"
                 >
                     <Panel
-                        title="Playback"
+                        title={tr('Playback')}
                         icon={data.enabled ? Volume2 : VolumeX}
                     >
                         <div className="flex flex-col gap-5">
                             <label className="flex items-center justify-between gap-4">
                                 <span className="flex flex-col">
                                     <span className="text-sm font-medium text-foreground">
-                                        Game sounds
+                                        {tr('Game sounds')}
                                     </span>
                                     <span className="text-xs text-muted-foreground">
-                                        Turn off to silence answer and game
-                                        effects for everyone.
+                                        {tr(
+                                            'Turn off to silence answer and game effects for everyone.',
+                                        )}
                                     </span>
                                 </span>
                                 <button
@@ -125,7 +128,9 @@ export default function SoundSettings({ settings, defaults, options }: Props) {
                                             : 'bg-muted-foreground/30',
                                     )}
                                 >
-                                    <span className="sr-only">Game sounds</span>
+                                    <span className="sr-only">
+                                        {tr('Game sounds')}
+                                    </span>
                                     <span
                                         className={cn(
                                             'inline-block size-5 rounded-full bg-white shadow transition-transform',
@@ -138,7 +143,7 @@ export default function SoundSettings({ settings, defaults, options }: Props) {
                             </label>
                             <label className="flex flex-col gap-1.5">
                                 <span className="flex items-center justify-between text-sm font-medium text-foreground">
-                                    Volume
+                                    {tr('Volume')}
                                     <span className="text-xs font-semibold text-muted-foreground tabular-nums">
                                         {data.volume}%
                                     </span>
@@ -166,7 +171,7 @@ export default function SoundSettings({ settings, defaults, options }: Props) {
 
                     <div className="grid gap-6 lg:grid-cols-2">
                         <SoundPicker
-                            title="Correct answer"
+                            title={tr('Correct answer')}
                             icon={CircleCheck}
                             tone="text-emerald-600 dark:text-emerald-400"
                             name="correct"
@@ -186,7 +191,7 @@ export default function SoundSettings({ settings, defaults, options }: Props) {
                             error={errors.correct}
                         />
                         <SoundPicker
-                            title="Wrong answer"
+                            title={tr('Wrong answer')}
                             icon={CircleX}
                             tone="text-red-600 dark:text-red-400"
                             name="wrong"
@@ -212,7 +217,7 @@ export default function SoundSettings({ settings, defaults, options }: Props) {
                             className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-accent"
                         >
                             <RotateCcw className="size-4" />
-                            Use defaults
+                            {tr('Use defaults')}
                         </button>
                         <button
                             type="submit"
@@ -223,7 +228,7 @@ export default function SoundSettings({ settings, defaults, options }: Props) {
                             {processing && (
                                 <Loader2 className="size-4 animate-spin" />
                             )}
-                            Save sounds
+                            {tr('Save sounds')}
                         </button>
                     </div>
                 </form>
@@ -254,9 +259,9 @@ function SoundPicker({
     error?: string;
 }) {
     return (
-        <Panel title={title} icon={Icon}>
+        <Panel title={tr(title)} icon={Icon}>
             <fieldset className="flex flex-col gap-2">
-                <legend className="sr-only">{title}</legend>
+                <legend className="sr-only">{tr(title)}</legend>
                 {options.map((option) => {
                     const label = LABELS[option as CorrectSound | WrongSound];
                     const checked = value === option;
@@ -290,7 +295,7 @@ function SoundPicker({
                                         {label?.name ?? option}
                                     </span>
                                     <span className="text-xs text-muted-foreground">
-                                        {label?.hint}
+                                        {tr(label?.hint)}
                                     </span>
                                 </span>
                             </label>
@@ -298,8 +303,10 @@ function SoundPicker({
                                 type="button"
                                 onClick={() => onPreview(option)}
                                 className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-foreground hover:bg-accent"
-                                aria-label={`Play ${label?.name ?? option}`}
-                                title={`Play ${label?.name ?? option}`}
+                                aria-label={tr('Play {0}', [
+                                    label?.name ?? option,
+                                ])}
+                                title={tr('Play {0}', [label?.name ?? option])}
                                 data-testid={`sound-preview-${name}-${option}`}
                             >
                                 <Play className="size-4" />

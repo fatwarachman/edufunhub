@@ -6,6 +6,7 @@ import {
 } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
@@ -98,18 +99,18 @@ export default function AiSettings({
 
     return (
         <AdminLayout>
-            <Head title="AI Settings" />
+            <Head title={tr('AI Settings')} />
             <div className="flex w-full flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                         <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
                             <Bot className="size-6 text-violet-500" />
-                            AI Settings
+                            {tr('AI Settings')}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Any OpenAI-compatible server (OpenAI, OpenRouter,
-                            9Router, LiteLLM, Ollama, vLLM…). Used to generate
-                            questions.
+                            {tr(
+                                'Any OpenAI-compatible server (OpenAI, OpenRouter, 9Router, LiteLLM, Ollama, vLLM…). Used to generate questions.',
+                            )}
                         </p>
                     </div>
                     <span
@@ -127,17 +128,19 @@ export default function AiSettings({
                             <CircleDashed className="size-3.5" />
                         )}
                         {connection.configured
-                            ? `Ready · ${connection.model}`
-                            : 'Not configured'}
+                            ? tr('Ready · {0}', [connection.model])
+                            : tr('Not configured')}
                     </span>
                 </div>
 
                 <FlashMessages errors={pageErrors} />
 
                 <Panel
-                    title="Connection"
+                    title={tr('Connection')}
                     icon={PlugZap}
-                    description="The API key is stored encrypted and never shown again."
+                    description={tr(
+                        'The API key is stored encrypted and never shown again.',
+                    )}
                 >
                     <form
                         onSubmit={save}
@@ -147,7 +150,7 @@ export default function AiSettings({
                         <div className="grid gap-5 md:grid-cols-2">
                             <label className="flex flex-col gap-1.5">
                                 <span className="text-sm font-medium text-foreground">
-                                    Base URL
+                                    {tr('Base URL')}
                                 </span>
                                 <input
                                     type="url"
@@ -165,15 +168,16 @@ export default function AiSettings({
                                     required
                                 />
                                 <span className="text-xs text-muted-foreground">
-                                    Ends before /models and /chat/completions,
-                                    usually with /v1.
+                                    {tr(
+                                        'Ends before /models and /chat/completions, usually with /v1.',
+                                    )}
                                 </span>
                                 <InputError message={form.errors.base_url} />
                             </label>
                             <label className="flex flex-col gap-1.5">
                                 <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                                     <KeyRound className="size-4 text-muted-foreground" />
-                                    API key
+                                    {tr('API key')}
                                 </span>
                                 <input
                                     type="password"
@@ -187,16 +191,23 @@ export default function AiSettings({
                                     }
                                     placeholder={
                                         connection.has_key
-                                            ? `Saved (${connection.key_hint}). Leave empty to keep it.`
-                                            : 'sk-…'
+                                            ? tr(
+                                                  'Saved ({0}). Leave empty to keep it.',
+                                                  [connection.key_hint],
+                                              )
+                                            : tr('sk-…')
                                     }
                                     className={`${fieldClass} font-mono`}
                                     autoComplete="new-password"
                                 />
                                 <span className="text-xs text-muted-foreground">
                                     {connection.has_key
-                                        ? 'Type a new key only to replace the saved one.'
-                                        : 'Required to list models and generate questions.'}
+                                        ? tr(
+                                              'Type a new key only to replace the saved one.',
+                                          )
+                                        : tr(
+                                              'Required to list models and generate questions.',
+                                          )}
                                 </span>
                                 <InputError message={form.errors.api_key} />
                             </label>
@@ -209,7 +220,7 @@ export default function AiSettings({
                                     className="mr-auto inline-flex h-9 items-center gap-1.5 rounded-lg border border-destructive/30 px-3 text-sm font-medium text-destructive hover:bg-destructive/5"
                                 >
                                     <Trash2 className="size-4" />
-                                    Remove key
+                                    {tr('Remove key')}
                                 </button>
                             )}
                             <button
@@ -221,19 +232,21 @@ export default function AiSettings({
                                 {form.processing && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                Save and load models
+                                {tr('Save and load models')}
                             </button>
                         </div>
                     </form>
                 </Panel>
 
                 <Panel
-                    title={`Models (${models.length})`}
+                    title={tr('Models ({0})', [models.length])}
                     icon={Sparkles}
                     description={
                         modelsFetchedAt
-                            ? `Loaded from the server ${formatDateTime(modelsFetchedAt)}`
-                            : 'Save the connection to load the model list.'
+                            ? tr('Loaded from the server {0}', [
+                                  formatDateTime(modelsFetchedAt),
+                              ])
+                            : tr('Save the connection to load the model list.')
                     }
                     actions={
                         <button
@@ -249,13 +262,13 @@ export default function AiSettings({
                                     refreshing && 'animate-spin',
                                 )}
                             />
-                            Refresh list
+                            {tr('Refresh list')}
                         </button>
                     }
                 >
                     {models.length === 0 ? (
                         <p className="py-6 text-center text-sm text-muted-foreground">
-                            No models loaded yet.
+                            {tr('No models loaded yet.')}
                         </p>
                     ) : (
                         <div className="flex flex-col gap-3">
@@ -267,8 +280,8 @@ export default function AiSettings({
                                     onChange={(event) =>
                                         setQuery(event.target.value)
                                     }
-                                    placeholder="Search models"
-                                    aria-label="Search models"
+                                    placeholder={tr('Search models')}
+                                    aria-label={tr('Search models')}
                                     className={`${fieldClass} w-full pl-9`}
                                 />
                             </label>
@@ -312,11 +325,11 @@ export default function AiSettings({
                                                 ) : selected ? (
                                                     <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-violet-700 dark:text-violet-300">
                                                         <CircleCheck className="size-4" />
-                                                        In use
+                                                        {tr('In use')}
                                                     </span>
                                                 ) : (
                                                     <span className="shrink-0 text-xs text-muted-foreground">
-                                                        Use
+                                                        {tr('Use')}
                                                     </span>
                                                 )}
                                             </button>
@@ -325,7 +338,8 @@ export default function AiSettings({
                                 })}
                                 {visible.length === 0 && (
                                     <li className="py-4 text-center text-sm text-muted-foreground sm:col-span-2">
-                                        No model matches “{query}”.
+                                        {tr('No model matches “')}
+                                        {query}”.
                                     </li>
                                 )}
                             </ul>
@@ -339,16 +353,18 @@ export default function AiSettings({
                         className="inline-flex h-10 items-center gap-2 self-start rounded-lg bg-violet-600 px-4 text-sm font-medium text-white hover:bg-violet-700"
                     >
                         <Sparkles className="size-4" />
-                        Generate questions
+                        {tr('Generate questions')}
                     </Link>
                 )}
             </div>
 
             <ConfirmDialog
                 open={confirmForget}
-                title="Remove the API key?"
-                message="Question generation stops until a new key is saved."
-                confirmLabel="Remove key"
+                title={tr('Remove the API key?')}
+                message={tr(
+                    'Question generation stops until a new key is saved.',
+                )}
+                confirmLabel={tr('Remove key')}
                 processing={forgetting}
                 onClose={() => setConfirmForget(false)}
                 onConfirm={() =>

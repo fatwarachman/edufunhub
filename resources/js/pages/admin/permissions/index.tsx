@@ -1,3 +1,4 @@
+import { tr } from '@/lib/admin-i18n';
 import AdminLayout from '@/layouts/admin-layout';
 import { type Permission, type Role } from '@/types/admin';
 import { Head } from '@inertiajs/react';
@@ -76,13 +77,13 @@ function ModuleSection({
                             <thead>
                                 <tr className="border-b border-border bg-muted/30">
                                     <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                        Permission
+                                        {tr("Permission")}
                                     </th>
                                     <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                        Slug
+                                        {tr("Slug")}
                                     </th>
                                     <th className="px-5 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                        Assigned to Roles
+                                        {tr("Assigned to Roles")}
                                     </th>
                                 </tr>
                             </thead>
@@ -97,7 +98,7 @@ function ModuleSection({
                                             <td className="px-5 py-3">
                                                 <p className="font-medium text-foreground">{perm.name}</p>
                                                 {perm.description && (
-                                                    <p className="text-xs text-muted-foreground">{perm.description}</p>
+                                                    <p className="text-xs text-muted-foreground">{tr(perm.description)}</p>
                                                 )}
                                             </td>
                                             <td className="px-5 py-3">
@@ -119,7 +120,7 @@ function ModuleSection({
                                                         ))
                                                     ) : (
                                                         <span className="text-xs text-muted-foreground/60">
-                                                            Not assigned
+                                                            {tr("Not assigned")}
                                                         </span>
                                                     )}
                                                 </div>
@@ -143,13 +144,13 @@ export default function PermissionsIndex({ permissions, roles }: PermissionsInde
 
     return (
         <>
-            <Head title="Permissions" />
+            <Head title={tr("Permissions")} />
 
             <div className="space-y-4">
                 <div>
-                    <h2 className="font-display text-2xl font-bold text-foreground">Permissions</h2>
+                    <h2 className="font-display text-2xl font-bold text-foreground">{tr("Permissions")}</h2>
                     <p className="text-sm text-muted-foreground">
-                        {permissions.length} permission{permissions.length !== 1 ? 's' : ''} across {modules.length} module{modules.length !== 1 ? 's' : ''}
+                        {tr('{0} permission(s) across {1} module(s)', [permissions.length, modules.length])}
                     </p>
                 </div>
 
@@ -167,7 +168,7 @@ export default function PermissionsIndex({ permissions, roles }: PermissionsInde
                     {modules.length === 0 && (
                         <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card py-16 text-center shadow-sm">
                             <Lock className="mb-3 size-10 text-muted-foreground/30" />
-                            <p className="text-sm font-medium text-muted-foreground">No permissions defined</p>
+                            <p className="text-sm font-medium text-muted-foreground">{tr("No permissions defined")}</p>
                         </div>
                     )}
                 </div>
@@ -177,5 +178,5 @@ export default function PermissionsIndex({ permissions, roles }: PermissionsInde
 }
 
 PermissionsIndex.layout = (page: ReactNode) => (
-    <AdminLayout title="Permissions">{page}</AdminLayout>
+    <AdminLayout title={tr("Permissions")}>{page}</AdminLayout>
 );

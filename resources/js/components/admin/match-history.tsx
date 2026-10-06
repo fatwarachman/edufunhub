@@ -3,6 +3,7 @@ import {
     formatDuration,
     gameLabel,
 } from '@/components/admin/game-stats';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { Bot, Crown, DoorOpen, Smartphone } from 'lucide-react';
@@ -45,7 +46,8 @@ export const MODE_LABELS: Record<string, string> = {
     bot: 'Vs bot',
 };
 
-const gradeLabel = (grade: number) => (grade === 0 ? 'TK' : `Grade ${grade}`);
+const gradeLabel = (grade: number) =>
+    grade === 0 ? tr('TK') : tr('Grade {0}', [grade]);
 
 /** One recorded match: game, level, mode and every seat ranked. */
 export function MatchCard({ match }: { match: MatchRow }) {
@@ -63,16 +65,16 @@ export function MatchCard({ match }: { match: MatchRow }) {
                     </span>
                     {match.level !== null && (
                         <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
-                            Level {match.level}
+                            {tr('Level')} {match.level}
                         </span>
                     )}
                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                         {MODE_LABELS[match.mode] ?? match.mode}
-                        {match.pin && ` · PIN ${match.pin}`}
+                        {match.pin && tr(' · PIN {0}', [match.pin])}
                     </span>
                     {!match.finished && (
                         <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                            Unfinished
+                            {tr('Unfinished')}
                         </span>
                     )}
                     {match.my_rank !== null && (
@@ -84,13 +86,13 @@ export function MatchCard({ match }: { match: MatchRow }) {
                                     : 'bg-muted text-muted-foreground',
                             )}
                         >
-                            Rank {match.my_rank} / {match.players_count}
+                            {tr('Rank')} {match.my_rank} / {match.players_count}
                         </span>
                     )}
                 </div>
                 <span className="text-xs text-muted-foreground tabular-nums">
                     {formatDateTime(match.ended_at)} ·{' '}
-                    {formatDuration(match.duration_seconds)} · questions{' '}
+                    {formatDuration(match.duration_seconds)} {tr('· questions')}{' '}
                     {gradeLabel(match.grade)}
                 </span>
             </header>
@@ -126,19 +128,19 @@ export function MatchCard({ match }: { match: MatchRow }) {
                             {seat.is_bot && (
                                 <Bot
                                     className="size-3.5 shrink-0 text-muted-foreground"
-                                    aria-label="Bot"
+                                    aria-label={tr('Bot')}
                                 />
                             )}
                             {seat.is_local && (
                                 <Smartphone
                                     className="size-3.5 shrink-0 text-muted-foreground"
-                                    aria-label="Same device"
+                                    aria-label={tr('Same device')}
                                 />
                             )}
                             {seat.left_early && (
                                 <DoorOpen
                                     className="size-3.5 shrink-0 text-amber-500"
-                                    aria-label="Left early"
+                                    aria-label={tr('Left early')}
                                 />
                             )}
                             <span className="shrink-0 text-xs text-muted-foreground">

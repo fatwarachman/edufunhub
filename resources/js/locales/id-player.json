@@ -75,7 +75,8 @@
         "floorDrop": "Lantai Runtuh",
         "economyHeist": "Peti Emas Misteri",
         "orderRush": "Order Rush TKJ",
-        "portSorter": "Pilah Port & Protokol"
+        "portSorter": "Pilah Port & Protokol",
+        "turboTrivia": "Turbo Trivia"
     },
     "flagQuest": {
         "title": "Misi Bendera",
@@ -294,7 +295,8 @@
             "floorDrop": "Battle royale kuis untuk 2–100 pemain. Jawab benar agar ubinmu tidak runtuh; terakhir bertahan jadi juara.",
             "economyHeist": "Kuis emas mandiri untuk 2–60 pemain. Jawab benar, buka peti misteri, curi atau tukar emas, dan pasang perisai!",
             "orderRush": "Balapan menyusun urutan kabel UTP, core fiber, OSI, DHCP dan TCP untuk siswa TKJ. Benar beruntun dapat power-up sabotase!",
-            "portSorter": "Pilah paket jaringan ke keranjang yang tepat sebelum jatuh! Topik dan keranjang diatur guru: port & protokol, layanan, dan lainnya."
+            "portSorter": "Pilah paket jaringan ke keranjang yang tepat sebelum jatuh! Topik dan keranjang diatur guru: port & protokol, layanan, dan lainnya.",
+            "turboTrivia": "Balap gokart kuis di proyektor kelas! Jawab benar untuk Nitro, lempar Kulit Pisang, tembak Rudal ke posisi 1, dan panggil Petir."
         },
         "detailsFirst": "Isi data peserta dulu",
         "detailsNoticeTitle": "Lengkapi data peserta dulu, ya!",
@@ -715,20 +717,6 @@
                     ],
                     "fun": "Ada intrik sosial dan saling tuduh yang sehat, sehingga murid pendiam pun ikut heboh berdiskusi."
                 },
-                "kartRacer": {
-                    "title": "Kart Racer / Turbo Trivia",
-                    "inspiration": "Mekanik Mario Kart",
-                    "concept": "Balapan gokart avatar murid di sirkuit live pada proyektor.",
-                    "gameplay": [
-                        "Jawab soal dengan benar dan cepat untuk nitro yang membuat mobil melaju kencang.",
-                        "Tiap jawaban benar memberi Item Box acak.",
-                        "Kulit Pisang: dipasang di aspal, lawan yang menginjaknya tergelincir 3 detik.",
-                        "Rudal: menembak murid peringkat 1 di depan.",
-                        "Petir: memperkecil semua mobil lawan sehingga melambat sejenak.",
-                        "Tameng: melindungi mobil sendiri."
-                    ],
-                    "fun": "Leaderboard bukan sekadar angka, melainkan balapan visual live. Posisi 1 selalu jadi incaran rudal, jadi comeback selalu mungkin."
-                },
                 "bossDefense": {
                     "title": "Dungeon Crawl / Boss Defense",
                     "inspiration": "Mekanik RPG co-op / Genshin mini",
@@ -954,7 +942,11 @@
             "invalid_powerup": "Power-up tidak dikenal.",
             "no_powerup": "Kamu tidak punya power-up itu.",
             "shield_active": "Shield sudah aktif.",
-            "target_busy": "Target sedang sibuk."
+            "target_busy": "Target sedang sibuk.",
+            "invalid_item": "Item tidak dikenal.",
+            "no_item": "Kamu tidak punya item itu.",
+            "no_target": "Belum ada target di depanmu.",
+            "kart_finished": "Kartmu sudah finish."
         },
         "copyPinLabel": "Salin PIN",
         "copyLinkLabel": "Salin link"
@@ -1681,5 +1673,199 @@
         "errors": {
             "generic": "Aksi ditolak server."
         }
+    },
+    "turboTrivia": {
+        "title": "Turbo Trivia",
+        "tagline": "Balap gokart kuis langsung di proyektor kelas",
+        "chooseRole": "Mau jadi apa?",
+        "arenaTitle": "Layar Proyektor (Guru)",
+        "arenaBody": "Buat ruang, tampilkan PIN & QR, lalu tonton sirkuit balap live di proyektor atau Smart TV.",
+        "openArena": "Buka layar proyektor",
+        "controllerTitle": "Kontroler (HP Murid)",
+        "controllerBody": "Scan QR atau masukkan PIN, jawab soal untuk nitro dan pakai item dari HP.",
+        "openController": "Main sebagai murid",
+        "switchRole": "Ganti peran",
+        "rules": "3 putaran sirkuit. Jawab benar & cepat = Nitro 120 km/j + Item Box. Jawaban salah = mesin tersendat 30 km/j. Item: Kulit Pisang, Rudal, Petir, Tameng.",
+        "arena": {
+            "createRoom": "Buat ruang balap",
+            "hostIntro": "Kamu jadi host. Murid bergabung dari HP masing-masing (2–40 pemain).",
+            "roomClosed": "Ruang sudah ditutup.",
+            "scanToJoin": "Scan untuk ikut balapan",
+            "orOpen": "atau buka {{url}} lalu masukkan PIN",
+            "pin": "PIN",
+            "qrAlt": "Kode QR untuk masuk ruang {{pin}}",
+            "copyLink": "Salin link",
+            "copied": "Tersalin!",
+            "waitingPlayers": "Belum ada murid. Tampilkan PIN atau QR-nya!",
+            "joined": "Pembalap di garasi",
+            "playersCount": "{{count}} pembalap",
+            "questions": "Jumlah soal",
+            "questionsUnit": "soal",
+            "start": "Mulai balapan",
+            "needPlayers": "Butuh minimal {{min}} pembalap",
+            "closeRoom": "Tutup ruang",
+            "again": "Balapan lagi",
+            "endGame": "Akhiri balapan",
+            "endConfirm": "Ketuk sekali lagi untuk mengakhiri. Posisi dihitung dari jarak tempuh.",
+            "endNow": "Ya, akhiri",
+            "fullscreen": "Layar penuh",
+            "exitFullscreen": "Keluar layar penuh"
+        },
+        "countdown": "Bersiap…",
+        "go": "GAS!",
+        "race": {
+            "track": "Sirkuit Turbo Trivia",
+            "lap": "Putaran {{lap}}/{{laps}}",
+            "question": "Soal {{number}}/{{total}}",
+            "answered": "{{answered}}/{{total}} menjawab",
+            "secondsLeft": "{{seconds}} dtk",
+            "standings": "Klasemen live",
+            "minimap": "Peta posisi",
+            "feedTitle": "Kabar balapan",
+            "feedEmpty": "Belum ada aksi. Jawab soal untuk dapat item!",
+            "correctAnswer": "Jawaban benar",
+            "lastLap": "Putaran terakhir!",
+            "sprint": "Soal habis, sprint ke garis finish!",
+            "kartLabel": "{{name}}: posisi {{rank}}, {{speed}} km/j",
+            "finished": "Finish",
+            "offline": "Offline",
+            "raceTime": "Waktu balapan"
+        },
+        "feed": {
+            "BANANA": "{{by}} menjatuhkan Kulit Pisang!",
+            "MISSILE": "{{by}} menembakkan Rudal ke {{target}}!",
+            "LIGHTNING": "{{by}} memanggil Petir! {{count}} lawan menyusut.",
+            "SHIELD": "{{by}} mengaktifkan Tameng!",
+            "bananaHit": "{{target}} tergelincir Kulit Pisang {{by}}!",
+            "bananaBlocked": "Tameng {{target}} menghancurkan Kulit Pisang!",
+            "missileHit": "Rudal {{by}} menghantam {{target}}!",
+            "missileBlocked": "Tameng {{target}} menangkis Rudal {{by}}!",
+            "finish": "{{by}} masuk finish di posisi {{place}}!",
+            "left": "{{by}} keluar dari balapan."
+        },
+        "items": {
+            "BANANA": "Kulit Pisang",
+            "MISSILE": "Rudal",
+            "LIGHTNING": "Petir",
+            "SHIELD": "Tameng"
+        },
+        "itemHelp": {
+            "BANANA": "Jatuhkan di belakangmu",
+            "MISSILE": "Kejar posisi 1",
+            "LIGHTNING": "Kecilkan semua lawan",
+            "SHIELD": "Lindungi 8 detik"
+        },
+        "effects": {
+            "NITRO": "Nitro!",
+            "STUTTER": "Mesin tersendat",
+            "SPIN": "Tergelincir",
+            "STAGGER": "Terbakar",
+            "SHRINK": "Menyusut",
+            "SHIELD": "Tameng aktif"
+        },
+        "controller": {
+            "playerIntro": "Halo {{name}}! Masukkan PIN dari layar proyektor.",
+            "pinLabel": "PIN ruang",
+            "pinPlaceholder": "6 digit",
+            "join": "Masuk",
+            "waitingStart": "Kamu sudah di garasi! Tunggu guru memulai balapan.",
+            "leave": "Keluar",
+            "position": "Posisi",
+            "speed": "Kecepatan",
+            "speedValue": "{{speed}} km/j",
+            "lap": "Putaran",
+            "yourItems": "Item Box",
+            "noItems": "Jawab benar untuk dapat Item Box.",
+            "emptySlot": "Slot kosong",
+            "useItem": "Pakai {{item}}: {{help}}",
+            "answerLabel": "Jawaban {{letter}}: {{text}}",
+            "nitro": "Benar! Nitro aktif",
+            "stutter": "Salah! Mesin tersendat",
+            "waitNext": "Tunggu soal berikutnya…",
+            "correctWas": "Jawaban benar: {{answer}}",
+            "timeUp": "Waktu habis!",
+            "finished": "Finish! Kamu posisi {{place}}",
+            "finishedWait": "Tunggu pembalap lain sampai finish…",
+            "sprint": "Soal habis! Kart melaju ke garis finish…",
+            "hit": {
+                "BANANA": "Kamu tergelincir Kulit Pisang!",
+                "MISSILE": "Kena Rudal! Kart terbakar.",
+                "LIGHTNING": "Disambar Petir! Kartmu menyusut."
+            },
+            "blocked": "Tamengmu menahan serangan!",
+            "newItem": "Item baru: {{item}}!"
+        },
+        "result": {
+            "podium": "Podium juara",
+            "winner": "{{name}} juara balapan!",
+            "youWon": "Kamu juara 1!",
+            "yourRank": "Posisimu #{{rank}} dari {{total}}",
+            "earned": "+{{points}} poin",
+            "player": "Pembalap",
+            "time": "Waktu",
+            "correct": "Benar",
+            "accuracy": "Akurasi",
+            "items": "Item",
+            "dnf": "Belum finish ({{percent}}%)",
+            "ranking": "Hasil akhir"
+        },
+        "howTo": {
+            "title": "Cara bermain",
+            "step": "Langkah {{current}}/{{total}}",
+            "prev": "Sebelumnya",
+            "next": "Berikutnya",
+            "play": "Putar",
+            "pause": "Jeda",
+            "replay": "Putar ulang",
+            "goTo": "Ke langkah {{number}}",
+            "demoProjector": "Layar proyektor",
+            "demoJoined": "Pembalap masuk",
+            "demoQuestionNo": "Soal 3/10",
+            "demoQuestion": "Ibu kota Indonesia adalah…",
+            "demoCorrect": "Benar! Nitro + Item Box",
+            "demoNitro": "Benar & cepat: Nitro",
+            "demoStutter": "Salah: mesin tersendat",
+            "demoItemBox": "Jawaban benar membuka Item Box acak",
+            "demoBalance": "Posisi 1–3 tidak dapat Rudal & Petir. Makin belakang, makin besar peluangnya.",
+            "demoShield": "Tameng menahan 1 Rudal/Pisang dan kebal Petir selama 8 detik.",
+            "demoBanana": "Pisang dijatuhkan di belakangmu. Lawan yang melindas berhenti 3 detik.",
+            "demoTicker": "Budi menembakkan Rudal ke Rani!",
+            "demoLaps": "3 putaran",
+            "demoWinner": "{{name}} juara 1!",
+            "scenes": {
+                "join": {
+                    "title": "1. Guru buka arena, murid masuk",
+                    "body": "Guru membuka Layar Arena di proyektor atau Smart TV, memilih materi dan jumlah soal, lalu menampilkan PIN dan QR. Murid memindai QR atau mengetik PIN di HP."
+                },
+                "answer": {
+                    "title": "2. Jawab soal di HP",
+                    "body": "Semua murid mendapat soal yang sama dengan 4 pilihan. Ketuk jawaban sebelum waktu habis. Jawaban dikunci setelah diketuk."
+                },
+                "speed": {
+                    "title": "3. Benar = Nitro, salah = tersendat",
+                    "body": "Kecepatan dasar 50 km/j. Jawaban benar memicu Nitro 120 km/j; makin cepat menjawab, makin lama nitronya. Jawaban salah membuat mesin tersendat 30 km/j selama 2 detik."
+                },
+                "items": {
+                    "title": "4. Dapatkan Item Box",
+                    "body": "Setiap jawaban benar memberi 1 item acak (simpan maks. 2). Ketuk tombol item di HP kapan saja untuk memakainya."
+                },
+                "attack": {
+                    "title": "5. Serang atau bertahan",
+                    "body": "Rudal mengejar posisi 1, Petir mengecilkan dan memperlambat semua lawan, Kulit Pisang menjebak lawan di belakang, Tameng melindungi kartmu."
+                },
+                "win": {
+                    "title": "6. Finis 3 putaran",
+                    "body": "Proyektor menampilkan sirkuit, peringkat langsung, dan berita balapan. Yang pertama finis 3 putaran juara. Semua murid mendapat poin dan podium tampil di akhir."
+                }
+            },
+            "downloadVideo": "Unduh video",
+            "downloadSlides": "Unduh slide (PDF)"
+        }
+    },
+    "language": {
+        "label": "Bahasa",
+        "description": "Pilih bahasa tampilan akunmu. Bawaannya Bahasa Indonesia.",
+        "id": "Bahasa Indonesia",
+        "en": "English"
     }
 }

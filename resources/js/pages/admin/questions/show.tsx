@@ -18,6 +18,7 @@ import {
     useSubjectLabel,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
 import {
@@ -203,7 +204,7 @@ export default function QuestionShow({ question, stats }: Props) {
 
     return (
         <>
-            <Head title={`Question ${question.key}`} />
+            <Head title={tr('Question {0}', [question.key])} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <Link
@@ -211,14 +212,14 @@ export default function QuestionShow({ question, stats }: Props) {
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        Question bank · {subjectLabel(question.subject)}
+                        {tr('Question bank ·')} {subjectLabel(question.subject)}
                     </Link>
                     <Link
                         href={`/admin/questions/${question.id}/edit`}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                         <Pencil className="size-4" />
-                        Edit question
+                        {tr('Edit question')}
                     </Link>
                 </div>
 
@@ -230,21 +231,21 @@ export default function QuestionShow({ question, stats }: Props) {
                                 {subjectLabel(question.subject)}
                             </Chip>
                             <Chip className="bg-secondary text-secondary-foreground">
-                                {BAND_LABELS[question.band]}
+                                {tr(BAND_LABELS[question.band])}
                             </Chip>
                             <Chip className="bg-secondary text-secondary-foreground">
                                 {question.type === 'choice'
-                                    ? 'Multiple choice'
-                                    : 'True / false'}
+                                    ? tr('Multiple choice')
+                                    : tr('True / false')}
                             </Chip>
                             {difficulty && (
                                 <Chip className={difficulty.className}>
-                                    {difficulty.label}
+                                    {tr(difficulty.label)}
                                 </Chip>
                             )}
                             {!question.is_active && (
                                 <Chip className="bg-muted text-muted-foreground">
-                                    Inactive
+                                    {tr('Inactive')}
                                 </Chip>
                             )}
                             <span className="font-mono text-muted-foreground">
@@ -321,7 +322,7 @@ export default function QuestionShow({ question, stats }: Props) {
                     <aside className="flex flex-col gap-4 rounded-2xl bg-muted/40 p-4">
                         <div className="flex flex-col gap-2">
                             <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                                Author
+                                {tr('Author')}
                             </span>
                             {question.author ? (
                                 <Link
@@ -347,13 +348,13 @@ export default function QuestionShow({ question, stats }: Props) {
                                     <span className="flex flex-col">
                                         <span className="text-sm font-medium text-foreground">
                                             {question.source === 'system'
-                                                ? 'EduFunHub'
-                                                : 'Unknown author'}
+                                                ? tr('EduFunHub')
+                                                : tr('Unknown author')}
                                         </span>
                                         <span className="text-xs text-muted-foreground">
                                             {question.source === 'system'
-                                                ? 'Built-in question bank'
-                                                : 'Author was not recorded'}
+                                                ? tr('Built-in question bank')
+                                                : tr('Author was not recorded')}
                                         </span>
                                     </span>
                                 </span>
@@ -362,7 +363,7 @@ export default function QuestionShow({ question, stats }: Props) {
                         <dl className="flex flex-col gap-2 border-t border-border pt-3 text-sm">
                             <Meta
                                 icon={UserPen}
-                                label="Source"
+                                label={tr('Source')}
                                 value={
                                     SOURCE_LABELS[question.source] ??
                                     question.source
@@ -370,18 +371,18 @@ export default function QuestionShow({ question, stats }: Props) {
                             />
                             <Meta
                                 icon={History}
-                                label="Created"
+                                label={tr('Created')}
                                 value={formatDateTime(question.created_at)}
                             />
                             <Meta
                                 icon={Pencil}
-                                label="Last edited"
+                                label={tr('Last edited')}
                                 value={`${formatDateTime(question.updated_at)}${question.editor ? ` · ${question.editor.name}` : ''}`}
                             />
                         </dl>
                         <div className="flex flex-col gap-2 border-t border-border pt-3">
                             <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                                Used in
+                                {tr('Used in')}
                             </span>
                             <div className="flex flex-wrap gap-1.5">
                                 {question.games.map((game) => (
@@ -401,7 +402,7 @@ export default function QuestionShow({ question, stats }: Props) {
                 {/* KPIs */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <KpiCard
-                        label="Correct answers"
+                        label={tr('Correct answers')}
                         value={
                             <span className={rateTone(summary.success_rate)}>
                                 {formatPercent(summary.success_rate)}
@@ -417,32 +418,34 @@ export default function QuestionShow({ question, stats }: Props) {
                         }
                     />
                     <KpiCard
-                        label="Times answered"
+                        label={tr('Times answered')}
                         value={formatNumber(summary.answered)}
                         icon={ListChecks}
                         accent="var(--color-bubble-blue)"
                         footer={
                             <span className="text-xs text-muted-foreground">
                                 {summary.last_answered_at
-                                    ? `Last answered ${timeAgo(summary.last_answered_at)}`
-                                    : 'Not answered yet'}
+                                    ? tr('Last answered {0}', [
+                                          timeAgo(summary.last_answered_at),
+                                      ])
+                                    : tr('Not answered yet')}
                             </span>
                         }
                     />
                     <KpiCard
-                        label="Players"
+                        label={tr('Players')}
                         value={formatNumber(summary.players)}
                         icon={UsersRound}
                         accent="var(--color-bubble-orange)"
                         footer={
                             <span className="text-xs text-muted-foreground">
-                                {formatNumber(summary.mastered_players)} got it
-                                right on their latest try
+                                {formatNumber(summary.mastered_players)}{' '}
+                                {tr('got it right on their latest try')}
                             </span>
                         }
                     />
                     <KpiCard
-                        label="Right on first try"
+                        label={tr('Right on first try')}
                         value={
                             <span className={rateTone(summary.first_try_rate)}>
                                 {formatPercent(summary.first_try_rate)}
@@ -453,25 +456,35 @@ export default function QuestionShow({ question, stats }: Props) {
                         footer={
                             <span className="text-xs text-muted-foreground">
                                 {stats.siblings.rank
-                                    ? `#${stats.siblings.rank} hardest of ${stats.siblings.of} in ${BAND_LABELS[question.band]}`
-                                    : `Subject avg ${formatPercent(stats.siblings.subject_rate)}`}
+                                    ? tr('#{0} hardest of {1} in {2}', [
+                                          stats.siblings.rank,
+                                          stats.siblings.of,
+                                          BAND_LABELS[question.band],
+                                      ])
+                                    : tr('Subject avg {0}', [
+                                          formatPercent(
+                                              stats.siblings.subject_rate,
+                                          ),
+                                      ])}
                             </span>
                         }
                     />
                 </div>
 
                 {summary.answered === 0 ? (
-                    <Panel title="No answers yet" icon={ListChecks}>
+                    <Panel title={tr('No answers yet')} icon={ListChecks}>
                         <EmptyState
                             icon={ListChecks}
-                            title="Nobody has answered this question yet"
-                            description="Statistics appear after signed-in players see it in Flag Quest or Sky Quiz."
+                            title={tr('Nobody has answered this question yet')}
+                            description={tr(
+                                'Statistics appear after signed-in players see it in Flag Quest or Sky Quiz.',
+                            )}
                         />
                     </Panel>
                 ) : (
                     <>
                         <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-                            <Panel title="Correct vs wrong" icon={Target}>
+                            <Panel title={tr('Correct vs wrong')} icon={Target}>
                                 <div className="relative h-52">
                                     <ResponsiveContainer
                                         width="100%"
@@ -510,25 +523,25 @@ export default function QuestionShow({ question, stats }: Props) {
                                             )}
                                         </span>
                                         <span className="text-xs text-muted-foreground">
-                                            correct
+                                            {tr('correct')}
                                         </span>
                                     </div>
                                 </div>
                                 <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
                                     <Legend
                                         color={CORRECT_COLOR}
-                                        label="Correct"
+                                        label={tr('Correct')}
                                         value={summary.correct}
                                     />
                                     <Legend
                                         color={WRONG_COLOR}
-                                        label="Wrong"
+                                        label={tr('Wrong')}
                                         value={summary.wrong}
                                     />
                                 </div>
                             </Panel>
                             <Panel
-                                title="Answers · last 30 days"
+                                title={tr('Answers · last 30 days')}
                                 icon={History}
                                 className="xl:col-span-2"
                             >
@@ -611,8 +624,10 @@ export default function QuestionShow({ question, stats }: Props) {
 
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                             <Panel
-                                title="By game"
-                                description="Where this question was answered"
+                                title={tr('By game')}
+                                description={tr(
+                                    'Where this question was answered',
+                                )}
                                 icon={Gamepad2}
                             >
                                 <BucketBars
@@ -622,24 +637,28 @@ export default function QuestionShow({ question, stats }: Props) {
                                 />
                             </Panel>
                             <Panel
-                                title="By grade"
-                                description="Player grade when answering"
+                                title={tr('By grade')}
+                                description={tr('Player grade when answering')}
                                 icon={GraduationCap}
                             >
                                 <BucketBars
                                     rows={stats.byGrade}
-                                    labelFor={(label) => `Grade ${label}`}
+                                    labelFor={(label) =>
+                                        tr('Grade {0}', [label])
+                                    }
                                 />
                             </Panel>
-                            <Panel title="By age" icon={Cake}>
+                            <Panel title={tr('By age')} icon={Cake}>
                                 <BucketBars
                                     rows={stats.byAge}
-                                    labelFor={(label) => `${label} years`}
+                                    labelFor={(label) =>
+                                        tr('{0} years', [label])
+                                    }
                                 />
                             </Panel>
                             <Panel
-                                title="By school"
-                                description="Top 10 schools by answers"
+                                title={tr('By school')}
+                                description={tr('Top 10 schools by answers')}
                                 icon={School}
                             >
                                 <BucketBars
@@ -654,17 +673,18 @@ export default function QuestionShow({ question, stats }: Props) {
                                 <div className="flex flex-col">
                                     <h3 className="flex items-center gap-2 font-semibold text-foreground">
                                         <UsersRound className="size-4 text-muted-foreground" />
-                                        Who answered
+                                        {tr('Who answered')}
                                     </h3>
                                     <p className="text-xs text-muted-foreground">
-                                        Result is based on each player's latest
-                                        attempt
+                                        {tr(
+                                            "Result is based on each player's latest attempt",
+                                        )}
                                     </p>
                                 </div>
                                 <div
                                     className="inline-flex rounded-lg border border-border bg-background p-1"
                                     role="group"
-                                    aria-label="Filter players"
+                                    aria-label={tr('Filter players')}
                                 >
                                     {(
                                         [
@@ -697,7 +717,7 @@ export default function QuestionShow({ question, stats }: Props) {
                                                     : 'text-muted-foreground hover:text-foreground',
                                             )}
                                         >
-                                            {item.label}
+                                            {tr(item.label)}
                                         </button>
                                     ))}
                                 </div>
@@ -706,29 +726,29 @@ export default function QuestionShow({ question, stats }: Props) {
                                 {players.length === 0 ? (
                                     <EmptyState
                                         icon={UsersRound}
-                                        title="No players in this group"
+                                        title={tr('No players in this group')}
                                     />
                                 ) : (
                                     <table className="w-full min-w-[680px] text-sm">
                                         <thead>
                                             <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
                                                 <th className="py-2 pr-3 text-left font-medium">
-                                                    Player
+                                                    {tr('Player')}
                                                 </th>
                                                 <th className="px-3 py-2 text-left font-medium">
-                                                    Grade · school
+                                                    {tr('Grade · school')}
                                                 </th>
                                                 <th className="px-3 py-2 text-center font-medium">
-                                                    Latest
+                                                    {tr('Latest')}
                                                 </th>
                                                 <th className="px-3 py-2 text-center font-medium">
-                                                    First try
+                                                    {tr('First try')}
                                                 </th>
                                                 <th className="px-3 py-2 text-right font-medium">
-                                                    Attempts
+                                                    {tr('Attempts')}
                                                 </th>
                                                 <th className="py-2 pl-3 text-right font-medium">
-                                                    Last answered
+                                                    {tr('Last answered')}
                                                 </th>
                                             </tr>
                                         </thead>
@@ -842,7 +862,7 @@ function Meta({
     return (
         <div className="flex items-start gap-2">
             <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-            <dt className="shrink-0 text-muted-foreground">{label}</dt>
+            <dt className="shrink-0 text-muted-foreground">{tr(label)}</dt>
             <dd className="ml-auto min-w-0 text-right font-medium break-words text-foreground">
                 {value}
             </dd>
@@ -865,7 +885,7 @@ function Legend({
                 className="size-2.5 rounded-full"
                 style={{ background: color }}
             />
-            <span className="text-muted-foreground">{label}</span>
+            <span className="text-muted-foreground">{tr(label)}</span>
             <span className="ml-auto font-semibold text-foreground tabular-nums">
                 {formatNumber(value)}
             </span>
@@ -878,7 +898,7 @@ function RatioBar({ correct, wrong }: { correct: number; wrong: number }) {
     if (total === 0)
         return (
             <span className="text-xs text-muted-foreground">
-                No answers yet
+                {tr('No answers yet')}
             </span>
         );
 
@@ -899,7 +919,8 @@ function RatioBar({ correct, wrong }: { correct: number; wrong: number }) {
                 />
             </div>
             <span className="text-xs text-muted-foreground">
-                {formatNumber(correct)} correct · {formatNumber(wrong)} wrong
+                {formatNumber(correct)} {tr('correct ·')} {formatNumber(wrong)}{' '}
+                {tr('wrong')}
             </span>
         </div>
     );
@@ -925,7 +946,7 @@ function Outcome({
             )}
         >
             <Icon className="size-3.5" />
-            {correct ? 'Correct' : 'Wrong'}
+            {correct ? tr('Correct') : tr('Wrong')}
         </span>
     );
 }
@@ -945,7 +966,7 @@ function BucketBars({
     ) {
         return (
             <p className="py-6 text-center text-sm text-muted-foreground">
-                No data yet
+                {tr('No data yet')}
             </p>
         );
     }
@@ -962,13 +983,13 @@ function BucketBars({
                             </span>
                             {showAssigned && row.assigned === false && (
                                 <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                                    not assigned
+                                    {tr('not assigned')}
                                 </span>
                             )}
                         </span>
                         <span className="shrink-0 text-xs text-muted-foreground">
-                            {formatNumber(row.answered)} answers · {row.players}{' '}
-                            players ·{' '}
+                            {formatNumber(row.answered)} {tr('answers ·')}{' '}
+                            {row.players} {tr('players ·')}{' '}
                             <span
                                 className={cn(
                                     'font-semibold',
@@ -1007,5 +1028,5 @@ function BucketBars({
 }
 
 QuestionShow.layout = (page: ReactNode) => (
-    <AdminLayout title="Question Statistics">{page}</AdminLayout>
+    <AdminLayout title={tr('Question Statistics')}>{page}</AdminLayout>
 );

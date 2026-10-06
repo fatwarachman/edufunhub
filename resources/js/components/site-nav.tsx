@@ -155,7 +155,7 @@ const TEACHER_ITEM: NavItem = {
     icon: BookOpenCheck,
 };
 
-/** Superadmins only: jump from the player site to the admin dashboard. */
+/** Admins and superadmins: jump from the player site to the admin dashboard. */
 const ADMIN_ITEM: NavItem = {
     href: '/admin/dashboard',
     labelKey: 'nav.admin',
@@ -192,13 +192,13 @@ export function SiteNav({
     const { props, url } = usePage<SharedData>();
     const signedIn = Boolean(props.auth?.user);
     const isTeacher = Boolean(props.auth?.user?.is_teacher);
-    const isSuperadmin = Boolean(props.auth?.user?.is_superadmin);
+    const isAdmin = Boolean(props.auth?.user?.is_admin);
     const unreadChats = Number(props.unreadChats ?? 0);
     const items = signedIn
         ? [
               ...PLAYER_ITEMS,
               ...(isTeacher ? [TEACHER_ITEM] : []),
-              ...(isSuperadmin ? [ADMIN_ITEM] : []),
+              ...(isAdmin ? [ADMIN_ITEM] : []),
           ]
         : GUEST_ITEMS;
 

@@ -1,5 +1,6 @@
 import { EmptyState, formatNumber, Panel } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, router, usePoll } from '@inertiajs/react';
 import {
@@ -91,6 +92,7 @@ const GAME_NAMES: Record<string, string> = {
     'floor-drop': 'Floor Drop (rooms)',
     'economy-heist': 'Economy Heist (rooms)',
     'order-rush': 'Order Rush TKJ (rooms)',
+    'turbo-trivia': 'Turbo Trivia (rooms)',
 };
 
 function formatBytes(bytes: number | null | undefined): string {
@@ -161,7 +163,7 @@ function HostCard({
         >
             <div className="flex items-center justify-between gap-2 sm:gap-3">
                 <span className="truncate text-[11px] font-semibold tracking-wide text-muted-foreground uppercase sm:text-xs">
-                    {label}
+                    {tr(label)}
                 </span>
                 <Icon className="size-3.5 shrink-0 text-muted-foreground sm:size-4" />
             </div>
@@ -175,7 +177,7 @@ function HostCard({
             </span>
             <Meter percent={percent} />
             <span className="line-clamp-2 text-[11px] leading-snug text-muted-foreground tabular-nums sm:truncate sm:text-xs">
-                {detail}
+                {tr(detail)}
             </span>
         </div>
     );
@@ -207,8 +209,10 @@ function Unavailable({ what }: { what: string }) {
     return (
         <EmptyState
             icon={Server}
-            title={`${what} unavailable`}
-            description="The monitoring source did not respond. Check that the read-only Docker proxy and game service are running."
+            title={tr('{0} unavailable', [what])}
+            description={tr(
+                'The monitoring source did not respond. Check that the read-only Docker proxy and game service are running.',
+            )}
         />
     );
 }
@@ -234,19 +238,19 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
 
     return (
         <>
-            <Head title="Server Monitor" />
+            <Head title={tr('Server Monitor')} />
             <div className="flex flex-col gap-4 sm:gap-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex min-w-0 flex-col gap-0.5">
                         <h2 className="font-display text-xl font-bold text-foreground">
-                            {host.hostname ?? 'Server'}
+                            {host.hostname ?? tr('Server')}
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                            Sampled{' '}
+                            {tr('Sampled')}{' '}
                             {new Date(monitor.sampled_at).toLocaleTimeString()}
                             {' · '}
                             {live
-                                ? `refreshing every ${refreshSeconds}s`
+                                ? tr('refreshing every {0}s', [refreshSeconds])
                                 : 'paused'}
                         </p>
                     </div>
@@ -262,7 +266,7 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                             ) : (
                                 <Play className="size-4" />
                             )}
-                            {live ? 'Pause' : 'Resume'}
+                            {live ? tr('Pause') : tr('Resume')}
                         </button>
                         <button
                             type="button"
@@ -270,7 +274,7 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                             className="inline-flex h-9 items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted"
                         >
                             <RefreshCw className="size-4" />
-                            Refresh
+                            {tr('Refresh')}
                         </button>
                     </div>
                 </div>
@@ -280,43 +284,54 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                     <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
                         <HostCard
                             testId="host-cpu"
-                            label="CPU"
+                            label={tr('CPU')}
                             icon={Cpu}
                             percent={host.cpu_percent}
-                            detail={`${host.cpus} cores · load ${(host.load ?? []).map((l) => l.toFixed(2)).join(' / ')}`}
+                            detail={tr('{0} cores · load {1}', [
+                                host.cpus,
+                                (host.load ?? [])
+                                    .map((l) => l.toFixed(2))
+                                    .join(' / '),
+                            ])}
                         />
                         <HostCard
                             testId="host-memory"
-                            label="Memory"
+                            label={tr('Memory')}
                             icon={MemoryStick}
                             percent={host.memory?.percent}
                             detail={`${formatBytes(host.memory?.used)} of ${formatBytes(host.memory?.total)}`}
                         />
                         <HostCard
                             testId="host-disk"
-                            label="Disk"
+                            label={tr('Disk')}
                             icon={HardDrive}
                             percent={host.disk?.percent}
                             detail={`${formatBytes(host.disk?.used)} of ${formatBytes(host.disk?.total)}`}
                         />
                         <HostCard
                             testId="host-swap"
-                            label="Swap"
+                            label={tr('Swap')}
                             icon={Timer}
                             percent={host.swap?.percent}
-                            detail={`${formatBytes(host.swap?.used)} of ${formatBytes(host.swap?.total)} · up ${formatUptime(host.uptime_seconds)}`}
+                            detail={tr('{0} of {1} · up {2}', [
+                                formatBytes(host.swap?.used),
+                                formatBytes(host.swap?.total),
+                                formatUptime(host.uptime_seconds),
+                            ])}
                         />
                     </div>
                 ) : (
-                    <Panel title="Host" icon={Server}>
-                        <Unavailable what="Host metrics" />
+                    <Panel title={tr('Host')} icon={Server}>
+                        <Unavailable what={tr('Host metrics')} />
                     </Panel>
                 )}
 
                 {/* Game runtime */}
                 <Panel
-                    title="Game runtime (Go)"
-                    description="Live WebSocket connections and memory of the game service"
+                    title={tr('Game runtime (Go)')}
+                    description={tr(
+                        'Live WebSocket connections and memory of the game service',
+                    )}
                     icon={Gamepad2}
                 >
                     {game.available ? (
@@ -326,23 +341,23 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                         >
                             <div className="grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-5">
                                 <MiniStat
-                                    label="Heap"
+                                    label={tr('Heap')}
                                     value={formatBytes(game.heap_alloc_bytes)}
                                 />
                                 <MiniStat
-                                    label="Reserved"
+                                    label={tr('Reserved')}
                                     value={formatBytes(game.sys_bytes)}
                                 />
                                 <MiniStat
-                                    label="Goroutines"
+                                    label={tr('Goroutines')}
                                     value={formatNumber(game.goroutines)}
                                 />
                                 <MiniStat
-                                    label="GC cycles"
+                                    label={tr('GC cycles')}
                                     value={formatNumber(game.gc_cycles)}
                                 />
                                 <MiniStat
-                                    label="Uptime"
+                                    label={tr('Uptime')}
                                     value={formatUptime(game.uptime_seconds)}
                                     hint={game.go_version}
                                 />
@@ -362,7 +377,7 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                                                     {row.connections}
                                                 </span>{' '}
                                                 <span className="text-muted-foreground">
-                                                    online
+                                                    {tr('online')}
                                                 </span>
                                             </span>
                                             <span>
@@ -370,7 +385,7 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                                                     {row.sessions}
                                                 </span>{' '}
                                                 <span className="text-muted-foreground">
-                                                    sessions
+                                                    {tr('sessions')}
                                                 </span>
                                             </span>
                                         </span>
@@ -379,22 +394,28 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                             </div>
                         </div>
                     ) : (
-                        <Unavailable what="Game runtime stats" />
+                        <Unavailable what={tr('Game runtime stats')} />
                     )}
                 </Panel>
 
                 {/* Containers */}
                 <Panel
-                    title="Containers"
+                    title={tr('Containers')}
                     description={
                         containers.available
-                            ? `${containers.items.filter((c) => c.state === 'running').length} of ${containers.items.length} running · ${gameContainers.length} game`
+                            ? tr('{0} of {1} running · {2} game', [
+                                  containers.items.filter(
+                                      (c) => c.state === 'running',
+                                  ).length,
+                                  containers.items.length,
+                                  gameContainers.length,
+                              ])
                             : undefined
                     }
                     icon={Box}
                 >
                     {!containers.available ? (
-                        <Unavailable what="Container metrics" />
+                        <Unavailable what={tr('Container metrics')} />
                     ) : (
                         <>
                             <ContainerAccordion items={containers.items} />
@@ -406,22 +427,22 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                                     <thead>
                                         <tr className="border-b border-border text-left text-xs text-muted-foreground uppercase">
                                             <th className="px-5 py-3 font-semibold">
-                                                Container
+                                                {tr('Container')}
                                             </th>
                                             <th className="px-3 py-3 font-semibold">
-                                                State
+                                                {tr('State')}
                                             </th>
                                             <th className="w-40 px-3 py-3 font-semibold">
-                                                CPU
+                                                {tr('CPU')}
                                             </th>
                                             <th className="w-48 px-3 py-3 font-semibold">
-                                                Memory
+                                                {tr('Memory')}
                                             </th>
                                             <th className="px-3 py-3 font-semibold">
-                                                Net rx / tx
+                                                {tr('Net rx / tx')}
                                             </th>
                                             <th className="px-5 py-3 text-right font-semibold">
-                                                PIDs
+                                                {tr('PIDs')}
                                             </th>
                                         </tr>
                                     </thead>
@@ -438,7 +459,7 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                                                         </span>
                                                         {c.is_game && (
                                                             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                                                game
+                                                                {tr('game')}
                                                             </span>
                                                         )}
                                                     </div>
@@ -557,16 +578,16 @@ function ContainerAccordion({ items }: { items: ContainerRow[] }) {
                                     </span>
                                     {c.is_game && (
                                         <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                            game
+                                            {tr('game')}
                                         </span>
                                     )}
                                 </span>
                                 <span className="truncate text-xs text-muted-foreground tabular-nums">
-                                    CPU{' '}
+                                    {tr('CPU')}{' '}
                                     {c.cpu_percent === null
                                         ? '—'
                                         : `${c.cpu_percent}%`}{' '}
-                                    · RAM {formatBytes(c.memory?.used)}
+                                    {tr('· RAM')} {formatBytes(c.memory?.used)}
                                 </span>
                             </span>
                             <ChevronDown
@@ -590,7 +611,7 @@ function ContainerAccordion({ items }: { items: ContainerRow[] }) {
                         >
                             <div className="min-h-0 overflow-hidden">
                                 <dl className="flex flex-col gap-3 px-5 pt-1 pb-4 text-sm">
-                                    <AccordionRow label="State">
+                                    <AccordionRow label={tr('State')}>
                                         <span className="flex flex-col items-end gap-1">
                                             <StateBadge state={c.state} />
                                             <span className="text-xs text-muted-foreground">
@@ -598,13 +619,13 @@ function ContainerAccordion({ items }: { items: ContainerRow[] }) {
                                             </span>
                                         </span>
                                     </AccordionRow>
-                                    <AccordionRow label="Image">
+                                    <AccordionRow label={tr('Image')}>
                                         <span className="truncate text-foreground">
                                             {c.image}
                                         </span>
                                     </AccordionRow>
                                     <div className="flex flex-col gap-1.5">
-                                        <AccordionRow label="CPU">
+                                        <AccordionRow label={tr('CPU')}>
                                             <span className="font-semibold text-foreground tabular-nums">
                                                 {c.cpu_percent === null
                                                     ? '—'
@@ -616,7 +637,7 @@ function ContainerAccordion({ items }: { items: ContainerRow[] }) {
                                         )}
                                     </div>
                                     <div className="flex flex-col gap-1.5">
-                                        <AccordionRow label="Memory">
+                                        <AccordionRow label={tr('Memory')}>
                                             <span className="text-foreground tabular-nums">
                                                 {c.memory
                                                     ? `${formatBytes(c.memory.used)} / ${formatBytes(c.memory.total)}`
@@ -627,21 +648,21 @@ function ContainerAccordion({ items }: { items: ContainerRow[] }) {
                                             <Meter percent={c.memory.percent} />
                                         )}
                                     </div>
-                                    <AccordionRow label="Net rx / tx">
+                                    <AccordionRow label={tr('Net rx / tx')}>
                                         <span className="text-foreground tabular-nums">
                                             {c.network
                                                 ? `${formatBytes(c.network.rx_bytes)} / ${formatBytes(c.network.tx_bytes)}`
                                                 : '—'}
                                         </span>
                                     </AccordionRow>
-                                    <AccordionRow label="Disk r / w">
+                                    <AccordionRow label={tr('Disk r / w')}>
                                         <span className="text-foreground tabular-nums">
                                             {c.block
                                                 ? `${formatBytes(c.block.read_bytes)} / ${formatBytes(c.block.write_bytes)}`
                                                 : '—'}
                                         </span>
                                     </AccordionRow>
-                                    <AccordionRow label="PIDs">
+                                    <AccordionRow label={tr('PIDs')}>
                                         <span className="text-foreground tabular-nums">
                                             {c.pids ?? '—'}
                                         </span>
@@ -666,7 +687,7 @@ function AccordionRow({
     return (
         <div className="flex min-w-0 items-start justify-between gap-4">
             <dt className="shrink-0 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                {label}
+                {tr(label)}
             </dt>
             <dd className="flex min-w-0 justify-end text-right">{children}</dd>
         </div>
@@ -685,14 +706,14 @@ function MiniStat({
     return (
         <div className="flex min-w-0 flex-col gap-0.5 rounded-xl bg-muted/50 px-2.5 py-2 sm:px-3 sm:py-2.5">
             <span className="truncate text-[11px] text-muted-foreground sm:text-xs">
-                {label}
+                {tr(label)}
             </span>
             <span className="truncate font-display text-base font-bold text-foreground tabular-nums sm:text-xl">
                 {value}
             </span>
             {hint && (
                 <span className="truncate text-[11px] text-muted-foreground sm:text-xs">
-                    {hint}
+                    {tr(hint)}
                 </span>
             )}
         </div>
@@ -700,5 +721,5 @@ function MiniStat({
 }
 
 ServerMonitor.layout = (page: ReactNode) => (
-    <AdminLayout title="Server Monitor">{page}</AdminLayout>
+    <AdminLayout title={tr('Server Monitor')}>{page}</AdminLayout>
 );

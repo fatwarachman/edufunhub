@@ -15,6 +15,7 @@ import {
 } from '@/components/admin/game-stats';
 import { GameTabs } from '@/components/admin/game-tabs';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
@@ -85,7 +86,7 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
 
     return (
         <AdminLayout>
-            <Head title="Crossword · Word bank" />
+            <Head title={tr('Crossword · Word bank')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4">
                     <Link
@@ -93,18 +94,19 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                         className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        All games
+                        {tr('All games')}
                     </Link>
                     <GameTabs game="crossword" active="words" />
                 </div>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">
-                            Crossword word bank
+                            {tr('Crossword word bank')}
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Teka-Teki Silang answers and clues. The game service
-                            syncs active words every minute.
+                            {tr(
+                                'Teka-Teki Silang answers and clues. The game service syncs active words every minute.',
+                            )}
                         </p>
                     </div>
                     <Link
@@ -112,7 +114,7 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                         className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                     >
                         <Plus className="size-4" />
-                        New word
+                        {tr('New word')}
                     </Link>
                 </div>
 
@@ -143,34 +145,36 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                             >
                                 <div className="flex items-center justify-between gap-2">
                                     <span className="font-semibold text-foreground">
-                                        Level {level.level}
+                                        {tr('Level')} {level.level}
                                     </span>
                                     <span className="text-xs text-muted-foreground">
                                         {level.size}×{level.size} ·{' '}
-                                        {level.words_per_grid} words
+                                        {level.words_per_grid} {tr('words')}
                                     </span>
                                 </div>
                                 <p className="text-2xl font-bold text-foreground tabular-nums">
                                     {level.active}
                                     <span className="text-sm font-normal text-muted-foreground">
                                         {' '}
-                                        / {level.total} active
+                                        / {level.total} {tr('active')}
                                     </span>
                                 </p>
                                 <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
                                     <span>
-                                        Used {formatNumber(level.used)}×
+                                        {tr('Used')} {formatNumber(level.used)}×
                                     </span>
                                     <span
                                         className={rateTone(level.solve_rate)}
                                     >
-                                        Solved {formatPercent(level.solve_rate)}
+                                        {tr('Solved')}{' '}
+                                        {formatPercent(level.solve_rate)}
                                     </span>
                                 </div>
                                 {low && (
                                     <p className="flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-400">
                                         <TriangleAlert className="size-3.5" />
-                                        Needs {level.minimum} active words
+                                        {tr('Needs')} {level.minimum}{' '}
+                                        {tr('active words')}
                                     </p>
                                 )}
                             </button>
@@ -179,7 +183,7 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                 </div>
 
                 <Panel
-                    title="Words"
+                    title={tr('Words')}
                     icon={Grid3x3}
                     actions={
                         <div className="flex flex-wrap items-center gap-2">
@@ -194,9 +198,9 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                                     onChange={(event) =>
                                         setSearch(event.target.value)
                                     }
-                                    placeholder="Search word or clue"
+                                    placeholder={tr('Search word or clue')}
                                     className={`${fieldClass} w-56 pl-9`}
-                                    aria-label="Search words"
+                                    aria-label={tr('Search words')}
                                 />
                             </form>
                             <select
@@ -207,11 +211,11 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                                     })
                                 }
                                 className={fieldClass}
-                                aria-label="Status"
+                                aria-label={tr('Status')}
                             >
-                                <option value="">All status</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Hidden</option>
+                                <option value="">{tr('All status')}</option>
+                                <option value="active">{tr('Active')}</option>
+                                <option value="inactive">{tr('Hidden')}</option>
                             </select>
                         </div>
                     }
@@ -219,8 +223,10 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                     {words.data.length === 0 ? (
                         <EmptyState
                             icon={Grid3x3}
-                            title="No words found"
-                            description="Change the filters or add a new word."
+                            title={tr('No words found')}
+                            description={tr(
+                                'Change the filters or add a new word.',
+                            )}
                         />
                     ) : (
                         <div className="flex flex-col gap-4">
@@ -229,22 +235,22 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                                     <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
                                         <tr>
                                             <th className="px-5 py-3 font-medium">
-                                                Answer
+                                                {tr('Answer')}
                                             </th>
                                             <th className="px-3 py-3 font-medium">
-                                                Clue
+                                                {tr('Clue')}
                                             </th>
                                             <th className="px-3 py-3 font-medium">
-                                                Level
+                                                {tr('Level')}
                                             </th>
                                             <th className="px-3 py-3 text-right font-medium">
-                                                Used
+                                                {tr('Used')}
                                             </th>
                                             <th className="px-3 py-3 text-right font-medium">
-                                                Solved
+                                                {tr('Solved')}
                                             </th>
                                             <th className="px-3 py-3 font-medium">
-                                                Status
+                                                {tr('Status')}
                                             </th>
                                             <th className="px-5 py-3" />
                                         </tr>
@@ -304,7 +310,10 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                                                         <Link
                                                             href={`/admin/games/crossword/words/${word.id}/edit`}
                                                             className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                            aria-label={`Edit ${word.answer}`}
+                                                            aria-label={tr(
+                                                                'Edit {0}',
+                                                                [word.answer],
+                                                            )}
                                                         >
                                                             <Pencil className="size-4" />
                                                         </Link>
@@ -323,8 +332,18 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                                                             className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                                                             aria-label={
                                                                 word.is_active
-                                                                    ? `Hide ${word.answer}`
-                                                                    : `Show ${word.answer}`
+                                                                    ? tr(
+                                                                          'Hide {0}',
+                                                                          [
+                                                                              word.answer,
+                                                                          ],
+                                                                      )
+                                                                    : tr(
+                                                                          'Show {0}',
+                                                                          [
+                                                                              word.answer,
+                                                                          ],
+                                                                      )
                                                             }
                                                         >
                                                             {word.is_active ? (
@@ -341,7 +360,10 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                                                                 )
                                                             }
                                                             className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                                            aria-label={`Delete ${word.answer}`}
+                                                            aria-label={tr(
+                                                                'Delete {0}',
+                                                                [word.answer],
+                                                            )}
                                                         >
                                                             <Trash2 className="size-4" />
                                                         </button>
@@ -360,12 +382,15 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
 
             <ConfirmDialog
                 open={deleting !== null}
-                title="Delete word?"
+                title={tr('Delete word?')}
                 message={
                     deleting &&
-                    `“${deleting.answer}” will be removed from level ${deleting.level}.`
+                    tr('“{0}” will be removed from level {1}.', [
+                        deleting.answer,
+                        deleting.level,
+                    ])
                 }
-                confirmLabel="Delete"
+                confirmLabel={tr('Delete')}
                 processing={processing}
                 onClose={() => setDeleting(null)}
                 onConfirm={() =>

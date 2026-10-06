@@ -7,6 +7,7 @@ import {
 import { Panel, fieldClass, gameLabel } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
+import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, useForm } from '@inertiajs/react';
 import {
@@ -126,7 +127,7 @@ export default function CampaignForm({
 
     return (
         <AdminLayout>
-            <Head title={campaign ? 'Edit campaign' : 'New campaign'} />
+            <Head title={campaign ? tr('Edit campaign') : tr('New campaign')} />
             <div className="flex flex-col gap-6">
                 <div>
                     <Link
@@ -138,10 +139,10 @@ export default function CampaignForm({
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                     >
                         <ArrowLeft className="size-4" />
-                        {campaign ? campaign.name : 'Campaigns'}
+                        {campaign ? campaign.name : tr('Campaigns')}
                     </Link>
                     <h1 className="mt-2 text-2xl font-bold text-foreground">
-                        {campaign ? 'Edit campaign' : 'New campaign'}
+                        {campaign ? tr('Edit campaign') : tr('New campaign')}
                     </h1>
                 </div>
 
@@ -150,11 +151,11 @@ export default function CampaignForm({
                     className="grid gap-6 xl:grid-cols-2"
                     data-testid="campaign-form"
                 >
-                    <Panel title="Campaign & contract" icon={Megaphone}>
+                    <Panel title={tr('Campaign & contract')} icon={Megaphone}>
                         <div className="grid gap-5 sm:grid-cols-2">
                             <div className="sm:col-span-2">
                                 <Field
-                                    label="Advertiser"
+                                    label={tr('Advertiser')}
                                     error={errors.advertiser_id}
                                 >
                                     <select
@@ -170,12 +171,13 @@ export default function CampaignForm({
                                         required
                                     >
                                         <option value="" disabled>
-                                            Choose advertiser…
+                                            {tr('Choose advertiser…')}
                                         </option>
                                         {advertisers.map((a) => (
                                             <option key={a.id} value={a.id}>
                                                 {a.name}
-                                                {!a.is_active && ' (inactive)'}
+                                                {!a.is_active &&
+                                                    tr(' (inactive)')}
                                             </option>
                                         ))}
                                     </select>
@@ -183,7 +185,7 @@ export default function CampaignForm({
                             </div>
                             <div className="sm:col-span-2">
                                 <Field
-                                    label="Campaign name"
+                                    label={tr('Campaign name')}
                                     error={errors.name}
                                 >
                                     <input
@@ -198,7 +200,10 @@ export default function CampaignForm({
                                     />
                                 </Field>
                             </div>
-                            <Field label="Pricing" error={errors.pricing_model}>
+                            <Field
+                                label={tr('Pricing')}
+                                error={errors.pricing_model}
+                            >
                                 <select
                                     value={data.pricing_model}
                                     onChange={(event) =>
@@ -212,13 +217,13 @@ export default function CampaignForm({
                                 >
                                     {pricingModels.map((p) => (
                                         <option key={p} value={p}>
-                                            {PRICING_LABELS[p]}
+                                            {tr(PRICING_LABELS[p])}
                                         </option>
                                     ))}
                                 </select>
                             </Field>
                             <Field
-                                label="Contract value (Rp)"
+                                label={tr('Contract value (Rp)')}
                                 error={errors.contract_value}
                                 hint={formatRupiah(Number(data.contract_value))}
                             >
@@ -227,7 +232,7 @@ export default function CampaignForm({
                                 })}
                             </Field>
                             <Field
-                                label="Contract / PO number"
+                                label={tr('Contract / PO number')}
                                 error={errors.contract_number}
                             >
                                 <input
@@ -242,7 +247,7 @@ export default function CampaignForm({
                                     className={fieldClass}
                                 />
                             </Field>
-                            <Field label="Status" error={errors.status}>
+                            <Field label={tr('Status')} error={errors.status}>
                                 <select
                                     value={data.status}
                                     onChange={(event) =>
@@ -263,7 +268,7 @@ export default function CampaignForm({
                                 </select>
                             </Field>
                             <div className="sm:col-span-2">
-                                <Field label="Notes" error={errors.notes}>
+                                <Field label={tr('Notes')} error={errors.notes}>
                                     <textarea
                                         value={data.notes}
                                         onChange={(event) =>
@@ -280,12 +285,17 @@ export default function CampaignForm({
 
                     <div className="flex flex-col gap-6">
                         <Panel
-                            title="Flight & delivery"
-                            description="When the campaign runs and how much it may show"
+                            title={tr('Flight & delivery')}
+                            description={tr(
+                                'When the campaign runs and how much it may show',
+                            )}
                             icon={CalendarRange}
                         >
                             <div className="grid gap-5 sm:grid-cols-2">
-                                <Field label="Starts" error={errors.starts_on}>
+                                <Field
+                                    label={tr('Starts')}
+                                    error={errors.starts_on}
+                                >
                                     <input
                                         type="date"
                                         value={data.starts_on}
@@ -301,9 +311,11 @@ export default function CampaignForm({
                                     />
                                 </Field>
                                 <Field
-                                    label="Ends"
+                                    label={tr('Ends')}
                                     error={errors.ends_on}
-                                    hint={`Duration: ${duration} day(s)`}
+                                    hint={tr('Duration: {0} day(s)', [
+                                        duration,
+                                    ])}
                                 >
                                     <input
                                         type="date"
@@ -321,18 +333,18 @@ export default function CampaignForm({
                                     />
                                 </Field>
                                 <Field
-                                    label="Total impression cap"
+                                    label={tr('Total impression cap')}
                                     error={errors.max_impressions}
-                                    hint="Empty = unlimited"
+                                    hint={tr('Empty = unlimited')}
                                 >
                                     {numberInput('max_impressions', {
                                         min: 1,
                                     })}
                                 </Field>
                                 <Field
-                                    label="Daily impression cap"
+                                    label={tr('Daily impression cap')}
                                     error={errors.daily_max_impressions}
-                                    hint="Empty = unlimited"
+                                    hint={tr('Empty = unlimited')}
                                 >
                                     {numberInput('daily_max_impressions', {
                                         min: 1,
@@ -340,9 +352,14 @@ export default function CampaignForm({
                                 </Field>
                                 <div className="sm:col-span-2">
                                     <Field
-                                        label={`Share of voice (weight ${data.weight}/10)`}
+                                        label={tr(
+                                            'Share of voice (weight {0}/10)',
+                                            [data.weight],
+                                        )}
                                         error={errors.weight}
-                                        hint="Higher weight wins a shared placement more often"
+                                        hint={tr(
+                                            'Higher weight wins a shared placement more often',
+                                        )}
                                     >
                                         <input
                                             type="range"
@@ -356,7 +373,7 @@ export default function CampaignForm({
                                                 )
                                             }
                                             className="accent-primary"
-                                            aria-label="Weight"
+                                            aria-label={tr('Weight')}
                                         />
                                     </Field>
                                 </div>
@@ -364,13 +381,13 @@ export default function CampaignForm({
                         </Panel>
 
                         <Panel
-                            title="Targeting"
-                            description="Leave empty to run everywhere"
+                            title={tr('Targeting')}
+                            description={tr('Leave empty to run everywhere')}
                             icon={Crosshair}
                         >
                             <div className="flex flex-col gap-5">
                                 <Field
-                                    label="Games"
+                                    label={tr('Games')}
                                     error={errors.target_games}
                                 >
                                     <div className="flex flex-wrap gap-2">
@@ -402,13 +419,15 @@ export default function CampaignForm({
                                     </div>
                                     <span className="text-xs text-muted-foreground">
                                         {data.target_games.length === 0
-                                            ? 'All games'
-                                            : `${data.target_games.length} selected`}
+                                            ? tr('All games')
+                                            : tr('{0} selected', [
+                                                  data.target_games.length,
+                                              ])}
                                     </span>
                                 </Field>
                                 <div className="grid gap-5 sm:grid-cols-2">
                                     <Field
-                                        label="Grade from"
+                                        label={tr('Grade from')}
                                         error={errors.grade_min}
                                     >
                                         {numberInput('grade_min', {
@@ -418,7 +437,7 @@ export default function CampaignForm({
                                         })}
                                     </Field>
                                     <Field
-                                        label="Grade to"
+                                        label={tr('Grade to')}
                                         error={errors.grade_max}
                                     >
                                         {numberInput('grade_max', {
@@ -436,7 +455,7 @@ export default function CampaignForm({
                                 href="/admin/ads?tab=campaigns"
                                 className="inline-flex h-9 items-center rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                             >
-                                Cancel
+                                {tr('Cancel')}
                             </Link>
                             <button
                                 type="submit"
@@ -447,7 +466,9 @@ export default function CampaignForm({
                                 {processing && (
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
-                                {campaign ? 'Save changes' : 'Create campaign'}
+                                {campaign
+                                    ? tr('Save changes')
+                                    : tr('Create campaign')}
                             </button>
                         </div>
                     </div>
@@ -470,10 +491,14 @@ function Field({
 }) {
     return (
         <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-foreground">{label}</span>
+            <span className="text-sm font-medium text-foreground">
+                {tr(label)}
+            </span>
             {children}
             {hint && !error && (
-                <span className="text-xs text-muted-foreground">{hint}</span>
+                <span className="text-xs text-muted-foreground">
+                    {tr(hint)}
+                </span>
             )}
             <InputError message={error} />
         </div>
