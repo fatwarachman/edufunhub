@@ -309,9 +309,9 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         <h3>Kuis Kilat</h3>
         <p class="desc">Adu kecepatan dan ketepatan menjawab soal dalam hitungan detik! Live leaderboard dan timer menegangkan.</p>
         <div class="game-stats">
-          <span>
+          <span data-plays="sky-quiz">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            50.000+ Pemain
+            <span data-count>50.000+ Pemain</span>
           </span>
           <span>Solo & Multiplayer</span>
         </div>
@@ -346,9 +346,9 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         <h3>Duel 1 vs 1</h3>
         <p class="desc">Tantang teman atau pemain acak. Buktikan siapa penguasa mata pelajaran!</p>
         <div class="game-stats">
-          <span>
+          <span data-plays="quiz-duel">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            25.000+ Duel
+            <span data-count>25.000+ Duel</span>
           </span>
           <span>Real-time PVP</span>
         </div>
@@ -387,9 +387,9 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         <h3>Misi Tim Co-Op</h3>
         <p class="desc">Bentuk squad lintas wilayah, pecahkan teka-teki gabungan bersama.</p>
         <div class="game-stats">
-          <span>
+          <span data-plays="floor-drop,economy-heist,order-rush,turbo-trivia">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            10.000+ Tim
+            <span data-count>10.000+ Tim</span>
           </span>
           <span>Lintas Sekolah</span>
         </div>
@@ -429,9 +429,9 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         <h3>Ular Tangga Pengetahuan</h3>
         <p class="desc">Board game ular tangga interaktif! Jawab soal untuk naik tangga, hindari ular. Seru untuk 2 pemain!</p>
         <div class="game-stats">
-          <span>
+          <span data-plays="snakes-and-ladders">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            15.000+ Match
+            <span data-count>15.000+ Match</span>
           </span>
           <span>2-6 Pemain</span>
         </div>
@@ -473,9 +473,9 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         <h3>Quest RPG 3D</h3>
         <p class="desc">Eksplorasi dunia fantasi edukatif. Temui NPC profesor, buka dungeon pengetahuan.</p>
         <div class="game-stats">
-          <span>
+          <span data-plays="flag-quest,explore-indonesia">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            30.000+ Quest
+            <span data-count>30.000+ Quest</span>
           </span>
           <span>Open World</span>
         </div>
@@ -509,9 +509,9 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         <h3>Teka-Teki & Mini-Game</h3>
         <p class="desc">Puzzle logika, teka-teki silang digital, simulasi drag-and-drop interaktif.</p>
         <div class="game-stats">
-          <span>
+          <span data-plays="crossword,port-sorter,knowledge-train">
             <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            20.000+ Puzzle
+            <span data-count>20.000+ Puzzle</span>
           </span>
           <span>Solo Mode</span>
         </div>
@@ -664,6 +664,24 @@ document.querySelector('.mobile-toggle').addEventListener('click', function() {
       }
     });
   });
+})();
+</script>
+<script>
+// Real play counts per card from /landing/stats; the static text stays when the request fails.
+(function () {
+  if (!window.fetch) return;
+  var numberFormat = new Intl.NumberFormat('id-ID');
+  fetch('/landing/stats', { headers: { Accept: 'application/json' }, credentials: 'same-origin' })
+    .then(function (response) { if (!response.ok) throw new Error(response.status); return response.json(); })
+    .then(function (json) {
+      var plays = (json && json.playsByGame) || {};
+      document.querySelectorAll('[data-plays]').forEach(function (node) {
+        var total = node.getAttribute('data-plays').split(',').reduce(function (sum, key) { return sum + (Number(plays[key]) || 0); }, 0);
+        var label = node.querySelector('[data-count]');
+        if (label) label.textContent = numberFormat.format(total) + ' kali dimainkan';
+      });
+    })
+    .catch(function () { /* keep static content */ });
 })();
 </script>
 
