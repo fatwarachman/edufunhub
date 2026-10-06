@@ -96,8 +96,6 @@ class UserAnalytics
                 'users' => $profiles->where('grade', $grade)->count(),
             ])->all(),
             'ages' => $this->ageHistogram($profiles),
-            'topPlayers' => $this->games->leaderboard([], 5),
-            'topSchools' => $this->games->schoolLeaderboard(null, 0, 5),
             'recentPlays' => $this->recentPlays(8),
             'recentUsers' => $this->recentUsers(6),
         ];
@@ -257,6 +255,7 @@ class UserAnalytics
                 $query->where(fn (Builder $q) => $q->where('subject_type', User::class)->where('subject_id', $user->id))
                     ->orWhere(fn (Builder $q) => $q->where('causer_type', User::class)->where('causer_id', $user->id));
             })
+            ->tap(fn (Builder $query) => UserActivity::withoutHeartbeats($query))
             ->latest('id')
             ->limit($limit)
             ->get()
@@ -270,6 +269,7 @@ class UserAnalytics
                 'by_self' => $activity->causer_type === User::class && (int) $activity->causer_id === $user->id,
                 'causer_name' => $activity->causer?->name,
                 'changes' => $this->changedFields($activity),
+                'properties' => UserActivity::displayProperties($activity),
                 'created_at' => $activity->created_at?->toIso8601String(),
             ])->all();
     }
@@ -577,7 +577,7 @@ class UserAnalytics
         $old = (array) ($activity->properties['old'] ?? []);
 
         return collect($new)
-            ->except(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'updated_at'])
+            ->except(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'updated_at', 'last_seen_at'])
             ->map(fn (mixed $value, string $field): array => ['field' => $field, 'old' => $old[$field] ?? null, 'new' => $value])
             ->values()
             ->take(8)

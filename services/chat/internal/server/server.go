@@ -21,6 +21,10 @@ const MaxPublishBytes = 64 << 10
 // MaxPublishUsers caps recipients of one event (largest group).
 const MaxPublishUsers = 200
 
+// MaxClientFrame caps one frame from the browser (a presence watch list of
+// hub.MaxWatch ids fits comfortably).
+const MaxClientFrame = 16 << 10
+
 // PingInterval keeps idle sockets alive through proxies.
 const PingInterval = 25 * time.Second
 
@@ -30,6 +34,8 @@ type Config struct {
 	AllowedOrigins []string
 	Logger         *slog.Logger
 	Now            func() time.Time
+	// OfflineGrace delays "went offline" presence events (0 = default).
+	OfflineGrace time.Duration
 }
 
 // Server wires HTTP routes to the hub.
@@ -46,7 +52,10 @@ func New(cfg Config) *Server {
 	if cfg.Logger == nil {
 		cfg.Logger = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
-	return &Server{cfg: cfg, hub: hub.New()}
+	if cfg.OfflineGrace <= 0 {
+		cfg.OfflineGrace = hub.DefaultOfflineGrace
+	}
+	return &Server{cfg: cfg, hub: hub.NewWithGrace(cfg.OfflineGrace)}
 }
 
 // Hub exposes the hub (tests).
@@ -100,8 +109,8 @@ func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	// Clients only send pings; messages go through Laravel.
-	conn.SetReadLimit(512)
+	// Clients only send presence watch lists; messages go through Laravel.
+	conn.SetReadLimit(MaxClientFrame)
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 
@@ -111,9 +120,11 @@ func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		defer cancel()
 		for {
-			if _, _, err := conn.Read(ctx); err != nil {
+			_, data, err := conn.Read(ctx)
+			if err != nil {
 				return
 			}
+			s.handleClientFrame(client, data)
 		}
 	}()
 
@@ -154,6 +165,24 @@ func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+}
+
+type clientFrame struct {
+	T     string  `json:"t"`
+	Users []int64 `json:"users"`
+}
+
+// handleClientFrame answers {"t":"watch","users":[…]} with the online subset
+// ({"t":"presence_state","online":[…]}); later changes arrive as
+// {"t":"presence"} events. Unknown frames are ignored.
+func (s *Server) handleClientFrame(c *hub.Client, data []byte) {
+	var frame clientFrame
+	if json.Unmarshal(data, &frame) != nil || frame.T != "watch" {
+		return
+	}
+	online := s.hub.Watch(c, frame.Users)
+	reply, _ := json.Marshal(map[string]any{"t": "presence_state", "online": online})
+	s.hub.Enqueue(c, reply)
 }
 
 func write(ctx context.Context, conn *websocket.Conn, payload []byte) error {

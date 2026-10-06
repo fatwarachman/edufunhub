@@ -6,6 +6,8 @@ export interface SnakesPlayer extends RoomSeat {
     score: number;
     correct: number;
     wrong: number;
+    /** Order in which the seat reached square 100 (0 = still racing). */
+    finished?: number;
 }
 
 export interface SnakesState {
@@ -22,7 +24,20 @@ export interface SnakesState {
     local_seats: boolean;
     winner?: number;
     points?: number;
-    reason?: 'finish' | 'forfeit';
+    reason?: 'finish' | 'forfeit' | 'time';
+    /** Game length in minutes chosen by the host (0 = until someone finishes). */
+    minutes?: number;
+    durations?: number[];
+    finish_bonus?: number;
+    /** Seat that reached square 100 first (-1 = nobody yet). */
+    first?: number;
+    finish_bonus_won?: boolean;
+    /** Remaining game time of a timed game. */
+    time_left_ms?: number;
+    /** Turn wait before the dice rolls by itself. */
+    roll_ms?: number;
+    /** The dice of this turn rolled by itself (player away). */
+    auto_roll?: boolean;
     turn?: number;
     step?: 'roll' | 'question' | 'reveal' | 'move';
     dice?: number;
@@ -59,6 +74,8 @@ export function useSnakesConnection(
     handlers: {
         onState: (state: SnakesState) => void;
         onError: (code: string) => void;
+        /** Other server events, e.g. `{t: 'left', points}` after leaving a running game. */
+        onMessage?: (msg: Record<string, unknown>) => void;
     },
 ) {
     return useGameSocket<SnakesState>(

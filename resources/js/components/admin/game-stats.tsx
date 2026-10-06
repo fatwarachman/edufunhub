@@ -1,3 +1,4 @@
+import { ResponsiveTable } from '@/components/responsive-table';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
@@ -216,78 +217,88 @@ export function BucketTable({
     );
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-sm">
-                <thead>
-                    <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-                        <th className="py-2 pr-3 text-left font-medium">
-                            {labelHeader}
-                        </th>
-                        <th className="px-3 py-2 text-left font-medium">
-                            {tr('Plays')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Players')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Avg points')}
-                        </th>
-                        <th className="px-3 py-2 text-right font-medium">
-                            {tr('Accuracy')}
-                        </th>
-                        <th className="py-2 pl-3 text-right font-medium">
-                            {tr('Success')}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                    {visible.map((row) => (
-                        <tr key={row.label}>
-                            <td className="py-2.5 pr-3 font-medium whitespace-nowrap text-foreground">
-                                {labelFor(row.label)}
-                            </td>
-                            <td className="px-3 py-2.5">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-2 w-24 shrink-0 overflow-hidden rounded-full bg-muted">
-                                        <div
-                                            className="h-full rounded-full bg-primary"
-                                            style={{
-                                                width: `${(row.plays / max) * 100}%`,
-                                            }}
-                                        />
-                                    </div>
-                                    <span className="text-foreground tabular-nums">
-                                        {formatNumber(row.plays)}
-                                    </span>
-                                </div>
-                            </td>
-                            <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                {formatNumber(row.players)}
-                            </td>
-                            <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                {row.avg_points}
-                            </td>
-                            <td
-                                className={cn(
-                                    'px-3 py-2.5 text-right font-medium tabular-nums',
-                                    rateTone(row.accuracy),
-                                )}
-                            >
-                                {formatPercent(row.accuracy)}
-                            </td>
-                            <td
-                                className={cn(
-                                    'py-2.5 pl-3 text-right font-medium tabular-nums',
-                                    rateTone(row.success_rate),
-                                )}
-                            >
-                                {formatPercent(row.success_rate)}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <ResponsiveTable
+            rows={visible}
+            rowKey={(row) => row.label}
+            columns={[
+                {
+                    key: 'label',
+                    header: labelHeader,
+                    primary: true,
+                    cellClassName:
+                        'font-medium whitespace-nowrap text-foreground',
+                    cell: (row) => labelFor(row.label),
+                },
+                {
+                    key: 'plays',
+                    header: tr('Plays'),
+                    summary: true,
+                    cell: (row) => (
+                        <span className="flex items-center gap-2">
+                            <span className="h-2 w-24 shrink-0 overflow-hidden rounded-full bg-muted">
+                                <span
+                                    className="block h-full rounded-full bg-primary"
+                                    style={{
+                                        width: `${(row.plays / max) * 100}%`,
+                                    }}
+                                />
+                            </span>
+                            <span className="text-foreground tabular-nums">
+                                {formatNumber(row.plays)}
+                            </span>
+                        </span>
+                    ),
+                },
+                {
+                    key: 'players',
+                    header: tr('Players'),
+                    align: 'right',
+                    headerClassName: 'whitespace-normal',
+                    cellClassName: 'text-foreground tabular-nums',
+                    cell: (row) => formatNumber(row.players),
+                },
+                {
+                    key: 'avg_points',
+                    header: tr('Avg points'),
+                    align: 'right',
+                    headerClassName: 'whitespace-normal',
+                    cellClassName: 'text-foreground tabular-nums',
+                    cell: (row) => row.avg_points,
+                },
+                {
+                    key: 'accuracy',
+                    header: tr('Accuracy'),
+                    align: 'right',
+                    headerClassName: 'whitespace-normal',
+                    cell: (row) => (
+                        <span
+                            className={cn(
+                                'font-medium tabular-nums',
+                                rateTone(row.accuracy),
+                            )}
+                        >
+                            {formatPercent(row.accuracy)}
+                        </span>
+                    ),
+                },
+                {
+                    key: 'success',
+                    header: tr('Success'),
+                    align: 'right',
+                    headerClassName: 'whitespace-normal',
+                    cell: (row) => (
+                        <span
+                            className={cn(
+                                'font-medium tabular-nums',
+                                rateTone(row.success_rate),
+                            )}
+                        >
+                            {formatPercent(row.success_rate)}
+                        </span>
+                    ),
+                },
+            ]}
+        />
     );
 }
 

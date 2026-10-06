@@ -553,6 +553,17 @@ func (h *Hub) Peers(uid int64) []int64 {
 	return nil
 }
 
+// Presence reports a running match of uid (portal "continue playing").
+func (h *Hub) Presence(uid int64) (pin string, ok bool) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	m, found := h.matches[uid]
+	if !found || m.phase == PhaseDone {
+		return "", false
+	}
+	return m.pin, true
+}
+
 // Counts reports live matches and queued players for the server monitor.
 func (h *Hub) Counts() (matches, queued int) {
 	h.mu.Lock()
@@ -602,6 +613,9 @@ func (h *Hub) stateLocked(uid int64, claims auth.Claims, now time.Time) Message 
 		"name": op.claims.Name, "grade": op.claims.Grade, "character": op.claims.Character, "score": op.score, "correct": op.correct,
 		"bot": op.bot, "online": op.bot || h.online[op.id()], "answered": op.answered,
 		"history": append([]bool{}, op.history...),
+	}
+	if !op.bot && op.id() > 0 {
+		msg["opponent"].(Message)["user_id"] = op.id()
 	}
 	switch m.phase {
 	case PhaseCountdown:

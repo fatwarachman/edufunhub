@@ -309,7 +309,20 @@ class ChatService
     {
         $message->loadMissing('user.playerProfile');
         $ids = $conversation->activeParticipants()->pluck('user_id')->all();
-        $this->client->publish($ids, ['t' => 'message', 'message' => $this->presentMessage($message)]);
+        $this->client->publish($ids, [
+            't' => 'message',
+            'message' => $this->presentMessage($message),
+            'conversation' => [
+                'id' => $conversation->id,
+                'type' => $conversation->type,
+                'name' => $conversation->isGroup() ? (string) $conversation->name : null,
+            ],
+            'sender' => $message->user ? [
+                'id' => $message->user->id,
+                'name' => $this->displayName($message->user),
+                'character' => $message->user->playerProfile ? ($this->shop->looks([$message->user->playerProfile])[$message->user->id] ?? null) : null,
+            ] : null,
+        ]);
     }
 
     /** @return Collection<int, User> */

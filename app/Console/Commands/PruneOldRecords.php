@@ -80,7 +80,7 @@ class PruneOldRecords extends Command
             $query = Feedback::query()->where('created_at', '<', $cutoff);
 
             if ($cfg['archived_only']) {
-                $query->where('status', 'archived');
+                $query->whereIn('status', ['archived', 'dismissed']);
             }
 
             $count = $query->count();

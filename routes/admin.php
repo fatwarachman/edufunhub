@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AbilityAssessmentController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AdController;
 use App\Http\Controllers\Admin\AiSettingsController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Admin\CharacterItemController;
 use App\Http\Controllers\Admin\CompensationController;
 use App\Http\Controllers\Admin\CrosswordWordController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\GameSoundsController;
 use App\Http\Controllers\Admin\GameStatisticsController;
 use App\Http\Controllers\Admin\ImpersonationController;
@@ -19,6 +21,7 @@ use App\Http\Controllers\Admin\PointRulesController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\QuestionGenerationController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\ScreenTimeController;
 use App\Http\Controllers\Admin\SequenceSetController;
 use App\Http\Controllers\Admin\ServerMonitorController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -64,6 +67,11 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
 
         // Activity Log
         Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
+        Route::get('/activity-log/{activity}', [ActivityLogController::class, 'show'])->whereNumber('activity')->name('activity-log.show');
+
+        // Player feedback review
+        Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
+        Route::patch('/feedback/{feedback}', [FeedbackController::class, 'update'])->middleware('throttle:60,1')->name('feedback.update');
 
         // Super admin: game statistics, leaderboard and question bank
         Route::middleware(EnsureSuperadmin::class)->group(function (): void {
@@ -72,8 +80,10 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard.index');
             Route::get('/user-statistics', [UserStatisticsController::class, 'index'])->name('user-statistics.index');
             Route::get('/playing-time', [PlayingTimeController::class, 'index'])->name('playing-time.index');
+            Route::get('/screen-time', [ScreenTimeController::class, 'index'])->name('screen-time.index');
             Route::get('/questions/generate', [QuestionGenerationController::class, 'index'])->name('questions.generate');
             Route::post('/questions/generate', [QuestionGenerationController::class, 'store'])->name('questions.generate.store');
+            Route::post('/users/{user}/ability-assessments', [AbilityAssessmentController::class, 'store'])->middleware('throttle:5,1')->name('users.ability-assessments.store');
             Route::post('/questions/bulk', [QuestionController::class, 'bulk'])->middleware('throttle:30,1')->name('questions.bulk');
             Route::patch('/questions/{question}/toggle', [QuestionController::class, 'toggle'])->name('questions.toggle');
             Route::get('/notifications', [PlayerNotificationController::class, 'index'])->name('notifications.index');
@@ -105,10 +115,25 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::patch('/subjects/{subject}/toggle', [SubjectController::class, 'toggle'])->name('subjects.toggle');
             Route::patch('/subjects/{subject}/move', [SubjectController::class, 'move'])->name('subjects.move');
             Route::resource('subjects', SubjectController::class)->only(['index', 'store', 'update', 'destroy']);
-            Route::patch('/sequence-sets/{sequence_set}/toggle', [SequenceSetController::class, 'toggle'])->name('sequence-sets.toggle');
-            Route::resource('sequence-sets', SequenceSetController::class)->only(['index', 'store', 'update', 'destroy']);
-            Route::patch('/sorter-sets/{sorter_set}/toggle', [SorterSetController::class, 'toggle'])->name('sorter-sets.toggle');
-            Route::resource('sorter-sets', SorterSetController::class)->only(['index', 'store', 'update', 'destroy']);
+            // Order Rush sequence bank and Port Sorter item bank live under their game pages (sub tabs).
+            Route::patch('/games/order-rush/sequences/{sequence_set}/toggle', [SequenceSetController::class, 'toggle'])->name('sequence-sets.toggle');
+            Route::resource('games/order-rush/sequences', SequenceSetController::class)
+                ->parameters(['sequences' => 'sequence_set'])
+                ->names('sequence-sets')
+                ->only(['index', 'store', 'update', 'destroy']);
+            Route::get('/sequence-sets/{path?}', fn (Request $request, ?string $path = null): RedirectResponse => redirect()->to(
+                '/admin/games/order-rush/sequences'.($path ? '/'.$path : '').($request->getQueryString() ? '?'.$request->getQueryString() : ''),
+                301,
+            ))->where('path', '.*')->name('sequence-sets.legacy');
+            Route::patch('/games/port-sorter/sets/{sorter_set}/toggle', [SorterSetController::class, 'toggle'])->name('sorter-sets.toggle');
+            Route::resource('games/port-sorter/sets', SorterSetController::class)
+                ->parameters(['sets' => 'sorter_set'])
+                ->names('sorter-sets')
+                ->only(['index', 'store', 'update', 'destroy']);
+            Route::get('/sorter-sets/{path?}', fn (Request $request, ?string $path = null): RedirectResponse => redirect()->to(
+                '/admin/games/port-sorter/sets'.($path ? '/'.$path : '').($request->getQueryString() ? '?'.$request->getQueryString() : ''),
+                301,
+            ))->where('path', '.*')->name('sorter-sets.legacy');
             Route::patch('/character-items/{character_item}/toggle', [CharacterItemController::class, 'toggle'])->name('character-items.toggle');
             Route::resource('character-items', CharacterItemController::class)->except(['show']);
 

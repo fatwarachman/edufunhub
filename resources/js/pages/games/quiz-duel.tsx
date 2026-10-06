@@ -14,6 +14,7 @@ import {
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
+import { useMyUserId } from '@/hooks/use-chat-socket';
 import { type DuelState, useDuelConnection } from '@/hooks/use-duel-connection';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import { useTranslations } from '@/hooks/use-translations';
@@ -94,6 +95,7 @@ export default function QuizDuel({
     pin,
 }: QuizDuelProps) {
     const { t, i18n } = useTranslations();
+    const myId = useMyUserId();
     const [subject, setSubject] = useState<GameSubject>(() =>
         typeof window === 'undefined' ? 'mix' : rememberedSubject(),
     );
@@ -258,7 +260,10 @@ export default function QuizDuel({
                         data-testid="duel-player"
                     >
                         <span className="-my-1 size-9 shrink-0">
-                            <PlayerAvatar character={player.character} />
+                            <PlayerAvatar
+                                character={player.character}
+                                userId={myId}
+                            />
                         </span>
                         <span className="truncate">
                             {player.name} • {gradeLabel}
@@ -372,7 +377,7 @@ export default function QuizDuel({
                             }
                         />
                     ) : phase === 'idle' ? (
-                        <div className="grid gap-6 lg:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                             <Centered>
                                 <Swords className="size-14 text-[#ff6584]" />
                                 <h2 className="text-center font-display text-2xl font-bold">
@@ -637,6 +642,7 @@ function Scoreboard({
     botLabel: string;
     vsLabel: string;
 }) {
+    const myId = useMyUserId();
     return (
         <div
             className="grid grid-cols-[1fr_auto_1fr] items-stretch gap-2"
@@ -646,6 +652,7 @@ function Scoreboard({
                 label={youLabel}
                 name={you.name}
                 character={you.character}
+                userId={myId}
                 score={you.score ?? 0}
                 history={you.history ?? []}
                 total={total}
@@ -659,6 +666,7 @@ function Scoreboard({
                 name={opponent.name}
                 character={opponent.character}
                 seat={1}
+                userId={opponent.user_id}
                 score={opponent.score ?? 0}
                 history={opponent.history ?? []}
                 total={total}
@@ -676,6 +684,7 @@ function SideCard({
     name,
     character,
     seat = 0,
+    userId,
     score,
     history,
     total,
@@ -688,6 +697,7 @@ function SideCard({
     name: string;
     character?: CharacterLook | null;
     seat?: number;
+    userId?: number | null;
     score: number;
     history: boolean[];
     total: number;
@@ -712,7 +722,11 @@ function SideCard({
                 )}
             >
                 <span className="size-10 shrink-0">
-                    <PlayerAvatar character={character} seat={seat} />
+                    <PlayerAvatar
+                        character={character}
+                        seat={seat}
+                        userId={userId}
+                    />
                 </span>
                 <span
                     className={cn(

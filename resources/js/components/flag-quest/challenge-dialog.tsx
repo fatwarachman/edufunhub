@@ -145,7 +145,7 @@ export default function ChallengeDialog({
                     </button>
                 </form>
             ) : (
-                <div className="grid gap-2.5 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                     {challenge.question.options.map((option, index) => (
                         <button
                             key={`${index}-${option}`}

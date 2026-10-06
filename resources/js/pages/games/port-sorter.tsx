@@ -2,6 +2,7 @@ import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
+import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import {
     type PortSorterState,
@@ -131,6 +132,7 @@ export default function PortSorter({
     wsUrl,
 }: PortSorterProps) {
     const { t, i18n } = useTranslations();
+    const myId = useMyUserId();
     const { play, muted, toggleMuted } = useGameAudio();
     const canvas = useRef<HTMLCanvasElement | null>(null);
     const [state, setState] = useState<PortSorterState | null>(null);
@@ -618,7 +620,10 @@ export default function PortSorter({
                         data-testid="port-player"
                     >
                         <span className="-my-1 size-9 shrink-0">
-                            <PlayerAvatar character={player.character} />
+                            <PlayerAvatar
+                                character={player.character}
+                                userId={myId}
+                            />
                         </span>
                         <span className="truncate">{player.name}</span>
                     </span>

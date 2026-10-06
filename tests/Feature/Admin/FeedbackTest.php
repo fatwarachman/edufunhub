@@ -1,99 +1,123 @@
 <?php
 
 use App\Models\Feedback;
+use App\Models\Role;
 use App\Models\User;
-use App\Models\Workspace;
+use Illuminate\Support\Facades\Artisan;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     $this->superadmin = User::factory()->create(['is_superadmin' => true]);
-    $this->user = User::factory()->create();
-    $this->workspace = Workspace::factory()->create();
-    $this->workspace->users()->attach($this->user, ['role' => 'owner']);
-    $this->user->update(['current_workspace_id' => $this->workspace->id]);
+    $this->player = User::factory()->create(['name' => 'Rani Player']);
 
-    // Create sample feedback items
-    Feedback::create([
-        'user_id' => $this->user->id,
-        'workspace_id' => $this->workspace->id,
+    Feedback::factory()->create([
+        'user_id' => $this->player->id,
         'type' => 'bug',
-        'message' => 'There is a bug on the dashboard page that breaks layout.',
+        'message' => 'The crossword timer freezes after the second word.',
         'status' => 'new',
+        'metadata' => ['game' => 'crossword', 'may_contact' => true],
     ]);
-
-    Feedback::create([
-        'user_id' => $this->user->id,
-        'workspace_id' => $this->workspace->id,
-        'type' => 'idea',
-        'message' => 'It would be great to have dark mode for the admin panel.',
-        'status' => 'reviewed',
+    Feedback::factory()->create([
+        'user_id' => $this->player->id,
+        'type' => 'feature',
+        'message' => 'Please add a dark mode for the player portal.',
+        'status' => 'in_progress',
     ]);
 });
 
-it('allows superadmin to view feedback index', function () {
+it('allows a superadmin to view the feedback list', function () {
     actingAs($this->superadmin)
         ->get('/admin/feedback')
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('admin/feedback')
-            ->has('feedback')
-            ->has('counts'));
+        ->assertInertia(fn ($page) => $page->component('admin/feedback/index')
+            ->has('feedback.data', 2)
+            ->where('counts.total', 2)
+            ->where('counts.new', 1)
+            ->where('counts.in_progress', 1)
+            ->where('feedback.data.0.type', 'feature')
+            ->where('feedback.data.1.game', 'crossword')
+            ->where('feedback.data.1.may_contact', true)
+            ->where('feedback.data.1.user.name', 'Rani Player'));
 });
 
-it('denies non-superadmin access to feedback index', function () {
-    actingAs($this->user)
-        ->get('/admin/feedback')
+it('allows an admin role user to view and update feedback', function () {
+    $admin = User::factory()->create();
+    $admin->roles()->attach(Role::query()->firstOrCreate(['slug' => 'admin'], ['name' => 'Admin']));
+    $feedback = Feedback::query()->where('type', 'bug')->firstOrFail();
+
+    actingAs($admin)->get('/admin/feedback')->assertOk();
+    actingAs($admin)
+        ->patch("/admin/feedback/{$feedback->id}", ['status' => 'resolved'])
+        ->assertRedirect();
+
+    expect($feedback->fresh()->status)->toBe('resolved');
+});
+
+it('forbids players from the admin feedback list and status update', function () {
+    $feedback = Feedback::query()->firstOrFail();
+
+    actingAs($this->player)->get('/admin/feedback')->assertForbidden();
+    actingAs($this->player)
+        ->patch("/admin/feedback/{$feedback->id}", ['status' => 'resolved'])
         ->assertForbidden();
+
+    expect($feedback->fresh()->status)->toBe('new');
 });
 
-it('allows superadmin to update feedback status to reviewed', function () {
-    $fb = Feedback::where('type', 'bug')->first();
+it('redirects guests away from the admin feedback list', function () {
+    $this->get('/admin/feedback')->assertRedirect('/login');
+});
+
+it('updates the status through every allowed value', function (string $status) {
+    $feedback = Feedback::query()->where('type', 'bug')->firstOrFail();
 
     actingAs($this->superadmin)
-        ->putJson("/admin/feedback/{$fb->id}", ['status' => 'reviewed'])
-        ->assertRedirect();
+        ->patch("/admin/feedback/{$feedback->id}", ['status' => $status])
+        ->assertRedirect()
+        ->assertSessionHas('success');
 
-    expect($fb->fresh()->status)->toBe('reviewed');
-});
-
-it('allows superadmin to archive feedback', function () {
-    $fb = Feedback::where('type', 'bug')->first();
-
-    actingAs($this->superadmin)
-        ->putJson("/admin/feedback/{$fb->id}", ['status' => 'archived'])
-        ->assertRedirect();
-
-    expect($fb->fresh()->status)->toBe('archived');
-});
+    expect($feedback->fresh()->status)->toBe($status);
+})->with(['new', 'in_progress', 'resolved', 'dismissed']);
 
 it('rejects invalid status values', function () {
-    $fb = Feedback::where('type', 'bug')->first();
+    $feedback = Feedback::query()->firstOrFail();
 
     actingAs($this->superadmin)
-        ->putJson("/admin/feedback/{$fb->id}", ['status' => 'bogus'])
-        ->assertUnprocessable();
+        ->patchJson("/admin/feedback/{$feedback->id}", ['status' => 'archived'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['status']);
 });
 
-it('allows superadmin to delete feedback', function () {
-    $fb = Feedback::first();
-
-    actingAs($this->superadmin)
-        ->delete("/admin/feedback/{$fb->id}")
-        ->assertRedirect();
-
-    expect(Feedback::find($fb->id))->toBeNull();
-});
-
-it('filters feedback by type', function () {
+it('filters feedback by type, status and search', function () {
     actingAs($this->superadmin)
         ->get('/admin/feedback?type=bug')
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page->has('feedback.data', 1));
+        ->assertInertia(fn ($page) => $page->has('feedback.data', 1)->where('feedback.data.0.type', 'bug'));
+
+    actingAs($this->superadmin)
+        ->get('/admin/feedback?status=in_progress')
+        ->assertInertia(fn ($page) => $page->has('feedback.data', 1)->where('feedback.data.0.type', 'feature'));
+
+    actingAs($this->superadmin)
+        ->get('/admin/feedback?search=crossword')
+        ->assertInertia(fn ($page) => $page->has('feedback.data', 1)->where('feedback.data.0.type', 'bug'));
+
+    actingAs($this->superadmin)
+        ->get('/admin/feedback?search=Rani')
+        ->assertInertia(fn ($page) => $page->has('feedback.data', 2));
+
+    actingAs($this->superadmin)
+        ->get('/admin/feedback?type=bogus&status=bogus')
+        ->assertInertia(fn ($page) => $page->has('feedback.data', 2));
 });
 
-it('filters feedback by status', function () {
-    actingAs($this->superadmin)
-        ->get('/admin/feedback?status=reviewed')
-        ->assertOk()
-        ->assertInertia(fn ($page) => $page->has('feedback.data', 1));
+it('prunes old dismissed feedback like archived entries', function () {
+    config(['retention.feedback' => ['enabled' => true, 'days' => 30, 'archived_only' => true]]);
+    $old = Feedback::factory()->create(['status' => 'dismissed', 'created_at' => now()->subDays(60)]);
+    $kept = Feedback::factory()->create(['status' => 'resolved', 'created_at' => now()->subDays(60)]);
+
+    Artisan::call('app:prune-old-records');
+
+    expect(Feedback::find($old->id))->toBeNull()
+        ->and(Feedback::find($kept->id))->not->toBeNull();
 });

@@ -482,6 +482,7 @@ function RosterCard({ player }: { player: TurboRosterEntry }) {
                     <PlayerAvatar
                         character={player.character}
                         seat={player.user_id}
+                        userId={player.user_id}
                     />
                 </span>
             </span>

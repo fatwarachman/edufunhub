@@ -158,6 +158,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /ws/order-rush", s.serveOrderRush)
 	mux.HandleFunc("GET /ws/turbo-trivia", s.serveTurboTrivia)
 	mux.HandleFunc("GET /internal/stats", s.serveStats)
+	mux.HandleFunc("GET /internal/presence", s.servePresence)
 	return mux
 }
 
@@ -176,6 +177,7 @@ type inbound struct {
 	Word    int     `json:"word"`
 	Subject string  `json:"subject"`
 	Packet  string  `json:"packet"`
+	Minutes int     `json:"minutes"`
 }
 
 func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {

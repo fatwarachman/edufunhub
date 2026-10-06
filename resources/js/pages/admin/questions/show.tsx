@@ -17,6 +17,7 @@ import {
     rateTone,
     useSubjectLabel,
 } from '@/components/admin/game-stats';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -722,106 +723,118 @@ export default function QuestionShow({ question, stats }: Props) {
                                     ))}
                                 </div>
                             </header>
-                            <div className="overflow-x-auto p-5">
-                                {players.length === 0 ? (
-                                    <EmptyState
-                                        icon={UsersRound}
-                                        title={tr('No players in this group')}
-                                    />
-                                ) : (
-                                    <table className="w-full min-w-[680px] text-sm">
-                                        <thead>
-                                            <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-                                                <th className="py-2 pr-3 text-left font-medium">
-                                                    {tr('Player')}
-                                                </th>
-                                                <th className="px-3 py-2 text-left font-medium">
-                                                    {tr('Grade · school')}
-                                                </th>
-                                                <th className="px-3 py-2 text-center font-medium">
-                                                    {tr('Latest')}
-                                                </th>
-                                                <th className="px-3 py-2 text-center font-medium">
-                                                    {tr('First try')}
-                                                </th>
-                                                <th className="px-3 py-2 text-right font-medium">
-                                                    {tr('Attempts')}
-                                                </th>
-                                                <th className="py-2 pl-3 text-right font-medium">
-                                                    {tr('Last answered')}
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border">
-                                            {players.map((player) => (
-                                                <tr key={player.user_id}>
-                                                    <td className="py-2.5 pr-3">
-                                                        <Link
-                                                            href={`/admin/users/${player.user_id}`}
-                                                            className="flex items-center gap-2 font-medium text-foreground hover:text-primary hover:underline"
-                                                        >
-                                                            <UserAvatar
-                                                                name={
-                                                                    player.name
-                                                                }
-                                                                className="size-7 text-[10px]"
-                                                            />
-                                                            <span className="flex flex-col">
-                                                                {player.name}
-                                                                {player.account_name &&
-                                                                    player.account_name !==
-                                                                        player.name && (
-                                                                        <span className="text-xs font-normal text-muted-foreground">
-                                                                            {
-                                                                                player.account_name
-                                                                            }
-                                                                        </span>
-                                                                    )}
-                                                            </span>
-                                                        </Link>
-                                                    </td>
-                                                    <td className="max-w-56 truncate px-3 py-2.5 text-muted-foreground">
-                                                        {[
-                                                            player.grade
-                                                                ? `Grade ${player.grade}`
-                                                                : null,
-                                                            player.school_name,
-                                                        ]
-                                                            .filter(Boolean)
-                                                            .join(' · ') || '—'}
-                                                    </td>
-                                                    <td className="px-3 py-2.5 text-center">
-                                                        <Outcome
-                                                            correct={
-                                                                player.last_correct
-                                                            }
-                                                        />
-                                                    </td>
-                                                    <td className="px-3 py-2.5 text-center">
-                                                        <Outcome
-                                                            correct={
-                                                                player.first_correct
-                                                            }
-                                                            subtle
-                                                        />
-                                                    </td>
-                                                    <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                                        {player.attempts}
-                                                        <span className="ml-1 text-xs text-muted-foreground">
-                                                            ({player.correct}✓{' '}
-                                                            {player.wrong}✗)
-                                                        </span>
-                                                    </td>
-                                                    <td className="py-2.5 pl-3 text-right whitespace-nowrap text-muted-foreground">
-                                                        {timeAgo(
-                                                            player.last_answered_at,
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
+                            <div className="min-w-0 p-5">
+                                <ResponsiveTable
+                                    testId="question-players-table"
+                                    rows={players}
+                                    rowKey={(player) => player.user_id}
+                                    empty={
+                                        <EmptyState
+                                            icon={UsersRound}
+                                            title={tr(
+                                                'No players in this group',
+                                            )}
+                                        />
+                                    }
+                                    columns={[
+                                        {
+                                            key: 'player',
+                                            header: tr('Player'),
+                                            primary: true,
+                                            cell: (player) => (
+                                                <Link
+                                                    href={`/admin/users/${player.user_id}`}
+                                                    className="flex items-center gap-2 font-medium text-foreground hover:text-primary hover:underline"
+                                                >
+                                                    <UserAvatar
+                                                        name={player.name}
+                                                        className="size-7 text-[10px]"
+                                                    />
+                                                    <span className="flex flex-col">
+                                                        {player.name}
+                                                        {player.account_name &&
+                                                            player.account_name !==
+                                                                player.name && (
+                                                                <span className="text-xs font-normal text-muted-foreground">
+                                                                    {
+                                                                        player.account_name
+                                                                    }
+                                                                </span>
+                                                            )}
+                                                    </span>
+                                                </Link>
+                                            ),
+                                        },
+                                        {
+                                            key: 'grade',
+                                            header: tr('Grade · school'),
+                                            cellClassName:
+                                                'max-w-56 truncate text-muted-foreground',
+                                            cell: (player) =>
+                                                [
+                                                    player.grade
+                                                        ? `Grade ${player.grade}`
+                                                        : null,
+                                                    player.school_name,
+                                                ]
+                                                    .filter(Boolean)
+                                                    .join(' · ') || '—',
+                                        },
+                                        {
+                                            key: 'latest',
+                                            header: tr('Latest'),
+                                            align: 'center',
+                                            summary: true,
+                                            cell: (player) => (
+                                                <Outcome
+                                                    correct={
+                                                        player.last_correct
+                                                    }
+                                                />
+                                            ),
+                                        },
+                                        {
+                                            key: 'first',
+                                            header: tr('First try'),
+                                            align: 'center',
+                                            cell: (player) => (
+                                                <Outcome
+                                                    correct={
+                                                        player.first_correct
+                                                    }
+                                                    subtle
+                                                />
+                                            ),
+                                        },
+                                        {
+                                            key: 'attempts',
+                                            header: tr('Attempts'),
+                                            align: 'right',
+                                            cellClassName:
+                                                'text-foreground tabular-nums',
+                                            cell: (player) => (
+                                                <span className="whitespace-nowrap">
+                                                    {player.attempts}
+                                                    <span className="ml-1 text-xs text-muted-foreground">
+                                                        ({player.correct}✓{' '}
+                                                        {player.wrong}✗)
+                                                    </span>
+                                                </span>
+                                            ),
+                                        },
+                                        {
+                                            key: 'last',
+                                            header: tr('Last answered'),
+                                            align: 'right',
+                                            cellClassName:
+                                                'whitespace-nowrap text-muted-foreground',
+                                            cell: (player) =>
+                                                timeAgo(
+                                                    player.last_answered_at,
+                                                ),
+                                        },
+                                    ]}
+                                />
                             </div>
                         </section>
                     </>

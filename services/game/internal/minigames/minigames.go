@@ -176,6 +176,13 @@ func (h *Hub) Peers(uid int64) []int64                { return h.rooms.Peers(uid
 func (h *Hub) Counts() (int, int)                     { return h.rooms.Counts() }
 func (h *Hub) Leave(uid int64, now time.Time) []int64 { return h.rooms.Leave(uid, now) }
 
+// HandOver moves the host role away from a host disconnected for longer
+// than lobby.HostGrace; the game keeps running either way.
+func (h *Hub) HandOver(now time.Time) []int64 { return h.rooms.HandOver(now, lobby.HostGrace) }
+
+// Presence reports the room uid is seated in (portal "continue playing").
+func (h *Hub) Presence(uid int64) (lobby.Presence, bool) { return h.rooms.PresenceOf(uid) }
+
 // Enter joins the room with the given PIN.
 func (h *Hub) Enter(c auth.Claims, pin string, now time.Time) ([]int64, error) {
 	return h.rooms.Enter(c, pin, now)
@@ -418,10 +425,10 @@ func (h *Hub) settle(r *room, i int, finished bool, now time.Time) {
 	}
 	pts := Award(p.earned, winner(r) == i)
 	if !finished {
-		if p.correct+p.wrong < points.MinAnswersForAbandon {
+		pts = points.Abandoned(p.earned, p.correct+p.wrong, MaxPoints)
+		if pts == 0 {
 			return
 		}
-		pts = points.Abandoned(p.earned, p.correct+p.wrong, MaxPoints)
 	}
 	p.reported = true
 	h.queue(Result{

@@ -32,7 +32,7 @@ func (s *Server) RunMinigames(ctx context.Context, every time.Duration) {
 		case <-t.C:
 			now := s.cfg.Now()
 			for _, key := range minigames.Keys {
-				s.pushMini(key, s.minis[key].Tick(now), now)
+				s.pushMini(key, append(s.minis[key].Tick(now), s.minis[key].HandOver(now)...), now)
 			}
 			s.reportMinis()
 		}
@@ -124,6 +124,8 @@ func (s *Server) serveMini(key string) http.HandlerFunc {
 				ids, err = hub.Answer(claims.Subject, in.Option, now)
 			case "locale":
 				hub.SetLocale(claims.Subject, in.Locale)
+				ids = []int64{claims.Subject}
+			case "sync":
 				ids = []int64{claims.Subject}
 			case "ping":
 				send(minigames.Message{"t": "pong"})

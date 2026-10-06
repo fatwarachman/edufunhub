@@ -185,7 +185,46 @@ class GameAnalytics
             ])->all();
     }
 
-    /** @return Collection<int, array{key: string, titleKey: string, category: string, accent: string, awardsPoints: bool, tracked: bool}> */
+    /**
+     * Compact leaderboards for every portal period (week, month, all time): top players
+     * with avatar and top schools. Reuses leaderboard() and schoolLeaderboard().
+     *
+     * @return array<string, array{days: int, players: list<array{rank: int, user_id: int, name: string, avatar_url: ?string, grade: ?int, school_name: ?string, points: int, plays: int}>, schools: list<array{school: string, players: int, points: int, plays: int}>}>
+     */
+    public function leaderboardsByPeriod(int $limit = 10, int $schools = 5): array
+    {
+        $boards = [];
+
+        foreach (PlayerPortal::LEADERBOARD_PERIODS as $period => $days) {
+            $boards[$period] = [
+                'days' => (int) $days,
+                'players' => $this->leaderboard(['days' => (int) $days], $limit),
+                'schools' => $this->schoolLeaderboard(null, (int) $days, $schools),
+            ];
+        }
+
+        $avatars = User::query()
+            ->whereKey(collect($boards)->flatMap(fn (array $board): array => array_column($board['players'], 'user_id'))->unique()->all())
+            ->whereNotNull('avatar_url')
+            ->get(['id', 'avatar_url'])
+            ->mapWithKeys(fn (User $user): array => [$user->id => $user->avatar_url]);
+
+        return collect($boards)->map(fn (array $board): array => [
+            ...$board,
+            'players' => collect($board['players'])->map(fn (array $entry): array => [
+                'rank' => $entry['rank'],
+                'user_id' => $entry['user_id'],
+                'name' => $entry['name'],
+                'avatar_url' => $avatars[$entry['user_id']] ?? null,
+                'grade' => $entry['grade'],
+                'school_name' => $entry['school_name'],
+                'points' => $entry['points'],
+                'plays' => $entry['plays'],
+            ])->all(),
+        ])->all();
+    }
+
+    /** @return Collection<int, array{key: string, titleKey: string, category: string, accent: string, awardsPoints: bool, minPlayers: int, maxPlayers: int, tracked: bool}> */
     public function catalogGames(): Collection
     {
         return collect(config('game-catalog.categories'))->flatMap(fn (array $category): array => collect($category['games'])->map(fn (array $game): array => [
@@ -194,6 +233,8 @@ class GameAnalytics
             'category' => $category['titleKey'],
             'accent' => $game['accent'] ?? '#f5a623',
             'awardsPoints' => (bool) ($game['awards_points'] ?? false),
+            'minPlayers' => (int) ($game['min_players'] ?? 1),
+            'maxPlayers' => (int) ($game['max_players'] ?? 1),
             'tracked' => in_array($game['key'], Question::GAMES, true),
         ])->all())->values();
     }

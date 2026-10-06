@@ -1,5 +1,6 @@
 import { tooltipStyle } from '@/components/admin/ads/shared';
 import { Panel, formatNumber, gameLabel } from '@/components/admin/game-stats';
+import { ResponsiveTable } from '@/components/responsive-table';
 import { tr } from '@/lib/admin-i18n';
 import {
     BarChart3,
@@ -298,53 +299,48 @@ function PerformanceTable({
         );
     }
     return (
-        <div className="-mx-5 -my-5 overflow-x-auto">
-            <table
-                className="w-full min-w-[480px] text-sm"
-                data-testid={testId}
-            >
-                <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
-                    <tr>
-                        <th className="px-5 py-2.5 font-medium">
-                            {tr('Name')}
-                        </th>
-                        <th className="px-3 py-2.5 text-right font-medium">
-                            {tr('Impressions')}
-                        </th>
-                        <th className="px-3 py-2.5 text-right font-medium">
-                            {tr('Clicks')}
-                        </th>
-                        <th className="px-3 py-2.5 text-right font-medium">
-                            {tr('CTR')}
-                        </th>
-                        <th className="px-5 py-2.5 text-right font-medium">
-                            {tr('Plays')}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                    {rows.map((row) => (
-                        <tr key={row.label}>
-                            <td className="px-5 py-2 font-medium text-foreground">
-                                {tr(row.label)}
-                            </td>
-                            <td className="px-3 py-2 text-right tabular-nums">
-                                {formatNumber(row.impressions)}
-                            </td>
-                            <td className="px-3 py-2 text-right tabular-nums">
-                                {formatNumber(row.clicks)}
-                            </td>
-                            <td className="px-3 py-2 text-right tabular-nums">
-                                {pct(row.ctr)}
-                            </td>
-                            <td className="px-5 py-2 text-right tabular-nums">
-                                {formatNumber(row.plays)}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+        <ResponsiveTable
+            testId={testId}
+            rows={rows}
+            rowKey={(row) => row.label}
+            columns={[
+                {
+                    key: 'name',
+                    header: tr('Name'),
+                    primary: true,
+                    cellClassName: 'font-medium text-foreground',
+                    cell: (row) => tr(row.label),
+                },
+                {
+                    key: 'impressions',
+                    header: tr('Impressions'),
+                    align: 'right',
+                    cellClassName: 'tabular-nums',
+                    cell: (row) => formatNumber(row.impressions),
+                },
+                {
+                    key: 'clicks',
+                    header: tr('Clicks'),
+                    align: 'right',
+                    cellClassName: 'tabular-nums',
+                    cell: (row) => formatNumber(row.clicks),
+                },
+                {
+                    key: 'ctr',
+                    header: tr('CTR'),
+                    align: 'right',
+                    cellClassName: 'tabular-nums',
+                    cell: (row) => pct(row.ctr),
+                },
+                {
+                    key: 'plays',
+                    header: tr('Plays'),
+                    align: 'right',
+                    cellClassName: 'tabular-nums',
+                    cell: (row) => formatNumber(row.plays),
+                },
+            ]}
+        />
     );
 }
 

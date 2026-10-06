@@ -8,19 +8,12 @@ use App\Events\WorkspaceMemberRemoved;
 use App\Events\WorkspaceMemberRoleUpdated;
 use App\Events\WorkspaceUpdated;
 use App\Listeners\DispatchWebhooks;
-use App\Listeners\LogFailedLogin;
-use App\Listeners\LogNotificationDelivery;
-use App\Listeners\LogSuccessfulLogin;
-use App\Listeners\LogWebhookCall;
 use App\Models\FeatureFlag;
 use App\Models\Workspace;
 use App\Observers\ActivityLogObserver;
 use App\Policies\WorkspacePolicy;
-use Illuminate\Auth\Events\Failed;
-use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -30,8 +23,6 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 use Laravel\Pennant\Feature;
 use Spatie\Activitylog\Models\Activity;
-use Spatie\WebhookServer\Events\WebhookCallFailedEvent;
-use Spatie\WebhookServer\Events\WebhookCallSucceededEvent;
 use Stripe\StripeClient;
 
 class AppServiceProvider extends ServiceProvider
@@ -81,12 +72,9 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Workspace::class, WorkspacePolicy::class);
 
-        Event::listen(WebhookCallSucceededEvent::class, [LogWebhookCall::class, 'handleSuccessfulCall']);
-        Event::listen(WebhookCallFailedEvent::class, [LogWebhookCall::class, 'handleFailedCall']);
-
-        Event::listen(Login::class, LogSuccessfulLogin::class);
-        Event::listen(Failed::class, LogFailedLogin::class);
-        Event::listen(NotificationSent::class, LogNotificationDelivery::class);
+        // Listeners in app/Listeners (login, logout, failed login, notification
+        // delivery, webhook calls) are registered by Laravel's event discovery;
+        // listing them here as well made every one of them run twice.
 
         // Core App Webhook Dispatches
         Event::listen([
@@ -114,6 +102,11 @@ class AppServiceProvider extends ServiceProvider
             $key = 'chat:'.($request->user()?->id ?: $request->ip());
 
             return [Limit::perMinute(30)->by($key), Limit::perSecond(3)->by($key.':burst')];
+        });
+
+        // Player feedback: own counter so other throttled routes (ad tracking) do not use it up.
+        RateLimiter::for('feedback', function (Request $request) {
+            return Limit::perMinute(5)->by('feedback:'.($request->user()?->id ?: $request->ip()));
         });
 
         self::registerFeatureFlags();

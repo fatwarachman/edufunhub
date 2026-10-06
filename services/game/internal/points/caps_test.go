@@ -9,7 +9,7 @@ func TestCapsMatchLaravel(t *testing.T) {
 		"sky-quiz":           {Cap(10) + 40, 1190},
 		"quiz-duel":          {Cap(5), 650},
 		"knowledge-train":    {Cap(10) + 40, 1190},
-		"snakes-and-ladders": {Cap(30), 3150},
+		"snakes-and-ladders": {Cap(30) + 100, 3250},
 		"crossword":          {Cap(11) + 5*11*3, 1415},
 		"market-math":        {Cap(8), 950},
 		"number-garden":      {Cap(8), 950},

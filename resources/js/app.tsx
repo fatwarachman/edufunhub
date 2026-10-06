@@ -8,11 +8,13 @@ import { type ComponentType, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { Toaster } from 'sonner';
+import { ChatLive } from './components/chat-live';
 import { ImpersonationBanner } from './components/impersonation-banner';
 import { ToastProvider } from './components/ui/toast';
 import { initializeTheme } from './hooks/use-appearance';
 import i18n from './lib/i18n';
 import { initPwa } from './lib/pwa';
+import { startScreenTime } from './lib/screen-time';
 
 if (import.meta.env.VITE_REVERB_APP_KEY) {
     configureEcho({
@@ -88,6 +90,8 @@ createInertiaApp({
             i18n.changeLanguage(locale);
         }
 
+        startScreenTime(props.initialPage.props as Record<string, unknown>);
+
         // Set initial document direction
         setDocumentDirection(locale);
 
@@ -102,6 +106,14 @@ createInertiaApp({
                     <ToastProvider>
                         <App {...props} />
                         <ImpersonationBanner
+                            initialProps={
+                                props.initialPage.props as Record<
+                                    string,
+                                    unknown
+                                >
+                            }
+                        />
+                        <ChatLive
                             initialProps={
                                 props.initialPage.props as Record<
                                     string,

@@ -203,6 +203,26 @@ func (h *Hub) Inspect(pin string, fn func(r *Room) any) (any, error) {
 	return res.v, res.err
 }
 
+// Presence reports the room uid plays in or hosts (portal "continue
+// playing"). Finished rooms are not reported.
+func (h *Hub) Presence(uid int64) (pin, phase string, host, ok bool) {
+	h.mu.Lock()
+	r, host := h.players[uid], false
+	if r == nil {
+		r, host = h.hosts[uid], true
+	}
+	h.mu.Unlock()
+	if r == nil {
+		return "", "", false, false
+	}
+	res := r.do(command{kind: "inspect", fn: func(r *Room) any { return r.phase }})
+	phase, _ = res.v.(string)
+	if res.err != nil || phase == "" || phase == PhaseOver {
+		return "", "", false, false
+	}
+	return r.Pin, phase, host, true
+}
+
 // Counts reports open rooms and seated players.
 func (h *Hub) Counts() (rooms, players int) {
 	h.mu.Lock()

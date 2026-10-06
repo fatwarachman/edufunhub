@@ -42,6 +42,8 @@ export interface RoomSeat {
     controlled: boolean;
     /** Portal avatar look of the account behind this seat. */
     character?: CharacterLook | null;
+    /** Account id (absent for pass-and-play seats). */
+    user_id?: number;
 }
 
 export interface RoomPayload<Seat extends RoomSeat = RoomSeat> {
@@ -269,7 +271,7 @@ function ShareButton({
             data-testid={testId}
             aria-label={label}
             title={label}
-            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-white px-3 text-sm font-black whitespace-nowrap text-[#1f2a44] shadow-[2px_2px_0px_#1f2a44] transition-colors hover:bg-[#FFF176]"
+            className="inline-flex min-h-11 min-w-0 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-white px-2.5 text-sm font-black whitespace-nowrap text-[#1f2a44] shadow-[2px_2px_0px_#1f2a44] transition-colors hover:bg-[#FFF176] sm:px-3"
         >
             <Icon className="size-4" />
             {children}
@@ -349,8 +351,11 @@ export function RoomLobby({
     };
 
     return (
-        <div className="flex w-full flex-col gap-5" data-testid="room-lobby">
-            <div className="rounded-3xl border-3 border-[#1f2a44] bg-white p-5 text-[#1f2a44] shadow-[5px_5px_0px_#1f2a44] sm:p-7">
+        <div
+            className="flex w-full min-w-0 flex-col gap-5"
+            data-testid="room-lobby"
+        >
+            <div className="min-w-0 rounded-3xl border-3 border-[#1f2a44] bg-white p-3.5 text-[#1f2a44] shadow-[5px_5px_0px_#1f2a44] sm:p-7">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="font-display text-xl font-black">
                         {t('room.lobbyTitle')}
@@ -358,9 +363,9 @@ export function RoomLobby({
                     <ConnectionBadge status={status} />
                 </div>
 
-                <div className="mt-4 grid gap-5 lg:grid-cols-2 lg:items-start">
-                    <div className="flex flex-col gap-5">
-                        <div className="rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#FFFDE6] p-4 text-center">
+                <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
+                    <div className="flex min-w-0 flex-col gap-5">
+                        <div className="min-w-0 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#FFFDE6] p-3 text-center sm:p-4">
                             <p className="text-sm font-black">
                                 {t('room.shareTitle')}
                             </p>
@@ -368,7 +373,7 @@ export function RoomLobby({
                                 {t('room.shareHint')}
                             </p>
                             <p
-                                className="mt-2 font-display text-4xl font-black tracking-[0.25em] sm:text-5xl"
+                                className="mt-2 font-display text-3xl font-black tracking-[0.2em] sm:text-5xl sm:tracking-[0.25em]"
                                 data-testid="room-pin"
                             >
                                 {room.pin}
@@ -415,11 +420,11 @@ export function RoomLobby({
                             )}
                         </div>
 
-                        {settings && <div>{settings}</div>}
+                        {settings && <div className="min-w-0">{settings}</div>}
                     </div>
 
-                    <div className="flex flex-col">
-                        <div>
+                    <div className="flex min-w-0 flex-col">
+                        <div className="min-w-0">
                             <p className="text-xs font-black text-slate-500 uppercase">
                                 {t('room.seats', {
                                     count: active.length,
@@ -427,7 +432,7 @@ export function RoomLobby({
                                 })}
                             </p>
                             <ul
-                                className="mt-2 grid gap-2 sm:grid-cols-2"
+                                className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2"
                                 data-testid="room-players"
                             >
                                 {Array.from(
@@ -442,7 +447,7 @@ export function RoomLobby({
                                                         : `empty-${i}`
                                                 }
                                                 className={cn(
-                                                    'flex min-h-12 items-center gap-2.5 rounded-2xl border-2 border-[#1f2a44] px-3 py-1',
+                                                    'flex min-h-12 min-w-0 items-center gap-2 rounded-2xl border-2 border-[#1f2a44] px-2.5 py-1 sm:gap-2.5 sm:px-3',
                                                     p
                                                         ? 'bg-white'
                                                         : 'border-dashed text-slate-600',
@@ -450,15 +455,21 @@ export function RoomLobby({
                                             >
                                                 {p ? (
                                                     <>
-                                                        <div className="size-10 shrink-0">
+                                                        <div className="size-9 shrink-0 sm:size-10">
                                                             <PlayerAvatar
                                                                 character={
                                                                     p.character
                                                                 }
                                                                 seat={p.seat}
+                                                                userId={
+                                                                    p.user_id
+                                                                }
                                                             />
                                                         </div>
-                                                        <span className="min-w-0 flex-1 truncate text-sm font-black">
+                                                        <span
+                                                            className="min-w-0 flex-1 truncate text-sm font-black"
+                                                            title={p.name}
+                                                        >
                                                             {p.name}
                                                             {p.seat ===
                                                                 room.you &&
@@ -466,27 +477,38 @@ export function RoomLobby({
                                                         </span>
                                                         {p.seat ===
                                                             room.host && (
-                                                            <span className="inline-flex items-center gap-1 rounded-full border border-[#1f2a44] bg-[#ffd93d] px-2 text-[10px] font-black">
+                                                            <span
+                                                                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#1f2a44] bg-[#ffd93d] px-1.5 text-[10px] font-black sm:px-2"
+                                                                title={t(
+                                                                    'room.host',
+                                                                )}
+                                                            >
                                                                 <Crown className="size-3" />
-                                                                {t('room.host')}
+                                                                <span className="hidden sm:inline">
+                                                                    {t(
+                                                                        'room.host',
+                                                                    )}
+                                                                </span>
                                                             </span>
                                                         )}
                                                         {p.local && (
                                                             <span
-                                                                className="inline-flex items-center gap-1 rounded-full border border-[#1f2a44] bg-[#c9f5e5] px-2 text-[10px] font-black"
+                                                                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#1f2a44] bg-[#c9f5e5] px-1.5 text-[10px] font-black sm:px-2"
                                                                 title={t(
                                                                     'room.localHint',
                                                                 )}
                                                             >
                                                                 <MonitorSmartphone className="size-3" />
-                                                                {t(
-                                                                    'room.local',
-                                                                )}
+                                                                <span className="hidden sm:inline">
+                                                                    {t(
+                                                                        'room.local',
+                                                                    )}
+                                                                </span>
                                                             </span>
                                                         )}
                                                         {!p.online && (
                                                             <WifiOff
-                                                                className="size-4 text-[#AD1457]"
+                                                                className="size-4 shrink-0 text-[#AD1457]"
                                                                 aria-label={t(
                                                                     'room.offline',
                                                                 )}
@@ -508,7 +530,7 @@ export function RoomLobby({
                                                                             name: p.name,
                                                                         },
                                                                     )}
-                                                                    className="grid size-9 place-items-center rounded-lg hover:bg-[#FFEBF0]"
+                                                                    className="grid size-9 shrink-0 place-items-center rounded-lg hover:bg-[#FFEBF0]"
                                                                 >
                                                                     <Trash2 className="size-4" />
                                                                 </button>
@@ -530,7 +552,7 @@ export function RoomLobby({
                                 active.length < room.max_players && (
                                     <form
                                         onSubmit={addLocal}
-                                        className="mt-3 flex gap-2"
+                                        className="mt-3 flex min-w-0 gap-2"
                                     >
                                         <input
                                             value={localName}
@@ -555,10 +577,14 @@ export function RoomLobby({
                                             type="submit"
                                             disabled={!online}
                                             data-testid="room-add-local"
-                                            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5] px-3.5 text-sm font-black disabled:opacity-50"
+                                            aria-label={t('room.addLocal')}
+                                            title={t('room.addLocal')}
+                                            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5] px-3 text-sm font-black disabled:opacity-50 sm:px-3.5"
                                         >
                                             <UserPlus className="size-4" />
-                                            {t('room.addLocal')}
+                                            <span className="hidden sm:inline">
+                                                {t('room.addLocal')}
+                                            </span>
                                         </button>
                                     </form>
                                 )}
@@ -576,9 +602,9 @@ export function RoomLobby({
                                     onClick={onStart}
                                     disabled={!online || !enough}
                                     data-testid="room-start"
-                                    className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-6 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
+                                    className="h-auto min-h-12 max-w-full rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-4 py-2 font-display text-base font-black whitespace-normal text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50 sm:px-6 sm:text-lg"
                                 >
-                                    <Play className="size-5" />
+                                    <Play className="size-5 shrink-0" />
                                     {!enough
                                         ? t('room.needMore', {
                                               min: room.min_players,

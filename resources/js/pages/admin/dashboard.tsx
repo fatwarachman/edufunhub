@@ -14,6 +14,10 @@ import {
     UserAvatar,
 } from '@/components/admin/dashboard-kit';
 import {
+    DashboardLeaderboard,
+    type DashboardLeaderboards,
+} from '@/components/admin/dashboard-leaderboard';
+import {
     type DeviceSummary,
     DeviceUsagePanels,
 } from '@/components/admin/device-usage';
@@ -38,7 +42,6 @@ import {
     Gamepad2,
     GraduationCap,
     ListChecks,
-    Medal,
     Puzzle,
     Radio,
     School,
@@ -114,22 +117,8 @@ interface DashboardProps {
     levels: { key: string; users: number }[];
     grades: { grade: number; users: number }[];
     ages: { label: string; users: number }[];
-    topPlayers: {
-        rank: number;
-        user_id: number;
-        name: string;
-        school_name: string | null;
-        grade: number | null;
-        points: number;
-        plays: number;
-        accuracy: number | null;
-    }[];
-    topSchools: {
-        school: string;
-        players: number;
-        points: number;
-        plays: number;
-    }[];
+    /** Deferred: leaderboard per period (week, month, all time). */
+    leaderboards?: DashboardLeaderboards;
     recentPlays: {
         id: number;
         user_id: number;
@@ -173,12 +162,6 @@ const METRICS: { key: Metric; label: string; color: string }[] = [
         label: 'Points earned',
         color: 'var(--color-bubble-purple)',
     },
-];
-
-const PODIUM = [
-    'bg-amber-400 text-amber-950',
-    'bg-slate-300 text-slate-900',
-    'bg-orange-400 text-orange-950',
 ];
 
 function greeting(): string {
@@ -802,139 +785,11 @@ export default function Dashboard(props: DashboardProps) {
                 />
                 <DeviceUsagePanels devices={props.devices} />
 
-                {/* Rankings */}
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Panel
-                        title={tr('Top players')}
-                        description={tr('All-time points')}
-                        icon={Trophy}
-                        actions={
-                            superadmin ? (
-                                <PanelLink href="/admin/leaderboard">
-                                    {tr('Leaderboard')}
-                                </PanelLink>
-                            ) : undefined
-                        }
-                    >
-                        {props.topPlayers.length === 0 ? (
-                            <EmptyState
-                                icon={Trophy}
-                                title={tr('No ranked players yet')}
-                            />
-                        ) : (
-                            <ol className="flex flex-col gap-1">
-                                {props.topPlayers.map((player) => (
-                                    <li key={player.user_id}>
-                                        <Link
-                                            href={`/admin/users/${player.user_id}`}
-                                            className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/60"
-                                        >
-                                            <span
-                                                className={cn(
-                                                    'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold',
-                                                    PODIUM[player.rank - 1] ??
-                                                        'bg-secondary text-secondary-foreground ring-1 ring-border',
-                                                )}
-                                            >
-                                                {player.rank}
-                                            </span>
-                                            <span className="flex min-w-0 flex-1 flex-col">
-                                                <span className="truncate text-sm font-medium text-foreground">
-                                                    {player.name}
-                                                </span>
-                                                <span className="truncate text-xs text-muted-foreground">
-                                                    {[
-                                                        player.grade
-                                                            ? `Grade ${player.grade}`
-                                                            : null,
-                                                        player.school_name,
-                                                    ]
-                                                        .filter(Boolean)
-                                                        .join(' · ') || '—'}
-                                                </span>
-                                            </span>
-                                            <span className="flex flex-col items-end">
-                                                <span className="text-sm font-bold text-foreground tabular-nums">
-                                                    {formatNumber(
-                                                        player.points,
-                                                    )}
-                                                </span>
-                                                <span className="text-xs text-muted-foreground">
-                                                    {player.plays} {tr('plays')}
-                                                </span>
-                                            </span>
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ol>
-                        )}
-                    </Panel>
-                    <Panel
-                        title={tr('Top schools')}
-                        description={tr('Total points from their players')}
-                        icon={Medal}
-                        actions={
-                            superadmin ? (
-                                <PanelLink href="/admin/user-statistics">
-                                    {tr('By school')}
-                                </PanelLink>
-                            ) : undefined
-                        }
-                    >
-                        {props.topSchools.length === 0 ? (
-                            <EmptyState
-                                icon={School}
-                                title={tr('No school results yet')}
-                            />
-                        ) : (
-                            <ol className="flex flex-col gap-3">
-                                {props.topSchools.map((school, index) => {
-                                    const max = Math.max(
-                                        1,
-                                        ...props.topSchools.map(
-                                            (s) => s.points,
-                                        ),
-                                    );
-                                    return (
-                                        <li
-                                            key={school.school}
-                                            className="flex flex-col gap-1.5"
-                                        >
-                                            <div className="flex items-center justify-between gap-2 text-sm">
-                                                <span className="flex min-w-0 items-center gap-2">
-                                                    <span className="w-5 text-xs font-bold text-muted-foreground tabular-nums">
-                                                        #{index + 1}
-                                                    </span>
-                                                    <span className="truncate font-medium text-foreground">
-                                                        {school.school}
-                                                    </span>
-                                                </span>
-                                                <span className="shrink-0 text-xs text-muted-foreground">
-                                                    {school.players}{' '}
-                                                    {tr('players ·')}{' '}
-                                                    <span className="font-semibold text-foreground">
-                                                        {formatNumber(
-                                                            school.points,
-                                                        )}
-                                                    </span>{' '}
-                                                    {tr('pts')}
-                                                </span>
-                                            </div>
-                                            <div className="h-2 overflow-hidden rounded-full bg-muted">
-                                                <div
-                                                    className="h-full rounded-full bg-primary"
-                                                    style={{
-                                                        width: `${(school.points / max) * 100}%`,
-                                                    }}
-                                                />
-                                            </div>
-                                        </li>
-                                    );
-                                })}
-                            </ol>
-                        )}
-                    </Panel>
-                </div>
+                {/* Leaderboard (deferred) */}
+                <DashboardLeaderboard
+                    leaderboards={props.leaderboards}
+                    showFullLink={superadmin}
+                />
 
                 {/* Live feeds */}
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
@@ -1017,6 +872,7 @@ export default function Dashboard(props: DashboardProps) {
                                             <UserAvatar
                                                 name={user.name}
                                                 src={user.avatar_url}
+                                                userId={user.id}
                                             />
                                             <span className="flex min-w-0 flex-1 flex-col">
                                                 <span className="truncate text-sm font-medium text-foreground">

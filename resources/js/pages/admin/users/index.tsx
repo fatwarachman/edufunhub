@@ -1,4 +1,6 @@
 import { BadgeChips } from '@/components/badges';
+import { OnlineDot } from '@/components/online-dot';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -418,374 +420,106 @@ export default function UsersIndex({
                     </select>
                 </div>
 
-                {/* Desktop table */}
-                <div className="hidden rounded-2xl border border-border bg-card shadow-sm md:block">
-                    {users.data.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-center">
-                            <UserX className="mb-3 size-10 text-muted-foreground/30" />
-                            <p className="text-sm font-medium text-muted-foreground">
-                                {tr('No users found')}
-                            </p>
-                            <p className="text-xs text-muted-foreground/70">
-                                {tr('Try adjusting your search or filter')}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-border">
-                                        <th className="px-5 py-3 text-left">
-                                            <SortHeader
-                                                column="name"
-                                                sort={filters.sort}
-                                                direction={filters.direction}
-                                                onSort={handleSort}
-                                            >
-                                                {tr('Name')}
-                                            </SortHeader>
-                                        </th>
-                                        <th className="px-5 py-3 text-left">
-                                            <SortHeader
-                                                column="email"
-                                                sort={filters.sort}
-                                                direction={filters.direction}
-                                                onSort={handleSort}
-                                            >
-                                                {tr('Email')}
-                                            </SortHeader>
-                                        </th>
-                                        <th className="px-5 py-3 text-left">
-                                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                {tr('Sign-up')}
-                                            </span>
-                                        </th>
-                                        <th className="px-5 py-3 text-left">
-                                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                {tr('Age')}
-                                            </span>
-                                        </th>
-                                        <th className="px-5 py-3 text-left">
-                                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                {tr('Last school')}
-                                            </span>
-                                        </th>
-                                        <th className="px-5 py-3 text-left">
-                                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                {tr('Roles')}
-                                            </span>
-                                        </th>
-                                        <th className="px-5 py-3 text-left">
-                                            <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                {tr('Status')}
-                                            </span>
-                                        </th>
-                                        <th className="px-5 py-3 text-left">
-                                            <SortHeader
-                                                column="created_at"
-                                                sort={filters.sort}
-                                                direction={filters.direction}
-                                                onSort={handleSort}
-                                            >
-                                                {tr('Joined')}
-                                            </SortHeader>
-                                        </th>
-                                        <th className="px-5 py-3 text-right">
-                                            <span className="sr-only">
-                                                {tr('Actions')}
-                                            </span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border">
-                                    {users.data.map((user) => (
-                                        <tr
-                                            key={user.id}
-                                            className="transition-colors hover:bg-muted/50"
-                                        >
-                                            <td className="px-5 py-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                                                        {user.avatar_url ? (
-                                                            <img
-                                                                src={
-                                                                    user.avatar_url
-                                                                }
-                                                                alt=""
-                                                                className="size-full rounded-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            getInitialsFromName(
-                                                                user.name,
-                                                            )
-                                                        )}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <Link
-                                                            href={`/admin/users/${user.id}`}
-                                                            className="font-medium text-foreground hover:text-primary hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                                        >
-                                                            {user.name}
-                                                        </Link>
-                                                        {user.is_superadmin && (
-                                                            <span className="text-xs text-bubble-purple">
-                                                                {tr(
-                                                                    'Superadmin',
-                                                                )}
-                                                            </span>
-                                                        )}
-                                                        {(user.badges?.length ??
-                                                            0) > 0 && (
-                                                            <div className="mt-1">
-                                                                <BadgeChips
-                                                                    badges={
-                                                                        user.badges ??
-                                                                        []
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-5 py-3 text-muted-foreground">
-                                                <span className="flex flex-wrap items-center gap-1.5">
-                                                    {user.email}
-                                                    {user.ads_disabled && (
-                                                        <span
-                                                            className="inline-flex items-center rounded-full border border-border px-1.5 text-[11px] font-medium text-muted-foreground"
-                                                            title={tr(
-                                                                'Ads hidden for this user',
-                                                            )}
-                                                        >
-                                                            {tr('No ads')}
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </td>
-                                            <td className="px-5 py-3 whitespace-nowrap">
-                                                <SignupBadge
-                                                    google={Boolean(
-                                                        user.signed_up_with_google,
-                                                    )}
-                                                />
-                                            </td>
-                                            <td className="px-5 py-3 whitespace-nowrap text-foreground tabular-nums">
-                                                {user.player_profile?.age ??
-                                                    '—'}
-                                            </td>
-                                            <td
-                                                className="max-w-56 truncate px-5 py-3 text-foreground"
-                                                title={
-                                                    user.player_profile
-                                                        ?.school_name ??
-                                                    undefined
-                                                }
-                                            >
-                                                {user.player_profile
-                                                    ?.school_name ?? '—'}
-                                            </td>
-                                            <td className="px-5 py-3">
-                                                <div className="flex flex-wrap gap-1">
-                                                    {user.roles?.length ? (
-                                                        user.roles.map((r) => (
-                                                            <span
-                                                                key={r.id}
-                                                                className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
-                                                            >
-                                                                {r.name}
-                                                            </span>
-                                                        ))
-                                                    ) : (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            {tr('No roles')}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-5 py-3">
-                                                <span
-                                                    className={cn(
-                                                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-                                                        user.status === 'active'
-                                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                            : user.status ===
-                                                                'suspended'
-                                                              ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                                              : 'bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400',
-                                                    )}
-                                                >
-                                                    <span
-                                                        className={cn(
-                                                            'size-1.5 rounded-full',
-                                                            user.status ===
-                                                                'active'
-                                                                ? 'bg-green-500'
-                                                                : user.status ===
-                                                                    'suspended'
-                                                                  ? 'bg-red-500'
-                                                                  : 'bg-gray-400',
-                                                        )}
-                                                    />
-                                                    {user.status ?? 'active'}
-                                                </span>
-                                            </td>
-                                            <td className="px-5 py-3 text-muted-foreground">
-                                                {timeAgo(user.created_at)}
-                                            </td>
-                                            <td className="px-5 py-3 text-right">
-                                                <div className="relative inline-block">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setOpenDropdown(
-                                                                openDropdown ===
-                                                                    user.id
-                                                                    ? null
-                                                                    : user.id,
-                                                            );
-                                                        }}
-                                                        className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                                        aria-label={tr(
-                                                            'Actions',
-                                                        )}
-                                                    >
-                                                        <MoreHorizontal className="size-4" />
-                                                    </button>
-                                                    {openDropdown ===
-                                                        user.id && (
-                                                        <>
-                                                            <div
-                                                                className="fixed inset-0 z-40"
-                                                                onClick={() =>
-                                                                    setOpenDropdown(
-                                                                        null,
-                                                                    )
-                                                                }
-                                                            />
-                                                            <div className="absolute top-full right-0 z-50 mt-1 w-44 rounded-lg border border-border bg-popover py-1 shadow-lg">
-                                                                <Link
-                                                                    href={`/admin/users/${user.id}`}
-                                                                    className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-                                                                    onClick={() =>
-                                                                        setOpenDropdown(
-                                                                            null,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <Eye className="size-4" />
-                                                                    {tr('View')}
-                                                                </Link>
-                                                                <Link
-                                                                    href={`/admin/users/${user.id}/edit`}
-                                                                    className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-                                                                    onClick={() =>
-                                                                        setOpenDropdown(
-                                                                            null,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <Edit className="size-4" />
-                                                                    {tr('Edit')}
-                                                                </Link>
-                                                                {viewerIsSuperadmin && (
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setOpenDropdown(
-                                                                                null,
-                                                                            );
-                                                                            router.patch(
-                                                                                `/admin/ads/users/${user.id}`,
-                                                                                {
-                                                                                    ads_disabled:
-                                                                                        !user.ads_disabled,
-                                                                                },
-                                                                                {
-                                                                                    preserveScroll: true,
-                                                                                },
-                                                                            );
-                                                                        }}
-                                                                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-                                                                        data-testid={`user-ads-${user.id}`}
-                                                                    >
-                                                                        <Megaphone className="size-4" />
-                                                                        {user.ads_disabled
-                                                                            ? tr(
-                                                                                  'Show ads',
-                                                                              )
-                                                                            : tr(
-                                                                                  'Hide ads',
-                                                                              )}
-                                                                    </button>
-                                                                )}
-                                                                {canLoginAs(
-                                                                    user,
-                                                                ) && (
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setOpenDropdown(
-                                                                                null,
-                                                                            );
-                                                                            setImpersonateTarget(
-                                                                                user,
-                                                                            );
-                                                                        }}
-                                                                        className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-                                                                        data-testid={`user-login-as-${user.id}`}
-                                                                    >
-                                                                        <LogIn className="size-4" />
-                                                                        {tr(
-                                                                            'Login as',
-                                                                        )}
-                                                                    </button>
-                                                                )}
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setOpenDropdown(
-                                                                            null,
-                                                                        );
-                                                                        setDeleteTarget(
-                                                                            user,
-                                                                        );
-                                                                    }}
-                                                                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent"
-                                                                >
-                                                                    <Trash2 className="size-4" />
-                                                                    {tr(
-                                                                        'Delete',
-                                                                    )}
-                                                                </button>
-                                                            </div>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                {/* Mobile card layout */}
-                <div className="flex flex-col gap-3 md:hidden">
-                    {users.data.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card py-16 text-center">
-                            <UserX className="mb-3 size-10 text-muted-foreground/30" />
-                            <p className="text-sm font-medium text-muted-foreground">
-                                {tr('No users found')}
-                            </p>
-                        </div>
-                    ) : (
-                        users.data.map((user) => (
-                            <div
-                                key={user.id}
-                                className="rounded-xl border border-border bg-card p-4 shadow-sm"
-                            >
-                                <div className="flex items-start justify-between">
+                <div className="rounded-2xl border border-border bg-card shadow-sm">
+                    <ResponsiveTable
+                        testId="users-table"
+                        rows={users.data}
+                        rowKey={(user) => user.id}
+                        empty={
+                            <div className="flex flex-col items-center justify-center py-16 text-center">
+                                <UserX className="mb-3 size-10 text-muted-foreground/30" />
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    {tr('No users found')}
+                                </p>
+                                <p className="text-xs text-muted-foreground/70">
+                                    {tr('Try adjusting your search or filter')}
+                                </p>
+                            </div>
+                        }
+                        actions={(user) => (
+                            <>
+                                <Link
+                                    href={`/admin/users/${user.id}`}
+                                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-foreground hover:bg-accent"
+                                    aria-label={tr('View user')}
+                                >
+                                    <Eye className="size-3.5" />
+                                    {tr('View')}
+                                </Link>
+                                <Link
+                                    href={`/admin/users/${user.id}/edit`}
+                                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-foreground hover:bg-accent"
+                                    aria-label={tr('Edit user')}
+                                >
+                                    <Edit className="size-3.5" />
+                                    {tr('Edit')}
+                                </Link>
+                                {viewerIsSuperadmin && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            router.patch(
+                                                `/admin/ads/users/${user.id}`,
+                                                {
+                                                    ads_disabled:
+                                                        !user.ads_disabled,
+                                                },
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-foreground hover:bg-accent"
+                                    >
+                                        <Megaphone className="size-3.5" />
+                                        {user.ads_disabled
+                                            ? tr('Show ads')
+                                            : tr('Hide ads')}
+                                    </button>
+                                )}
+                                {canLoginAs(user) && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setImpersonateTarget(user)
+                                        }
+                                        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-foreground hover:bg-accent"
+                                        aria-label={tr('Login as {0}', [
+                                            user.name,
+                                        ])}
+                                    >
+                                        <LogIn className="size-3.5" />
+                                        {tr('Login as')}
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setDeleteTarget(user)}
+                                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-medium text-destructive hover:bg-accent"
+                                    aria-label={tr('Delete user')}
+                                >
+                                    <Trash2 className="size-3.5" />
+                                    {tr('Delete')}
+                                </button>
+                            </>
+                        )}
+                        columns={[
+                            {
+                                key: 'name',
+                                header: (
+                                    <SortHeader
+                                        column="name"
+                                        sort={filters.sort}
+                                        direction={filters.direction}
+                                        onSort={handleSort}
+                                    >
+                                        {tr('Name')}
+                                    </SortHeader>
+                                ),
+                                label: tr('Name'),
+                                primary: true,
+                                cellClassName: 'min-w-48',
+                                cell: (user) => (
                                     <div className="flex items-center gap-3">
-                                        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                                        <div className="relative flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                                             {user.avatar_url ? (
                                                 <img
                                                     src={user.avatar_url}
@@ -795,117 +529,303 @@ export default function UsersIndex({
                                             ) : (
                                                 getInitialsFromName(user.name)
                                             )}
+                                            <OnlineDot
+                                                userId={user.id}
+                                                className="edu-online-dot--round"
+                                            />
                                         </div>
                                         <div className="min-w-0">
                                             <Link
                                                 href={`/admin/users/${user.id}`}
-                                                className="font-medium text-foreground hover:text-primary hover:underline"
+                                                className="font-medium text-foreground hover:text-primary hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                             >
                                                 {user.name}
                                             </Link>
-                                            <p className="text-xs text-muted-foreground">
-                                                {user.email}
-                                            </p>
-                                            <div className="mt-1 flex flex-wrap items-center gap-2">
-                                                <SignupBadge
-                                                    google={Boolean(
-                                                        user.signed_up_with_google,
-                                                    )}
-                                                />
-                                                <BadgeChips
-                                                    badges={user.badges ?? []}
-                                                />
-                                            </div>
-                                            {user.player_profile
-                                                ?.school_name && (
-                                                <p className="text-xs text-muted-foreground">
-                                                    {user.player_profile.age !==
-                                                    null
-                                                        ? `${user.player_profile.age} y · `
-                                                        : ''}
-                                                    {tr(
-                                                        user.player_profile
-                                                            .school_name,
-                                                    )}
-                                                </p>
+                                            {user.is_superadmin && (
+                                                <span className="block text-xs text-bubble-purple">
+                                                    {tr('Superadmin')}
+                                                </span>
+                                            )}
+                                            {(user.badges?.length ?? 0) > 0 && (
+                                                <div className="mt-1">
+                                                    <BadgeChips
+                                                        badges={
+                                                            user.badges ?? []
+                                                        }
+                                                    />
+                                                </div>
                                             )}
                                         </div>
                                     </div>
+                                ),
+                            },
+                            {
+                                key: 'email',
+                                header: (
+                                    <SortHeader
+                                        column="email"
+                                        sort={filters.sort}
+                                        direction={filters.direction}
+                                        onSort={handleSort}
+                                    >
+                                        {tr('Email')}
+                                    </SortHeader>
+                                ),
+                                label: tr('Email'),
+                                cellClassName: 'text-muted-foreground',
+                                cell: (user) => (
+                                    <span className="flex flex-wrap items-center gap-1.5">
+                                        <span>
+                                            {user.email.split('@')[0]}
+                                            <wbr />@{user.email.split('@')[1]}
+                                        </span>
+                                        {user.ads_disabled && (
+                                            <span
+                                                className="inline-flex items-center rounded-full border border-border px-1.5 text-[11px] font-medium text-muted-foreground"
+                                                title={tr(
+                                                    'Ads hidden for this user',
+                                                )}
+                                            >
+                                                {tr('No ads')}
+                                            </span>
+                                        )}
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'signup',
+                                header: tr('Sign-up'),
+                                cellClassName: 'whitespace-nowrap',
+                                cell: (user) => (
+                                    <SignupBadge
+                                        google={Boolean(
+                                            user.signed_up_with_google,
+                                        )}
+                                    />
+                                ),
+                            },
+                            {
+                                key: 'age',
+                                header: tr('Age'),
+                                cellClassName:
+                                    'whitespace-nowrap text-foreground tabular-nums',
+                                cell: (user) => user.player_profile?.age ?? '—',
+                            },
+                            {
+                                key: 'school',
+                                header: tr('Last school'),
+                                cellClassName: 'max-w-56 text-foreground',
+                                cell: (user) => (
+                                    <span
+                                        className="line-clamp-2"
+                                        title={
+                                            user.player_profile?.school_name ??
+                                            undefined
+                                        }
+                                    >
+                                        {user.player_profile?.school_name ??
+                                            '—'}
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'roles',
+                                header: tr('Roles'),
+                                cell: (user) => (
+                                    <div className="flex flex-wrap gap-1">
+                                        {user.roles?.length ? (
+                                            user.roles.map((r) => (
+                                                <span
+                                                    key={r.id}
+                                                    className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+                                                >
+                                                    {r.name}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span className="text-xs whitespace-nowrap text-muted-foreground">
+                                                {tr('No roles')}
+                                            </span>
+                                        )}
+                                    </div>
+                                ),
+                            },
+                            {
+                                key: 'status',
+                                header: tr('Status'),
+                                summary: true,
+                                cell: (user) => (
                                     <span
                                         className={cn(
                                             'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
                                             user.status === 'active'
                                                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                : 'bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400',
+                                                : user.status === 'suspended'
+                                                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                  : 'bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400',
                                         )}
                                     >
                                         <span
-                                            className={`size-1.5 rounded-full ${user.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}
+                                            className={cn(
+                                                'size-1.5 rounded-full',
+                                                user.status === 'active'
+                                                    ? 'bg-green-500'
+                                                    : user.status ===
+                                                        'suspended'
+                                                      ? 'bg-red-500'
+                                                      : 'bg-gray-400',
+                                            )}
                                         />
                                         {user.status ?? 'active'}
                                     </span>
-                                </div>
-
-                                {user.roles && user.roles.length > 0 && (
-                                    <div className="mt-3 flex flex-wrap gap-1">
-                                        {user.roles.map((r) => (
-                                            <span
-                                                key={r.id}
-                                                className="inline-flex items-center rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
-                                            >
-                                                {r.name}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-                                    <span className="text-xs text-muted-foreground">
-                                        {tr('Joined')}{' '}
-                                        {timeAgo(user.created_at)}
+                                ),
+                            },
+                            {
+                                key: 'joined',
+                                header: (
+                                    <SortHeader
+                                        column="created_at"
+                                        sort={filters.sort}
+                                        direction={filters.direction}
+                                        onSort={handleSort}
+                                    >
+                                        {tr('Joined')}
+                                    </SortHeader>
+                                ),
+                                label: tr('Joined'),
+                                summary: true,
+                                cellClassName:
+                                    'whitespace-nowrap text-muted-foreground',
+                                cell: (user) => timeAgo(user.created_at),
+                            },
+                            {
+                                key: 'actions',
+                                header: (
+                                    <span className="sr-only">
+                                        {tr('Actions')}
                                     </span>
-                                    <div className="flex items-center gap-1">
-                                        <Link
-                                            href={`/admin/users/${user.id}`}
-                                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                                            aria-label={tr('View user')}
-                                        >
-                                            <Eye className="size-4" />
-                                        </Link>
-                                        <Link
-                                            href={`/admin/users/${user.id}/edit`}
-                                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                                            aria-label={tr('Edit user')}
-                                        >
-                                            <Edit className="size-4" />
-                                        </Link>
-                                        {canLoginAs(user) && (
-                                            <button
-                                                onClick={() =>
-                                                    setImpersonateTarget(user)
-                                                }
-                                                className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                                                aria-label={tr('Login as {0}', [
-                                                    user.name,
-                                                ])}
-                                            >
-                                                <LogIn className="size-4" />
-                                            </button>
-                                        )}
+                                ),
+                                align: 'right',
+                                hideInAccordion: true,
+                                cell: (user) => (
+                                    <div className="relative inline-block">
                                         <button
-                                            onClick={() =>
-                                                setDeleteTarget(user)
-                                            }
-                                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-destructive"
-                                            aria-label={tr('Delete user')}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setOpenDropdown(
+                                                    openDropdown === user.id
+                                                        ? null
+                                                        : user.id,
+                                                );
+                                            }}
+                                            className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                            aria-label={tr('Actions')}
                                         >
-                                            <Trash2 className="size-4" />
+                                            <MoreHorizontal className="size-4" />
                                         </button>
+                                        {openDropdown === user.id && (
+                                            <>
+                                                <div
+                                                    className="fixed inset-0 z-40"
+                                                    onClick={() =>
+                                                        setOpenDropdown(null)
+                                                    }
+                                                />
+                                                <div className="absolute top-full right-0 z-50 mt-1 w-44 rounded-lg border border-border bg-popover py-1 shadow-lg">
+                                                    <Link
+                                                        href={`/admin/users/${user.id}`}
+                                                        className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+                                                        onClick={() =>
+                                                            setOpenDropdown(
+                                                                null,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Eye className="size-4" />
+                                                        {tr('View')}
+                                                    </Link>
+                                                    <Link
+                                                        href={`/admin/users/${user.id}/edit`}
+                                                        className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+                                                        onClick={() =>
+                                                            setOpenDropdown(
+                                                                null,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Edit className="size-4" />
+                                                        {tr('Edit')}
+                                                    </Link>
+                                                    {viewerIsSuperadmin && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenDropdown(
+                                                                    null,
+                                                                );
+                                                                router.patch(
+                                                                    `/admin/ads/users/${user.id}`,
+                                                                    {
+                                                                        ads_disabled:
+                                                                            !user.ads_disabled,
+                                                                    },
+                                                                    {
+                                                                        preserveScroll: true,
+                                                                    },
+                                                                );
+                                                            }}
+                                                            className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+                                                            data-testid={`user-ads-${user.id}`}
+                                                        >
+                                                            <Megaphone className="size-4" />
+                                                            {user.ads_disabled
+                                                                ? tr('Show ads')
+                                                                : tr(
+                                                                      'Hide ads',
+                                                                  )}
+                                                        </button>
+                                                    )}
+                                                    {canLoginAs(user) && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setOpenDropdown(
+                                                                    null,
+                                                                );
+                                                                setImpersonateTarget(
+                                                                    user,
+                                                                );
+                                                            }}
+                                                            className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+                                                            data-testid={`user-login-as-${user.id}`}
+                                                        >
+                                                            <LogIn className="size-4" />
+                                                            {tr('Login as')}
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => {
+                                                            setOpenDropdown(
+                                                                null,
+                                                            );
+                                                            setDeleteTarget(
+                                                                user,
+                                                            );
+                                                        }}
+                                                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent"
+                                                    >
+                                                        <Trash2 className="size-4" />
+                                                        {tr('Delete')}
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
-                                </div>
-                            </div>
-                        ))
-                    )}
+                                ),
+                            },
+                        ]}
+                    />
                 </div>
 
                 {/* Pagination */}

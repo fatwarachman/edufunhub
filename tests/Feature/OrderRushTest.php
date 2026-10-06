@@ -170,13 +170,13 @@ it('rejects forged or out-of-range order rush results', function (array $overrid
 it('lets super admins manage the sequence bank', function (): void {
     $admin = User::factory()->superadmin()->create();
 
-    $this->actingAs($admin)->get('/admin/sequence-sets')->assertOk()
+    $this->actingAs($admin)->get('/admin/games/order-rush/sequences')->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/sequence-sets/index')
             ->has('sets', 11)
             ->where('days', 30));
 
-    $this->actingAs($admin)->post('/admin/sequence-sets', [
+    $this->actingAs($admin)->post('/admin/games/order-rush/sequences', [
         'title_id' => 'Langkah Crimping',
         'category' => 'crimping steps',
         'kind' => 'protocol',
@@ -192,7 +192,7 @@ it('lets super admins manage the sequence bank', function (): void {
     expect($set->category)->toBe('CRIMPING_STEPS')
         ->and($set->toGamePayload()['items'][0]['label'])->toBe(['id' => 'Kupas jaket', 'en' => 'Kupas jaket']);
 
-    $this->actingAs($admin)->put("/admin/sequence-sets/{$set->id}", [
+    $this->actingAs($admin)->put("/admin/games/order-rush/sequences/{$set->id}", [
         'key' => 'renamed',
         'title_id' => 'Langkah Crimping RJ45',
         'category' => 'CRIMPING',
@@ -200,17 +200,17 @@ it('lets super admins manage the sequence bank', function (): void {
         'items' => [['label_id' => 'A', 'color' => '#ffffff'], ['label_id' => 'B']],
     ])->assertSessionHasErrors('items.1.color');
 
-    $this->actingAs($admin)->patch("/admin/sequence-sets/{$set->id}/toggle")->assertRedirect();
+    $this->actingAs($admin)->patch("/admin/games/order-rush/sequences/{$set->id}/toggle")->assertRedirect();
     expect($set->fresh()->is_active)->toBeFalse();
 
-    $this->actingAs($admin)->delete("/admin/sequence-sets/{$set->id}")->assertRedirect();
+    $this->actingAs($admin)->delete("/admin/games/order-rush/sequences/{$set->id}")->assertRedirect();
     expect(SequenceSet::query()->whereKey($set->id)->exists())->toBeFalse();
 });
 
 it('validates sequence sets', function (array $payload, string $error): void {
     $admin = User::factory()->superadmin()->create();
 
-    $this->actingAs($admin)->post('/admin/sequence-sets', array_merge([
+    $this->actingAs($admin)->post('/admin/games/order-rush/sequences', array_merge([
         'title_id' => 'Urutan Uji',
         'category' => 'TEST',
         'kind' => 'protocol',
@@ -230,16 +230,16 @@ it('keeps at least one active sequence set', function (): void {
     SequenceSet::query()->where('key', '!=', 'pdu')->update(['is_active' => false]);
     $last = SequenceSet::query()->where('key', 'pdu')->sole();
 
-    $this->actingAs($admin)->patch("/admin/sequence-sets/{$last->id}/toggle")->assertSessionHasErrors('sequence_set');
-    $this->actingAs($admin)->delete("/admin/sequence-sets/{$last->id}")->assertSessionHasErrors('sequence_set');
+    $this->actingAs($admin)->patch("/admin/games/order-rush/sequences/{$last->id}/toggle")->assertSessionHasErrors('sequence_set');
+    $this->actingAs($admin)->delete("/admin/games/order-rush/sequences/{$last->id}")->assertSessionHasErrors('sequence_set');
     expect($last->fresh()->is_active)->toBeTrue();
 });
 
 it('hides the sequence bank from regular users', function (): void {
     $user = User::factory()->create();
 
-    $this->actingAs($user)->get('/admin/sequence-sets')->assertForbidden();
-    $this->actingAs($user)->post('/admin/sequence-sets', [])->assertForbidden();
+    $this->actingAs($user)->get('/admin/games/order-rush/sequences')->assertForbidden();
+    $this->actingAs($user)->post('/admin/games/order-rush/sequences', [])->assertForbidden();
 });
 
 it('ships the how-to-play video and slides', function (string $file, string $signature) {
@@ -270,7 +270,7 @@ it('validates two-end cable sets in the admin editor', function (array $override
     $admin = User::factory()->superadmin()->create();
     $wire = fn (string $label): array => ['label_id' => $label, 'color' => '#2563eb'];
 
-    $this->actingAs($admin)->post('/admin/sequence-sets', [
+    $this->actingAs($admin)->post('/admin/games/order-rush/sequences', [
         'title_id' => 'Kabel Rollover',
         'category' => 'UTP_ROLLOVER',
         'kind' => 'cable',
@@ -292,7 +292,7 @@ it('saves a two-end cable set and sends its ends to the game service', function 
     $admin = User::factory()->superadmin()->create();
     $wire = fn (string $label): array => ['label_id' => $label, 'color' => '#2563eb'];
 
-    $this->actingAs($admin)->post('/admin/sequence-sets', [
+    $this->actingAs($admin)->post('/admin/games/order-rush/sequences', [
         'title_id' => 'Kabel Rollover',
         'category' => 'UTP_ROLLOVER',
         'kind' => 'cable',
@@ -303,4 +303,21 @@ it('saves a two-end cable set and sends its ends to the game service', function 
     $payload = SequenceSet::query()->where('key', 'kabel-rollover')->sole()->toGamePayload();
     expect($payload['ends'])->toBe([['id' => 'Ujung A', 'en' => 'End A'], ['id' => 'Ujung B', 'en' => 'Ujung B']])
         ->and($payload['items'])->toHaveCount(6);
+});
+
+it('moves the sequence bank under the order rush game page and redirects old links', function (): void {
+    $admin = User::factory()->superadmin()->create();
+    $set = SequenceSet::query()->firstOrFail();
+
+    expect(route('admin.sequence-sets.index', absolute: false))->toBe('/admin/games/order-rush/sequences')
+        ->and(route('admin.sequence-sets.toggle', $set, false))->toBe("/admin/games/order-rush/sequences/{$set->id}/toggle");
+
+    $this->actingAs($admin)->get('/admin/sequence-sets?days=7')->assertStatus(301)->assertRedirect('/admin/games/order-rush/sequences?days=7');
+    $this->get("/admin/sequence-sets/{$set->id}/edit")->assertStatus(301)->assertRedirect("/admin/games/order-rush/sequences/{$set->id}/edit");
+
+    $this->get('/admin/games/order-rush')->assertOk()->assertInertia(fn (Assert $page) => $page->component('admin/games/show')->where('game.key', 'order-rush'));
+
+    $tabs = (string) file_get_contents(resource_path('js/components/admin/game-tabs.tsx'));
+    expect($tabs)->toContain("'/admin/games/order-rush/sequences'")
+        ->and((string) file_get_contents(resource_path('js/pages/admin/sequence-sets/index.tsx')))->toContain('<GameTabs game="order-rush" active="sequences" />');
 });

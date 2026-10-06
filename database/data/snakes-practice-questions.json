@@ -1,0 +1,454 @@
+{
+    "questions": [
+        {
+            "key": "sl-01",
+            "band": 1,
+            "subject": "math",
+            "topic": "Matematika",
+            "prompt": "Berapakah hasil dari 15 × 8 - 45?",
+            "options": [
+                "65",
+                "75",
+                "85",
+                "95"
+            ],
+            "answer": 1,
+            "hint": "15 × 8 = 120, lalu 120 - 45 = 75."
+        },
+        {
+            "key": "sl-02",
+            "band": 2,
+            "subject": "science",
+            "topic": "IPA (Fisika)",
+            "prompt": "Alat ukur yang digunakan untuk mengukur kuat arus listrik adalah...",
+            "options": [
+                "Voltmeter",
+                "Amperemeter",
+                "Ohmmeter",
+                "Barometer"
+            ],
+            "answer": 1,
+            "hint": "Kuat arus diukur dengan Amperemeter, sedangkan beda tegangan dengan Voltmeter."
+        },
+        {
+            "key": "sl-03",
+            "band": 1,
+            "subject": "science",
+            "topic": "IPA (Biologi)",
+            "prompt": "Bagian sel tumbuhan yang berfungsi sebagai tempat fotosintesis adalah...",
+            "options": [
+                "Mitokondria",
+                "Kloroplas",
+                "Ribosom",
+                "Vakuola"
+            ],
+            "answer": 1,
+            "hint": "Kloroplas mengandung klorofil hijau daun untuk menangkap energi cahaya matahari."
+        },
+        {
+            "key": "sl-04",
+            "band": 1,
+            "subject": "social",
+            "topic": "IPS (Sejarah)",
+            "prompt": "Teks Proklamasi Kemerdekaan Indonesia dibacakan pada tahun...",
+            "options": [
+                "1942",
+                "1945",
+                "1948",
+                "1950"
+            ],
+            "answer": 1,
+            "hint": "Proklamasi Kemerdekaan dibacakan pada 17 Agustus 1945 oleh Ir. Soekarno."
+        },
+        {
+            "key": "sl-05",
+            "band": 1,
+            "subject": "language",
+            "topic": "Bahasa Indonesia",
+            "prompt": "Antonim (lawan kata) dari kata \"OPTIMIS\" adalah...",
+            "options": [
+                "Pesimis",
+                "Realistis",
+                "Kritis",
+                "Apatis"
+            ],
+            "answer": 0,
+            "hint": "Optimis berarti penuh keyakinan dan harapan baik, lawannya pesimis."
+        },
+        {
+            "key": "sl-06",
+            "band": 2,
+            "subject": "science",
+            "topic": "Informatika",
+            "prompt": "Satuan unit memori komputer terkecil adalah...",
+            "options": [
+                "Byte",
+                "Bit",
+                "Kilobyte",
+                "Nibble"
+            ],
+            "answer": 1,
+            "hint": "Bit (binary digit) bernilai 0 atau 1 adalah satuan data terkecil komputer."
+        },
+        {
+            "key": "sl-07",
+            "band": 1,
+            "subject": "math",
+            "topic": "Matematika",
+            "prompt": "Akar kuadrat dari 144 (√144) adalah...",
+            "options": [
+                "11",
+                "12",
+                "13",
+                "14"
+            ],
+            "answer": 1,
+            "hint": "12 × 12 = 144."
+        },
+        {
+            "key": "sl-08",
+            "band": 2,
+            "subject": "science",
+            "topic": "IPA (Kimia)",
+            "prompt": "Lambang unsur kimia untuk Emas murni adalah...",
+            "options": [
+                "Ag",
+                "Fe",
+                "Au",
+                "Cu"
+            ],
+            "answer": 2,
+            "hint": "Au berasal dari nama Latin \"Aurum\" yang berarti emas berkilau."
+        },
+        {
+            "key": "sl-09",
+            "band": 1,
+            "subject": "social",
+            "topic": "IPS (Geografi)",
+            "prompt": "Danau vulkanik terbesar di Asia Tenggara yang berada di Indonesia adalah...",
+            "options": [
+                "Danau Singkarak",
+                "Danau Toba",
+                "Danau Matano",
+                "Danau Sentani"
+            ],
+            "answer": 1,
+            "hint": "Danau Toba di Sumatera Utara terbentuk dari letusan supervulkan raksasa purba."
+        },
+        {
+            "key": "sl-10",
+            "band": 1,
+            "subject": "english",
+            "topic": "Bahasa Inggris",
+            "prompt": "What is the past tense (V2) of the verb \"GO\"?",
+            "options": [
+                "Gone",
+                "Went",
+                "Goes",
+                "Going"
+            ],
+            "answer": 1,
+            "hint": "Go (V1) -> Went (V2) -> Gone (V3)."
+        },
+        {
+            "key": "sl-11",
+            "band": 0,
+            "subject": "math",
+            "topic": "Logika & Koding",
+            "prompt": "Jika 3 kucing dapat menangkap 3 tikus dalam 3 menit, berapa menit yang dibutuhkan 100 kucing untuk menangkap 100 tikus?",
+            "options": [
+                "100 menit",
+                "3 menit",
+                "30 menit",
+                "1 menit"
+            ],
+            "answer": 1,
+            "hint": "Setiap 1 kucing butuh 3 menit untuk menangkap 1 tikus secara serempak."
+        },
+        {
+            "key": "sl-12",
+            "band": 1,
+            "subject": "civics",
+            "topic": "Karakter & Umum",
+            "prompt": "Simbol lambang sila kedua Pancasila adalah...",
+            "options": [
+                "Bintang",
+                "Rantai Emas",
+                "Pohon Beringin",
+                "Padi dan Kapas"
+            ],
+            "answer": 1,
+            "hint": "Rantai emas melambangkan kemanusiaan yang adil dan beradab."
+        },
+        {
+            "key": "sl-13",
+            "band": 1,
+            "subject": "math",
+            "topic": "Matematika",
+            "prompt": "Berapakah keliling bangun persegi yang memiliki panjang sisi 14 cm?",
+            "options": [
+                "28 cm",
+                "42 cm",
+                "56 cm",
+                "196 cm"
+            ],
+            "answer": 2,
+            "hint": "Keliling persegi = 4 × sisi = 4 × 14 = 56 cm."
+        },
+        {
+            "key": "sl-14",
+            "band": 1,
+            "subject": "science",
+            "topic": "IPA (Astronomi)",
+            "prompt": "Planet terbesar dalam sistem tata surya kita adalah...",
+            "options": [
+                "Saturnus",
+                "Jupiter",
+                "Neptunus",
+                "Bumi"
+            ],
+            "answer": 1,
+            "hint": "Jupiter adalah raksasa gas dengan volume dan massa paling besar di tata surya."
+        },
+        {
+            "key": "sl-15",
+            "band": 1,
+            "subject": "social",
+            "topic": "IPS (Ekonomi)",
+            "prompt": "Kegiatan menyalurkan barang dari pihak produsen ke konsumen disebut...",
+            "options": [
+                "Produksi",
+                "Distribusi",
+                "Konsumsi",
+                "Investasi"
+            ],
+            "answer": 1,
+            "hint": "Distribusi bertugas menjembatani perpindahan produk sampai ke tangan konsumen."
+        },
+        {
+            "key": "sl-16",
+            "band": 1,
+            "subject": "language",
+            "topic": "Bahasa Indonesia",
+            "prompt": "Kalimat yang predikatnya wajib membutuhkan objek disebut kalimat...",
+            "options": [
+                "Intransitif",
+                "Transitif",
+                "Majemuk",
+                "Pasif"
+            ],
+            "answer": 1,
+            "hint": "Kalimat transitif membutuhkan objek untuk melengkapi arti utuhnya."
+        },
+        {
+            "key": "sl-17",
+            "band": 2,
+            "subject": "science",
+            "topic": "IPA (Fisika)",
+            "prompt": "Energi yang dimiliki suatu benda akibat kedudukan atau posisinya disebut...",
+            "options": [
+                "Energi Kinetik",
+                "Energi Potensial",
+                "Energi Kalor",
+                "Energi Pegas"
+            ],
+            "answer": 1,
+            "hint": "Energi potensial gravitasi dipengaruhi oleh massa, gravitasi, dan ketinggian (m × g × h)."
+        },
+        {
+            "key": "sl-18",
+            "band": 1,
+            "subject": "math",
+            "topic": "Matematika",
+            "prompt": "Berapakah nilai dari 2 pangkat 6 (2⁶)?",
+            "options": [
+                "32",
+                "64",
+                "128",
+                "256"
+            ],
+            "answer": 1,
+            "hint": "2 × 2 × 2 × 2 × 2 × 2 = 64."
+        },
+        {
+            "key": "sl-19",
+            "band": 2,
+            "subject": "science",
+            "topic": "Informatika",
+            "prompt": "Protokol transmisi data halaman web yang aman dan terenkripsi adalah...",
+            "options": [
+                "HTTP",
+                "HTTPS",
+                "FTP",
+                "SMTP"
+            ],
+            "answer": 1,
+            "hint": "HTTPS memakai lapisan SSL/TLS untuk mengenkripsi percakapan web secara aman."
+        },
+        {
+            "key": "sl-20",
+            "band": 1,
+            "subject": "social",
+            "topic": "IPS (Sejarah)",
+            "prompt": "Kerajaan Hindu tertua di Indonesia dengan bukti peninggalan prasasti Yupa adalah...",
+            "options": [
+                "Majapahit",
+                "Tarumanegara",
+                "Kutai",
+                "Sriwijaya"
+            ],
+            "answer": 2,
+            "hint": "Kerajaan Kutai di tepi Sungai Mahakam, Kalimantan Timur berdiri sekitar abad ke-4."
+        },
+        {
+            "key": "sl-21",
+            "band": 1,
+            "subject": "english",
+            "topic": "Bahasa Inggris",
+            "prompt": "Choose the correct synonym of \"RAPID\":",
+            "options": [
+                "Slow",
+                "Fast",
+                "Heavy",
+                "Quiet"
+            ],
+            "answer": 1,
+            "hint": "Rapid berarti sangat cepat (quick / fast)."
+        },
+        {
+            "key": "sl-22",
+            "band": 1,
+            "subject": "science",
+            "topic": "IPA (Biologi)",
+            "prompt": "Mamalia bersayap yang dapat terbang dan aktif di malam hari adalah...",
+            "options": [
+                "Burung Hantu",
+                "Kelelawar",
+                "Tupai Terbang",
+                "Elang"
+            ],
+            "answer": 1,
+            "hint": "Kelelawar tergolong mamalia (menyusui) sejati yang memiliki sayap dan terbang lincah."
+        },
+        {
+            "key": "sl-23",
+            "band": 2,
+            "subject": "math",
+            "topic": "Logika & Koding",
+            "prompt": "Jika A bernilai TRUE dan B bernilai FALSE, berapakah hasil ekspresi A AND B?",
+            "options": [
+                "TRUE",
+                "FALSE",
+                "NULL",
+                "ERROR"
+            ],
+            "answer": 1,
+            "hint": "Operasi logika AND hanya bernilai TRUE jika kedua operand bernilai TRUE."
+        },
+        {
+            "key": "sl-24",
+            "band": 1,
+            "subject": "math",
+            "topic": "Matematika",
+            "prompt": "FPB (Faktor Persekutuan Terbesar) dari bilangan 24 dan 36 adalah...",
+            "options": [
+                "6",
+                "8",
+                "12",
+                "18"
+            ],
+            "answer": 2,
+            "hint": "Faktor persekutuan: 1, 2, 3, 4, 6, 12. Nilai terbesar adalah 12."
+        },
+        {
+            "key": "sl-25",
+            "band": 2,
+            "subject": "science",
+            "topic": "IPA (Kimia)",
+            "prompt": "Larutan yang mempunyai tingkat pH kurang dari 7 (< 7) digolongkan sebagai...",
+            "options": [
+                "Basa",
+                "Asam",
+                "Netral",
+                "Garam"
+            ],
+            "answer": 1,
+            "hint": "Skala pH di bawah 7 bersifat asam, sedangkan di atas 7 bersifat basa."
+        },
+        {
+            "key": "sl-26",
+            "band": 1,
+            "subject": "civics",
+            "topic": "Karakter & Umum",
+            "prompt": "Lagu kebangsaan agung \"Indonesia Raya\" diciptakan oleh...",
+            "options": [
+                "Ismail Marzuki",
+                "W.R. Soepratman",
+                "Kusbini",
+                "Ibu Soed"
+            ],
+            "answer": 1,
+            "hint": "Wage Rudolf Soepratman memperdengarkan Indonesia Raya pertama kali di Kongres Pemuda II."
+        },
+        {
+            "key": "sl-27",
+            "band": 1,
+            "subject": "social",
+            "topic": "IPS (Geografi)",
+            "prompt": "Garis khayal yang membagi bumi secara horizontal menjadi belahan utara dan selatan adalah...",
+            "options": [
+                "Garis Bujur 0°",
+                "Garis Khatulistiwa (Ekuator)",
+                "Garis Balik Utara",
+                "Garis Meridian"
+            ],
+            "answer": 1,
+            "hint": "Garis Khatulistiwa (Ekuator) berada tepat pada lintang 0° bumi."
+        },
+        {
+            "key": "sl-28",
+            "band": 1,
+            "subject": "language",
+            "topic": "Bahasa Indonesia",
+            "prompt": "Gaya bahasa yang melukiskan benda mati seolah bertingkah laku seperti manusia disebut...",
+            "options": [
+                "Metafora",
+                "Personifikasi",
+                "Hiperbola",
+                "Litotes"
+            ],
+            "answer": 1,
+            "hint": "Personifikasi memberikan watak insani pada benda mati atau gagasan abstrak."
+        },
+        {
+            "key": "sl-29",
+            "band": 2,
+            "subject": "science",
+            "topic": "Informatika",
+            "prompt": "Manakah di bawah ini yang BUKAN merupakan bahasa pemrograman?",
+            "options": [
+                "Python",
+                "HTML",
+                "JavaScript",
+                "C++"
+            ],
+            "answer": 1,
+            "hint": "HTML adalah bahasa markup untuk struktur konten halaman web, bukan bahasa pemrograman logis."
+        },
+        {
+            "key": "sl-30",
+            "band": 1,
+            "subject": "math",
+            "topic": "Matematika",
+            "prompt": "Sebuah segitiga memiliki alas 10 cm dan tinggi 8 cm. Berapakah luasnya?",
+            "options": [
+                "80 cm²",
+                "40 cm²",
+                "20 cm²",
+                "18 cm²"
+            ],
+            "answer": 1,
+            "hint": "Luas segitiga = (10 × 8) ÷ 2 = 40 cm²."
+        }
+    ]
+}

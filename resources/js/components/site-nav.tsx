@@ -15,6 +15,7 @@ import {
     type LucideIcon,
     Menu,
     MessageCircle,
+    MessageSquarePlus,
     ShieldCheck,
     Trophy,
     UserPlus,
@@ -142,9 +143,9 @@ interface NavItem {
 }
 
 const PLAYER_ITEMS: NavItem[] = [
-    { href: '/portal', labelKey: 'nav.portal', icon: Trophy, mobileHide: true },
-    { href: '/gamelist', labelKey: 'nav.games', icon: Gamepad2 },
     { href: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
+    { href: '/gamelist', labelKey: 'nav.games', icon: Gamepad2 },
+    { href: '/portal', labelKey: 'nav.portal', icon: Trophy, mobileHide: true },
     { href: '/character', labelKey: 'nav.character', icon: UserRound },
     { href: '/chat', labelKey: 'nav.chat', icon: MessageCircle },
 ];
@@ -162,6 +163,13 @@ const ADMIN_ITEM: NavItem = {
     icon: ShieldCheck,
 };
 
+/** Signed-in players: icon button next to the bell, labelled in the phone menu. */
+const FEEDBACK_ITEM: NavItem = {
+    href: '/feedback',
+    labelKey: 'nav.feedback',
+    icon: MessageSquarePlus,
+};
+
 const GUEST_ITEMS: NavItem[] = [
     { href: '/', labelKey: 'nav.home', icon: Home, external: true },
     { href: '/gamelist', labelKey: 'nav.games', icon: Gamepad2 },
@@ -174,7 +182,7 @@ function isActive(url: string, href: string): boolean {
 }
 
 /**
- * Main site navigation. Signed-in players get portal/games/dashboard/character,
+ * Main site navigation. Signed-in players get dashboard/games/portal/character,
  * the notification bell and logout; guests get home/games/login/register.
  * Labels collapse to icons below 768px. In `compact` mode (game headers) phones
  * show only the bell and a Menu button that opens the other items in a panel,
@@ -266,6 +274,18 @@ export function SiteNav({
         >
             <DigitalClock />
             <div className="edu-nav-links">{links}</div>
+            {signedIn && (
+                <div className="edu-nav-links">
+                    <NavButton
+                        href={FEEDBACK_ITEM.href}
+                        icon={FEEDBACK_ITEM.icon}
+                        label={t(FEEDBACK_ITEM.labelKey)}
+                        iconOnly
+                        active={isActive(url, FEEDBACK_ITEM.href)}
+                        testId="nav-feedback"
+                    />
+                </div>
+            )}
             {signedIn && <NotificationBell />}
             <div className="edu-nav-links">{account}</div>
             {compact && (
@@ -332,7 +352,7 @@ function MobileMenu({
     }, [open]);
 
     const entries: NavItem[] = signedIn
-        ? items
+        ? [...items, FEEDBACK_ITEM]
         : [
               ...items,
               { href: '/register', labelKey: 'nav.register', icon: UserPlus },

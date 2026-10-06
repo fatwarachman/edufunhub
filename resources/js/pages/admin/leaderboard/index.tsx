@@ -9,6 +9,7 @@ import {
     gameLabel,
     rateTone,
 } from '@/components/admin/game-stats';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -305,119 +306,124 @@ export default function Leaderboard({
                                 icon={Medal}
                                 className="xl:col-span-2"
                             >
-                                <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[760px] text-sm">
-                                        <thead>
-                                            <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-                                                <th className="py-2 pr-3 text-left font-medium">
-                                                    #
-                                                </th>
-                                                <th className="px-3 py-2 text-left font-medium">
-                                                    {tr('Player')}
-                                                </th>
-                                                <th className="px-3 py-2 text-left font-medium">
-                                                    {tr('School')}
-                                                </th>
-                                                <th className="px-3 py-2 text-right font-medium">
-                                                    {tr('Age')}
-                                                </th>
-                                                <th className="px-3 py-2 text-right font-medium">
-                                                    {tr('Grade')}
-                                                </th>
-                                                <th className="px-3 py-2 text-right font-medium">
-                                                    {tr('Plays')}
-                                                </th>
-                                                <th className="px-3 py-2 text-right font-medium">
-                                                    {tr('Accuracy')}
-                                                </th>
-                                                <th className="px-3 py-2 text-right font-medium">
-                                                    {tr('Points')}
-                                                </th>
-                                                <th className="py-2 pl-3 text-right font-medium">
-                                                    {tr('Last played')}
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border">
-                                            {entries.map((entry) => (
-                                                <tr key={entry.user_id}>
-                                                    <td className="py-2.5 pr-3">
-                                                        <span
-                                                            className={cn(
-                                                                'inline-flex size-7 items-center justify-center rounded-full text-xs font-bold',
-                                                                RANK_STYLES[
-                                                                    entry.rank
-                                                                ] ??
-                                                                    'bg-muted text-muted-foreground',
-                                                            )}
-                                                        >
-                                                            {entry.rank}
+                                <ResponsiveTable
+                                    testId="leaderboard-table"
+                                    rows={entries}
+                                    rowKey={(entry) => entry.user_id}
+                                    columns={[
+                                        {
+                                            key: 'rank',
+                                            header: '#',
+                                            primary: true,
+                                            cell: (entry) => (
+                                                <span
+                                                    className={cn(
+                                                        'inline-flex size-7 items-center justify-center rounded-full text-xs font-bold',
+                                                        RANK_STYLES[
+                                                            entry.rank
+                                                        ] ??
+                                                            'bg-muted text-muted-foreground',
+                                                    )}
+                                                >
+                                                    {entry.rank}
+                                                </span>
+                                            ),
+                                        },
+                                        {
+                                            key: 'player',
+                                            header: tr('Player'),
+                                            primary: true,
+                                            cell: (entry) => (
+                                                <span className="flex min-w-0 flex-col">
+                                                    <Link
+                                                        href={`/admin/users/${entry.user_id}`}
+                                                        className="font-medium text-foreground hover:underline"
+                                                    >
+                                                        {entry.name}
+                                                    </Link>
+                                                    {entry.name !==
+                                                        entry.account_name && (
+                                                        <span className="text-xs font-normal text-muted-foreground">
+                                                            {entry.account_name}
                                                         </span>
-                                                    </td>
-                                                    <td className="px-3 py-2.5">
-                                                        <Link
-                                                            href={`/admin/users/${entry.user_id}`}
-                                                            className="font-medium text-foreground hover:underline"
-                                                        >
-                                                            {entry.name}
-                                                        </Link>
-                                                        {entry.name !==
-                                                            entry.account_name && (
-                                                            <p className="text-xs text-muted-foreground">
-                                                                {
-                                                                    entry.account_name
-                                                                }
-                                                            </p>
-                                                        )}
-                                                    </td>
-                                                    <td
-                                                        className="max-w-48 truncate px-3 py-2.5 text-muted-foreground"
-                                                        title={
-                                                            entry.school_name ??
-                                                            undefined
-                                                        }
-                                                    >
-                                                        {entry.school_name ??
-                                                            '—'}
-                                                    </td>
-                                                    <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                                        {entry.age ?? '—'}
-                                                    </td>
-                                                    <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                                        {entry.grade ?? '—'}
-                                                    </td>
-                                                    <td className="px-3 py-2.5 text-right text-foreground tabular-nums">
-                                                        {formatNumber(
-                                                            entry.plays,
-                                                        )}
-                                                    </td>
-                                                    <td
-                                                        className={cn(
-                                                            'px-3 py-2.5 text-right font-medium tabular-nums',
-                                                            rateTone(
-                                                                entry.accuracy,
-                                                            ),
-                                                        )}
-                                                    >
-                                                        {formatPercent(
+                                                    )}
+                                                </span>
+                                            ),
+                                        },
+                                        {
+                                            key: 'school',
+                                            header: tr('School'),
+                                            cellClassName:
+                                                'max-w-48 truncate text-muted-foreground',
+                                            cell: (entry) =>
+                                                entry.school_name ?? '—',
+                                        },
+                                        {
+                                            key: 'age',
+                                            header: tr('Age'),
+                                            align: 'right',
+                                            cellClassName: 'tabular-nums',
+                                            cell: (entry) => entry.age ?? '—',
+                                        },
+                                        {
+                                            key: 'grade',
+                                            header: tr('Grade'),
+                                            align: 'right',
+                                            cellClassName: 'tabular-nums',
+                                            cell: (entry) => entry.grade ?? '—',
+                                        },
+                                        {
+                                            key: 'plays',
+                                            header: tr('Plays'),
+                                            align: 'right',
+                                            cellClassName: 'tabular-nums',
+                                            cell: (entry) =>
+                                                formatNumber(entry.plays),
+                                        },
+                                        {
+                                            key: 'accuracy',
+                                            header: tr('Accuracy'),
+                                            align: 'right',
+                                            cell: (entry) => (
+                                                <span
+                                                    className={cn(
+                                                        'font-medium tabular-nums',
+                                                        rateTone(
                                                             entry.accuracy,
-                                                        )}
-                                                    </td>
-                                                    <td className="px-3 py-2.5 text-right font-semibold text-foreground tabular-nums">
-                                                        {formatNumber(
-                                                            entry.points,
-                                                        )}
-                                                    </td>
-                                                    <td className="py-2.5 pl-3 text-right whitespace-nowrap text-muted-foreground">
-                                                        {formatDateTime(
-                                                            entry.last_played_at,
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                        ),
+                                                    )}
+                                                >
+                                                    {formatPercent(
+                                                        entry.accuracy,
+                                                    )}
+                                                </span>
+                                            ),
+                                        },
+                                        {
+                                            key: 'points',
+                                            header: tr('Points'),
+                                            align: 'right',
+                                            summary: true,
+                                            cell: (entry) => (
+                                                <span className="font-semibold text-foreground tabular-nums">
+                                                    {formatNumber(entry.points)}{' '}
+                                                    {tr('pts')}
+                                                </span>
+                                            ),
+                                        },
+                                        {
+                                            key: 'last',
+                                            header: tr('Last played'),
+                                            align: 'right',
+                                            cellClassName:
+                                                'whitespace-nowrap text-muted-foreground',
+                                            cell: (entry) =>
+                                                formatDateTime(
+                                                    entry.last_played_at,
+                                                ),
+                                        },
+                                    ]}
+                                />
                             </Panel>
 
                             <Panel

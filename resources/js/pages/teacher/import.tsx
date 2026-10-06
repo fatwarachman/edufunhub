@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import { ResponsiveTable } from '@/components/responsive-table';
 import { BackButton, NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
@@ -199,40 +200,38 @@ export default function TeacherImport({ maxRows }: ImportProps) {
                     <h2 className="text-lg font-bold">
                         {t('teacher.importPage.columns')}
                     </h2>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead>
-                                <tr className="border-b-2 border-[#151b2e] text-xs uppercase">
-                                    <th className="py-2 pr-3">
-                                        {t('teacher.importPage.column')}
-                                    </th>
-                                    <th className="px-3 py-2">
-                                        {t('teacher.importPage.description')}
-                                    </th>
-                                    <th className="py-2 pl-3 text-right">
-                                        {t('teacher.importPage.required')}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#151b2e]/15">
-                                {COLUMN_GUIDE.map((row) => (
-                                    <tr key={row.key}>
-                                        <td className="py-2.5 pr-3 align-top font-mono text-xs font-bold break-all sm:break-normal">
-                                            {row.columns}
-                                        </td>
-                                        <td className="px-3 py-2.5">
-                                            {t(
-                                                `teacher.importPage.docs.${row.key}`,
-                                            )}
-                                        </td>
-                                        <td className="py-2.5 pl-3 text-right align-top font-bold">
-                                            {row.required ? '✓' : '—'}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <ResponsiveTable
+                        variant="player"
+                        testId="import-columns"
+                        rows={COLUMN_GUIDE}
+                        rowKey={(row) => row.key}
+                        columns={[
+                            {
+                                key: 'column',
+                                header: t('teacher.importPage.column'),
+                                primary: true,
+                                cellClassName: 'align-top',
+                                cell: (row) => (
+                                    <span className="font-mono text-xs font-bold [overflow-wrap:anywhere]">
+                                        {row.columns}
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'description',
+                                header: t('teacher.importPage.description'),
+                                cell: (row) =>
+                                    t(`teacher.importPage.docs.${row.key}`),
+                            },
+                            {
+                                key: 'required',
+                                header: t('teacher.importPage.required'),
+                                align: 'right',
+                                cellClassName: 'align-top font-bold',
+                                cell: (row) => (row.required ? '✓' : '—'),
+                            },
+                        ]}
+                    />
                 </section>
             </div>
         </PlayerLayout>

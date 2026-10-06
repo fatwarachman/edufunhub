@@ -4,10 +4,11 @@ import {
     StatusPill,
 } from '@/components/admin/admin-kit';
 import { fieldClass } from '@/components/admin/game-stats';
+import { GameTabs } from '@/components/admin/game-tabs';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     ArrowRight,
@@ -106,6 +107,16 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
         <AdminLayout>
             <Head title={tr('Sorter Bank')} />
             <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4">
+                    <Link
+                        href="/admin/games"
+                        className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        <ArrowLeft className="size-4" />
+                        {tr('All games')}
+                    </Link>
+                    <GameTabs game="port-sorter" active="sets" />
+                </div>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">
@@ -218,7 +229,7 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
                                     type="button"
                                     onClick={() =>
                                         router.patch(
-                                            `/admin/sorter-sets/${set.id}/toggle`,
+                                            `/admin/games/port-sorter/sets/${set.id}/toggle`,
                                             {},
                                             { preserveScroll: true },
                                         )
@@ -273,13 +284,16 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
                         return;
                     }
                     setProcessing(true);
-                    router.delete(`/admin/sorter-sets/${deleting.id}`, {
-                        preserveScroll: true,
-                        onFinish: () => {
-                            setProcessing(false);
-                            setDeleting(null);
+                    router.delete(
+                        `/admin/games/port-sorter/sets/${deleting.id}`,
+                        {
+                            preserveScroll: true,
+                            onFinish: () => {
+                                setProcessing(false);
+                                setDeleting(null);
+                            },
                         },
-                    });
+                    );
                 }}
             />
         </AdminLayout>
@@ -376,12 +390,16 @@ function SetEditor({
         delete payload.id;
         if (draft.id) {
             router.put(
-                `/admin/sorter-sets/${draft.id}`,
+                `/admin/games/port-sorter/sets/${draft.id}`,
                 payload as never,
                 options,
             );
         } else {
-            router.post('/admin/sorter-sets', payload as never, options);
+            router.post(
+                '/admin/games/port-sorter/sets',
+                payload as never,
+                options,
+            );
         }
     };
 

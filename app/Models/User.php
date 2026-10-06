@@ -124,6 +124,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->created_at->lte(now()->subDays($afterDays));
     }
 
+    /** @return HasMany<Feedback, $this> */
+    public function feedback(): HasMany
+    {
+        return $this->hasMany(Feedback::class);
+    }
+
     /** @return HasOne<PlayerProfile, $this> */
     public function playerProfile(): HasOne
     {
@@ -567,6 +573,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
+            ->dontLogIfAttributesChangedOnly(['last_seen_at', 'updated_at'])
             ->dontSubmitEmptyLogs()
             ->useLogName('user');
     }

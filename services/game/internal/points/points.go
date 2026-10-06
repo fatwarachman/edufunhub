@@ -12,7 +12,7 @@ import "sync/atomic"
 
 const (
 	// MinAnswersForAbandon is how many answers a game left early needs before
-	// it still pays out (stops create/leave farming).
+	// it also pays participation (stops create/leave farming).
 	MinAnswersForAbandon = 3
 
 	// Upper bounds of the admin settings; award caps are derived from them.
@@ -90,12 +90,13 @@ func Finished(achieved, max int) int {
 	return min(Current().Participation+achieved, max)
 }
 
-// Abandoned returns the award for a game left early: participation plus what
-// was achieved, but nothing unless the player answered enough to have really
-// played.
+// Abandoned returns the award for a game left early. What the player
+// achieved (correct answers) always counts; participation is added only once
+// they answered enough to have really played, so create/leave farming pays
+// nothing.
 func Abandoned(achieved, answered, max int) int {
 	if answered < MinAnswersForAbandon {
-		return 0
+		return min(achieved, max)
 	}
 	return Finished(achieved, max)
 }

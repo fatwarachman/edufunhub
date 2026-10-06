@@ -29,7 +29,7 @@ func (s *Server) RunCrosswords(ctx context.Context, every time.Duration) {
 			return
 		case <-t.C:
 			now := s.cfg.Now()
-			s.pushCrossword(s.crosswords.Tick(now), now)
+			s.pushCrossword(append(s.crosswords.Tick(now), s.crosswords.HandOver(now)...), now)
 			s.reportCrosswords()
 		}
 	}
@@ -123,6 +123,8 @@ func (s *Server) serveCrossword(w http.ResponseWriter, r *http.Request) {
 			ids, err = s.crosswords.Hint(claims.Subject, in.Word, now)
 		case "locale":
 			s.crosswords.SetLocale(claims.Subject, in.Locale)
+			ids = []int64{claims.Subject}
+		case "sync":
 			ids = []int64{claims.Subject}
 		case "ping":
 			send(crossword.Message{"t": "pong"})

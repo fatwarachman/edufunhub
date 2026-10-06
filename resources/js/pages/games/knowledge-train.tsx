@@ -8,6 +8,7 @@ import {
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
+import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import {
     type TrainState,
@@ -114,6 +115,7 @@ export default function KnowledgeTrain({
     wsUrl,
 }: KnowledgeTrainProps) {
     const { t, i18n } = useTranslations();
+    const myId = useMyUserId();
     const [subject, setSubject] = useState<GameSubject>(() =>
         typeof window === 'undefined' ? 'mix' : rememberedSubject(),
     );
@@ -469,7 +471,10 @@ export default function KnowledgeTrain({
                         data-testid="train-player"
                     >
                         <span className="-my-1 size-9 shrink-0">
-                            <PlayerAvatar character={player.character} />
+                            <PlayerAvatar
+                                character={player.character}
+                                userId={myId}
+                            />
                         </span>
                         <span className="truncate">
                             {player.name} • {gradeLabel}

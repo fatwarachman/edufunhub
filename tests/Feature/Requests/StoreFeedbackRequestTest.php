@@ -3,84 +3,42 @@
 use App\Http\Requests\StoreFeedbackRequest;
 use Illuminate\Support\Facades\Validator;
 
-it('is always authorized', function () {
-    $request = new StoreFeedbackRequest;
+function feedbackRules(): array
+{
+    return (new StoreFeedbackRequest)->rules();
+}
 
-    expect($request->authorize())->toBeTrue();
+it('has validation rules for type, message, game, page and contact', function () {
+    expect(feedbackRules())->toHaveKeys(['type', 'message', 'game', 'page_url', 'may_contact'])
+        ->and(feedbackRules()['message'])->toContain('min:10')
+        ->and(feedbackRules()['message'])->toContain('max:2000');
 });
 
-it('has validation rules for type and message', function () {
-    $request = new StoreFeedbackRequest;
-    $rules = $request->rules();
-
-    expect($rules)->toHaveKeys(['type', 'message'])
-        ->and($rules['type'])->toContain('in:bug,idea,general')
-        ->and($rules['message'])->toContain('min:10')
-        ->and($rules['message'])->toContain('max:2000');
-});
-
-it('passes validation with valid feedback', function () {
-    $request = new StoreFeedbackRequest;
-
-    $validator = Validator::make([
-        'type' => 'bug',
-        'message' => 'This is a valid feedback message with enough characters.',
-    ], $request->rules());
-
-    expect($validator->passes())->toBeTrue();
-});
-
-it('fails validation with invalid type', function () {
-    $request = new StoreFeedbackRequest;
-
-    $validator = Validator::make([
-        'type' => 'complaint',
-        'message' => 'This is a valid feedback message.',
-    ], $request->rules());
-
-    expect($validator->fails())->toBeTrue()
-        ->and($validator->errors()->has('type'))->toBeTrue();
-});
-
-it('fails validation when message is too short', function () {
-    $request = new StoreFeedbackRequest;
-
-    $validator = Validator::make([
-        'type' => 'bug',
-        'message' => 'Short',
-    ], $request->rules());
-
-    expect($validator->fails())->toBeTrue()
-        ->and($validator->errors()->has('message'))->toBeTrue();
-});
-
-it('fails validation when message is too long', function () {
-    $request = new StoreFeedbackRequest;
-
-    $validator = Validator::make([
-        'type' => 'idea',
-        'message' => str_repeat('x', 2001),
-    ], $request->rules());
-
-    expect($validator->fails())->toBeTrue()
-        ->and($validator->errors()->has('message'))->toBeTrue();
-});
-
-it('has custom error messages', function () {
-    $request = new StoreFeedbackRequest;
-    $messages = $request->messages();
-
-    expect($messages)
-        ->toHaveKeys(['type.in', 'message.min', 'message.max']);
-});
-
-it('accepts all valid feedback types', function (string $type) {
-    $request = new StoreFeedbackRequest;
-
+it('accepts all feedback types', function (string $type) {
     $validator = Validator::make([
         'type' => $type,
         'message' => 'This is a valid feedback message.',
-    ], $request->rules());
+    ], feedbackRules());
 
     expect($validator->passes())->toBeTrue();
-})->with(['bug', 'idea', 'general']);
+})->with(['bug', 'feature', 'question', 'content', 'account', 'other']);
+
+it('rejects legacy and unknown types', function (string $type) {
+    $validator = Validator::make([
+        'type' => $type,
+        'message' => 'This is a valid feedback message.',
+    ], feedbackRules());
+
+    expect($validator->errors()->has('type'))->toBeTrue();
+})->with(['idea', 'general', 'experience', 'complaint']);
+
+it('fails validation when the message is too short or too long', function (string $message) {
+    $validator = Validator::make(['type' => 'bug', 'message' => $message], feedbackRules());
+
+    expect($validator->errors()->has('message'))->toBeTrue();
+})->with(['Short', str_repeat('x', 2001)]);
+
+it('has custom error messages', function () {
+    expect((new StoreFeedbackRequest)->messages())
+        ->toHaveKeys(['type.enum', 'message.min', 'message.max', 'game.in', 'page_url.regex']);
+});

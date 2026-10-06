@@ -1,5 +1,6 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import { LanguageToggle } from '@/components/language-toggle';
+import { OnlineDot } from '@/components/online-dot';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useInitials } from '@/hooks/use-initials';
 import { useTranslations } from '@/hooks/use-translations';
@@ -12,7 +13,6 @@ import {
     BellRing,
     BookMarked,
     Bot,
-    Cable,
     ChartColumnBig,
     ChevronLeft,
     ChevronRight,
@@ -25,8 +25,9 @@ import {
     LogOut,
     Megaphone,
     Menu,
+    MessageSquarePlus,
+    MonitorSmartphone,
     Moon,
-    Network,
     Server,
     Settings,
     ShieldCheck,
@@ -74,6 +75,12 @@ const navItems: NavItem[] = [
         superadminOnly: true,
     },
     {
+        title: 'Screen Time',
+        href: '/admin/screen-time',
+        icon: MonitorSmartphone,
+        superadminOnly: true,
+    },
+    {
         title: 'Game Statistics',
         href: '/admin/games',
         icon: ChartColumnBig,
@@ -95,18 +102,6 @@ const navItems: NavItem[] = [
         title: 'Subjects',
         href: '/admin/subjects',
         icon: BookMarked,
-        superadminOnly: true,
-    },
-    {
-        title: 'Sequence Bank',
-        href: '/admin/sequence-sets',
-        icon: Cable,
-        superadminOnly: true,
-    },
-    {
-        title: 'Sorter Bank',
-        href: '/admin/sorter-sets',
-        icon: Network,
         superadminOnly: true,
     },
     {
@@ -163,6 +158,7 @@ const navItems: NavItem[] = [
         icon: Server,
         superadminOnly: true,
     },
+    { title: 'Feedback', href: '/admin/feedback', icon: MessageSquarePlus },
     { title: 'Activity Log', href: '/admin/activity-log', icon: Activity },
     { title: 'Settings', href: '/admin/settings', icon: Settings },
 ];
@@ -384,7 +380,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
             {/* Main area */}
             <div className="flex min-w-0 flex-1 flex-col">
                 {/* Header */}
-                <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <header className="sticky top-0 z-30 flex h-14 min-w-0 items-center gap-2 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:gap-3 sm:px-4">
                     {/* Mobile hamburger */}
                     <button
                         onClick={() => setSidebarOpen(true)}
@@ -396,12 +392,12 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
 
                     {/* Title */}
                     {title && (
-                        <h1 className="font-display text-lg font-semibold text-foreground">
+                        <h1 className="min-w-0 truncate font-display text-lg font-semibold text-foreground">
                             {tr(title)}
                         </h1>
                     )}
 
-                    <div className="ml-auto flex items-center gap-2">
+                    <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
                         <LanguageToggle variant="admin" />
                         {/* Theme toggle */}
                         <button
@@ -423,11 +419,11 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                     e.stopPropagation();
                                     setUserMenuOpen((o) => !o);
                                 }}
-                                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                className="flex items-center gap-2 rounded-lg px-1 py-1.5 text-sm hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:px-2"
                                 aria-label={tr('User menu')}
                                 aria-expanded={userMenuOpen}
                             >
-                                <div className="flex size-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                                <div className="relative flex size-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                                     {user.avatar_url ? (
                                         <img
                                             src={user.avatar_url}
@@ -437,6 +433,10 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                     ) : (
                                         initials
                                     )}
+                                    <OnlineDot
+                                        userId={user.id}
+                                        className="edu-online-dot--round"
+                                    />
                                 </div>
                                 <span className="hidden text-sm font-medium text-foreground sm:block">
                                     {user.name}

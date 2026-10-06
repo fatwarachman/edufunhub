@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\PlayerProfile;
+use App\Models\Question;
+use App\Models\Subject;
 use App\Services\GameServiceSigner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,7 +32,57 @@ class SnakesAndLaddersController extends Controller
             'online' => $user !== null && $this->signer->isConfigured(),
             'wsUrl' => $user ? config('game-service.public_snakes_ws_url') : null,
             'pin' => is_string($pin) && preg_match('/^\d{6}$/', $pin) ? $pin : null,
+            'practiceQuestions' => $this->practiceQuestions($user?->playerProfile()->value('grade')),
         ]);
+    }
+
+    /**
+     * Questions for practice on one device: the active bank questions
+     * distributed to Ular Tangga, so admins manage them in the question bank.
+     *
+     * @return list<array{id: int, key: string, level: string, subject: string, question: string, options: list<string>, answer: int, explanation: string}>
+     */
+    private function practiceQuestions(?int $grade): array
+    {
+        $english = app()->getLocale() === 'en';
+        $subjects = collect(Subject::catalog())->keyBy('key');
+        $questions = Question::query()
+            ->active()
+            ->where('type', Question::TYPE_CHOICE)
+            ->whereJsonContains('games', self::GAME_KEY)
+            ->orderBy('id')
+            ->limit(300)
+            ->get();
+
+        // Signed-in players practise at their grade when the bank has enough
+        // questions for it; guests (no grade) get every level.
+        if ($grade !== null) {
+            $forGrade = $questions->filter(fn (Question $question): bool => $question->grades
+                ? in_array($grade, array_map('intval', $question->grades), true)
+                : $question->band === Question::bandForGrade($grade));
+            if ($forGrade->count() >= 10) {
+                $questions = $forGrade->values();
+            }
+        }
+
+        return $questions
+            ->map(function (Question $question) use ($english, $subjects): array {
+                $text = fn (?string $id, ?string $en): string => (string) ($english && filled($en) ? $en : $id);
+                $subject = $subjects->get($question->subject);
+                [$from, $to] = Question::BANDS[$question->band] ?? [1, 12];
+
+                return [
+                    'id' => $question->id,
+                    'key' => $question->key,
+                    'level' => __('snakes.grade_range', ['from' => $from, 'to' => $to]),
+                    'subject' => $subject ? $text($subject['name_id'], $subject['name_en']) : $question->subject,
+                    'question' => $text($question->prompt_id, $question->prompt_en),
+                    'options' => collect($question->options ?? [])->map(fn (array $option): string => $text($option['id'] ?? '', $option['en'] ?? ''))->values()->all(),
+                    'answer' => (int) $question->answer,
+                    'explanation' => $text($question->hint_id, $question->hint_en),
+                ];
+            })
+            ->all();
     }
 
     public function token(Request $request): JsonResponse

@@ -18,6 +18,8 @@ export interface DuelSide {
 }
 
 export interface DuelOpponent extends DuelSide {
+    /** Account id of a human opponent (absent for bots). */
+    user_id?: number;
     bot: boolean;
     online: boolean;
     answered: boolean;

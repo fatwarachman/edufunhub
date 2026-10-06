@@ -30,7 +30,7 @@ func (s *Server) RunSnakes(ctx context.Context, every time.Duration) {
 			return
 		case <-t.C:
 			now := s.cfg.Now()
-			s.pushSnakes(s.snakes.Tick(now), now)
+			s.pushSnakes(append(s.snakes.Tick(now), s.snakes.HandOver(now)...), now)
 			s.reportSnakes()
 		}
 	}
@@ -116,13 +116,21 @@ func (s *Server) serveSnakes(w http.ResponseWriter, r *http.Request) {
 		case "join":
 			ids, err = s.snakes.Enter(claims, in.Pin, now)
 		case "leave":
-			ids = s.snakes.Leave(claims.Subject, now)
+			var paid int
+			ids, paid = s.snakes.Leave(claims.Subject, now)
+			if paid >= 0 {
+				send(snakes.Message{"t": "left", "points": paid})
+			}
 		case "add_local":
 			ids, err = s.snakes.AddLocal(claims.Subject, localName(in.Name), now)
 		case "remove_local":
 			ids, err = s.snakes.RemoveLocal(claims.Subject, in.Seat, now)
 		case "subject":
 			ids, err = s.snakes.SetSubject(claims.Subject, in.Subject, now)
+		case "duration":
+			ids, err = s.snakes.SetDuration(claims.Subject, in.Minutes, now)
+		case "sync":
+			ids = []int64{claims.Subject}
 		case "start":
 			ids, err = s.snakes.Start(claims.Subject, now)
 		case "roll":

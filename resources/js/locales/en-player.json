@@ -308,6 +308,18 @@
             "summary": "Rank #{{rank}} · {{points}} points",
             "chat": "Chat",
             "chatError": "Could not open the chat. Please try again."
+        },
+        "activeGames": {
+            "title": "Continue playing",
+            "intro": "You are still seated in these games. Closed the browser by accident? Jump back in here.",
+            "resume": "Continue",
+            "pin": "PIN {{pin}}",
+            "host": "You host",
+            "phase": {
+                "lobby": "Waiting for players",
+                "playing": "In progress"
+            },
+            "loading": "Checking for running games…"
         }
     },
     "nav": {
@@ -332,7 +344,8 @@
         "menu": "Menu",
         "admin": "Admin",
         "chat": "Chat",
-        "clock": "Current time {{time}}"
+        "clock": "Current time {{time}}",
+        "feedback": "Send feedback"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -767,7 +780,19 @@
                     "fun": "Four big buttons and fast reactions turn memorising the 7 OSI layers into a match instead of a rigid lesson."
                 }
             }
-        }
+        },
+        "searchLabel": "Search games",
+        "searchPlaceholder": "Search title, type, or topic…",
+        "clearSearch": "Clear search",
+        "resultCount_one": "{{count}} game matches \"{{query}}\"",
+        "resultCount_other": "{{count}} games match \"{{query}}\"",
+        "noResults": "No games match \"{{query}}\"",
+        "noResultsHint": "Try a shorter or different word, or choose the \"All\" type.",
+        "resetSearch": "Show all games",
+        "viewLabel": "List layout",
+        "viewGrid": "Card view",
+        "viewList": "Compact list view",
+        "filterCount": "{{count}} games"
     },
     "snakes": {
         "title": "Educational Snakes & Ladders",
@@ -817,7 +842,9 @@
             "rollingHint": "Get ready to answer!",
             "openingQuestion": "Opening the question…",
             "autoRoll": "Auto roll in {{seconds}} seconds",
-            "rollFor": "Roll for {{name}}"
+            "rollFor": "Roll for {{name}}",
+            "autoRolled": "The dice rolled by itself because {{name}} did not move.",
+            "turnTimer": "{{seconds}} seconds left to roll"
         },
         "question": {
             "turnOf": "{{name}}'s turn",
@@ -855,13 +882,44 @@
             "you": "You win!",
             "again": "Play again",
             "waitingHost": "Waiting for the host to play again…",
-            "forfeit": "Everyone else left the room. Final score {{score}}."
+            "forfeit": "Everyone else left the room. Final score {{score}}.",
+            "time": "Time is up! Final score {{score}}.",
+            "timeNoWinner": "Time is up!"
         },
         "online": {
             "intro": "Play solo, add players on this device, or create a room and share the PIN and link with friends (up to {{max}} players). Every finished game adds points to your account.",
             "needGrade": "Set your grade first so questions match your level.",
             "setGrade": "Set grade",
             "soloHint": "Play solo right away, add players on this device, or wait for friends to join."
+        },
+        "duration": {
+            "label": "Game length",
+            "untilFinish": "Until someone finishes",
+            "minutes": "{{count}} minutes",
+            "minutesShort": "min",
+            "hintUntilFinish": "The game ends when the first player reaches square 100.",
+            "hintTimed": "The game runs for {{count}} minutes. The first to finish earns a bonus; the others keep playing until time is up.",
+            "host": "Only the host can change the game length.",
+            "timeLeft": "{{time}} left",
+            "untilFinishBadge": "Until finish"
+        },
+        "finishBonus": {
+            "rule": "First to finish: +{{points}} bonus points",
+            "won": "First finish bonus +{{points}} points!",
+            "finished": "Finished #{{rank}}",
+            "log": "{{name}} finished in place {{rank}}!"
+        },
+        "leave": {
+            "button": "Leave game",
+            "title": "Leave the game?",
+            "body": "Points from the correct answers you already collected stay on your account. You cannot return to this game.",
+            "confirm": "Yes, leave",
+            "cancel": "Keep playing",
+            "done": "You left the game. {{points}} points stay on your account.",
+            "doneNone": "You left the game."
+        },
+        "host": {
+            "handedOver": "The host disconnected. {{name}} is the host now; the game goes on."
         }
     },
     "room": {
@@ -1081,6 +1139,17 @@
         "close": "Close notification",
         "justNow": "just now",
         "messages": "{{count}} messages"
+    },
+    "chatNotice": {
+        "newMessage": "New message",
+        "inGroup": "{{name}} in {{group}}",
+        "more": "{{count}} new messages",
+        "open": "Open chat",
+        "later": "Later",
+        "close": "Close notification"
+    },
+    "presence": {
+        "online": "Online now"
     },
     "vault": {
         "title": "Item Vault",
@@ -1868,5 +1937,173 @@
         "description": "Choose the display language for your account. Indonesian is the default.",
         "id": "Bahasa Indonesia",
         "en": "English"
+    },
+    "games": {
+        "players": {
+            "label": "Players",
+            "solo": "Solo",
+            "exact": "{{players}} players",
+            "range": "{{min}}–{{max}} players",
+            "min": "Min. {{min}} · max {{max}} players"
+        }
+    },
+    "schoolPicker": {
+        "school": "Last school",
+        "schoolPlaceholder": "Type the school name, e.g. SDN 1 Bogor",
+        "city": "School city/regency",
+        "cityPlaceholder": "Choose a city/regency",
+        "suggestions": "School suggestions",
+        "searching": "Searching schools…",
+        "players_one": "{{formatted}} player",
+        "players_other": "{{formatted}} players",
+        "hint": "Pick a suggestion so your school matches your schoolmates.",
+        "newSchool": "School not in the list yet. Keep typing to add it.",
+        "citySearch": "Search city/regency, e.g. Bogor",
+        "cityEmpty": "No city/regency found.",
+        "cityClear": "Clear city/regency",
+        "cityLoading": "Loading cities/regencies…"
+    },
+    "playerDash": {
+        "title": "Player dashboard",
+        "badge": "STATS & RANKING",
+        "greeting": "Hi, {{name}}!",
+        "intro": "Track your progress, check your leaderboard spot and keep playing.",
+        "school": "{{school}} · {{city}}",
+        "noRank": "Not ranked yet",
+        "balance": "Shop balance",
+        "actions": {
+            "portal": "Game portal",
+            "games": "All games",
+            "character": "Character & shop"
+        },
+        "kpi": {
+            "label": "Stats summary",
+            "plays": "Games played",
+            "accuracy": "Accuracy",
+            "time": "Time played",
+            "streak": "Day streak",
+            "activeDays": "Active days",
+            "favourite": "Favourite game",
+            "noData": "—",
+            "streakValue": "{{count}} days",
+            "playsValue": "{{formatted}}×"
+        },
+        "duration": {
+            "hm": "{{h}} h {{m}} min",
+            "m": "{{m}} min",
+            "s": "{{s}} sec",
+            "none": "0 min"
+        },
+        "activity": {
+            "title": "Last 14 days",
+            "note": "Games played per day.",
+            "empty": "No games in the last 14 days.",
+            "bar": "{{date}}: {{plays}} games, {{points}} points",
+            "total": "{{plays}} games · {{points}} points"
+        },
+        "subjects": {
+            "title": "Accuracy per subject",
+            "note": "From the questions you answered in games.",
+            "empty": "Answer questions in quiz games to see your accuracy per subject.",
+            "answered": "{{correct}}/{{answered}} correct"
+        },
+        "games": {
+            "title": "Stats per game",
+            "empty": "Play your first game to see stats here.",
+            "plays": "Plays",
+            "best": "Best score",
+            "accuracy": "Accuracy",
+            "time": "Time",
+            "points": "Points",
+            "last": "Last {{date}}",
+            "play": "Play again"
+        },
+        "continue": {
+            "title": "Continue playing",
+            "empty": "No games played yet. Pick one in the portal.",
+            "explore": "Explore other games"
+        },
+        "board": {
+            "title": "Leaderboard",
+            "podium": "Podium",
+            "loading": "Loading leaderboard…",
+            "points": "{{formatted}} points"
+        },
+        "history": {
+            "title": "Latest results",
+            "accuracy": "{{correct}}/{{total}} correct",
+            "prev": "Previous",
+            "next": "Next",
+            "page": "Page {{page}} of {{last}}"
+        },
+        "loadingStats": "Loading stats…",
+        "settings": "Profile & settings",
+        "explore": "Game categories"
+    },
+    "feedback": {
+        "title": "Send Feedback",
+        "intro": "Tell us about a problem you ran into or an idea to make EduFunHub more fun. Our team reads every message.",
+        "types": {
+            "bug": {
+                "label": "Bug / problem",
+                "hint": "Something errors, freezes, or does not work"
+            },
+            "feature": {
+                "label": "Feature idea",
+                "hint": "A new feature or an improvement"
+            },
+            "question": {
+                "label": "Wrong question",
+                "hint": "An answer or question text is incorrect"
+            },
+            "content": {
+                "label": "Content / game",
+                "hint": "About a game, learning material, or design"
+            },
+            "account": {
+                "label": "Account & login",
+                "hint": "Signing in, profile, or points"
+            },
+            "other": {
+                "label": "Other",
+                "hint": "Anything else you want to share"
+            }
+        },
+        "form": {
+            "type": "Feedback type",
+            "game": "Related game",
+            "noGame": "Not about a game",
+            "gameSearch": "Search game…",
+            "gameEmpty": "No game found",
+            "gameClear": "Clear game",
+            "optional": "(optional)",
+            "page": "Page",
+            "pagePlaceholder": "Example: /games/sky-quiz",
+            "message": "Message",
+            "messagePlaceholder": "Be as clear as you can: what happened, where, and what you expected.",
+            "counter": "{{count}}/{{max}} characters",
+            "mayContact": "You may contact me",
+            "mayContactHint": "Our team may reach you through your account email if we need more details.",
+            "submit": "Send feedback",
+            "sending": "Sending…"
+        },
+        "success": {
+            "title": "Feedback sent!",
+            "body": "Thanks for helping out. You can follow its status in your history list.",
+            "again": "Send more feedback"
+        },
+        "history": {
+            "title": "Your feedback",
+            "empty": "You have not sent any feedback yet."
+        },
+        "status": {
+            "new": "New",
+            "in_progress": "In progress",
+            "resolved": "Resolved",
+            "dismissed": "Closed"
+        }
+    },
+    "brand": {
+        "tagline": "Play while learning"
     }
 }

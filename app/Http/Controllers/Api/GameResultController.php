@@ -15,13 +15,14 @@ use App\Services\MatchRecorder;
 use App\Services\PlayerBadges;
 use App\Services\PlayerNotifications;
 use App\Services\PlayerPortal;
+use App\Services\UserActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class GameResultController extends Controller
 {
-    public function store(StoreGameResultRequest $request, MatchRecorder $matches, PlayerPortal $portal, PlayerNotifications $notifications, PlayerBadges $badges): JsonResponse
+    public function store(StoreGameResultRequest $request, MatchRecorder $matches, PlayerPortal $portal, PlayerNotifications $notifications, PlayerBadges $badges, UserActivity $activity): JsonResponse
     {
         $data = $request->validated();
         $user = User::query()->findOrFail($data['user_id']);
@@ -35,7 +36,7 @@ class GameResultController extends Controller
         $profile = $user->playerProfile;
         $totalBefore = $portal->totalPoints($user);
 
-        DB::transaction(function () use ($user, $data, $locale, $profile, $matches): void {
+        $history = DB::transaction(function () use ($user, $data, $locale, $profile, $matches): GameHistory {
             $history = $user->gameHistories()->create([
                 'game_key' => $data['game_key'],
                 'game_name' => $this->historyName($data['game_key'], $data['mission'], $locale),
@@ -63,7 +64,11 @@ class GameResultController extends Controller
                 'reason' => $data['game_key'].':'.$data['mission'],
                 'event_id' => $data['event_id'],
             ]);
-        });
+
+            return $history;
+        }, 3);
+
+        $activity->gameFinished($user, $history);
 
         $notifications->gameFinished(
             $user,

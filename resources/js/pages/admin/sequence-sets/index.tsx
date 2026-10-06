@@ -10,12 +10,15 @@ import {
     formatNumber,
     formatPercent,
 } from '@/components/admin/game-stats';
+import { GameTabs } from '@/components/admin/game-tabs';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowDown,
+    ArrowLeft,
     ArrowUp,
     Cable,
     ChartColumnBig,
@@ -153,6 +156,16 @@ export default function SequenceSetsIndex({
         <AdminLayout>
             <Head title={tr('Sequence Bank')} />
             <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4">
+                    <Link
+                        href="/admin/games"
+                        className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        <ArrowLeft className="size-4" />
+                        {tr('All games')}
+                    </Link>
+                    <GameTabs game="order-rush" active="sequences" />
+                </div>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-foreground">
@@ -192,7 +205,7 @@ export default function SequenceSetsIndex({
                                     type="button"
                                     onClick={() =>
                                         router.get(
-                                            '/admin/sequence-sets',
+                                            '/admin/games/order-rush/sequences',
                                             { days: value },
                                             { preserveScroll: true },
                                         )
@@ -242,67 +255,64 @@ export default function SequenceSetsIndex({
                                     .
                                 </p>
                             )}
-                            <div className="overflow-x-auto">
-                                <table
-                                    className="w-full min-w-[640px] text-sm"
-                                    data-testid="sequence-analytics"
-                                >
-                                    <thead>
-                                        <tr className="border-b border-border text-left text-xs text-muted-foreground uppercase">
-                                            <th className="py-2 pr-3">
-                                                {tr('Sequence')}
-                                            </th>
-                                            <th className="py-2 pr-3 text-right">
-                                                {tr('Players')}
-                                            </th>
-                                            <th className="py-2 pr-3 text-right">
-                                                {tr('Orders')}
-                                            </th>
-                                            <th className="py-2 pr-3 text-right">
-                                                {tr('Wrong')}
-                                            </th>
-                                            <th className="py-2 pr-3 text-right">
-                                                {tr('Avg solve')}
-                                            </th>
-                                            <th className="py-2">
-                                                {tr('Wrong slots')}
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {analytics.map((row) => (
-                                            <tr
-                                                key={row.key}
-                                                className="border-b border-border/60 last:border-0"
-                                            >
-                                                <td className="py-2 pr-3 font-medium text-foreground">
-                                                    {tr(row.title)}
-                                                    <span className="block text-xs text-muted-foreground">
-                                                        {row.category}
-                                                    </span>
-                                                </td>
-                                                <td className="py-2 pr-3 text-right tabular-nums">
-                                                    {formatNumber(row.players)}
-                                                </td>
-                                                <td className="py-2 pr-3 text-right tabular-nums">
-                                                    {formatNumber(row.attempts)}
-                                                </td>
-                                                <td className="py-2 pr-3 text-right font-semibold text-red-600 tabular-nums dark:text-red-400">
-                                                    {formatPercent(
-                                                        row.error_rate,
-                                                    )}
-                                                </td>
-                                                <td className="py-2 pr-3 text-right tabular-nums">
-                                                    {seconds(row.avg_ms)}
-                                                </td>
-                                                <td className="py-2">
-                                                    <SlotHeat row={row} />
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <ResponsiveTable
+                                testId="sequence-analytics"
+                                rows={analytics}
+                                rowKey={(row) => row.key}
+                                columns={[
+                                    {
+                                        key: 'sequence',
+                                        header: tr('Sequence'),
+                                        primary: true,
+                                        cell: (row) => (
+                                            <span className="flex flex-col font-medium text-foreground">
+                                                {tr(row.title)}
+                                                <span className="text-xs font-normal text-muted-foreground">
+                                                    {row.category}
+                                                </span>
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'players',
+                                        header: tr('Players'),
+                                        align: 'right',
+                                        cellClassName: 'tabular-nums',
+                                        cell: (row) =>
+                                            formatNumber(row.players),
+                                    },
+                                    {
+                                        key: 'orders',
+                                        header: tr('Orders'),
+                                        align: 'right',
+                                        cellClassName: 'tabular-nums',
+                                        cell: (row) =>
+                                            formatNumber(row.attempts),
+                                    },
+                                    {
+                                        key: 'wrong',
+                                        header: tr('Wrong'),
+                                        align: 'right',
+                                        summary: true,
+                                        cellClassName:
+                                            'font-semibold text-red-600 tabular-nums dark:text-red-400',
+                                        cell: (row) =>
+                                            formatPercent(row.error_rate),
+                                    },
+                                    {
+                                        key: 'avg',
+                                        header: tr('Avg solve'),
+                                        align: 'right',
+                                        cellClassName: 'tabular-nums',
+                                        cell: (row) => seconds(row.avg_ms),
+                                    },
+                                    {
+                                        key: 'slots',
+                                        header: tr('Wrong slots'),
+                                        cell: (row) => <SlotHeat row={row} />,
+                                    },
+                                ]}
+                            />
                         </div>
                     )}
                 </Panel>
@@ -400,7 +410,7 @@ export default function SequenceSetsIndex({
                                     type="button"
                                     onClick={() =>
                                         router.patch(
-                                            `/admin/sequence-sets/${set.id}/toggle`,
+                                            `/admin/games/order-rush/sequences/${set.id}/toggle`,
                                             {},
                                             { preserveScroll: true },
                                         )
@@ -454,13 +464,16 @@ export default function SequenceSetsIndex({
                         return;
                     }
                     setProcessing(true);
-                    router.delete(`/admin/sequence-sets/${deleting.id}`, {
-                        preserveScroll: true,
-                        onFinish: () => {
-                            setProcessing(false);
-                            setDeleting(null);
+                    router.delete(
+                        `/admin/games/order-rush/sequences/${deleting.id}`,
+                        {
+                            preserveScroll: true,
+                            onFinish: () => {
+                                setProcessing(false);
+                                setDeleting(null);
+                            },
                         },
-                    });
+                    );
                 }}
             />
         </AdminLayout>
@@ -555,12 +568,16 @@ function SetEditor({
         }
         if (draft.id) {
             router.put(
-                `/admin/sequence-sets/${draft.id}`,
+                `/admin/games/order-rush/sequences/${draft.id}`,
                 payload as never,
                 options,
             );
         } else {
-            router.post('/admin/sequence-sets', payload as never, options);
+            router.post(
+                '/admin/games/order-rush/sequences',
+                payload as never,
+                options,
+            );
         }
     };
 

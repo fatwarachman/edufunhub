@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\FeedbackStatus;
+use App\Enums\FeedbackType;
 use App\Models\Feedback;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,9 +20,9 @@ class FeedbackFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => $this->faker->randomElement(['bug', 'idea', 'general']),
+            'type' => $this->faker->randomElement(FeedbackType::values()),
             'message' => $this->faker->sentence(20),
-            'status' => $this->faker->randomElement(['new', 'reviewed', 'archived']),
+            'status' => $this->faker->randomElement(FeedbackStatus::values()),
         ];
     }
 

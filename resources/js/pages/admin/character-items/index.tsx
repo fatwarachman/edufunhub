@@ -5,6 +5,7 @@ import {
 } from '@/components/admin/admin-kit';
 import { Panel, StatTile, formatNumber } from '@/components/admin/game-stats';
 import PlayerCharacter from '@/components/player-character';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLocale, tr } from '@/lib/admin-i18n';
 import { type ItemSlot } from '@/lib/character/draw-character';
@@ -73,6 +74,48 @@ export default function CharacterItemsIndex({
             preserveScroll: true,
             preserveState: true,
         });
+
+    const itemActions = (item: AdminItem) => (
+        <>
+            <Link
+                href={`/admin/character-items/${item.id}/edit`}
+                className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label={tr('Edit {0}', [item.name_id])}
+            >
+                <Pencil className="size-4" />
+            </Link>
+            <button
+                type="button"
+                onClick={() =>
+                    router.patch(
+                        `/admin/character-items/${item.id}/toggle`,
+                        {},
+                        { preserveScroll: true },
+                    )
+                }
+                className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label={
+                    item.is_active
+                        ? tr('Hide {0}', [item.name_id])
+                        : tr('Show {0}', [item.name_id])
+                }
+            >
+                {item.is_active ? (
+                    <EyeOff className="size-4" />
+                ) : (
+                    <Eye className="size-4" />
+                )}
+            </button>
+            <button
+                type="button"
+                onClick={() => setDeleting(item)}
+                className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                aria-label={tr('Delete {0}', [item.name_id])}
+            >
+                <Trash2 className="size-4" />
+            </button>
+        </>
+    );
 
     return (
         <AdminLayout>
@@ -151,171 +194,129 @@ export default function CharacterItemsIndex({
                         </div>
                     }
                 >
-                    <div className="-mx-5 -my-5 overflow-x-auto">
-                        <table className="w-full min-w-[760px] text-sm">
-                            <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
-                                <tr>
-                                    <th className="px-5 py-3 font-medium">
-                                        {tr('Item')}
-                                    </th>
-                                    <th className="px-3 py-3 font-medium">
-                                        {tr('Slot')}
-                                    </th>
-                                    <th className="px-3 py-3 text-right font-medium">
-                                        {tr('Price')}
-                                    </th>
-                                    <th className="px-3 py-3 text-right font-medium">
-                                        {tr('Owners')}
-                                    </th>
-                                    <th className="px-3 py-3 text-right font-medium">
-                                        {tr('Wearing now')}
-                                    </th>
-                                    <th className="px-3 py-3 text-right font-medium">
-                                        {tr('Points spent')}
-                                    </th>
-                                    <th className="px-3 py-3 font-medium">
-                                        {tr('Status')}
-                                    </th>
-                                    <th className="px-5 py-3" />
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {items.map((item) => (
-                                    <tr
-                                        key={item.id}
+                    <ResponsiveTable
+                        testId="items-table"
+                        rows={items}
+                        rowKey={(item) => item.id}
+                        onRowClick={(item) => setViewingId(item.id)}
+                        rowAriaLabel={(item) =>
+                            tr('View {0}', [item.name_en ?? item.name_id])
+                        }
+                        actions={(item) => itemActions(item)}
+                        columns={[
+                            {
+                                key: 'item',
+                                header: tr('Item'),
+                                primary: true,
+                                cell: (item) => (
+                                    <div
+                                        className="flex min-w-0 items-center gap-3"
                                         data-testid={`item-row-${item.key}`}
-                                        className="cursor-pointer hover:bg-muted/30"
-                                        onClick={() => setViewingId(item.id)}
                                     >
-                                        <td className="px-5 py-2.5">
-                                            <button
-                                                type="button"
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                    setViewingId(item.id);
-                                                }}
-                                                className="flex items-center gap-3 rounded-lg text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                                aria-label={tr('View {0}', [
-                                                    item.name_en ??
-                                                        item.name_id,
-                                                ])}
-                                                data-testid={`item-open-${item.key}`}
-                                            >
-                                                <div className="size-12 shrink-0 overflow-hidden rounded-xl bg-[#d8c7a4]/60">
-                                                    <PlayerCharacter
-                                                        character={itemPreview(
-                                                            item,
-                                                        )}
-                                                        backdrop={false}
-                                                        className="size-full"
-                                                    />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="font-medium text-foreground">
-                                                        {item.name_en ??
-                                                            item.name_id}
-                                                    </p>
-                                                    <p className="truncate text-xs text-muted-foreground">
-                                                        {item.name_id} ·{' '}
-                                                        {item.style}
-                                                    </p>
-                                                </div>
-                                            </button>
-                                        </td>
-                                        <td className="px-3 py-2.5 text-muted-foreground">
-                                            {tr(SLOT_LABELS[item.slot])}
-                                        </td>
-                                        <td className="px-3 py-2.5 text-right font-medium tabular-nums">
-                                            {item.price === 0
-                                                ? tr('Free')
-                                                : formatNumber(item.price)}
-                                        </td>
-                                        <td
-                                            className="px-3 py-2.5 text-right tabular-nums"
-                                            data-testid={`item-owners-${item.key}`}
-                                        >
-                                            {item.owners === null
-                                                ? tr('Everyone')
-                                                : formatNumber(item.owners)}
-                                        </td>
-                                        <td
-                                            className="px-3 py-2.5 text-right tabular-nums"
-                                            data-testid={`item-wearing-${item.key}`}
-                                        >
-                                            {formatNumber(item.wearing)}
-                                        </td>
-                                        <td className="px-3 py-2.5 text-right tabular-nums">
-                                            {formatNumber(item.points_spent)}
-                                        </td>
-                                        <td className="px-3 py-2.5">
-                                            <StatusPill
-                                                active={item.is_active}
+                                        <div className="size-12 shrink-0 overflow-hidden rounded-xl bg-[#d8c7a4]/60">
+                                            <PlayerCharacter
+                                                character={itemPreview(item)}
+                                                backdrop={false}
+                                                className="size-full"
                                             />
-                                        </td>
-                                        <td
-                                            className="px-5 py-2.5"
-                                            onClick={(event) =>
-                                                event.stopPropagation()
-                                            }
+                                        </div>
+                                        <div
+                                            className="min-w-0"
+                                            data-testid={`item-open-${item.key}`}
                                         >
-                                            <div className="flex justify-end gap-1">
-                                                <Link
-                                                    href={`/admin/character-items/${item.id}/edit`}
-                                                    className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                    aria-label={tr('Edit {0}', [
-                                                        item.name_id,
-                                                    ])}
-                                                >
-                                                    <Pencil className="size-4" />
-                                                </Link>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        router.patch(
-                                                            `/admin/character-items/${item.id}/toggle`,
-                                                            {},
-                                                            {
-                                                                preserveScroll: true,
-                                                            },
-                                                        )
-                                                    }
-                                                    className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                    aria-label={
-                                                        item.is_active
-                                                            ? tr('Hide {0}', [
-                                                                  item.name_id,
-                                                              ])
-                                                            : tr('Show {0}', [
-                                                                  item.name_id,
-                                                              ])
-                                                    }
-                                                >
-                                                    {item.is_active ? (
-                                                        <EyeOff className="size-4" />
-                                                    ) : (
-                                                        <Eye className="size-4" />
-                                                    )}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setDeleting(item)
-                                                    }
-                                                    className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                                    aria-label={tr(
-                                                        'Delete {0}',
-                                                        [item.name_id],
-                                                    )}
-                                                >
-                                                    <Trash2 className="size-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                            <p className="font-medium text-foreground">
+                                                {item.name_en ?? item.name_id}
+                                            </p>
+                                            <p className="text-xs font-normal text-muted-foreground">
+                                                {item.name_id} · {item.style}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ),
+                            },
+                            {
+                                key: 'slot',
+                                header: tr('Slot'),
+                                cellClassName: 'text-muted-foreground',
+                                cell: (item) => tr(SLOT_LABELS[item.slot]),
+                            },
+                            {
+                                key: 'price',
+                                header: tr('Price'),
+                                align: 'right',
+                                cellClassName: 'font-medium tabular-nums',
+                                cell: (item) =>
+                                    item.price === 0
+                                        ? tr('Free')
+                                        : formatNumber(item.price),
+                            },
+                            {
+                                key: 'owners',
+                                header: tr('Owners'),
+                                align: 'right',
+                                cellClassName: 'tabular-nums',
+                                cell: (item) => (
+                                    <span
+                                        data-testid={`item-owners-${item.key}`}
+                                    >
+                                        {item.owners === null
+                                            ? tr('Everyone')
+                                            : formatNumber(item.owners)}
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'wearing',
+                                header: tr('Wearing now'),
+                                align: 'right',
+                                cellClassName: 'tabular-nums',
+                                cell: (item) => (
+                                    <span
+                                        data-testid={`item-wearing-${item.key}`}
+                                    >
+                                        {formatNumber(item.wearing)}
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'points',
+                                header: tr('Points spent'),
+                                align: 'right',
+                                cellClassName: 'tabular-nums',
+                                cell: (item) => formatNumber(item.points_spent),
+                            },
+                            {
+                                key: 'status',
+                                header: tr('Status'),
+                                summary: true,
+                                cell: (item) => (
+                                    <StatusPill active={item.is_active} />
+                                ),
+                            },
+                            {
+                                key: 'actions',
+                                header: (
+                                    <span className="sr-only">
+                                        {tr('Actions')}
+                                    </span>
+                                ),
+                                hideInAccordion: true,
+                                cell: (item) => (
+                                    <div
+                                        className="flex justify-end gap-1"
+                                        onClick={(event) =>
+                                            event.stopPropagation()
+                                        }
+                                        onKeyDown={(event) =>
+                                            event.stopPropagation()
+                                        }
+                                    >
+                                        {itemActions(item)}
+                                    </div>
+                                ),
+                            },
+                        ]}
+                    />
                 </Panel>
             </div>
 

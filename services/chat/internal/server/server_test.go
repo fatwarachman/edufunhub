@@ -82,3 +82,35 @@ func TestRejectsBadTokensAndUnsignedPublish(t *testing.T) {
 		t.Fatalf("non-object event status %d", res.StatusCode)
 	}
 }
+
+func TestSocketWatchesPresence(t *testing.T) {
+	srv := New(Config{Secret: secret, AllowedOrigins: []string{"*"}, OfflineGrace: time.Millisecond})
+	ts := httptest.NewServer(srv.Handler())
+	defer ts.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	dial := func(user int64) *websocket.Conn {
+		token := auth.Sign(auth.Claims{Subject: user, Audience: auth.Audience, Expires: time.Now().Add(time.Hour).Unix()}, secret)
+		conn, _, err := websocket.Dial(ctx, "ws"+strings.TrimPrefix(ts.URL, "http")+"/ws?token="+token, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, _, err := conn.Read(ctx); err != nil {
+			t.Fatal(err)
+		}
+		return conn
+	}
+	a := dial(5)
+	defer a.CloseNow()
+	b := dial(9)
+	if err := a.Write(ctx, websocket.MessageText, []byte(`{"t":"watch","users":[9,11]}`)); err != nil {
+		t.Fatal(err)
+	}
+	if _, got, err := a.Read(ctx); err != nil || string(got) != `{"online":[9],"t":"presence_state"}` {
+		t.Fatalf("state %s %v", got, err)
+	}
+	b.Close(websocket.StatusNormalClosure, "")
+	if _, got, err := a.Read(ctx); err != nil || string(got) != `{"online":false,"t":"presence","user":9}` {
+		t.Fatalf("offline %s %v", got, err)
+	}
+}

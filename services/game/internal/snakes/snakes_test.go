@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"edufunhub/game/internal/auth"
+	"edufunhub/game/internal/lobby"
 	"edufunhub/game/internal/points"
 )
 
@@ -258,13 +259,14 @@ func TestLeavingAfterAnsweringStillPays(t *testing.T) {
 	_, _ = h.Enter(b, pin, now)
 	_, _ = h.Enter(c, pin, now)
 	_, _ = h.Start(1, now)
-	h.Leave(2, now)
-	if len(h.TakeResults()) != 0 {
+	if _, paid := h.Leave(2, now); paid != 0 || len(h.TakeResults()) != 0 {
 		t.Fatal("leaving without answering must not pay")
 	}
 	r := roomOf(h, 1)
 	r.Seats[2].Data.correct, r.Seats[2].Data.wrong, r.Seats[2].Data.earned = 2, 1, 20
-	h.Leave(3, now)
+	if _, paid := h.Leave(3, now); paid != points.Defaults.Participation+20 {
+		t.Fatalf("leaver is told the points kept: %d", paid)
+	}
 	res := h.TakeResults()
 	if len(res) != 2 || res[0].UserID != 3 || res[0].Points != points.Defaults.Participation+20 {
 		t.Fatalf("leaver paid for answers, last player wins: %+v", res)
@@ -286,5 +288,188 @@ func TestRoomIsLimitedToFourAndPruned(t *testing.T) {
 	h.Prune(now.Add(EmptyRoom + time.Second))
 	if rooms, players := h.Counts(); rooms != 0 || players != 0 {
 		t.Fatalf("offline room must be pruned: %d %d", rooms, players)
+	}
+}
+
+// finishSeat moves seat i onto square 100 through the normal reveal/move flow.
+func finishSeat(h *Hub, r *room, i int, now time.Time) time.Time {
+	g := &r.Game
+	g.turn = i
+	r.Seats[i].Data.position = 99
+	g.dice, g.from, g.landing, g.final = 1, 99, 100, 100
+	g.step, g.right, g.stepAt = StepReveal, true, now
+	now = now.Add(RevealTime)
+	h.Tick(now)
+	now = now.Add(moveDuration(g))
+	h.Tick(now)
+	return now
+}
+
+func TestFirstFinisherEarnsFinishBonus(t *testing.T) {
+	h := NewHub(31)
+	now := time.Unix(1_800_000_000, 0)
+	a, b := claims(1, 4), claims(2, 4)
+	h.Join(a, "id")
+	h.Join(b, "id")
+	pin, _ := h.Create(a, now)
+	_, _ = h.Enter(b, pin, now)
+	_, _ = h.Start(1, now)
+	r := roomOf(h, 1)
+	finishSeat(h, r, 1, now)
+	if r.Phase != PhaseDone || r.Game.winner != 1 || r.Game.first != 1 {
+		t.Fatalf("untimed game ends at the first finish: %s winner %d", r.Phase, r.Game.winner)
+	}
+	byUser := map[int64]Result{}
+	for _, res := range h.TakeResults() {
+		byUser[res.UserID] = res
+	}
+	if byUser[2].Points != Award(0, true)+FinishBonus || byUser[1].Points != Award(0, false) {
+		t.Fatalf("finish bonus goes to the first finisher only: %+v", byUser)
+	}
+	if st := h.State(b, now); st["finish_bonus_won"] != true || st["points"] != Award(0, true)+FinishBonus {
+		t.Fatalf("state shows the bonus: %v %v", st["finish_bonus_won"], st["points"])
+	}
+}
+
+func TestTimedGameRunsUntilTimeIsUp(t *testing.T) {
+	h := NewHub(33)
+	now := time.Unix(1_800_000_000, 0)
+	a, b, c := claims(1, 4), claims(2, 4), claims(3, 4)
+	for _, x := range []auth.Claims{a, b, c} {
+		h.Join(x, "id")
+	}
+	pin, _ := h.Create(a, now)
+	_, _ = h.Enter(b, pin, now)
+	_, _ = h.Enter(c, pin, now)
+	if _, err := h.SetDuration(2, 10, now); err != ErrNotHost {
+		t.Fatalf("guest set duration: %v", err)
+	}
+	if _, err := h.SetDuration(1, 7, now); err != ErrDuration {
+		t.Fatalf("unknown duration: %v", err)
+	}
+	if _, err := h.SetDuration(1, 10, now); err != nil {
+		t.Fatal(err)
+	}
+	if st := h.State(b, now); st["minutes"] != 10 {
+		t.Fatalf("lobby shows duration: %v", st["minutes"])
+	}
+	_, _ = h.Start(1, now)
+	if _, err := h.SetDuration(1, 5, now); err != ErrPhase {
+		t.Fatalf("duration changed while playing: %v", err)
+	}
+	r := roomOf(h, 1)
+	now = finishSeat(h, r, 2, now)
+	if r.Phase != PhasePlaying || r.Game.first != 2 || r.Seats[2].Data.finished != 1 {
+		t.Fatalf("timed game keeps going after a finish: %s first %d", r.Phase, r.Game.first)
+	}
+	if r.Game.turn == 2 {
+		t.Fatal("a finished seat takes no more turns")
+	}
+	r.Seats[1].Data.position = 50
+	r.Game.turn = 0
+	beginTurn(r, now)
+	h.Tick(r.Game.started.Add(10 * time.Minute))
+	if r.Phase != PhaseDone || h.State(a, now)["reason"] != "time" || r.Game.winner != 2 {
+		t.Fatalf("time up ends the game, first finisher wins: %s %v %d", r.Phase, h.State(a, now)["reason"], r.Game.winner)
+	}
+	m := h.TakeResults()[0].Match
+	if m.Players[2].Rank != 1 || m.Players[1].Rank != 2 || m.Players[0].Rank != 3 {
+		t.Fatalf("ranking finisher, then furthest: %+v", m.Players)
+	}
+}
+
+func TestTimedGameWithoutFinisherRanksFurthest(t *testing.T) {
+	h := NewHub(35)
+	now := time.Unix(1_800_000_000, 0)
+	a, b := claims(1, 4), claims(2, 4)
+	h.Join(a, "id")
+	h.Join(b, "id")
+	pin, _ := h.Create(a, now)
+	_, _ = h.Enter(b, pin, now)
+	_, _ = h.SetDuration(1, 5, now)
+	_, _ = h.Start(1, now)
+	r := roomOf(h, 1)
+	r.Seats[1].Data.position = 40
+	h.Tick(now.Add(5 * time.Minute))
+	if r.Phase != PhaseDone || r.Game.winner != 1 || r.Game.first != -1 {
+		t.Fatalf("furthest seat wins on time: %s %d", r.Phase, r.Game.winner)
+	}
+	for _, res := range h.TakeResults() {
+		if res.UserID == 2 && res.Points != Award(0, true) {
+			t.Fatalf("no finish bonus without a finisher: %+v", res)
+		}
+	}
+}
+
+func TestIdlePlayerIsAutoRolledAfterTenSeconds(t *testing.T) {
+	h := NewHub(37)
+	now := time.Unix(1_800_000_000, 0)
+	a, b := claims(1, 4), claims(2, 4)
+	h.Join(a, "id")
+	h.Join(b, "id")
+	pin, _ := h.Create(a, now)
+	_, _ = h.Enter(b, pin, now)
+	_, _ = h.Start(1, now)
+	r := roomOf(h, 1)
+	if RollTime != 10*time.Second {
+		t.Fatalf("turn wait must be 10 s: %v", RollTime)
+	}
+	h.Tick(now.Add(RollTime - time.Millisecond))
+	if r.Game.step != StepRoll {
+		t.Fatal("rolled too early")
+	}
+	now = now.Add(RollTime)
+	h.Tick(now)
+	if r.Game.step != StepQuestion || !r.Game.auto || h.State(a, now)["auto_roll"] != true {
+		t.Fatalf("auto roll: %s %v", r.Game.step, r.Game.auto)
+	}
+	q := h.State(a, now)["question"].(Message)
+	if q["remaining_ms"] != IdleAnswerTime.Milliseconds() {
+		t.Fatalf("idle player gets the short answer window: %v", q["remaining_ms"])
+	}
+	h.Tick(now.Add(IdleAnswerTime))
+	if r.Game.step != StepReveal || r.Game.right {
+		t.Fatalf("away player times out: %s", r.Game.step)
+	}
+}
+
+func TestHostDisconnectKeepsGameAndHandsOver(t *testing.T) {
+	h := NewHub(39)
+	now := time.Unix(1_800_000_000, 0)
+	a, b := claims(1, 4), claims(2, 4)
+	h.Join(a, "id")
+	h.Join(b, "id")
+	pin, _ := h.Create(a, now)
+	_, _ = h.AddLocal(1, "Adik", now)
+	_, _ = h.Enter(b, pin, now)
+	_, _ = h.Start(1, now)
+	r := roomOf(h, 1)
+	h.Offline(1)
+	h.HandOver(now)
+	if ids := h.HandOver(now.Add(lobby.HostGrace - time.Second)); len(ids) != 0 || r.Host != 1 {
+		t.Fatal("host keeps the role during the grace period")
+	}
+	h.HandOver(now.Add(lobby.HostGrace))
+	if r.Host != 2 || r.Phase != PhasePlaying {
+		t.Fatalf("host role moves, game continues: host %d %s", r.Host, r.Phase)
+	}
+	if r.Controls(2, 1) || !r.Controls(1, 1) {
+		t.Fatal("local seat stays with the device that added it")
+	}
+	// The game keeps going: offline turns are skipped, the guest plays on.
+	for i := 0; i < 3 && r.Game.turn != 2; i++ {
+		now = now.Add(time.Minute)
+		h.Tick(now)
+		h.Tick(now.Add(RevealTime))
+	}
+	if r.Game.turn != 2 || r.Phase != PhasePlaying {
+		t.Fatalf("turn must reach the connected guest: turn %d %s", r.Game.turn, r.Phase)
+	}
+	h.Join(a, "id")
+	if p, ok := h.Presence(1); !ok || p.Pin != pin || p.Phase != PhasePlaying || p.Host {
+		t.Fatalf("returning host finds the room: %+v %v", p, ok)
+	}
+	if st := h.State(a, now); st["you"] != 0 {
+		t.Fatalf("returning host gets the seat back: %v", st["you"])
 	}
 }

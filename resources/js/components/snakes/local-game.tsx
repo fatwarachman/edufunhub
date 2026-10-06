@@ -59,8 +59,14 @@ export const LocalGame = forwardRef<
         character?: CharacterLook | null;
         play: (sound: Sound) => void;
         muted?: boolean;
+        /** Active bank questions for Ular Tangga (built-in set as fallback). */
+        questions?: OfflineQuestion[];
     }
->(function LocalGame({ firstName, character, play, muted = false }, ref) {
+>(function LocalGame(
+    { firstName, character, play, muted = false, questions = [] },
+    ref,
+) {
+    const deck = questions.length > 0 ? questions : OFFLINE_QUESTIONS;
     const { t } = useTranslations();
     const generation = useRef(0);
     const timers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
@@ -161,11 +167,7 @@ export const LocalGame = forwardRef<
             setTarget(path[path.length - 1]);
             later(() => {
                 setShowDice(false);
-                setQuestion(
-                    OFFLINE_QUESTIONS[
-                        Math.floor(Math.random() * OFFLINE_QUESTIONS.length)
-                    ],
-                );
+                setQuestion(deck[Math.floor(Math.random() * deck.length)]);
                 setChoice(null);
                 addLog(t('snakes.log.rolled', { name: current.name, value }));
             }, 650);
@@ -327,7 +329,7 @@ export const LocalGame = forwardRef<
 
             <div className="grid gap-8 lg:grid-cols-12">
                 <div className="lg:col-span-8">
-                    <div className="relative mx-auto w-full max-w-[min(100%,calc(100dvh-240px))] rounded-3xl border-3 border-[#1f2a44] bg-white p-2 shadow-[5px_5px_0px_#1f2a44]">
+                    <div className="relative mx-auto w-full max-w-[min(100%,calc(100svh-240px))] rounded-3xl border-3 border-[#1f2a44] bg-white p-2 shadow-[5px_5px_0px_#1f2a44]">
                         <IllustratedSnakesBoard
                             players={players}
                             moving={moving}
@@ -337,7 +339,7 @@ export const LocalGame = forwardRef<
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-4 lg:col-span-4 lg:max-h-[calc(100dvh-200px)] lg:overflow-y-auto lg:pr-2">
+                <div className="flex flex-col gap-4 lg:col-span-4 lg:max-h-[calc(100svh-200px)] lg:overflow-y-auto lg:pr-2">
                     <div className="rounded-3xl border-3 border-[#1f2a44] bg-white p-4 shadow-[5px_5px_0px_#1f2a44] sm:p-5">
                         <div className="flex items-center justify-between border-b-2 border-[#1f2a44]/10 pb-3">
                             <div className="flex items-center gap-2">

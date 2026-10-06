@@ -207,23 +207,45 @@ func (g *Generator) For(subject string, players ...int64) *Generator {
 // mathAllowed reports whether generated arithmetic fits the chosen subject.
 func (g *Generator) mathAllowed() bool { return g.Subject == "" || g.Subject == "math" }
 
-// items returns the bank items for this generator's grade, game and subject.
-// A subject without questions for the grade falls back to the mix so a game
-// never stalls; Fallback then reports it to the players.
+// items returns the bank items for this generator's grade and subject. The
+// game's own pool comes first; when it has nothing for the subject (or for
+// the grade at all), the subject's questions distributed to other games and
+// then the built-in bank are used, so a chosen subject is never replaced by
+// generated arithmetic. Only when no pool has the subject does the game fall
+// back to the mix, and Fallback then reports it to the players.
 func (g *Generator) items(kind string) []Item {
-	all := Current().filter(kind, g.Grade, g.Game)
-	if g.Subject == "" {
-		return all
+	pools := [][]Item{
+		Current().filter(kind, g.Grade, g.Game),
+		Current().filter(kind, g.Grade, ""),
+		builtin.filter(kind, g.Grade, ""),
 	}
-	out := make([]Item, 0, len(all))
-	for _, it := range all {
-		if it.Subject == g.Subject {
-			out = append(out, it)
+	for _, pool := range pools {
+		if out := bySubject(pool, g.Subject); len(out) > 0 {
+			return out
 		}
 	}
-	if len(out) == 0 && g.Subject != "math" {
-		g.fellBack = true
-		return all
+	if g.Subject == "" || g.Subject == "math" {
+		return nil
+	}
+	g.fellBack = true
+	for _, pool := range pools {
+		if len(pool) > 0 {
+			return pool
+		}
+	}
+	return nil
+}
+
+// bySubject keeps the items of one subject ("" keeps every item).
+func bySubject(items []Item, subject string) []Item {
+	if subject == "" {
+		return items
+	}
+	out := make([]Item, 0, len(items))
+	for _, it := range items {
+		if it.Subject == subject {
+			out = append(out, it)
+		}
 	}
 	return out
 }
@@ -233,7 +255,10 @@ func (g *Generator) items(kind string) []Item {
 func (g *Generator) Fallback() bool { return g.fellBack }
 
 // pick draws the bank item the players have least recently seen (unseen
-// first, ties broken randomly), never repeating within one game.
+// first, ties broken randomly), never repeating within one game. Mixed and
+// math games continue with generated arithmetic once the pool is used up;
+// any other chosen subject starts its pool again instead of switching to
+// math.
 func (g *Generator) pick(items []Item) (Item, bool) {
 	if len(items) == 0 {
 		return Item{}, false
@@ -241,6 +266,15 @@ func (g *Generator) pick(items []Item) (Item, bool) {
 	// Mixed play with arithmetic keeps some generated math in the rotation.
 	if g.mathAllowed() && g.Rand.IntN(4) == 0 {
 		return Item{}, false
+	}
+	exhausted := true
+	for _, it := range items {
+		exhausted = exhausted && g.used[it.Key]
+	}
+	if exhausted && !g.mathAllowed() {
+		for _, it := range items {
+			delete(g.used, it.Key)
+		}
 	}
 	best, bestAge, found := Item{}, int64(0), false
 	for _, i := range g.Rand.Perm(len(items)) {

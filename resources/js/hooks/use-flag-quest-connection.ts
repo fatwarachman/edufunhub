@@ -5,6 +5,7 @@ import type {
     Point,
     WorldData,
 } from '@/lib/flag-quest/world';
+import { watchSocket } from '@/lib/socket-watchdog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type ConnectionStatus =
@@ -96,8 +97,10 @@ export function useFlagQuestConnection(
         }
         closed.current = false;
         let timer: ReturnType<typeof setTimeout> | undefined;
+        let seen = () => {};
 
         const handle = (raw: MessageEvent<string>) => {
+            seen();
             let msg: Record<string, unknown>;
             try {
                 msg = JSON.parse(raw.data);
@@ -240,12 +243,29 @@ export function useFlagQuestConnection(
             timer = setTimeout(connect, delay);
         };
 
+        const watchdog = watchSocket({
+            current: () => socket.current,
+            ping: () => send({ t: 'ping' }),
+            reconnect: () => {
+                const ws = socket.current;
+                if (ws) {
+                    ws.onclose = null;
+                    ws.close();
+                    socket.current = null;
+                }
+                clearTimeout(timer);
+                attempts.current = 0;
+                setStatus('reconnecting');
+                void connect();
+            },
+        });
+        seen = watchdog.seen;
+
         void connect();
-        const ping = setInterval(() => send({ t: 'ping' }), 20000);
         return () => {
+            watchdog.stop();
             closed.current = true;
             clearTimeout(timer);
-            clearInterval(ping);
             socket.current?.close();
             socket.current = null;
         };

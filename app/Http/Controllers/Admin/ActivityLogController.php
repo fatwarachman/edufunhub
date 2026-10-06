@@ -4,75 +4,124 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogPresenter;
+use App\Services\UserActivity;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Activitylog\Models\Activity;
 
 class ActivityLogController extends Controller
 {
+    /** Who performed an entry: a player, an admin or the system. */
+    public const SCOPES = ['users', 'admin', 'system'];
+
+    /** Player event properties shown in the summary and the detail view. */
+    private const DISPLAY_KEYS = ['game_key', 'mission', 'points', 'correct', 'wrong', 'badge', 'device', 'ip_address'];
+
+    public function __construct(private ActivityLogPresenter $presenter) {}
+
     /**
-     * Paginated activity log — props aligned to frontend `activity-log.tsx`.
-     *
-     * Frontend expects:
-     *   logs: PaginatedData<ActivityLog>
-     *   users: User[]
-     *   filters: { search, user_id, event, date_from, date_to }
-     *   eventTypes: string[]
+     * Paginated activity log: what players do in the app (sign in, open and
+     * finish games, earn badges), admin changes and system events.
      */
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'user_id', 'event', 'date_from', 'date_to']);
+        $filters = $request->only(['search', 'user_id', 'event', 'scope', 'date_from', 'date_to']);
+        $playerIds = User::query()->withTrashed()->where('is_superadmin', false)->select('id');
 
-        $query = DB::table('activity_log')
-            ->when($filters['search'] ?? null, fn ($q, $v) => $q->where('description', 'like', "%{$v}%"))
-            ->when($filters['user_id'] ?? null, fn ($q, $v) => $q->where('causer_id', $v))
-            ->when($filters['event'] ?? null, fn ($q, $v) => $q->where('log_name', $v))
-            ->when($filters['date_from'] ?? null, fn ($q, $v) => $q->where('created_at', '>=', $v))
-            ->when($filters['date_to'] ?? null, fn ($q, $v) => $q->where('created_at', '<=', $v . ' 23:59:59'))
-            ->orderByDesc('created_at');
+        $logs = Activity::query()
+            ->with(['causer' => fn ($query) => $query->withTrashed()])
+            ->tap(fn (Builder $query) => UserActivity::withoutHeartbeats($query))
+            ->when($filters['search'] ?? null, fn (Builder $q, string $v) => $q->where('description', 'like', '%'.addcslashes($v, '%_\\').'%'))
+            ->when($filters['user_id'] ?? null, fn (Builder $q, string $v) => $q->where(fn (Builder $q) => $q
+                ->where(fn (Builder $q) => $q->where('causer_type', User::class)->where('causer_id', (int) $v))
+                ->orWhere(fn (Builder $q) => $q->where('subject_type', User::class)->where('subject_id', (int) $v))))
+            ->when($filters['event'] ?? null, fn (Builder $q, string $v) => $q->where('event', $v))
+            ->when(($filters['scope'] ?? null) === 'users', fn (Builder $q) => $q->where('causer_type', User::class)->whereIn('causer_id', $playerIds))
+            ->when(($filters['scope'] ?? null) === 'admin', fn (Builder $q) => $q->whereNotNull('causer_id')
+                ->where(fn (Builder $q) => $q->where('causer_type', '!=', User::class)->orWhereNotIn('causer_id', $playerIds)))
+            ->when(($filters['scope'] ?? null) === 'system', fn (Builder $q) => $q->whereNull('causer_id'))
+            ->when($filters['date_from'] ?? null, fn (Builder $q, string $v) => $q->where('created_at', '>=', $v))
+            ->when($filters['date_to'] ?? null, fn (Builder $q, string $v) => $q->where('created_at', '<=', $v.' 23:59:59'))
+            ->latest('id')
+            ->paginate(25)
+            ->withQueryString();
 
-        $logs = $query->paginate(25)->withQueryString();
+        $this->presenter->preload($logs->getCollection());
 
-        // Map to ActivityLog shape expected by the frontend
-        $logs->getCollection()->transform(function (object $row): array {
-            return [
-                'id'           => $row->id,
-                'log_name'     => $row->log_name ?? 'default',
-                'description'  => $row->description,
-                'subject_type' => $row->subject_type,
-                'subject_id'   => $row->subject_id,
-                'causer_type'  => $row->causer_type,
-                'causer_id'    => $row->causer_id,
-                'causer_name'  => null,
-                'properties'   => json_decode($row->properties ?? '{}', true),
-                'created_at'   => $row->created_at,
-            ];
-        });
-
-        // Enrich causer names
-        $causerIds = $logs->getCollection()
-            ->pluck('causer_id')
-            ->unique()
-            ->filter()
-            ->values();
-
-        if ($causerIds->isNotEmpty()) {
-            $names = User::query()->whereIn('id', $causerIds)->pluck('name', 'id');
-            $logs->getCollection()->transform(function (array $row) use ($names): array {
-                $row['causer_name'] = $names[$row['causer_id']] ?? null;
-                return $row;
-            });
-        }
-
-        $users = User::query()->select('id', 'name', 'email')->orderBy('name')->get();
-        $eventTypes = DB::table('activity_log')->distinct()->pluck('log_name')->filter()->values();
+        $logs = $logs->through(fn (Activity $activity): array => [
+            'id' => $activity->id,
+            'log_name' => $activity->log_name ?? 'default',
+            'description' => $activity->description,
+            'event' => $activity->event,
+            'scope' => $this->scope($activity),
+            'causer' => $this->causer($activity),
+            'subject' => $activity->log_name === UserActivity::LOG_NAME ? null : $this->presenter->subject($activity),
+            'changed_fields' => $this->presenter->changedFields($activity),
+            'properties' => UserActivity::displayProperties($activity),
+            'created_at' => $activity->created_at?->toIso8601String(),
+        ]);
 
         return Inertia::render('admin/activity-log', [
-            'logs'       => $logs,
-            'users'      => $users,
-            'filters'    => (object) $filters,
-            'eventTypes' => $eventTypes,
+            'logs' => $logs,
+            'users' => User::query()->select('id', 'name', 'email')->orderBy('name')->get(),
+            'filters' => (object) $filters,
+            'eventTypes' => Activity::query()->whereNotNull('event')->distinct()->orderBy('event')->pluck('event')->values(),
+            'scopes' => self::SCOPES,
         ]);
+    }
+
+    /**
+     * Full detail of one entry for the admin modal: actor, subject, client
+     * and a field-by-field diff with secrets masked.
+     */
+    public function show(Request $request, Activity $activity): JsonResponse
+    {
+        $activity->load(['causer' => fn ($query) => $query->withTrashed()]);
+        $this->presenter->preload([$activity]);
+
+        return response()->json([
+            'id' => $activity->id,
+            'log_name' => $activity->log_name ?? 'default',
+            'description' => $activity->description,
+            'event' => $activity->event,
+            'scope' => $this->scope($activity),
+            'causer' => $this->causer($activity),
+            'subject' => $activity->log_name === UserActivity::LOG_NAME ? null : $this->presenter->subject($activity, $request->user()),
+            'changed_fields' => $this->presenter->changedFields($activity),
+            'diff' => $this->presenter->diff($activity),
+            'diff_mode' => $this->presenter->diffMode($activity),
+            'properties' => UserActivity::displayProperties($activity),
+            'extra' => array_values(array_filter(
+                $this->presenter->extraProperties($activity),
+                fn (array $row): bool => ! in_array($row['key'], self::DISPLAY_KEYS, true),
+            )),
+            'ip_address' => $activity->properties?->get('ip_address'),
+            'device' => $activity->properties?->get('device'),
+            'batch_uuid' => $activity->batch_uuid,
+            'created_at' => $activity->created_at?->toIso8601String(),
+        ]);
+    }
+
+    private function scope(Activity $activity): string
+    {
+        if ($activity->causer_id === null) {
+            return 'system';
+        }
+
+        return $activity->causer instanceof User && ! $activity->causer->is_superadmin ? 'users' : 'admin';
+    }
+
+    /** @return array{id: ?int, name: ?string, email: ?string, deleted_id?: int}|null */
+    private function causer(Activity $activity): ?array
+    {
+        if ($activity->causer instanceof User) {
+            return ['id' => $activity->causer->id, 'name' => $activity->causer->name, 'email' => $activity->causer->email];
+        }
+
+        return $activity->causer_id !== null ? ['id' => null, 'name' => null, 'email' => null, 'deleted_id' => (int) $activity->causer_id] : null;
     }
 }

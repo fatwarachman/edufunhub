@@ -349,6 +349,7 @@ function RaceTrack({ state }: { state: RushState }) {
                                 <PlayerAvatar
                                     character={row.avatar ?? row.character}
                                     seat={row.user_id}
+                                    userId={row.user_id}
                                     walking
                                 />
                                 {hits.has(row.user_id) && (
@@ -763,6 +764,7 @@ function HostLobby({
                                     <PlayerAvatar
                                         character={p.character}
                                         seat={p.user_id}
+                                        userId={p.user_id}
                                     />
                                 </span>
                                 <span className="w-full truncate text-center text-xs font-black">

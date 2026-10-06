@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PlayerProfile;
+use App\Services\ActiveGames;
 use App\Services\PlayerPortal;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -10,7 +11,7 @@ use Inertia\Response;
 
 class PortalController extends Controller
 {
-    public function __construct(public PlayerPortal $portal) {}
+    public function __construct(public PlayerPortal $portal, public ActiveGames $activeGames) {}
 
     public function __invoke(Request $request): Response
     {
@@ -32,6 +33,7 @@ class PortalController extends Controller
             'popularityDays' => PlayerPortal::POPULARITY_DAYS,
             'leaderboards' => $this->portal->leaderboards($user),
             'recent' => $this->portal->recentResults($user),
+            'activeGames' => Inertia::defer(fn (): array => $this->activeGames->for($user)),
         ]);
     }
 }

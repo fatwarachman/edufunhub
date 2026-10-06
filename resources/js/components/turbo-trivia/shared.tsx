@@ -1,4 +1,5 @@
 import { PlayerAvatar } from '@/components/player-avatar';
+import { ResponsiveTable } from '@/components/responsive-table';
 import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import {
@@ -979,6 +980,7 @@ export function Podium({
                             <PlayerAvatar
                                 character={p.character}
                                 seat={p.user_id}
+                                userId={p.user_id}
                             />
                             {p.rank === 1 && (
                                 <Crown
@@ -1013,84 +1015,82 @@ export function Podium({
                 ))}
             </ol>
             {ranking.length > 0 && (
-                <div className="mx-auto w-full max-w-3xl overflow-x-auto rounded-2xl border-2 border-[#1f2a44] bg-white">
-                    <table
-                        className="w-full min-w-[480px] text-sm"
-                        data-testid="tt-ranking"
-                    >
-                        <caption className="sr-only">
-                            {t('turboTrivia.result.ranking')}
-                        </caption>
-                        <thead>
-                            <tr className="border-b-2 border-[#1f2a44]/15 text-left text-xs font-black text-slate-600 uppercase">
-                                <th className="px-3 py-2">#</th>
-                                <th className="px-3 py-2">
-                                    {t('turboTrivia.result.player')}
-                                </th>
-                                <th className="px-3 py-2 text-right">
-                                    {t('turboTrivia.result.time')}
-                                </th>
-                                <th className="px-3 py-2 text-right">
-                                    {t('turboTrivia.result.correct')}
-                                </th>
-                                <th className="px-3 py-2 text-right">
-                                    {t('turboTrivia.result.accuracy')}
-                                </th>
-                                <th className="px-3 py-2 text-right">
-                                    {t('turboTrivia.result.items')}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {ranking.map((p) => (
-                                <tr
-                                    key={p.user_id}
-                                    className={cn(
-                                        'border-b border-[#1f2a44]/10 last:border-0',
-                                        p.user_id === youId && 'bg-[#ffe4e6]',
-                                    )}
-                                >
-                                    <td className="px-3 py-1.5 font-display font-black tabular-nums">
-                                        {p.rank}
-                                    </td>
-                                    <td className="px-3 py-1.5">
-                                        <span className="flex min-w-0 items-center gap-2">
-                                            <span className="size-7 shrink-0">
-                                                <PlayerAvatar
-                                                    character={p.character}
-                                                    seat={p.user_id}
-                                                />
-                                            </span>
-                                            <span className="truncate font-bold">
-                                                {p.name}
-                                            </span>
-                                        </span>
-                                    </td>
-                                    <td className="px-3 py-1.5 text-right font-black tabular-nums">
-                                        {p.finished
-                                            ? raceClock(p.race_ms)
-                                            : t('turboTrivia.result.dnf', {
-                                                  percent: Math.round(
-                                                      (p.progress /
-                                                          state.laps) *
-                                                          100,
-                                                  ),
-                                              })}
-                                    </td>
-                                    <td className="px-3 py-1.5 text-right tabular-nums">
-                                        {p.correct}
-                                    </td>
-                                    <td className="px-3 py-1.5 text-right tabular-nums">
-                                        {p.accuracy}%
-                                    </td>
-                                    <td className="px-3 py-1.5 text-right tabular-nums">
-                                        {p.items_used}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <ResponsiveTable
+                    variant="player"
+                    testId="tt-ranking"
+                    caption={t('turboTrivia.result.ranking')}
+                    className="mx-auto max-w-3xl data-[layout=table]:overflow-hidden data-[layout=table]:rounded-2xl data-[layout=table]:border-2 data-[layout=table]:border-[#1f2a44] data-[layout=table]:bg-white"
+                    rows={ranking}
+                    rowKey={(p) => p.user_id}
+                    rowClassName={(p) =>
+                        p.user_id === youId ? 'bg-[#ffe4e6]' : undefined
+                    }
+                    columns={[
+                        {
+                            key: 'rank',
+                            header: '#',
+                            primary: true,
+                            cellClassName:
+                                'font-display font-black tabular-nums',
+                            cell: (p) => p.rank,
+                        },
+                        {
+                            key: 'player',
+                            header: t('turboTrivia.result.player'),
+                            primary: true,
+                            cell: (p) => (
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <span className="size-7 shrink-0">
+                                        <PlayerAvatar
+                                            character={p.character}
+                                            seat={p.user_id}
+                                            userId={p.user_id}
+                                        />
+                                    </span>
+                                    <span className="min-w-0 font-bold [overflow-wrap:anywhere]">
+                                        {p.name}
+                                    </span>
+                                </span>
+                            ),
+                        },
+                        {
+                            key: 'time',
+                            header: t('turboTrivia.result.time'),
+                            align: 'right',
+                            summary: true,
+                            cellClassName: 'font-black tabular-nums',
+                            cell: (p) =>
+                                p.finished
+                                    ? raceClock(p.race_ms)
+                                    : t('turboTrivia.result.dnf', {
+                                          percent: Math.round(
+                                              (p.progress / state.laps) * 100,
+                                          ),
+                                      }),
+                        },
+                        {
+                            key: 'correct',
+                            header: t('turboTrivia.result.correct'),
+                            align: 'right',
+                            cellClassName: 'tabular-nums',
+                            cell: (p) => p.correct,
+                        },
+                        {
+                            key: 'accuracy',
+                            header: t('turboTrivia.result.accuracy'),
+                            align: 'right',
+                            cellClassName: 'tabular-nums',
+                            cell: (p) => `${p.accuracy}%`,
+                        },
+                        {
+                            key: 'items',
+                            header: t('turboTrivia.result.items'),
+                            align: 'right',
+                            cellClassName: 'tabular-nums',
+                            cell: (p) => p.items_used,
+                        },
+                    ]}
+                />
             )}
         </div>
     );

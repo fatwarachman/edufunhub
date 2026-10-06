@@ -351,6 +351,7 @@ function Scoreboard({
                             <PlayerAvatar
                                 character={p.character}
                                 seat={p.seat}
+                                userId={p.user_id}
                             />
                         </div>
                         <span className="min-w-0 flex-1 truncate text-sm font-black">

@@ -15,7 +15,7 @@ class PlayerProfile extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['color', 'accessory', 'nickname', 'grade', 'birth_date', 'school_name', 'gender', 'skin', 'hair_color', 'equipped'];
+    protected $fillable = ['color', 'accessory', 'nickname', 'grade', 'birth_date', 'school_name', 'school_city', 'gender', 'skin', 'hair_color', 'equipped'];
 
     public const COLORS = ['amber', 'coral', 'teal', 'violet'];
 
@@ -37,6 +37,8 @@ class PlayerProfile extends Model
     public const MAX_AGE = 100;
 
     public const SCHOOL_NAME_MAX = 120;
+
+    public const SCHOOL_CITY_MAX = 100;
 
     /** @var list<string> */
     protected $appends = ['age'];

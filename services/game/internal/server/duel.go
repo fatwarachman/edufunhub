@@ -40,7 +40,7 @@ func (s *Server) RunDuels(ctx context.Context, every time.Duration) {
 func (s *Server) tickDuels() {
 	now := s.cfg.Now()
 	ids, results := s.duels.Tick(now)
-	s.pushDuel(ids, now)
+	s.pushDuel(append(ids, s.duelRooms.HandOver(now, lobby.HostGrace)...), now)
 	for _, res := range results {
 		go s.report(res)
 	}

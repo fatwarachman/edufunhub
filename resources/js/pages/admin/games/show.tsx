@@ -16,6 +16,7 @@ import {
     type Bucket,
 } from '@/components/admin/game-stats';
 import { GameTabs } from '@/components/admin/game-tabs';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -48,6 +49,8 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
+
+const NUMERIC_CELL = 'text-foreground tabular-nums';
 
 interface PlayerRow {
     user_id: number;
@@ -117,10 +120,27 @@ interface ShowProps {
         accent: string;
         tracked: boolean;
         awardsPoints: boolean;
+        minPlayers: number;
+        maxPlayers: number;
     };
     days: number;
     stats: Stats;
     passPercent: number;
+}
+
+/** Player count label in admin copy (host/projector screens excluded). */
+function adminPlayerCount(min: number, max: number): string {
+    if (max <= 1) {
+        return tr('Solo');
+    }
+
+    if (min === max) {
+        return tr('{0} players', [max]);
+    }
+
+    return min <= 1
+        ? tr('{0}–{1} players', [min, max])
+        : tr('Min. {0} · max {1} players', [min, max]);
 }
 
 const RANGES = [
@@ -161,7 +181,7 @@ export default function GameShow({
                             <ArrowLeft className="size-4" />
                             {tr('All games')}
                         </Link>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                             <span
                                 className="size-3 shrink-0 rounded-full"
                                 style={{ background: game.accent }}
@@ -169,6 +189,16 @@ export default function GameShow({
                             <h2 className="font-display text-2xl font-bold text-foreground">
                                 {gameLabel(game.key)}
                             </h2>
+                            <span
+                                className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-medium whitespace-nowrap text-muted-foreground"
+                                data-testid="admin-game-players"
+                            >
+                                <UsersRound className="size-3.5" aria-hidden />
+                                {adminPlayerCount(
+                                    game.minPlayers,
+                                    game.maxPlayers,
+                                )}
+                            </span>
                         </div>
                         <p className="text-sm text-muted-foreground">
                             {tr('A play counts as successful when more than')}{' '}
@@ -568,198 +598,197 @@ export default function GameShow({
                             )}
                             icon={UsersRound}
                         >
-                            <div className="overflow-x-auto">
-                                <table className="w-full min-w-[760px] text-sm">
-                                    <thead>
-                                        <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-                                            <th className="py-2 pr-3 text-left font-medium">
-                                                {tr('Player')}
-                                            </th>
-                                            <th className="px-3 py-2 text-left font-medium">
-                                                {tr('School')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Age')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Grade')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Plays')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Points')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Best')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Accuracy')}
-                                            </th>
-                                            <th className="py-2 pl-3 text-right font-medium">
-                                                {tr('Last played')}
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border">
-                                        {stats.players.map((player) => (
-                                            <tr key={player.user_id}>
-                                                <td className="py-2.5 pr-3">
-                                                    <Link
-                                                        href={`/admin/users/${player.user_id}`}
-                                                        className="font-medium text-foreground hover:underline"
-                                                    >
-                                                        {player.name}
-                                                    </Link>
-                                                </td>
-                                                <td
-                                                    className="max-w-48 truncate px-3 py-2.5 text-muted-foreground"
-                                                    title={
-                                                        player.school_name ??
-                                                        undefined
-                                                    }
-                                                >
-                                                    {player.school_name ?? '—'}
-                                                </td>
-                                                <Cell>{player.age ?? '—'}</Cell>
-                                                <Cell>
-                                                    {player.grade ?? '—'}
-                                                </Cell>
-                                                <Cell>
-                                                    {formatNumber(player.plays)}
-                                                </Cell>
-                                                <Cell>
-                                                    {formatNumber(
-                                                        player.points,
-                                                    )}
-                                                </Cell>
-                                                <Cell>
-                                                    {formatNumber(player.best)}
-                                                </Cell>
-                                                <Cell
-                                                    className={rateTone(
-                                                        player.accuracy,
-                                                    )}
-                                                >
-                                                    {formatPercent(
-                                                        player.accuracy,
-                                                    )}
-                                                </Cell>
-                                                <td className="py-2.5 pl-3 text-right whitespace-nowrap text-muted-foreground">
-                                                    {formatDateTime(
-                                                        player.last_played_at,
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <ResponsiveTable
+                                testId="admin-game-players-table"
+                                rows={stats.players}
+                                rowKey={(row) => row.user_id}
+                                columns={[
+                                    {
+                                        key: 'player',
+                                        header: tr('Player'),
+                                        primary: true,
+                                        cell: (row) => (
+                                            <Link
+                                                href={`/admin/users/${row.user_id}`}
+                                                className="font-medium text-foreground hover:underline"
+                                            >
+                                                {row.name}
+                                            </Link>
+                                        ),
+                                    },
+                                    {
+                                        key: 'school',
+                                        header: tr('School'),
+                                        cellClassName:
+                                            'max-w-48 truncate text-muted-foreground',
+                                        cell: (row) => (
+                                            <span
+                                                title={
+                                                    row.school_name ?? undefined
+                                                }
+                                            >
+                                                {row.school_name ?? '—'}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'age',
+                                        header: tr('Age'),
+                                        align: 'right',
+                                        cellClassName: NUMERIC_CELL,
+                                        cell: (row) => row.age ?? '—',
+                                    },
+                                    {
+                                        key: 'grade',
+                                        header: tr('Grade'),
+                                        align: 'right',
+                                        cellClassName: NUMERIC_CELL,
+                                        cell: (row) => row.grade ?? '—',
+                                    },
+                                    {
+                                        key: 'plays',
+                                        header: tr('Plays'),
+                                        align: 'right',
+                                        summary: true,
+                                        cellClassName: NUMERIC_CELL,
+                                        cell: (row) => formatNumber(row.plays),
+                                    },
+                                    {
+                                        key: 'points',
+                                        header: tr('Points'),
+                                        align: 'right',
+                                        summary: true,
+                                        cellClassName: NUMERIC_CELL,
+                                        cell: (row) => formatNumber(row.points),
+                                    },
+                                    {
+                                        key: 'best',
+                                        header: tr('Best'),
+                                        align: 'right',
+                                        cellClassName: NUMERIC_CELL,
+                                        cell: (row) => formatNumber(row.best),
+                                    },
+                                    {
+                                        key: 'accuracy',
+                                        header: tr('Accuracy'),
+                                        align: 'right',
+                                        cell: (row) => (
+                                            <span
+                                                className={cn(
+                                                    'text-foreground tabular-nums',
+                                                    rateTone(row.accuracy),
+                                                )}
+                                            >
+                                                {formatPercent(row.accuracy)}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'last_played',
+                                        header: tr('Last played'),
+                                        align: 'right',
+                                        cellClassName:
+                                            'whitespace-nowrap text-muted-foreground',
+                                        cell: (row) =>
+                                            formatDateTime(row.last_played_at),
+                                    },
+                                ]}
+                            />
                         </Panel>
 
                         <Panel title={tr('Recent plays')} icon={History}>
-                            <div className="overflow-x-auto">
-                                <table className="w-full min-w-[720px] text-sm">
-                                    <thead>
-                                        <tr className="border-b border-border text-xs tracking-wider text-muted-foreground uppercase">
-                                            <th className="py-2 pr-3 text-left font-medium">
-                                                {tr('Player')}
-                                            </th>
-                                            <th className="px-3 py-2 text-left font-medium">
-                                                {tr('Mission')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Grade')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Correct')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Accuracy')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Points')}
-                                            </th>
-                                            <th className="px-3 py-2 text-right font-medium">
-                                                {tr('Duration')}
-                                            </th>
-                                            <th className="py-2 pl-3 text-right font-medium">
-                                                {tr('Played')}
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border">
-                                        {stats.recent.map((play) => (
-                                            <tr key={play.id}>
-                                                <td className="py-2.5 pr-3">
-                                                    <Link
-                                                        href={`/admin/users/${play.user_id}`}
-                                                        className="font-medium text-foreground hover:underline"
-                                                    >
-                                                        {play.name ??
-                                                            `#${play.user_id}`}
-                                                    </Link>
-                                                </td>
-                                                <td className="px-3 py-2.5 text-muted-foreground capitalize">
-                                                    {play.mission ?? '—'}
-                                                </td>
-                                                <Cell>{play.grade ?? '—'}</Cell>
-                                                <Cell>
-                                                    {play.correct === null
-                                                        ? '—'
-                                                        : `${play.correct}/${(play.correct ?? 0) + (play.wrong ?? 0)}`}
-                                                </Cell>
-                                                <Cell
-                                                    className={rateTone(
-                                                        play.accuracy,
-                                                    )}
-                                                >
-                                                    {formatPercent(
-                                                        play.accuracy,
-                                                    )}
-                                                </Cell>
-                                                <Cell>
-                                                    {formatNumber(play.points)}
-                                                </Cell>
-                                                <Cell>
-                                                    {formatDuration(
-                                                        play.duration_seconds,
-                                                    )}
-                                                </Cell>
-                                                <td className="py-2.5 pl-3 text-right whitespace-nowrap text-muted-foreground">
-                                                    {formatDateTime(
-                                                        play.played_at,
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                            <ResponsiveTable
+                                testId="admin-game-recent-table"
+                                rows={stats.recent}
+                                rowKey={(row) => row.id}
+                                columns={[
+                                    {
+                                        key: 'player',
+                                        header: tr('Player'),
+                                        primary: true,
+                                        cell: (row) => (
+                                            <Link
+                                                href={`/admin/users/${row.user_id}`}
+                                                className="font-medium text-foreground hover:underline"
+                                            >
+                                                {row.name ?? `#${row.user_id}`}
+                                            </Link>
+                                        ),
+                                    },
+                                    {
+                                        key: 'mission',
+                                        header: tr('Mission'),
+                                        cellClassName:
+                                            'text-muted-foreground capitalize',
+                                        cell: (row) => row.mission ?? '—',
+                                    },
+                                    {
+                                        key: 'grade',
+                                        header: tr('Grade'),
+                                        align: 'right',
+                                        cellClassName: NUMERIC_CELL,
+                                        cell: (row) => row.grade ?? '—',
+                                    },
+                                    {
+                                        key: 'correct',
+                                        header: tr('Correct'),
+                                        align: 'right',
+                                        cellClassName: NUMERIC_CELL,
+                                        cell: (row) =>
+                                            row.correct === null
+                                                ? '—'
+                                                : `${row.correct}/${(row.correct ?? 0) + (row.wrong ?? 0)}`,
+                                    },
+                                    {
+                                        key: 'accuracy',
+                                        header: tr('Accuracy'),
+                                        align: 'right',
+                                        cell: (row) => (
+                                            <span
+                                                className={cn(
+                                                    'text-foreground tabular-nums',
+                                                    rateTone(row.accuracy),
+                                                )}
+                                            >
+                                                {formatPercent(row.accuracy)}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'points',
+                                        header: tr('Points'),
+                                        align: 'right',
+                                        summary: true,
+                                        cellClassName: NUMERIC_CELL,
+                                        cell: (row) => formatNumber(row.points),
+                                    },
+                                    {
+                                        key: 'duration',
+                                        header: tr('Duration'),
+                                        align: 'right',
+                                        cellClassName: NUMERIC_CELL,
+                                        cell: (row) =>
+                                            formatDuration(
+                                                row.duration_seconds,
+                                            ),
+                                    },
+                                    {
+                                        key: 'played',
+                                        header: tr('Played'),
+                                        align: 'right',
+                                        summary: true,
+                                        cellClassName:
+                                            'whitespace-nowrap text-muted-foreground',
+                                        cell: (row) =>
+                                            formatDateTime(row.played_at),
+                                    },
+                                ]}
+                            />
                         </Panel>
                     </>
                 )}
             </div>
         </>
-    );
-}
-
-function Cell({
-    children,
-    className,
-}: {
-    children: ReactNode;
-    className?: string;
-}) {
-    return (
-        <td
-            className={cn(
-                'px-3 py-2.5 text-right text-foreground tabular-nums',
-                className,
-            )}
-        >
-            {children}
-        </td>
     );
 }
 

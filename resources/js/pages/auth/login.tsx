@@ -1,4 +1,5 @@
 import { Google } from '@/components/brand-icons';
+import { BrandWordmark } from '@/components/brand-wordmark';
 import InputError from '@/components/input-error';
 import { BackButton, NavButton } from '@/components/site-nav';
 import TextLink from '@/components/text-link';
@@ -59,9 +60,7 @@ export default function Login({
                         <span className="auth-brand-mark">
                             <Gamepad2 className="size-6" />
                         </span>
-                        <span>
-                            edufun<span>hub</span>.com
-                        </span>
+                        <BrandWordmark />
                     </a>
                     <div className="edu-nav-bar">
                         <BackButton href="/" label={t('login.back')} external />

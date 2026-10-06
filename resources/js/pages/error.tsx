@@ -1,3 +1,4 @@
+import { BrandWordmark } from '@/components/brand-wordmark';
 import { NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
@@ -52,9 +53,7 @@ export default function ErrorPage({ status }: ErrorPageProps) {
                     <span className="auth-brand-mark">
                         <Gamepad2 className="size-6" />
                     </span>
-                    <span>
-                        edufun<span>hub</span>.com
-                    </span>
+                    <BrandWordmark />
                 </a>
             </header>
             <main className="auth-main">

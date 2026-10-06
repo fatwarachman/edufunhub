@@ -14,6 +14,7 @@ import {
     rateTone,
 } from '@/components/admin/game-stats';
 import { GameTabs } from '@/components/admin/game-tabs';
+import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -230,150 +231,107 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                         />
                     ) : (
                         <div className="flex flex-col gap-4">
-                            <div className="-mx-5 -mt-5 overflow-x-auto">
-                                <table className="w-full min-w-[720px] text-sm">
-                                    <thead className="border-b border-border bg-muted/40 text-left text-xs text-muted-foreground uppercase">
-                                        <tr>
-                                            <th className="px-5 py-3 font-medium">
-                                                {tr('Answer')}
-                                            </th>
-                                            <th className="px-3 py-3 font-medium">
-                                                {tr('Clue')}
-                                            </th>
-                                            <th className="px-3 py-3 font-medium">
-                                                {tr('Level')}
-                                            </th>
-                                            <th className="px-3 py-3 text-right font-medium">
-                                                {tr('Used')}
-                                            </th>
-                                            <th className="px-3 py-3 text-right font-medium">
-                                                {tr('Solved')}
-                                            </th>
-                                            <th className="px-3 py-3 font-medium">
-                                                {tr('Status')}
-                                            </th>
-                                            <th className="px-5 py-3" />
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border">
-                                        {words.data.map((word) => (
-                                            <tr
-                                                key={word.id}
+                            <ResponsiveTable
+                                testId="crossword-words-table"
+                                rows={words.data}
+                                rowKey={(word) => word.id}
+                                actions={(word) => (
+                                    <WordActions
+                                        word={word}
+                                        onDelete={setDeleting}
+                                    />
+                                )}
+                                columns={[
+                                    {
+                                        key: 'answer',
+                                        header: tr('Answer'),
+                                        primary: true,
+                                        cell: (word) => (
+                                            <span
                                                 data-testid={`word-row-${word.answer}`}
-                                                className="hover:bg-muted/30"
                                             >
-                                                <td className="px-5 py-2.5">
-                                                    <span className="font-mono font-semibold tracking-wider text-foreground">
-                                                        {word.answer}
+                                                <span className="font-mono font-semibold tracking-wider text-foreground">
+                                                    {word.answer}
+                                                </span>
+                                                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                                                    {word.answer.length}
+                                                </span>
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'clue',
+                                        header: tr('Clue'),
+                                        cellClassName: 'max-w-[340px]',
+                                        cell: (word) => (
+                                            <span className="flex flex-col">
+                                                <span className="text-foreground">
+                                                    {word.clue_id}
+                                                </span>
+                                                {word.clue_en && (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {word.clue_en}
                                                     </span>
-                                                    <span className="ml-2 text-xs text-muted-foreground">
-                                                        {word.answer.length}
-                                                    </span>
-                                                </td>
-                                                <td className="max-w-[340px] px-3 py-2.5">
-                                                    <p className="text-foreground">
-                                                        {word.clue_id}
-                                                    </p>
-                                                    {word.clue_en && (
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {word.clue_en}
-                                                        </p>
-                                                    )}
-                                                </td>
-                                                <td className="px-3 py-2.5 text-muted-foreground">
-                                                    {word.level}
-                                                </td>
-                                                <td className="px-3 py-2.5 text-right tabular-nums">
-                                                    {formatNumber(
-                                                        word.times_used,
-                                                    )}
-                                                </td>
-                                                <td
-                                                    className={cn(
-                                                        'px-3 py-2.5 text-right tabular-nums',
-                                                        rateTone(
-                                                            word.solve_rate,
-                                                        ),
-                                                    )}
-                                                >
-                                                    {formatPercent(
-                                                        word.solve_rate,
-                                                    )}
-                                                </td>
-                                                <td className="px-3 py-2.5">
-                                                    <StatusPill
-                                                        active={word.is_active}
-                                                    />
-                                                </td>
-                                                <td className="px-5 py-2.5">
-                                                    <div className="flex justify-end gap-1">
-                                                        <Link
-                                                            href={`/admin/games/crossword/words/${word.id}/edit`}
-                                                            className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                            aria-label={tr(
-                                                                'Edit {0}',
-                                                                [word.answer],
-                                                            )}
-                                                        >
-                                                            <Pencil className="size-4" />
-                                                        </Link>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                router.patch(
-                                                                    `/admin/games/crossword/words/${word.id}/toggle`,
-                                                                    {},
-                                                                    {
-                                                                        preserveScroll: true,
-                                                                    },
-                                                                )
-                                                            }
-                                                            data-testid={`word-toggle-${word.answer}`}
-                                                            className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                            aria-label={
-                                                                word.is_active
-                                                                    ? tr(
-                                                                          'Hide {0}',
-                                                                          [
-                                                                              word.answer,
-                                                                          ],
-                                                                      )
-                                                                    : tr(
-                                                                          'Show {0}',
-                                                                          [
-                                                                              word.answer,
-                                                                          ],
-                                                                      )
-                                                            }
-                                                        >
-                                                            {word.is_active ? (
-                                                                <EyeOff className="size-4" />
-                                                            ) : (
-                                                                <Eye className="size-4" />
-                                                            )}
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                setDeleting(
-                                                                    word,
-                                                                )
-                                                            }
-                                                            className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                                                            aria-label={tr(
-                                                                'Delete {0}',
-                                                                [word.answer],
-                                                            )}
-                                                        >
-                                                            <Trash2 className="size-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                )}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'level',
+                                        header: tr('Level'),
+                                        cellClassName: 'text-muted-foreground',
+                                        cell: (word) => word.level,
+                                    },
+                                    {
+                                        key: 'used',
+                                        header: tr('Used'),
+                                        align: 'right',
+                                        cellClassName: 'tabular-nums',
+                                        cell: (word) =>
+                                            formatNumber(word.times_used),
+                                    },
+                                    {
+                                        key: 'solved',
+                                        header: tr('Solved'),
+                                        align: 'right',
+                                        cell: (word) => (
+                                            <span
+                                                className={cn(
+                                                    'tabular-nums',
+                                                    rateTone(word.solve_rate),
+                                                )}
+                                            >
+                                                {formatPercent(word.solve_rate)}
+                                            </span>
+                                        ),
+                                    },
+                                    {
+                                        key: 'status',
+                                        header: tr('Status'),
+                                        summary: true,
+                                        cell: (word) => (
+                                            <StatusPill
+                                                active={word.is_active}
+                                            />
+                                        ),
+                                    },
+                                    {
+                                        key: 'actions',
+                                        header: (
+                                            <span className="sr-only">
+                                                {tr('Actions')}
+                                            </span>
+                                        ),
+                                        hideInAccordion: true,
+                                        cell: (word) => (
+                                            <WordActions
+                                                word={word}
+                                                onDelete={setDeleting}
+                                            />
+                                        ),
+                                    },
+                                ]}
+                            />
                             <SimplePagination {...words} />
                         </div>
                     )}
@@ -409,5 +367,56 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
                 }
             />
         </AdminLayout>
+    );
+}
+
+function WordActions({
+    word,
+    onDelete,
+}: {
+    word: Word;
+    onDelete: (word: Word) => void;
+}) {
+    return (
+        <div className="flex justify-end gap-1">
+            <Link
+                href={`/admin/games/crossword/words/${word.id}/edit`}
+                className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label={tr('Edit {0}', [word.answer])}
+            >
+                <Pencil className="size-4" />
+            </Link>
+            <button
+                type="button"
+                onClick={() =>
+                    router.patch(
+                        `/admin/games/crossword/words/${word.id}/toggle`,
+                        {},
+                        { preserveScroll: true },
+                    )
+                }
+                data-testid={`word-toggle-${word.answer}`}
+                className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label={
+                    word.is_active
+                        ? tr('Hide {0}', [word.answer])
+                        : tr('Show {0}', [word.answer])
+                }
+            >
+                {word.is_active ? (
+                    <EyeOff className="size-4" />
+                ) : (
+                    <Eye className="size-4" />
+                )}
+            </button>
+            <button
+                type="button"
+                onClick={() => onDelete(word)}
+                className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                aria-label={tr('Delete {0}', [word.answer])}
+            >
+                <Trash2 className="size-4" />
+            </button>
+        </div>
     );
 }

@@ -1,4 +1,6 @@
+import { BrandWordmark } from '@/components/brand-wordmark';
 import InputError from '@/components/input-error';
+import { SchoolPicker } from '@/components/school-picker';
 import { BackButton, NavButton } from '@/components/site-nav';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -14,7 +16,6 @@ import {
     Loader2,
     Lock,
     Mail,
-    School,
     User,
 } from 'lucide-react';
 import { type FormEventHandler, useState } from 'react';
@@ -106,6 +107,7 @@ export default function Register() {
         email: '',
         birth_date: '',
         school_name: '',
+        school_city: '',
         password: '',
         password_confirmation: '',
     });
@@ -132,9 +134,7 @@ export default function Register() {
                         <span className="auth-brand-mark">
                             <Gamepad2 className="size-6" />
                         </span>
-                        <span>
-                            edufun<span>hub</span>.com
-                        </span>
+                        <BrandWordmark />
                     </a>
                     <div className="edu-nav-bar">
                         <BackButton href="/" label={t('login.back')} external />
@@ -268,37 +268,23 @@ export default function Register() {
                                         />
                                     </div>
 
-                                    {/* Last school */}
-                                    <div className="flex flex-col gap-1.5">
-                                        <Label htmlFor="school_name">
-                                            {t('register.schoolName')}
-                                        </Label>
-                                        <div className="relative">
-                                            <School className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="school_name"
-                                                type="text"
-                                                name="school_name"
-                                                value={data.school_name}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'school_name',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder={t(
-                                                    'register.schoolNamePlaceholder',
-                                                )}
-                                                maxLength={120}
-                                                autoComplete="organization"
-                                                required
-                                            />
-                                        </div>
-                                        <InputError
-                                            message={errors.school_name}
-                                        />
-                                    </div>
+                                    {/* Last school + city */}
+                                    <SchoolPicker
+                                        variant="auth"
+                                        endpoint="/register/schools"
+                                        idPrefix="school"
+                                        schoolName={data.school_name}
+                                        schoolCity={data.school_city}
+                                        onSchoolNameChange={(value) =>
+                                            setData('school_name', value)
+                                        }
+                                        onSchoolCityChange={(value) =>
+                                            setData('school_city', value)
+                                        }
+                                        schoolError={errors.school_name}
+                                        cityError={errors.school_city}
+                                        required
+                                    />
 
                                     {/* Password */}
                                     <div className="flex flex-col gap-1.5">

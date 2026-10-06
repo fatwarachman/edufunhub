@@ -462,6 +462,7 @@ function HostLobby({
                                     <PlayerAvatar
                                         character={p.character}
                                         seat={p.user_id}
+                                        userId={p.user_id}
                                     />
                                 </span>
                                 <span className="w-full truncate text-center text-xs font-black">

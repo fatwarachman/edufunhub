@@ -8,6 +8,7 @@ use App\Http\Requests\Teacher\TeacherQuestionRequest;
 use App\Models\Question;
 use App\Models\QuestionCompensationRate;
 use App\Models\Subject;
+use App\Services\ActivityLogPresenter;
 use App\Services\TeacherQuestionImporter;
 use App\Services\TeacherQuestionStats;
 use Illuminate\Database\Eloquent\Builder;
@@ -99,7 +100,7 @@ class TeacherQuestionController extends Controller
     {
         $question->update([...$request->questionAttributes(), 'updated_by' => $request->user()->id]);
 
-        activity()->causedBy($request->user())->performedOn($question)->log('Teacher updated question');
+        activity()->causedBy($request->user())->performedOn($question)->withProperties(ActivityLogPresenter::changes($question))->log('Teacher updated question');
 
         return redirect()->route('teacher.questions.index')->with('success', __('questions.updated'));
     }
@@ -108,7 +109,7 @@ class TeacherQuestionController extends Controller
     {
         Gate::authorize('delete', $question);
 
-        activity()->causedBy($request->user())->performedOn($question)->log('Teacher deleted question');
+        activity()->causedBy($request->user())->performedOn($question)->withProperties(ActivityLogPresenter::snapshotOf($question))->log('Teacher deleted question');
         $question->delete();
 
         return redirect()->route('teacher.questions.index')->with('success', __('questions.deleted'));

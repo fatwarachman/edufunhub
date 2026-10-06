@@ -3,6 +3,7 @@ package hub
 import (
 	"encoding/json"
 	"testing"
+	"time"
 )
 
 func TestPublishReachesEverySocketOfEachUser(t *testing.T) {
@@ -44,5 +45,70 @@ func TestSlowClientIsDroppedAndLimitPerUser(t *testing.T) {
 	}
 	if _, sockets := h.Stats(); sockets != MaxConnsPerUser {
 		t.Fatalf("sockets %d", sockets)
+	}
+}
+
+func drain(c *Client) []string {
+	var out []string
+	for {
+		select {
+		case e := <-c.Send:
+			out = append(out, string(e))
+		default:
+			return out
+		}
+	}
+}
+
+func TestWatchersLearnPresenceChanges(t *testing.T) {
+	h := NewWithGrace(0)
+	watcher := h.Register(1)
+	friend := h.Register(2)
+	if got := h.Watch(watcher, []int64{2, 3, 2, 0}); len(got) != 1 || got[0] != 2 {
+		t.Fatalf("initial online %v", got)
+	}
+	h.Unregister(friend)
+	if got := drain(watcher); len(got) != 1 || got[0] != `{"online":false,"t":"presence","user":2}` {
+		t.Fatalf("offline event %v", got)
+	}
+	h.Register(3)
+	second := h.Register(3)
+	if got := drain(watcher); len(got) != 1 || got[0] != `{"online":true,"t":"presence","user":3}` {
+		t.Fatalf("online event once per user %v", got)
+	}
+	h.Unregister(second)
+	if got := drain(watcher); len(got) != 0 {
+		t.Fatalf("user with another socket must stay online %v", got)
+	}
+	h.Watch(watcher, nil)
+	h.Register(2)
+	if got := drain(watcher); len(got) != 0 {
+		t.Fatalf("unwatched users must not notify %v", got)
+	}
+}
+
+func TestOfflineGraceHidesQuickReconnects(t *testing.T) {
+	h := NewWithGrace(40 * time.Millisecond)
+	watcher := h.Register(1)
+	friend := h.Register(2)
+	h.Watch(watcher, []int64{2})
+	h.Unregister(friend)
+	if got := h.Online([]int64{2}); len(got) != 1 {
+		t.Fatal("user must stay online during the grace period")
+	}
+	h.Register(2)
+	time.Sleep(80 * time.Millisecond)
+	if got := drain(watcher); len(got) != 0 {
+		t.Fatalf("reload within grace must be silent %v", got)
+	}
+	for c := range h.clients[2] {
+		h.Unregister(c)
+	}
+	time.Sleep(80 * time.Millisecond)
+	if got := drain(watcher); len(got) != 1 || got[0] != `{"online":false,"t":"presence","user":2}` {
+		t.Fatalf("offline after grace %v", got)
+	}
+	if got := h.Online([]int64{2}); len(got) != 0 {
+		t.Fatalf("still online %v", got)
 	}
 }

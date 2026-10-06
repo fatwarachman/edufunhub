@@ -75,9 +75,9 @@ it('serves the active sorter bank only with a valid signature, with bin indexes 
 });
 
 it('shows the sorter bank admin page to superadmins only', function (): void {
-    $this->actingAs(User::factory()->create())->get('/admin/sorter-sets')->assertForbidden();
+    $this->actingAs(User::factory()->create())->get('/admin/games/port-sorter/sets')->assertForbidden();
 
-    $this->actingAs($this->superadmin)->get('/admin/sorter-sets')->assertOk()->assertInertia(fn (Assert $page) => $page
+    $this->actingAs($this->superadmin)->get('/admin/games/port-sorter/sets')->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('admin/sorter-sets/index')
         ->has('sets', 2)
         ->where('sets.0.key', 'ports-basic')
@@ -86,7 +86,7 @@ it('shows the sorter bank admin page to superadmins only', function (): void {
 });
 
 it('creates a sorter set with any bins, deriving keys and normalising colours', function (): void {
-    $this->actingAs($this->superadmin)->post('/admin/sorter-sets', sorterPayload())->assertSessionHasNoErrors();
+    $this->actingAs($this->superadmin)->post('/admin/games/port-sorter/sets', sorterPayload())->assertSessionHasNoErrors();
 
     $set = SorterSet::query()->where('key', 'layer-osi-perangkat')->sole();
     expect(array_column($set->bins, 'key'))->toBe(['layer-1', 'layer-2', 'layer-3'])
@@ -97,7 +97,7 @@ it('creates a sorter set with any bins, deriving keys and normalising colours', 
 });
 
 it('rejects broken sorter sets', function (array $overrides, string $error): void {
-    $this->actingAs($this->superadmin)->post('/admin/sorter-sets', sorterPayload($overrides))->assertSessionHasErrors($error);
+    $this->actingAs($this->superadmin)->post('/admin/games/port-sorter/sets', sorterPayload($overrides))->assertSessionHasErrors($error);
 
     expect(SorterSet::query()->count())->toBe(2);
 })->with([
@@ -116,9 +116,9 @@ it('rejects broken sorter sets', function (array $overrides, string $error): voi
 it('updates a sorter set but keeps its key, and forbids non-superadmins', function (): void {
     $set = SorterSet::factory()->create(['key' => 'osi-devices']);
 
-    $this->actingAs(User::factory()->create())->put("/admin/sorter-sets/{$set->id}", sorterPayload())->assertForbidden();
+    $this->actingAs(User::factory()->create())->put("/admin/games/port-sorter/sets/{$set->id}", sorterPayload())->assertForbidden();
 
-    $this->actingAs($this->superadmin)->put("/admin/sorter-sets/{$set->id}", sorterPayload(['key' => 'renamed', 'title_id' => 'Judul Baru']))
+    $this->actingAs($this->superadmin)->put("/admin/games/port-sorter/sets/{$set->id}", sorterPayload(['key' => 'renamed', 'title_id' => 'Judul Baru']))
         ->assertSessionHasNoErrors();
 
     expect($set->fresh()->key)->toBe('osi-devices')->and($set->fresh()->title_id)->toBe('Judul Baru');
@@ -128,13 +128,29 @@ it('toggles and deletes sorter sets but always keeps one active', function (): v
     $basic = SorterSet::query()->where('key', 'ports-basic')->sole();
     $services = SorterSet::query()->where('key', 'ports-services')->sole();
 
-    $this->actingAs($this->superadmin)->patch("/admin/sorter-sets/{$services->id}/toggle")->assertSessionHasNoErrors();
+    $this->actingAs($this->superadmin)->patch("/admin/games/port-sorter/sets/{$services->id}/toggle")->assertSessionHasNoErrors();
     expect($services->fresh()->is_active)->toBeFalse();
 
-    $this->patch("/admin/sorter-sets/{$basic->id}/toggle")->assertSessionHasErrors('sorter_set');
-    $this->delete("/admin/sorter-sets/{$basic->id}")->assertSessionHasErrors('sorter_set');
+    $this->patch("/admin/games/port-sorter/sets/{$basic->id}/toggle")->assertSessionHasErrors('sorter_set');
+    $this->delete("/admin/games/port-sorter/sets/{$basic->id}")->assertSessionHasErrors('sorter_set');
     expect($basic->fresh()->is_active)->toBeTrue();
 
-    $this->delete("/admin/sorter-sets/{$services->id}")->assertSessionHasNoErrors();
+    $this->delete("/admin/games/port-sorter/sets/{$services->id}")->assertSessionHasNoErrors();
     expect(SorterSet::query()->count())->toBe(1);
+});
+
+it('moves the sorter bank under the port sorter game page and redirects old links', function (): void {
+    $set = SorterSet::query()->firstOrFail();
+
+    expect(route('admin.sorter-sets.index', absolute: false))->toBe('/admin/games/port-sorter/sets')
+        ->and(route('admin.sorter-sets.toggle', $set, false))->toBe("/admin/games/port-sorter/sets/{$set->id}/toggle");
+
+    $this->actingAs($this->superadmin)->get('/admin/sorter-sets?page=2')->assertStatus(301)->assertRedirect('/admin/games/port-sorter/sets?page=2');
+    $this->get("/admin/sorter-sets/{$set->id}")->assertStatus(301)->assertRedirect("/admin/games/port-sorter/sets/{$set->id}");
+
+    $this->get('/admin/games/port-sorter')->assertOk()->assertInertia(fn (Assert $page) => $page->component('admin/games/show')->where('game.key', 'port-sorter'));
+
+    $tabs = (string) file_get_contents(resource_path('js/components/admin/game-tabs.tsx'));
+    expect($tabs)->toContain("'/admin/games/port-sorter/sets'")
+        ->and((string) file_get_contents(resource_path('js/pages/admin/sorter-sets/index.tsx')))->toContain('<GameTabs game="port-sorter" active="sets" />');
 });
