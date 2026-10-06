@@ -21,6 +21,15 @@ return [
     'default_for_reranking' => 'cohere',
 
     /*
+    | Queue connection for the admin "AI ability analysis" job. Null uses the
+    | default connection; dev stacks without a matching worker can set
+    | "background" (separate PHP process after the response).
+    */
+    'ability_assessment' => [
+        'connection' => env('AI_ASSESSMENT_QUEUE_CONNECTION'),
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Caching
     |--------------------------------------------------------------------------

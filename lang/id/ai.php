@@ -20,4 +20,9 @@ return [
     'generation_started' => 'Membuat :total soal di latar belakang.',
     'teacher_assigned' => ':name sekarang guru dan dapat membuka Ruang Guru.',
     'teacher_removed' => ':name bukan guru lagi.',
+    'assessment_started' => 'Analisa kemampuan AI dimulai. Hasilnya muncul di sini dalam satu menit.',
+    'assessment_running' => 'Analisa untuk pengguna ini masih berjalan.',
+    'assessment_failed' => 'Analisa AI gagal. Coba lagi nanti.',
+    'assessment_incomplete' => 'Balasan AI tidak berisi analisa yang bisa dipakai.',
+    'assessment_timed_out' => 'Analisa tidak selesai tepat waktu.',
 ];

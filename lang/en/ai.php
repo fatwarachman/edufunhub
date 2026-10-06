@@ -20,4 +20,9 @@ return [
     'generation_started' => 'Generating :total questions in the background.',
     'teacher_assigned' => ':name is now a teacher and can open Ruang Guru.',
     'teacher_removed' => ':name is no longer a teacher.',
+    'assessment_started' => 'AI ability analysis started. The result appears here in a minute.',
+    'assessment_running' => 'An analysis for this user is still running.',
+    'assessment_failed' => 'The AI analysis failed. Try again later.',
+    'assessment_incomplete' => 'The AI reply had no usable analysis.',
+    'assessment_timed_out' => 'The analysis did not finish in time.',
 ];
