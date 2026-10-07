@@ -92,6 +92,41 @@ class QuestionGeneration extends Model
         );
     }
 
+    /**
+     * Requests still generating, newest first, with per subject/grade progress
+     * (shown again when an admin comes back to the question pages).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function liveProgress(): array
+    {
+        return self::query()
+            ->whereIn('status', ['queued', 'running'])
+            ->with(['requester:id,name', 'items' => fn ($query) => $query->orderBy('id')])
+            ->latest('id')
+            ->limit(5)
+            ->get()
+            ->map(fn (QuestionGeneration $generation): array => $generation->toProgressPayload())
+            ->all();
+    }
+
+    /**
+     * Progress shape shared by the generate page and the live banner.
+     *
+     * @return array<string, mixed>
+     */
+    public function toProgressPayload(): array
+    {
+        return [
+            ...$this->only(['id', 'model', 'subjects', 'grades', 'per_combination', 'activate', 'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error']),
+            'cancelled_at' => $this->cancelled_at?->toIso8601String(),
+            'requested_by' => $this->requester?->name,
+            'created_at' => $this->created_at?->toIso8601String(),
+            'finished_at' => $this->finished_at?->toIso8601String(),
+            'items' => $this->items->map(fn (QuestionGenerationItem $item): array => $item->toProgress())->values()->all(),
+        ];
+    }
+
     public function isLive(): bool
     {
         return in_array($this->status, ['queued', 'running'], true);

@@ -288,7 +288,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     sidebarCollapsed && 'md:justify-center md:px-2',
                 )}
                 aria-current={active ? 'page' : undefined}
-                title={sidebarCollapsed ? tr(item.title) : undefined}
+                title={tr(item.title)}
             >
                 <item.icon className="size-4 shrink-0" />
                 {!sidebarCollapsed && (
@@ -400,11 +400,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                         )}
                                         aria-expanded={open}
                                         aria-controls={panelId}
-                                        title={
-                                            sidebarCollapsed
-                                                ? tr(entry.title)
-                                                : undefined
-                                        }
+                                        title={tr(entry.title)}
                                         data-testid="admin-nav-group"
                                     >
                                         <entry.icon className="size-4 shrink-0" />
@@ -466,11 +462,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                     sidebarCollapsed &&
                                         'md:justify-center md:px-2',
                                 )}
-                                title={
-                                    sidebarCollapsed
-                                        ? tr('Back to Site')
-                                        : undefined
-                                }
+                                title={tr('Back to Site')}
                             >
                                 <ChevronLeft className="size-4 shrink-0" />
                                 {!sidebarCollapsed && (

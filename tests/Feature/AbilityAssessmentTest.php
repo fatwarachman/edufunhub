@@ -273,4 +273,22 @@ describe('user page', function (): void {
                 ->where('abilityAssessments.items.0.result.subject_scores.math', 80)
                 ->where('abilityAssessments.preview', null)));
     });
+
+    it('shares the latest finished analysis on WhatsApp with its short link', function (): void {
+        configureAbilityAi();
+        $player = abilityPlayer();
+
+        $this->actingAs($this->admin)->get("/admin/users/{$player->id}")->assertInertia(fn (Assert $page) => $page
+            ->loadDeferredProps(fn (Assert $reload) => $reload->where('abilityAssessments.share', null)));
+
+        $player->playerProfile->update(['nickname' => 'Kancil']);
+        $done = UserAbilityAssessment::factory()->for($player)->done()->create();
+        UserAbilityAssessment::factory()->for($player)->create(['status' => 'failed']);
+
+        $this->get("/admin/users/{$player->id}")->assertInertia(fn (Assert $page) => $page
+            ->loadDeferredProps(fn (Assert $reload) => $reload
+                ->where('abilityAssessments.share.owner_name', 'Kancil')
+                ->where('abilityAssessments.share.subject_scores.math', 80)
+                ->where('abilityAssessments.share.share_url', '/a/'.$done->refresh()->share_code)));
+    });
 });

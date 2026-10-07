@@ -9,6 +9,11 @@ import {
     rateTone,
     useSubjectLabel,
 } from '@/components/admin/game-stats';
+import {
+    type Generation,
+    GenerationRow,
+    useGenerationPolling,
+} from '@/components/admin/generation-progress';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -21,10 +26,12 @@ import {
     BookOpen,
     Calculator,
     ChartNoAxesColumn,
+    Check,
     ChevronLeft,
     ChevronRight,
     CircleCheck,
     Coins,
+    Gamepad2,
     GraduationCap,
     Landmark,
     Languages,
@@ -43,8 +50,16 @@ import {
     ShieldCheck,
     Sparkles,
     Trash2,
+    X,
 } from 'lucide-react';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    type ReactNode,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 
 type BulkAction = 'activate' | 'deactivate' | 'delete';
 
@@ -120,6 +135,7 @@ interface QuestionsProps {
     sourceCounts: SourceCounts | null;
     teachers: { id: number; name: string }[];
     filters: Filters;
+    liveGenerations?: Generation[];
     summary: {
         total: number;
         active: number;
@@ -172,6 +188,7 @@ export default function QuestionsIndex(props: QuestionsProps) {
     return (
         <>
             <Head title={tr('Question Bank')} />
+            <LiveGenerations generations={props.liveGenerations ?? []} />
             {props.mode === 'subjects' ? (
                 <SubjectOverview {...props} />
             ) : (
@@ -690,6 +707,8 @@ function QuestionList({
                     <option value="">{tr('Any status')}</option>
                     <option value="active">{tr('Active')}</option>
                     <option value="inactive">{tr('Inactive')}</option>
+                    <option value="played">{tr('Played in quizzes')}</option>
+                    <option value="unplayed">{tr('Not played yet')}</option>
                 </select>
                 {filters.source === 'teacher' && teachers.length > 0 && (
                     <select
@@ -916,6 +935,71 @@ function QuestionList({
                                                     {gameLabel(game)}
                                                 </Badge>
                                             ))}
+                                            {question.times_answered > 0 ? (
+                                                <span
+                                                    className="inline-flex items-center overflow-hidden rounded-full border border-sky-200 font-medium dark:border-sky-900"
+                                                    data-testid="question-played-badge"
+                                                    title={tr(
+                                                        'Shown in quizzes and answered {0} times',
+                                                        [
+                                                            formatNumber(
+                                                                question.times_answered,
+                                                            ),
+                                                        ],
+                                                    )}
+                                                >
+                                                    <span className="inline-flex items-center gap-1 bg-sky-50 px-2 py-0.5 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300">
+                                                        <Gamepad2
+                                                            className="size-3"
+                                                            aria-hidden
+                                                        />
+                                                        {tr('Played')}
+                                                    </span>
+                                                    <span
+                                                        className="inline-flex items-center gap-0.5 bg-emerald-50 px-1.5 py-0.5 text-emerald-700 tabular-nums dark:bg-emerald-950/40 dark:text-emerald-300"
+                                                        data-testid="question-correct-count"
+                                                    >
+                                                        <Check
+                                                            className="size-3"
+                                                            aria-hidden
+                                                        />
+                                                        {formatNumber(
+                                                            question.times_correct,
+                                                        )}
+                                                        <span className="sr-only">
+                                                            {tr('correct')}
+                                                        </span>
+                                                    </span>
+                                                    <span
+                                                        className={cn(
+                                                            'inline-flex items-center gap-0.5 px-1.5 py-0.5 tabular-nums',
+                                                            question.times_answered >
+                                                                question.times_correct
+                                                                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                                                                : 'bg-muted text-muted-foreground',
+                                                        )}
+                                                        data-testid="question-wrong-count"
+                                                    >
+                                                        <X
+                                                            className="size-3"
+                                                            aria-hidden
+                                                        />
+                                                        {formatNumber(
+                                                            question.times_answered -
+                                                                question.times_correct,
+                                                        )}
+                                                        <span className="sr-only">
+                                                            {tr('wrong')}
+                                                        </span>
+                                                    </span>
+                                                </span>
+                                            ) : (
+                                                <Badge tone="muted">
+                                                    <span data-testid="question-unplayed-badge">
+                                                        {tr('Not played yet')}
+                                                    </span>
+                                                </Badge>
+                                            )}
                                             {question.is_active ? (
                                                 <Badge tone="success">
                                                     <span
@@ -1375,3 +1459,61 @@ function PageLink({
 QuestionsIndex.layout = (page: ReactNode) => (
     <AdminLayout title={tr('Question Bank')}>{page}</AdminLayout>
 );
+
+/**
+ * AI generation still running: shown on the question bank so an admin who
+ * left the generate page sees the progress again, refreshed every few seconds.
+ */
+function LiveGenerations({ generations }: { generations: Generation[] }) {
+    const [finished, setFinished] = useState(false);
+    const settle = useCallback(() => {
+        setFinished(true);
+        router.reload({ only: ['subjectStats', 'summary', 'questions'] });
+    }, []);
+    useGenerationPolling(generations, ['liveGenerations'], settle);
+
+    if (generations.length === 0) {
+        return finished ? (
+            <div
+                className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-200"
+                role="status"
+                data-testid="live-generations-done"
+            >
+                <span className="flex items-center gap-2 font-medium">
+                    <CircleCheck className="size-4 shrink-0" aria-hidden />
+                    {tr('AI question generation finished.')}
+                </span>
+                <Link href="/admin/questions?source=ai" className="link">
+                    {tr('Review AI questions')}
+                </Link>
+            </div>
+        ) : null;
+    }
+
+    return (
+        <section
+            className="mb-6 flex flex-col gap-1 rounded-2xl border border-violet-200 bg-violet-50/60 px-4 py-2 dark:border-violet-900/60 dark:bg-violet-950/30"
+            aria-label={tr('AI generation in progress')}
+            data-testid="live-generations"
+        >
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-violet-800 dark:text-violet-200">
+                    <Sparkles className="size-4 shrink-0" aria-hidden />
+                    {tr('AI generation in progress')}
+                </h3>
+                <Link
+                    href="/admin/questions/generate"
+                    className="link text-xs"
+                    data-testid="live-generations-open"
+                >
+                    {tr('Open generate page')}
+                </Link>
+            </div>
+            <ul className="flex flex-col divide-y divide-violet-200/70 dark:divide-violet-900/50">
+                {generations.map((g) => (
+                    <GenerationRow key={g.id} generation={g} />
+                ))}
+            </ul>
+        </section>
+    );
+}

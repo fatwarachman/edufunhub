@@ -1,3 +1,4 @@
+import { type PlayerAbility } from '@/components/ability-card';
 import { ConfirmDialog } from '@/components/admin/admin-kit';
 import {
     EmptyState,
@@ -12,7 +13,12 @@ import {
 } from '@/components/admin/game-stats';
 import { ResponsiveTable } from '@/components/responsive-table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WhatsAppIcon } from '@/components/whatsapp-share-button';
+import { useTranslations } from '@/hooks/use-translations';
+import { buildAbilityShareText } from '@/lib/ability-share';
 import { tr } from '@/lib/admin-i18n';
+import { absoluteUrl, shareWhatsApp } from '@/lib/share';
+import { useSubjectName } from '@/lib/subjects';
 import { cn } from '@/lib/utils';
 import { router, usePage, usePoll } from '@inertiajs/react';
 import {
@@ -118,6 +124,8 @@ export interface AbilityAssessments {
     running: boolean;
     items: AbilityAssessment[];
     preview: AbilityInput | null;
+    /** Player-facing view of the latest finished analysis (WhatsApp share). */
+    share?: (PlayerAbility & { owner_name: string }) | null;
 }
 
 const POLL_MS = 4000;
@@ -329,6 +337,8 @@ export function AbilityAssessmentPanel({
                     </Notice>
                 )}
 
+                {data.share && <ShareBar share={data.share} />}
+
                 {shown?.result ? (
                     <ResultView assessment={shown} result={shown.result} />
                 ) : (
@@ -360,6 +370,83 @@ export function AbilityAssessmentPanel({
                 onConfirm={run}
             />
         </Panel>
+    );
+}
+
+/**
+ * Send the latest analysis to the parent/teacher on WhatsApp: same text and
+ * short page link as the player's own share (labelled "EduFunHub analysis",
+ * never "AI"), plus a copy button for other chat apps.
+ */
+function ShareBar({
+    share,
+}: {
+    share: PlayerAbility & { owner_name: string };
+}) {
+    const { t, i18n } = useTranslations();
+    const subjectName = useSubjectName();
+    const [copied, setCopied] = useState(false);
+    const date = share.analyzed_at
+        ? new Intl.DateTimeFormat(i18n.language, {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+          }).format(new Date(share.analyzed_at))
+        : null;
+    const text = () =>
+        buildAbilityShareText(share, {
+            t,
+            subjectName,
+            ownerName: share.owner_name,
+            date,
+            shareUrl: absoluteUrl(share.share_url),
+        });
+    const copy = async () => {
+        try {
+            await navigator.clipboard.writeText(text());
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 2000);
+        } catch {
+            // Clipboard unavailable (insecure origin): nothing to copy into.
+        }
+    };
+
+    return (
+        <div
+            className="flex flex-col gap-3 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between dark:border-emerald-900/60 dark:bg-emerald-950/30"
+            data-testid="ability-share"
+        >
+            <p className="min-w-0 text-sm text-emerald-900 dark:text-emerald-100">
+                <span className="font-medium">
+                    {tr('Share the analysis with parents or teachers')}
+                </span>
+                <span className="block text-xs text-emerald-800/80 dark:text-emerald-200/80">
+                    {tr(
+                        'Sends the summary, scores and tips of the latest analysis with a short link to its page.',
+                    )}
+                </span>
+            </p>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => shareWhatsApp(text())}
+                    className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#128C4A] px-3.5 text-sm font-medium text-white shadow-sm hover:bg-[#0E7A40] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    data-testid="ability-share-wa-admin"
+                >
+                    <WhatsAppIcon className="size-4 shrink-0" />
+                    {tr('Share on WhatsApp')}
+                </button>
+                <button
+                    type="button"
+                    onClick={copy}
+                    className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-3.5 text-sm font-medium text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    data-testid="ability-share-copy"
+                    aria-live="polite"
+                >
+                    {copied ? tr('Copied') : tr('Copy text')}
+                </button>
+            </div>
+        </div>
     );
 }
 

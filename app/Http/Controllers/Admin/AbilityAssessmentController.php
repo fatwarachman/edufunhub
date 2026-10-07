@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserAbilityAssessment;
 use App\Services\Ai\AbilityProfileBuilder;
 use App\Services\Ai\AiSettings;
+use App\Services\PlayerAbility;
 use Illuminate\Http\RedirectResponse;
 
 /**
@@ -84,6 +85,28 @@ class AbilityAssessmentController extends Controller
             'running' => $assessments->contains('status', UserAbilityAssessment::PENDING),
             'items' => $assessments->values()->all(),
             'preview' => $assessments->isEmpty() ? $builder->build($user) : null,
+            'share' => self::share($user),
+        ];
+    }
+
+    /**
+     * Player-facing view of the latest finished analysis (same text and short
+     * link the player shares), so admins can send it on WhatsApp.
+     *
+     * @return array<string, mixed>|null
+     */
+    private static function share(User $user): ?array
+    {
+        $abilities = app(PlayerAbility::class);
+        $presented = $abilities->present($abilities->latestFor($user));
+
+        if ($presented === null) {
+            return null;
+        }
+
+        return [
+            ...$presented,
+            'owner_name' => $user->playerProfile?->nickname ?: $user->name,
         ];
     }
 }

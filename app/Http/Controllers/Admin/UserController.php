@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\GameHistory;
 use App\Models\ImpersonationLog;
+use App\Models\Module;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserAbilityAssessment;
@@ -94,7 +95,10 @@ class UserController extends Controller
         ]);
 
         if ($request->filled('roles')) {
-            $user->roles()->sync($request->roles);
+            $user->syncRoles(array_map('intval', $request->roles));
+        }
+        if ($request->filled('permissions') && $request->user()->is_superadmin) {
+            $user->directPermissions()->sync($request->permissions);
         }
 
         activity()
@@ -213,12 +217,15 @@ class UserController extends Controller
      */
     public function edit(User $user): Response
     {
-        $user->load('roles:id');
+        $user->load(['roles:id', 'directPermissions:id']);
 
         return Inertia::render('admin/users/edit', [
             'user' => $user->only(['id', 'name', 'email', 'created_at', 'last_seen_at', 'email_verified_at', 'is_superadmin']),
             'roles' => Role::query()->select('id', 'name', 'slug', 'description', 'is_system')->orderBy('name')->get(),
             'userRoles' => $user->roles->pluck('id')->values(),
+            'modules' => Module::query()->with(['permissions' => fn ($query) => $query->select('id', 'name', 'slug', 'module_id', 'description')->with('roles:id')->orderBy('name')])->orderBy('name')->get(['id', 'name', 'slug']),
+            'userPermissions' => $user->directPermissions->pluck('id')->values(),
+            'canOverridePermissions' => (bool) request()->user()?->is_superadmin,
         ]);
     }
 
@@ -239,7 +246,10 @@ class UserController extends Controller
         $user->update($data);
 
         if ($request->has('roles')) {
-            $user->roles()->sync($request->roles ?? []);
+            $user->syncRoles(array_map('intval', $request->roles ?? []));
+        }
+        if ($request->has('permissions') && $request->user()->is_superadmin) {
+            $user->directPermissions()->sync($request->permissions ?? []);
         }
 
         activity()
