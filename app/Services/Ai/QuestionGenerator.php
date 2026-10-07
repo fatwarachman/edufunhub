@@ -23,17 +23,21 @@ class QuestionGenerator
 
     /**
      * @param  (Closure(int, int): void)|null  $onProgress  called with the created and skipped totals after every batch
-     * @return array{created: int, skipped: int}
+     * @param  (Closure(): bool)|null  $shouldStop  checked before every batch; true ends the run early and keeps the saved questions
+     * @return array{created: int, skipped: int, stopped: bool}
      *
      * @throws RuntimeException
      */
-    public function generate(QuestionGeneration $generation, string $subject, int $grade, int $count, ?Closure $onProgress = null): array
+    public function generate(QuestionGeneration $generation, string $subject, int $grade, int $count, ?Closure $onProgress = null, ?Closure $shouldStop = null): array
     {
         $provider = $this->client->register();
         $created = 0;
         $skipped = 0;
 
         while ($created < $count) {
+            if ($shouldStop !== null && $shouldStop()) {
+                return ['created' => $created, 'skipped' => $skipped, 'stopped' => true];
+            }
             $want = min(QuestionGeneration::BATCH, $count - $created);
             $items = $this->ask($provider, $generation->model, $subject, $grade, $want);
             if ($items === []) {
@@ -73,7 +77,7 @@ class QuestionGenerator
             }
         }
 
-        return ['created' => $created, 'skipped' => $skipped];
+        return ['created' => $created, 'skipped' => $skipped, 'stopped' => false];
     }
 
     /** @return list<mixed> */

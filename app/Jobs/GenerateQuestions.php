@@ -31,10 +31,13 @@ class GenerateQuestions implements ShouldQueue
     public function handle(QuestionGenerator $generator): void
     {
         $item = $this->generation->itemFor($this->subject, $this->grade);
-        if ($item->isFinished()) {
+        $claimed = QuestionGenerationItem::query()->whereKey($item->id)
+            ->where('status', QuestionGenerationItem::QUEUED)
+            ->update(['status' => QuestionGenerationItem::RUNNING, 'started_at' => now(), 'updated_at' => now()]);
+        if ($claimed === 0) {
             return;
         }
-        $item->update(['status' => QuestionGenerationItem::RUNNING, 'started_at' => now()]);
+        $item->refresh();
         $this->generation->markRunning();
 
         try {
@@ -44,8 +47,13 @@ class GenerateQuestions implements ShouldQueue
                 $this->grade,
                 $this->generation->per_combination,
                 fn (int $created, int $skipped) => $item->update(['created_count' => $created, 'skipped_count' => $skipped]),
+                fn (): bool => $this->generation->stopRequested(),
             );
-            $this->finish(QuestionGenerationItem::DONE, $result['created'], $result['skipped']);
+            $this->finish(
+                $result['stopped'] ? QuestionGenerationItem::CANCELLED : QuestionGenerationItem::DONE,
+                $result['created'],
+                $result['skipped'],
+            );
         } catch (Throwable $exception) {
             report($exception);
             $item->refresh();
@@ -73,7 +81,7 @@ class GenerateQuestions implements ShouldQueue
             ->where('generation_id', $this->generation->id)
             ->where('subject', $this->subject)
             ->where('grade', $this->grade)
-            ->whereNotIn('status', [QuestionGenerationItem::DONE, QuestionGenerationItem::FAILED])
+            ->whereNotIn('status', QuestionGenerationItem::FINISHED)
             ->update([
                 'status' => $status,
                 'created_count' => $created,

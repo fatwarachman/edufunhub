@@ -1,12 +1,17 @@
 <?php
 
+use App\Ai\Agents\QuestionWriter;
 use App\Jobs\GenerateQuestions;
+use App\Models\Question;
 use App\Models\QuestionGeneration;
 use App\Models\QuestionGenerationItem;
+use App\Models\Setting;
+use App\Models\Subject;
 use App\Models\User;
 use App\Services\Ai\AiSettings;
 use App\Services\Ai\OpenAiCompatibleClient;
 use App\Services\Ai\QuestionGenerator;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -21,7 +26,7 @@ function progressGeneration(array $subjects = ['math'], array $grades = [1], int
 {
     $generation = QuestionGeneration::query()->create([
         'model' => 'test-model', 'subjects' => $subjects, 'grades' => $grades, 'per_combination' => $per,
-        'games' => ['sky-quiz'], 'status' => 'queued', 'total_jobs' => count($subjects) * count($grades),
+        'games' => ['sky-quiz'], 'activate' => false, 'status' => 'queued', 'total_jobs' => count($subjects) * count($grades),
     ]);
     $generation->createItems();
 
@@ -46,11 +51,21 @@ function fakeGenerator(array $batches, ?Throwable $throw = null): object
         /** @var list<array{status: string, created: int}> */
         public array $seen = [];
 
-        public function generate(QuestionGeneration $generation, string $subject, int $grade, int $count, ?Closure $onProgress = null): array
+        /** @var (Closure(): void)|null */
+        public ?Closure $afterFirstBatch = null;
+
+        public function generate(QuestionGeneration $generation, string $subject, int $grade, int $count, ?Closure $onProgress = null, ?Closure $shouldStop = null): array
         {
             $created = 0;
             $skipped = 0;
-            foreach ($this->batches as [$created, $skipped]) {
+            foreach ($this->batches as $index => $batch) {
+                if ($shouldStop !== null && $shouldStop()) {
+                    return ['created' => $created, 'skipped' => $skipped, 'stopped' => true];
+                }
+                [$created, $skipped] = $batch;
+                if ($index === 0 && $this->afterFirstBatch !== null) {
+                    ($this->afterFirstBatch)();
+                }
                 $onProgress?->__invoke($created, $skipped);
                 $item = $generation->items()->where('subject', $subject)->where('grade', $grade)->sole();
                 $this->seen[] = ['status' => $item->status, 'created' => $item->created_count];
@@ -59,7 +74,7 @@ function fakeGenerator(array $batches, ?Throwable $throw = null): object
                 throw $this->throw;
             }
 
-            return ['created' => $created, 'skipped' => $skipped];
+            return ['created' => $created, 'skipped' => $skipped, 'stopped' => false];
         }
     };
     $fake->batches = $batches;
@@ -177,4 +192,80 @@ it('routes generation jobs through the configured queue connection', function ()
     $generation = progressGeneration();
 
     expect((new GenerateQuestions($generation, 'math', 1))->connection)->toBe('background');
+});
+
+it('stops a request: queued pairs are skipped, the running pair keeps its questions', function (): void {
+    $generation = progressGeneration(['math'], [1, 2, 3], 10);
+    $fake = fakeGenerator([[5, 0], [10, 0]]);
+    $fake->afterFirstBatch = function () use ($generation): void {
+        $this->actingAs($this->admin)
+            ->post("/admin/questions/generate/{$generation->id}/cancel")
+            ->assertSessionHasNoErrors();
+    };
+
+    (new GenerateQuestions($generation, 'math', 1))->handle(app(QuestionGenerator::class));
+    (new GenerateQuestions($generation, 'math', 2))->handle(app(QuestionGenerator::class));
+
+    $items = $generation->items()->orderBy('grade')->get();
+    expect($items->pluck('status')->all())->toBe(['cancelled', 'cancelled', 'cancelled'])
+        ->and($items[0]->created_count)->toBe(5)
+        ->and($items[1]->started_at)->toBeNull()
+        ->and($items[2]->created_count)->toBe(0);
+
+    $fresh = $generation->fresh();
+    expect($fresh->status)->toBe('cancelled')
+        ->and($fresh->cancelled_at)->not->toBeNull()
+        ->and($fresh->done_jobs)->toBe(3)
+        ->and($fresh->created_count)->toBe(5)
+        ->and($fresh->finished_at)->not->toBeNull();
+});
+
+it('closes a request right away when it is stopped before any job ran', function (): void {
+    $generation = progressGeneration(['math', 'science'], [1], 5);
+
+    $this->actingAs($this->admin)->post("/admin/questions/generate/{$generation->id}/cancel")
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    $fresh = $generation->fresh();
+    expect($fresh->status)->toBe('cancelled')->and($fresh->done_jobs)->toBe(2)
+        ->and($generation->items()->pluck('status')->unique()->all())->toBe(['cancelled']);
+
+    fakeGenerator([[5, 0]]);
+    (new GenerateQuestions($generation, 'math', 1))->handle(app(QuestionGenerator::class));
+    expect($generation->fresh()->created_count)->toBe(0);
+});
+
+it('refuses to stop a finished request and limits stopping to superadmins', function (): void {
+    $done = progressGeneration();
+    $done->update(['status' => 'done', 'finished_at' => now()]);
+    $live = progressGeneration();
+
+    $this->actingAs($this->admin)->post("/admin/questions/generate/{$done->id}/cancel")->assertSessionHasErrors('generation');
+    expect($done->fresh()->status)->toBe('done');
+
+    $this->actingAs(User::factory()->create())->post("/admin/questions/generate/{$live->id}/cancel")->assertForbidden();
+    expect($live->fresh()->cancelled_at)->toBeNull();
+});
+
+it('asks the model about a newly added subject by its catalog description', function (): void {
+    Setting::set('ai.base_url', 'https://ai.test/v1', 'ai');
+    Setting::set('ai.api_key', Crypt::encryptString('sk-test-1234'), 'ai');
+    Setting::set('ai.model', 'gpt-4o-mini', 'ai');
+    $subject = Subject::query()->create([
+        'key' => 'teknologi-informasi', 'name_id' => 'Teknologi Informasi', 'name_en' => 'Information Technology',
+        'ai_hint' => 'Pelajaran teknologi informasi: komputer, internet, dan AI.', 'is_active' => true,
+    ]);
+    $generation = progressGeneration([$subject->key], [5], 1);
+    QuestionWriter::fake([['questions' => [[
+        'prompt_id' => 'Apa kepanjangan CPU?', 'prompt_en' => 'What does CPU stand for?',
+        'options' => [['id' => 'Central Processing Unit', 'en' => 'Central Processing Unit'], ['id' => 'Computer Power Unit', 'en' => 'Computer Power Unit'], ['id' => 'Core Program Utility', 'en' => 'Core Program Utility'], ['id' => 'Control Panel Unit', 'en' => 'Control Panel Unit']],
+        'answer' => 0, 'hint_id' => null, 'hint_en' => null,
+    ]]]]);
+
+    (new GenerateQuestions($generation, $subject->key, 5))->handle(app(QuestionGenerator::class));
+
+    QuestionWriter::assertPrompted(fn ($prompt) => str_contains($prompt->prompt, 'Pelajaran teknologi informasi'));
+    expect($generation->items()->sole()->only(['status', 'error']))->toBe(['status' => 'done', 'error' => null])
+        ->and(Question::query()->where('subject', $subject->key)->count())->toBe(1);
 });

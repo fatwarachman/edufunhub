@@ -244,7 +244,15 @@ export default function QuestionShow({ question, stats }: Props) {
                                     {tr(difficulty.label)}
                                 </Chip>
                             )}
-                            {!question.is_active && (
+                            {question.is_active ? (
+                                <Chip className="gap-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                    <CircleCheck
+                                        className="size-3"
+                                        aria-hidden
+                                    />
+                                    {tr('Active')}
+                                </Chip>
+                            ) : (
                                 <Chip className="bg-muted text-muted-foreground">
                                     {tr('Inactive')}
                                 </Chip>

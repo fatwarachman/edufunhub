@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class QuestionGeneration extends Model
 {
-    public const STATUSES = ['queued', 'running', 'done', 'failed'];
+    public const STATUSES = ['queued', 'running', 'done', 'failed', 'cancelled'];
 
     /** Most questions one request may ask per subject/grade pair. */
     public const MAX_PER_COMBINATION = 20;
@@ -21,7 +21,7 @@ class QuestionGeneration extends Model
 
     protected $fillable = [
         'requested_by', 'model', 'subjects', 'grades', 'per_combination', 'games', 'activate',
-        'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error', 'finished_at',
+        'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error', 'cancelled_at', 'finished_at',
     ];
 
     /** @return array<string, string> */
@@ -37,6 +37,7 @@ class QuestionGeneration extends Model
             'done_jobs' => 'integer',
             'created_count' => 'integer',
             'skipped_count' => 'integer',
+            'cancelled_at' => 'datetime',
             'finished_at' => 'datetime',
         ];
     }
@@ -91,6 +92,39 @@ class QuestionGeneration extends Model
         );
     }
 
+    public function isLive(): bool
+    {
+        return in_array($this->status, ['queued', 'running'], true);
+    }
+
+    /** True once an admin stopped the request (re-read so running jobs see it). */
+    public function stopRequested(): bool
+    {
+        return $this->newQuery()->whereKey($this->id)->whereNotNull('cancelled_at')->exists();
+    }
+
+    /**
+     * Stop the request: subject/grade pairs still waiting in the queue are
+     * closed without calling the model; running pairs stop after their
+     * current batch and keep the questions already saved.
+     */
+    public function cancel(): void
+    {
+        $updated = $this->newQuery()->whereKey($this->id)->whereNull('cancelled_at')
+            ->whereIn('status', ['queued', 'running'])
+            ->update(['cancelled_at' => now()]);
+        if ($updated === 0) {
+            return;
+        }
+
+        $skipped = $this->items()->where('status', QuestionGenerationItem::QUEUED)
+            ->update(['status' => QuestionGenerationItem::CANCELLED, 'finished_at' => now(), 'updated_at' => now()]);
+        if ($skipped > 0) {
+            $this->newQuery()->whereKey($this->id)->increment('done_jobs', $skipped);
+        }
+        $this->closeIfFinished();
+    }
+
     /** The first job to start moves the request from queued to running. */
     public function markRunning(): void
     {
@@ -104,12 +138,24 @@ class QuestionGeneration extends Model
             ['done_jobs' => 1, 'created_count' => $created, 'skipped_count' => $skipped],
             array_filter(['status' => 'running', 'error' => $error]),
         );
+        $this->closeIfFinished();
+    }
+
+    /** Close the request after its last subject/grade pair finished. */
+    private function closeIfFinished(): void
+    {
         $fresh = $this->fresh();
-        if ($fresh !== null && $fresh->done_jobs >= $fresh->total_jobs) {
-            $fresh->update([
-                'status' => $fresh->created_count === 0 && $fresh->error !== null ? 'failed' : 'done',
-                'finished_at' => now(),
-            ]);
+        if ($fresh === null || $fresh->done_jobs < $fresh->total_jobs || $fresh->finished_at !== null) {
+            return;
         }
+
+        $fresh->update([
+            'status' => match (true) {
+                $fresh->cancelled_at !== null => 'cancelled',
+                $fresh->created_count === 0 && $fresh->error !== null => 'failed',
+                default => 'done',
+            },
+            'finished_at' => now(),
+        ]);
     }
 }

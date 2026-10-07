@@ -25,6 +25,12 @@ class QuestionGenerationItem extends Model
 
     public const FAILED = 'failed';
 
+    /** Stopped by an admin: never started, or ended early keeping its questions. */
+    public const CANCELLED = 'cancelled';
+
+    /** @var list<string> */
+    public const FINISHED = [self::DONE, self::FAILED, self::CANCELLED];
+
     protected $fillable = [
         'generation_id', 'subject', 'grade', 'status', 'target', 'created_count', 'skipped_count', 'error', 'started_at', 'finished_at',
     ];
@@ -50,7 +56,7 @@ class QuestionGenerationItem extends Model
 
     public function isFinished(): bool
     {
-        return in_array($this->status, [self::DONE, self::FAILED], true);
+        return in_array($this->status, self::FINISHED, true);
     }
 
     /**

@@ -11,6 +11,7 @@ use App\Models\QuestionGenerationItem;
 use App\Models\Subject;
 use App\Services\Ai\AiSettings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,6 +42,7 @@ class QuestionGenerationController extends Controller
                 ->get()
                 ->map(fn (QuestionGeneration $generation): array => [
                     ...$generation->only(['id', 'model', 'subjects', 'grades', 'per_combination', 'activate', 'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error']),
+                    'cancelled_at' => $generation->cancelled_at?->toIso8601String(),
                     'requested_by' => $generation->requester?->name,
                     'created_at' => $generation->created_at?->toIso8601String(),
                     'finished_at' => $generation->finished_at?->toIso8601String(),
@@ -87,5 +89,21 @@ class QuestionGenerationController extends Controller
         activity()->causedBy($request->user())->performedOn($generation)->withProperties(['total' => $total])->log('Started AI question generation');
 
         return redirect()->route('admin.questions.generate')->with('success', __('ai.generation_started', ['total' => $total]));
+    }
+
+    /**
+     * Stop a running request: queued pairs are dropped, running pairs end
+     * after their current batch and keep the questions already saved.
+     */
+    public function cancel(Request $request, QuestionGeneration $generation): RedirectResponse
+    {
+        if (! $generation->isLive() || $generation->cancelled_at !== null) {
+            return back()->withErrors(['generation' => __('ai.generation_not_running')]);
+        }
+
+        $generation->cancel();
+        activity()->causedBy($request->user())->performedOn($generation)->log('Stopped AI question generation');
+
+        return back()->with('success', __('ai.generation_stopped'));
     }
 }
