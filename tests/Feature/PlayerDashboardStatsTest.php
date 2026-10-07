@@ -7,6 +7,7 @@ use App\Models\Question;
 use App\Models\QuestionAnswer;
 use App\Models\User;
 use App\Models\UserAbilityAssessment;
+use App\Services\PlayerAbility;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -242,6 +243,7 @@ describe('ability analysis on the player dashboard', function (): void {
                     ->where('ability.subject_scores', ['math' => 80, 'science' => 55])
                     ->where('ability.recommendations', ['Latih soal cerita 10 menit per hari.'])
                     ->has('ability.analyzed_at')
+                    ->where('ability.share_url', fn (string $url): bool => (bool) preg_match('#^/a/[A-Za-z0-9]{8}$#', $url))
                     ->missing('ability.model')
                     ->missing('ability.input_snapshot')
                     ->missing('ability.requested_by')
@@ -261,5 +263,73 @@ describe('ability analysis on the player dashboard', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('stats', fn (Assert $reload) => $reload->where('ability', null))
             );
+    });
+});
+
+describe('shared ability analysis page', function (): void {
+    test('opens through the short link for signed-in users without admin-only data', function (): void {
+        $player = User::factory()->create(['name' => 'Budi Santoso']);
+        PlayerProfile::factory()->for($player)->create(['nickname' => 'Budi']);
+        $assessment = UserAbilityAssessment::factory()->for($player)->done(['summary' => 'Peserta unggul di matematika.'])->create([
+            'model' => 'secret-model', 'input_snapshot' => ['player' => ['age' => 10]],
+        ]);
+        $url = app(PlayerAbility::class)->shareUrl($assessment);
+        $viewer = User::factory()->create();
+        PlayerProfile::factory()->for($viewer)->create();
+
+        expect($url)->toMatch('#^/a/[A-Za-z0-9]{8}$#')
+            ->and(app(PlayerAbility::class)->shareUrl($assessment->fresh()))->toBe($url);
+
+        $this->actingAs($viewer)->get($url)
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('ability/show')
+                ->where('ownerName', 'Budi')
+                ->where('ability.summary', 'Peserta unggul di matematika.')
+                ->where('ability.share_url', $url)
+                ->missing('ability.model')
+                ->missing('ability.input_snapshot')
+                ->missing('ability.confidence')
+                ->missing('ability.game_insights')
+            );
+    });
+
+    test('header shortcut shows the own latest analysis or an empty state', function (): void {
+        $player = User::factory()->create(['name' => 'Akun Siti']);
+        PlayerProfile::factory()->for($player)->create(['nickname' => 'Siti']);
+
+        $this->actingAs($player)->get(route('ability.mine'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('ability/show')
+                ->where('ability', null)
+                ->where('ownerName', 'Siti'));
+
+        UserAbilityAssessment::factory()->done(['summary' => 'Milik pemain lain.'])->create();
+        UserAbilityAssessment::factory()->for($player)->done(['summary' => 'Analisa Siti.'])->create();
+
+        $this->actingAs($player)->get(route('ability.mine'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('ability.summary', 'Analisa Siti.')
+                ->missing('ability.model'));
+
+        $this->post('/logout');
+        $this->get(route('ability.mine'))->assertRedirect(route('login'));
+    });
+
+    test('sends guests to login first', function (): void {
+        $url = app(PlayerAbility::class)->shareUrl(UserAbilityAssessment::factory()->done()->create());
+
+        $this->get($url)->assertRedirect(route('login'));
+    });
+
+    test('is not found for unknown codes or unfinished analyses', function (): void {
+        $viewer = User::factory()->create();
+        PlayerProfile::factory()->for($viewer)->create();
+        $failed = UserAbilityAssessment::factory()->failed()->create(['share_code' => 'Fail1234']);
+
+        $this->actingAs($viewer)->get('/a/Nope1234')->assertNotFound();
+        $this->actingAs($viewer)->get('/a/'.$failed->share_code)->assertNotFound();
+        $this->actingAs($viewer)->get('/a/short')->assertNotFound();
     });
 });

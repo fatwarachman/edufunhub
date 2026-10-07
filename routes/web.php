@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AbilityController;
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Auth\GoogleAuthController;
@@ -54,6 +55,8 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::get('/dashboard', UserDashboardController::class)->name('dashboard');
     Route::get('/portal', PortalController::class)->name('portal');
     Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard');
+    Route::get('/ability', [AbilityController::class, 'mine'])->name('ability.mine');
+    Route::get('/a/{code}', [AbilityController::class, 'show'])->where('code', '[A-Za-z0-9]{8}')->middleware('throttle:60,1')->name('ability.show');
     Route::get('/character', [CharacterController::class, 'show'])->name('character.show');
     Route::patch('/character', [CharacterController::class, 'update'])->name('character.update');
     Route::post('/character/items/{item}/buy', [CharacterController::class, 'buy'])->middleware('throttle:30,1')->name('character.buy');

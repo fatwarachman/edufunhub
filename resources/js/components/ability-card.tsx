@@ -3,9 +3,10 @@ import { useTranslations } from '@/hooks/use-translations';
 import { absoluteUrl } from '@/lib/share';
 import { SubjectIcon, useSubjectName, useSubjects } from '@/lib/subjects';
 import { SharedData } from '@/types';
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     BrainCircuit,
+    ExternalLink,
     Eye,
     Lightbulb,
     Share2,
@@ -25,6 +26,8 @@ export interface PlayerAbility {
     recommendations: string[];
     learning_style: string;
     progress_vs_previous: string;
+    /** Signed relative link to the public analysis page. */
+    share_url: string;
 }
 
 const INK = 'border-[#151b2e]';
@@ -69,17 +72,29 @@ function Points({ items, tone }: { items: string[]; tone: string }) {
  */
 export function AbilityCard({
     ability,
+    ownerName,
+    defaultOpen = false,
+    showPageLink = true,
+    title,
 }: {
     ability: PlayerAbility | null | undefined;
+    /** Name used in the share text; defaults to the signed-in player. */
+    ownerName?: string;
+    /** Start with tips & details unfolded (the dedicated page). */
+    defaultOpen?: boolean;
+    /** Show the link to the dedicated analysis page. */
+    showPageLink?: boolean;
+    /** Card heading; defaults to the player's own "your analysis" label. */
+    title?: string;
 }) {
     const { t, i18n } = useTranslations();
     const subjectName = useSubjectName();
     const subjects = useSubjects();
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(defaultOpen);
     const [copied, setCopied] = useState(false);
     const panelId = useId();
     const { auth } = usePage<SharedData>().props;
-    const userName = auth?.user?.name ?? '';
+    const userName = ownerName ?? auth?.user?.name ?? '';
 
     if (!ability) {
         return null;
@@ -100,41 +115,78 @@ export function AbilityCard({
         ability.learning_style !== '' ||
         ability.progress_vs_previous !== '';
 
+    const shareUrl = absoluteUrl(ability.share_url);
+
     const buildShareText = (): string => {
-        const summary =
-            ability.summary.length > 200
-                ? ability.summary.slice(0, 200) + '...'
-                : ability.summary;
-        const lines = [
-            `📊 ${t('playerDash.ability.shareTitle')} — ${userName}`,
-        ];
-        if (date) {
-            lines.push(t('playerDash.ability.date', { date }));
+        const section = (emoji: string, label: string) => `${emoji} *${label}*`;
+        const clean = (item: string) => item.trim().replace(/[.;,]+$/, '');
+        const scoreDot = (score: number) =>
+            score >= 80 ? '🟢' : score >= 60 ? '🟡' : '🔴';
+        const keycap = (index: number) =>
+            index < 9 ? `${index + 1}\uFE0F\u20E3` : `${index + 1}.`;
+
+        const lines = [section('📊', t('playerDash.ability.shareTitle'))];
+        if (userName !== '') {
+            lines.push(`👤 ${userName}`);
         }
-        lines.push('', summary);
+        if (date) {
+            lines.push(`📅 ${t('playerDash.ability.date', { date })}`);
+        }
+        lines.push(
+            '',
+            section('📝', t('playerDash.ability.shareSummary')),
+            ability.summary.trim(),
+        );
         if (scores.length > 0) {
             lines.push(
                 '',
-                `🎯 ${t('playerDash.ability.shareScores')}:`,
+                section('🎯', t('playerDash.ability.shareScores')),
                 ...scores.map(
-                    ([subject, score]) => `• ${subjectName(subject)}: ${score}`,
+                    ([subject, score]) =>
+                        `${scoreDot(score)} ${subjectName(subject)}: *${score}*`,
                 ),
             );
         }
         if (ability.strengths.length > 0) {
             lines.push(
                 '',
-                `✅ ${t('playerDash.ability.strengths')}: ${ability.strengths.join(', ')}`,
+                section('💪', t('playerDash.ability.shareStrengths')),
+                ...ability.strengths.map((item) => `✅ ${clean(item)}`),
             );
         }
         if (ability.weaknesses.length > 0) {
             lines.push(
-                `📈 ${t('playerDash.ability.growth')}: ${ability.weaknesses.join(', ')}`,
+                '',
+                section('🌱', t('playerDash.ability.shareGrowth')),
+                ...ability.weaknesses.map((item) => `📌 ${clean(item)}`),
+            );
+        }
+        if (ability.recommendations.length > 0) {
+            lines.push(
+                '',
+                section('💡', t('playerDash.ability.tips')),
+                ...ability.recommendations.map(
+                    (item, index) => `${keycap(index)} ${clean(item)}`,
+                ),
+            );
+        }
+        if (ability.learning_style.trim() !== '') {
+            lines.push(
+                '',
+                section('🧠', t('playerDash.ability.style')),
+                ability.learning_style.trim(),
+            );
+        }
+        if (ability.progress_vs_previous.trim() !== '') {
+            lines.push(
+                '',
+                section('📈', t('playerDash.ability.progress')),
+                ability.progress_vs_previous.trim(),
             );
         }
         lines.push(
             '',
-            `🔗 ${t('playerDash.ability.shareFooter', { url: absoluteUrl('/') })}`,
+            `🔗 ${t('playerDash.ability.shareFooter', { url: shareUrl })}`,
         );
 
         return lines.join('\n');
@@ -178,7 +230,7 @@ export function AbilityCard({
                     >
                         <BrainCircuit className="size-4" aria-hidden />
                     </span>
-                    {t('playerDash.ability.title')}
+                    {title ?? t('playerDash.ability.title')}
                 </h2>
                 <div className="flex items-center gap-2">
                     {date && (
@@ -365,9 +417,21 @@ export function AbilityCard({
                 </div>
             )}
 
-            <p className="text-xs text-[#151b2e]/80">
-                {t('playerDash.ability.note')}
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-[#151b2e]/80">
+                    {t('playerDash.ability.note')}
+                </p>
+                {showPageLink && (
+                    <Link
+                        href={ability.share_url}
+                        className={`inline-flex items-center gap-1.5 rounded-xl border-2 ${INK} bg-[#cfe6ff] px-3 py-1.5 text-sm font-bold shadow-[2px_2px_0_#151b2e] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#151b2e]`}
+                        data-testid="dash-ability-page"
+                    >
+                        <ExternalLink className="size-4 shrink-0" aria-hidden />
+                        {t('playerDash.ability.openPage')}
+                    </Link>
+                )}
+            </div>
         </section>
     );
 }
