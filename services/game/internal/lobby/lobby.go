@@ -40,6 +40,7 @@ var (
 	ErrNoRoom     = errors.New("not_in_room")
 	ErrLocalLimit = errors.New("local_limit")
 	ErrNotLocal   = errors.New("not_local")
+	ErrAnswerTime = errors.New("invalid_answer_time")
 )
 
 // Config bounds a game's rooms.
@@ -74,7 +75,23 @@ type Room[S, P any] struct {
 	Touched time.Time
 	// Subject is the host's question subject ("" = mix of all subjects).
 	Subject string
-	Game    S
+	// AnswerSeconds is the host's answer time per question (0 = the game's
+	// default). Games that time their questions read it via AnswerTime.
+	AnswerSeconds int
+	Game          S
+}
+
+// AnswerTimes are the answer times (seconds) a host can pick; 0 keeps the
+// game's default (which may depend on the grade).
+var AnswerTimes = []int{0, 10, 15, 20, 30, 45, 60}
+
+// AnswerTime returns the room's answer time, or def when the host kept the
+// default.
+func (r *Room[S, P]) AnswerTime(def time.Duration) time.Duration {
+	if r.AnswerSeconds > 0 {
+		return time.Duration(r.AnswerSeconds) * time.Second
+	}
+	return def
 }
 
 // Active counts seats still in the room.
@@ -447,6 +464,18 @@ type Presence struct {
 	Host  bool
 }
 
+// PhaseOf reports the phase of the room with the given PIN, if it exists
+// (PIN lookup: "join with a code" without choosing the game first).
+func (h *Hub[S, P]) PhaseOf(pin string) (string, bool) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	r, ok := h.rooms[pin]
+	if !ok {
+		return "", false
+	}
+	return r.Phase, true
+}
+
 // PresenceOf returns uid's room, if any.
 func (h *Hub[S, P]) PresenceOf(uid int64) (Presence, bool) {
 	h.mu.Lock()
@@ -509,6 +538,41 @@ func (h *Hub[S, P]) SetSubject(uid int64, subject string, norm func(string) stri
 		return nil, ErrPhase
 	}
 	r.Subject = norm(subject)
+	r.Touch(now)
+	return r.Humans(), nil
+}
+
+// SetAnswerTime picks the answer time per question before the game starts
+// (host only); seconds must be one of AnswerTimes.
+func (h *Hub[S, P]) SetAnswerTime(uid int64, seconds int, now time.Time) ([]int64, error) {
+	return h.Configure(uid, now, func(r *Room[S, P]) error {
+		for _, s := range AnswerTimes {
+			if s == seconds {
+				r.AnswerSeconds = seconds
+				return nil
+			}
+		}
+		return ErrAnswerTime
+	})
+}
+
+// Stop ends the running game for everyone (host only). stop runs under the
+// lock, finishes the game and pays the players still in the room.
+func (h *Hub[S, P]) Stop(uid int64, now time.Time, stop func(r *Room[S, P])) ([]int64, error) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	r := h.roomOf(uid)
+	if r == nil {
+		return nil, ErrNoRoom
+	}
+	if r.Host != uid {
+		return nil, ErrNotHost
+	}
+	if r.Phase != PhasePlaying {
+		return nil, ErrPhase
+	}
+	stop(r)
+	r.Phase = PhaseDone
 	r.Touch(now)
 	return r.Humans(), nil
 }
@@ -673,7 +737,7 @@ func (h *Hub[S, P]) RoomPayload(r *Room[S, P], viewer int64, extra func(i int, s
 	return Message{
 		"pin": r.Pin, "seq": r.Seq, "phase": r.Phase, "host": host, "you": you, "subject": subjectOrMix(r.Subject),
 		"players": players, "min_players": h.cfg.Min, "max_players": h.cfg.Max,
-		"local_seats": h.cfg.Local,
+		"local_seats": h.cfg.Local, "answer_seconds": r.AnswerSeconds, "answer_times": AnswerTimes,
 	}
 }
 

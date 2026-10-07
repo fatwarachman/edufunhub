@@ -203,6 +203,16 @@ func (h *Hub) Inspect(pin string, fn func(r *Room) any) (any, error) {
 	return res.v, res.err
 }
 
+// RoomPhase reports the phase of the room with the given PIN (PIN lookup).
+func (h *Hub) RoomPhase(pin string) (string, bool) {
+	v, err := h.Inspect(pin, func(r *Room) any { return r.phase })
+	phase, _ := v.(string)
+	if err != nil || phase == "" {
+		return "", false
+	}
+	return phase, true
+}
+
 // Presence reports the room uid plays in or hosts (portal "continue
 // playing"). Finished rooms are not reported.
 func (h *Hub) Presence(uid int64) (pin, phase string, host, ok bool) {

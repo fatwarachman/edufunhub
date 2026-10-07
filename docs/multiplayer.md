@@ -26,7 +26,10 @@ Setiap game multiplayer memakai alur yang sama:
 
 ### Kontrak WebSocket ruang
 
-Client → Go: `create`, `join{pin}`, `leave`, `start`, `add_local{name}`, `remove_local{seat}`, `locale{locale}`, `ping`, ditambah aksi khusus game.
+Client → Go: `create`, `join{pin}`, `leave`, `start`, `stop`, `answer_time{seconds}`, `add_local{name}`, `remove_local{seat}`, `locale{locale}`, `ping`, ditambah aksi khusus game.
+
+- `stop` (host saja, saat `playing`): permainan selesai untuk semua pemain (`lobby.Hub.Stop`). Hasil dibayar seperti selesai normal; state `done` membawa `reason: "stopped"` / `stopped: true`. `leave` dari host tetap berarti hanya host yang keluar, host pindah ke pemain lain dan permainan lanjut.
+- `answer_time{seconds}` (host saja, di lobi): waktu menjawab per soal, salah satu dari `lobby.AnswerTimes` (0 = bawaan game). Game membaca `Room.AnswerTime(default)` saat `start`.
 
 State Go → client memuat payload ruang standar:
 
@@ -34,12 +37,13 @@ State Go → client memuat payload ruang standar:
 { "pin": "482913", "seq": 7, "phase": "lobby|playing|done", "host": 0, "you": 1,
   "players": [{ "seat": 0, "name": "Rani", "grade": 4, "online": true, "left": false,
                 "local": false, "controlled": false }],
-  "min_players": 1, "max_players": 4, "local_seats": true }
+  "min_players": 1, "max_players": 4, "local_seats": true,
+  "answer_seconds": 0, "answer_times": [0, 10, 15, 20, 30, 45, 60] }
 ```
 
 `controlled` berarti pemain ini boleh bertindak untuk kursi tersebut: kursinya sendiri, atau kursi lokal saat dia host.
 
-Kode error ruang: `room_not_found`, `room_full`, `room_started`, `not_host`, `not_enough_players`, `wrong_phase`, `not_in_room`, `local_limit`, `not_local`.
+Kode error ruang: `room_not_found`, `room_full`, `room_started`, `not_host`, `not_enough_players`, `wrong_phase`, `not_in_room`, `local_limit`, `not_local`, `invalid_answer_time`.
 
 ### Riwayat pertandingan (match history)
 
@@ -54,6 +58,22 @@ Setiap hasil game ruang/duel membawa ringkasan `match` yang sama untuk semua pem
 - [ ] `StoreGameResultRequest::GAMES`: pola `event_id`, misi, `max_points`.
 - [ ] Halaman memakai `RoomEntry` / `RoomLobby` / `useRoomPin`.
 - [ ] Karakter pemain = avatar portal. Controller mengirim `player.character` (`PlayerProfile::look()`) dan token membawa claim `character`. Go meneruskannya sebagai `players[].character` (maks 2 KB, opaque). Render pakai `PlayerAvatar`; kursi tanpa akun (perangkat sama, robot) memakai look bawaan per kursi.
+- [ ] Hub Go punya `RoomPhase(pin)` dan terdaftar di `Server.FindPin` (`services/game/internal/server/pin.go`), supaya pemain bisa masuk hanya dengan PIN.
+- [ ] Host punya pilihan keluar sendiri atau menghentikan permainan untuk semua (`RoomLeaveControl` / `HostExitDialog` di `components/multiplayer/host-controls.tsx`, aksi `stop`). Game bersoal berwaktu memasang `AnswerTimePicker` di `settings` lobi (aksi `answer_time`).
+- [ ] Akhir permainan memasang `<GameFinale>` (`components/game-finale.tsx`): confetti di layar semua pemain + modal papan peringkat (ranking permainan ini dan juara game sepanjang masa).
+
+### Masuk hanya dengan PIN
+
+Pemain tidak perlu membuka game dulu: kartu **Masuk ke permainan dengan PIN** (portal, daftar game), tombol kunci di header, dan link pendek `/join/{pin}`.
+
+1. Laravel `GET /join/{pin}/rooms` (`JoinByPinController`, `RoomPinLookup`) bertanya ke Go `GET /internal/room?pin=` (HMAC sama dengan `/internal/presence`).
+2. Go memeriksa semua hub dan membalas `{rooms: [{game, phase, open}]}`; ruang yang sudah selesai tidak dihitung.
+3. Satu game cocok → langsung ke halaman pemain dengan `?pin=` (Turbo Trivia: `/play/turbo-trivia/{pin}`). Beberapa game memakai PIN yang sama → pemain memilih. Tidak ada → pesan "PIN tidak ditemukan".
+4. Rate limit sendiri `join-pin` (20/menit per akun) supaya PIN tidak bisa ditebak cepat.
+
+### Akhir permainan: selebrasi + papan peringkat
+
+`<GameFinale game done matchKey standings won points onPlayAgain />` dipasang sekali per halaman game. Saat `done` menjadi true: confetti (dimatikan bila `prefers-reduced-motion`), lalu modal dengan tab **Permainan ini** (peringkat match, dari state Go) dan **Peringkat game** (`GET /leaderboard/games/{game}`, top 10 + posisi pemain, tanpa cache sehingga poin barusan langsung terlihat). Modal bisa ditutup (tombol, Esc, ketuk luar) dan dibuka lagi lewat tombol **Peringkat**. `done` kembali false (lobi / main lagi) menyiapkan selebrasi berikutnya.
 
 ## 2. Poin: setiap permainan menambah poin
 

@@ -150,7 +150,10 @@ type game struct {
 	winner   int
 	forfeit  bool
 	timeUp   bool
+	stopped  bool
 	auto     bool
+	// answer is the answer window: the host's choice or AnswerTime.
+	answer time.Duration
 	// minutes is the game length (0 = until a player finishes); first is
 	// the seat that reached square 100 first (-1 = nobody yet).
 	minutes  int
@@ -250,6 +253,9 @@ func (h *Hub) SetDuration(uid int64, minutes int, now time.Time) ([]int64, error
 // HandOver moves the host role away from a host disconnected for longer
 // than lobby.HostGrace; the game keeps running either way.
 func (h *Hub) HandOver(now time.Time) []int64 { return h.rooms.HandOver(now, lobby.HostGrace) }
+
+// RoomPhase reports the phase of the room with the given PIN (PIN lookup).
+func (h *Hub) RoomPhase(pin string) (string, bool) { return h.rooms.PhaseOf(pin) }
 
 // Presence reports the room uid is seated in (portal "continue playing").
 func (h *Hub) Presence(uid int64) (lobby.Presence, bool) { return h.rooms.PresenceOf(uid) }
@@ -360,7 +366,7 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 		}
 		h.seed++
 		gen := questions.NewFor(GameKey, grade, h.seed).For(r.Subject, r.Humans()...)
-		r.Game = game{gen: gen, grade: grade, subject: r.Subject, winner: -1, first: -1, minutes: r.Game.minutes, started: now}
+		r.Game = game{gen: gen, grade: grade, subject: r.Subject, winner: -1, first: -1, minutes: r.Game.minutes, started: now, answer: r.AnswerTime(AnswerTime)}
 		beginTurn(r, now)
 		return nil
 	})
@@ -396,9 +402,23 @@ func nextTurn(r *room, now time.Time) bool {
 // answerTime is the answer window of the current question.
 func answerTime(g *game) time.Duration {
 	if g.auto {
-		return IdleAnswerTime
+		return min(IdleAnswerTime, g.answer)
 	}
-	return AnswerTime
+	return g.answer
+}
+
+// SetAnswerTime picks the answer time per question (host, before start).
+func (h *Hub) SetAnswerTime(uid int64, seconds int, now time.Time) ([]int64, error) {
+	return h.rooms.SetAnswerTime(uid, seconds, now)
+}
+
+// Stop ends the running game for everyone (host only): the leader wins and
+// every player still in the room is paid for what they achieved.
+func (h *Hub) Stop(uid int64, now time.Time) ([]int64, error) {
+	return h.rooms.Stop(uid, now, func(r *room) {
+		r.Game.stopped = true
+		h.end(r, now)
+	})
 }
 
 // timeLeft is the remaining game time of a timed game.
@@ -690,6 +710,8 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 				msg["reason"] = "forfeit"
 			case g.timeUp:
 				msg["reason"] = "time"
+			case g.stopped:
+				msg["reason"] = "stopped"
 			}
 			if i := r.SeatIndex(claims.Subject); i >= 0 {
 				msg["points"] = award(r, i, true)

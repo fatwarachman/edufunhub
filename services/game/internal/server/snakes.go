@@ -129,6 +129,10 @@ func (s *Server) serveSnakes(w http.ResponseWriter, r *http.Request) {
 			ids, err = s.snakes.SetSubject(claims.Subject, in.Subject, now)
 		case "duration":
 			ids, err = s.snakes.SetDuration(claims.Subject, in.Minutes, now)
+		case "answer_time":
+			ids, err = s.snakes.SetAnswerTime(claims.Subject, in.Seconds, now)
+		case "stop":
+			ids, err = s.snakes.Stop(claims.Subject, now)
 		case "sync":
 			ids = []int64{claims.Subject}
 		case "start":

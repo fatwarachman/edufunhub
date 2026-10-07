@@ -1,4 +1,5 @@
 import AdSlot from '@/components/ads/ad-slot';
+import { GameFinale, rankStandings } from '@/components/game-finale';
 import { IllustratedSnakesBoard } from '@/components/illustrated-snakes-board';
 import { PlayerAvatar, avatarTint } from '@/components/player-avatar';
 import {
@@ -110,6 +111,7 @@ export const LocalGame = forwardRef<
     const [showDice, setShowDice] = useState(false);
     const [moving, setMoving] = useState(false);
     const [winnerId, setWinnerId] = useState<number | null>(null);
+    const [round, setRound] = useState(0);
     const [question, setQuestion] = useState<OfflineQuestion | null>(null);
     const [target, setTarget] = useState(1);
     const [choice, setChoice] = useState<number | null>(null);
@@ -127,6 +129,7 @@ export const LocalGame = forwardRef<
 
     const restart = (count: number) => {
         generation.current++;
+        setRound((value) => value + 1);
         timers.current.forEach(clearTimeout);
         timers.current.clear();
         setNumPlayers(count);
@@ -398,6 +401,40 @@ export const LocalGame = forwardRef<
                                 {t('snakes.winner.again')}
                             </Button>
                             <AdMoment moment="win" muted={muted} />
+                            <GameFinale
+                                game="snakes-and-ladders"
+                                done
+                                matchKey={`local-${round}`}
+                                won={winner.id === 0}
+                                title={
+                                    numPlayers > 1
+                                        ? t('finale.winner', {
+                                              name: winner.name,
+                                          })
+                                        : undefined
+                                }
+                                standings={
+                                    numPlayers > 1
+                                        ? rankStandings(
+                                              players,
+                                              (p) =>
+                                                  p.id === winner.id
+                                                      ? 1000
+                                                      : p.position,
+                                              (p, rank) => ({
+                                                  key: p.id,
+                                                  name: p.name,
+                                                  rank,
+                                                  score: `${p.position}/100`,
+                                                  character: p.character,
+                                                  seat: p.skinIndex,
+                                              }),
+                                          )
+                                        : []
+                                }
+                                onPlayAgain={() => restart(numPlayers)}
+                                playAgainLabel={t('snakes.winner.again')}
+                            />
                             <AdSlot
                                 placement="arena.result"
                                 className="mx-auto mt-4 max-w-md"

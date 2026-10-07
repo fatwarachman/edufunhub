@@ -473,3 +473,35 @@ func TestHostDisconnectKeepsGameAndHandsOver(t *testing.T) {
 		t.Fatalf("returning host gets the seat back: %v", st["you"])
 	}
 }
+
+func TestHostAnswerTimeAndStop(t *testing.T) {
+	h := NewHub(21)
+	now := time.Unix(1_800_000_000, 0)
+	pin, _ := h.Create(claims(1, 4), now)
+	_, _ = h.Enter(claims(2, 4), pin, now)
+	if _, err := h.SetAnswerTime(1, 15, now); err != nil {
+		t.Fatal(err)
+	}
+	_, _ = h.Start(1, now)
+	g := &roomOf(h, 1).Game
+	if g.answer != 15*time.Second || answerTime(g) != 15*time.Second {
+		t.Fatalf("answer %v", g.answer)
+	}
+	g.auto = true
+	if answerTime(g) != IdleAnswerTime {
+		t.Fatal("auto roll keeps the short idle window")
+	}
+	if _, err := h.Stop(2, now); err != ErrNotHost {
+		t.Fatalf("guest stop: %v", err)
+	}
+	if _, err := h.Stop(1, now); err != nil {
+		t.Fatal(err)
+	}
+	st := h.State(claims(2, 4), now)
+	if st["phase"] != PhaseDone || st["reason"] != "stopped" {
+		t.Fatalf("state %v %v", st["phase"], st["reason"])
+	}
+	if roomOf(h, 2) == nil {
+		t.Fatal("guest stays in the room to see the result")
+	}
+}

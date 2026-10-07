@@ -1,4 +1,6 @@
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { DigitalClock } from '@/components/digital-clock';
+import { GameFinale, podiumStandings } from '@/components/game-finale';
 import { useRoomPin } from '@/components/multiplayer/room';
 import { HostScreen } from '@/components/order-rush/host-screen';
 import { HowToPlay } from '@/components/order-rush/how-to-play';
@@ -184,7 +186,7 @@ export default function OrderRush({
                 style={{ background: `${BG}f2` }}
             >
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
-                    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                    <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
                             href={backHref}
                             label={t('nav.backToPortal')}
@@ -204,6 +206,7 @@ export default function OrderRush({
                                 {t('orderRush.tagline')}
                             </span>
                         </div>
+                        <DigitalClock className="edu-clock--game" />
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                         {chosenRole === 'player' && (
@@ -249,6 +252,29 @@ export default function OrderRush({
                     <HowToPlay className="mx-auto w-full max-w-3xl" />
                 )}
             </main>
+            <GameFinale
+                game="order-rush"
+                done={state.phase === 'GAME_OVER'}
+                matchKey={state.pin}
+                won={state.result?.won ?? false}
+                points={state.result?.points}
+                title={
+                    state.podium?.[0] && !state.result?.won
+                        ? t('finale.winner', { name: state.podium[0].name })
+                        : undefined
+                }
+                standings={podiumStandings(
+                    state.ranking,
+                    state.you?.user_id ?? state.result?.user_id,
+                    (row) => row.score,
+                    (row) => `${t('orderRush.accuracy')} ${row.accuracy}%`,
+                )}
+                onPlayAgain={
+                    chosenRole === 'host'
+                        ? () => act({ t: 'start_game' })
+                        : undefined
+                }
+            />
         </div>
     );
 }

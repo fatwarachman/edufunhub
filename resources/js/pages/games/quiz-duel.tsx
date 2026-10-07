@@ -1,5 +1,8 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { DigitalClock } from '@/components/digital-clock';
+import { GameFinale } from '@/components/game-finale';
+import { AnswerTimePicker } from '@/components/multiplayer/host-controls';
 import {
     RoomEntry,
     RoomLobby,
@@ -238,7 +241,7 @@ export default function QuizDuel({
         <div className="min-h-dvh bg-[#fff4ec] text-[#20364a]">
             <Head title={`${t('duel.title')} — EduFunHub`} />
             <header className="flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
-                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <BackButton
                         href="/portal"
                         label={t('nav.backToPortal')}
@@ -248,6 +251,7 @@ export default function QuizDuel({
                         <Swords className="size-6 shrink-0" />
                         <span className="truncate">{t('duel.title')}</span>
                     </h1>
+                    <DigitalClock className="edu-clock--game" />
                 </div>
                 <SiteNav compact className="shrink-0" />
             </header>
@@ -358,22 +362,45 @@ export default function QuizDuel({
                             onStart={() => roomSend({ t: 'start' })}
                             onLeave={() => roomSend({ t: 'leave' })}
                             settings={
-                                <SubjectPicker
-                                    value={
-                                        isGameSubject(state.room.subject)
-                                            ? state.room.subject
-                                            : 'mix'
-                                    }
-                                    disabled={
-                                        state.room.host !== state.room.you
-                                    }
-                                    onChange={(value) =>
-                                        roomSend({
-                                            t: 'subject',
-                                            subject: value,
-                                        })
-                                    }
-                                />
+                                <div className="flex flex-col gap-5">
+                                    <SubjectPicker
+                                        value={
+                                            isGameSubject(state.room.subject)
+                                                ? state.room.subject
+                                                : 'mix'
+                                        }
+                                        disabled={
+                                            state.room.host !== state.room.you
+                                        }
+                                        onChange={(value) =>
+                                            roomSend({
+                                                t: 'subject',
+                                                subject: value,
+                                            })
+                                        }
+                                    />
+                                    <AnswerTimePicker
+                                        value={state.room.answer_seconds ?? 0}
+                                        options={
+                                            state.room.answer_times ?? [
+                                                0, 10, 15, 20, 30, 45, 60,
+                                            ]
+                                        }
+                                        defaultHint={t(
+                                            'room.answerTime.default',
+                                            { seconds: 15 },
+                                        )}
+                                        disabled={
+                                            state.room.host !== state.room.you
+                                        }
+                                        onChange={(seconds) =>
+                                            roomSend({
+                                                t: 'answer_time',
+                                                seconds,
+                                            })
+                                        }
+                                    />
+                                </div>
                             }
                         />
                     ) : phase === 'idle' ? (
@@ -577,6 +604,50 @@ export default function QuizDuel({
                     ) : null}
                 </section>
             </main>
+            <GameFinale
+                game="quiz-duel"
+                done={phase === 'done' && Boolean(state?.result)}
+                matchKey={state?.match_id}
+                won={state?.result?.outcome === 'win'}
+                points={state?.result?.points}
+                title={
+                    state?.result
+                        ? t(`duel.result.${state.result.outcome}`)
+                        : undefined
+                }
+                standings={
+                    state?.result && you && opponent
+                        ? [
+                              {
+                                  key: 'you',
+                                  name: you.name,
+                                  score: state.result.score,
+                                  character: you.character,
+                                  seat: 0,
+                                  userId: myId,
+                                  isYou: true,
+                              },
+                              {
+                                  key: 'opponent',
+                                  name: opponent.name,
+                                  score: state.result.opponent_score,
+                                  character: opponent.character,
+                                  seat: 1,
+                                  userId: opponent.user_id,
+                              },
+                          ]
+                              .sort((a, b) => b.score - a.score)
+                              .map((row, _, rows) => ({
+                                  ...row,
+                                  rank:
+                                      rows.filter((o) => o.score > row.score)
+                                          .length + 1,
+                              }))
+                        : []
+                }
+                onPlayAgain={() => connection.send({ t: 'queue', subject })}
+                playAgainLabel={t('duel.result.again')}
+            />
         </div>
     );
 }

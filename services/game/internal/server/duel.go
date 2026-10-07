@@ -79,14 +79,16 @@ func (s *Server) duelState(claims auth.Claims, now time.Time) duel.Message {
 func (s *Server) startDuelRoom(uid int64, now time.Time) ([]int64, error) {
 	var a, b auth.Claims
 	var pin, subject string
+	var roundTime time.Duration
 	_, err := s.duelRooms.Start(uid, now, func(r *lobby.Room[struct{}, struct{}]) error {
 		a, b, pin, subject = r.Seats[0].Claims, r.Seats[1].Claims, r.Pin, r.Subject
+		roundTime = r.AnswerTime(0)
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	ids, err := s.duels.StartPrivate(a, b, pin, subject, now)
+	ids, err := s.duels.StartPrivate(a, b, pin, subject, roundTime, now)
 	if err != nil {
 		return nil, err
 	}
@@ -179,6 +181,13 @@ func (s *Server) serveDuel(w http.ResponseWriter, r *http.Request) {
 			s.pushDuel(s.duelRooms.Leave(claims.Subject, now), now)
 		case "subject":
 			ids, err := s.duelRooms.SetSubject(claims.Subject, in.Subject, questions.NormSubject, now)
+			if err != nil {
+				send(duel.Message{"t": "error", "code": err.Error()})
+				continue
+			}
+			s.pushDuel(ids, now)
+		case "answer_time":
+			ids, err := s.duelRooms.SetAnswerTime(claims.Subject, in.Seconds, now)
 			if err != nil {
 				send(duel.Message{"t": "error", "code": err.Error()})
 				continue

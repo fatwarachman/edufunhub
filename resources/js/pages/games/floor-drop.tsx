@@ -1,5 +1,7 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { DigitalClock } from '@/components/digital-clock';
+import { GameFinale, podiumStandings } from '@/components/game-finale';
 import {
     ConnectionBadge,
     inviteLink,
@@ -215,7 +217,7 @@ export default function FloorDrop({
                 style={{ background: `${BG}f2` }}
             >
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
-                    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                    <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
                             href={backHref}
                             label={t('nav.backToPortal')}
@@ -235,6 +237,7 @@ export default function FloorDrop({
                                 {t('floorDrop.tagline')}
                             </span>
                         </div>
+                        <DigitalClock className="edu-clock--game" />
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                         {chosenRole === 'player' && (
@@ -277,6 +280,32 @@ export default function FloorDrop({
                 <GameAdStrip />
                 {body}
             </main>
+            <GameFinale
+                game="floor-drop"
+                done={state.phase === 'GAME_OVER'}
+                matchKey={state.pin}
+                won={state.result?.won ?? false}
+                points={state.result?.points}
+                title={
+                    state.podium?.[0] && !state.result?.won
+                        ? t('finale.winner', { name: state.podium[0].name })
+                        : undefined
+                }
+                standings={podiumStandings(
+                    state.ranking,
+                    state.you?.user_id ?? state.result?.user_id,
+                    (row) =>
+                        t('floorDrop.survival', {
+                            seconds: Math.round(row.survival_ms / 1000),
+                        }),
+                    (row) => t('floorDrop.accuracy', { value: row.accuracy }),
+                )}
+                onPlayAgain={
+                    chosenRole === 'host'
+                        ? () => act({ t: 'start_game' })
+                        : undefined
+                }
+            />
         </div>
     );
 }

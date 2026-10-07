@@ -58,6 +58,8 @@ export interface MiniState extends Partial<
     question?: MiniQuestion;
     reveal?: { answer: number; hint: string; gained: number };
     winner?: number;
+    /** True when the host stopped the game for everyone. */
+    stopped?: boolean;
     result?: {
         points: number;
         correct: number;

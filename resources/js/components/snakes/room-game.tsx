@@ -1,5 +1,10 @@
 import AdSlot from '@/components/ads/ad-slot';
+import { GameFinale, rankStandings } from '@/components/game-finale';
 import { IllustratedSnakesBoard } from '@/components/illustrated-snakes-board';
+import {
+    AnswerTimePicker,
+    HostExitDialog,
+} from '@/components/multiplayer/host-controls';
 import {
     ConnectionBadge,
     RoomEntry,
@@ -443,6 +448,21 @@ export function RoomGame({
                                 send({ t: 'subject', subject })
                             }
                         />
+                        <AnswerTimePicker
+                            value={state.answer_seconds ?? 0}
+                            options={
+                                state.answer_times ?? [
+                                    0, 10, 15, 20, 30, 45, 60,
+                                ]
+                            }
+                            defaultHint={t('room.answerTime.default', {
+                                seconds: 30,
+                            })}
+                            disabled={!isHost}
+                            onChange={(seconds) =>
+                                send({ t: 'answer_time', seconds })
+                            }
+                        />
                         <DurationPicker
                             value={state.minutes ?? 0}
                             options={state.durations ?? [0, 5, 10, 15, 20, 30]}
@@ -655,6 +675,14 @@ export function RoomGame({
                                               })}
                                     </h2>
                                 )}
+                                {state.reason === 'stopped' && (
+                                    <p
+                                        className="mx-auto mt-2 w-fit rounded-full border-2 border-[#1f2a44] bg-white px-3 py-1 text-xs font-black text-[#1f2a44]"
+                                        data-testid="room-stopped"
+                                    >
+                                        {t('room.hostExit.stopped')}
+                                    </p>
+                                )}
                                 {!winner && state.reason === 'time' && (
                                     <h2 className="mt-2 font-display text-2xl font-black text-[#1f2a44]">
                                         {t('snakes.winner.timeNoWinner')}
@@ -745,7 +773,9 @@ export function RoomGame({
                                 className="mx-auto mt-3 flex min-h-11 rounded-xl border-2 border-[#1f2a44] bg-white text-xs font-black text-[#1f2a44]"
                             >
                                 <DoorOpen className="size-4" />
-                                {t('snakes.leave.button')}
+                                {isHost
+                                    ? t('room.hostExit.button')
+                                    : t('snakes.leave.button')}
                             </Button>
                         )}
                     </div>
@@ -754,8 +784,21 @@ export function RoomGame({
                 </div>
             </div>
 
+            {leaving && state.phase === 'playing' && isHost && (
+                <HostExitDialog
+                    onClose={() => setLeaving(false)}
+                    onLeave={() => {
+                        setLeaving(false);
+                        send({ t: 'leave' });
+                    }}
+                    onStop={() => {
+                        setLeaving(false);
+                        send({ t: 'stop' });
+                    }}
+                />
+            )}
             <LeaveGameDialog
-                open={leaving && state.phase === 'playing'}
+                open={leaving && state.phase === 'playing' && !isHost}
                 onCancel={() => setLeaving(false)}
                 onConfirm={() => {
                     setLeaving(false);
@@ -806,6 +849,40 @@ export function RoomGame({
                         onAnswer={(option) => send({ t: 'answer', option })}
                     />
                 )}
+            <GameFinale
+                game="snakes-and-ladders"
+                done={state.phase === 'done'}
+                matchKey={state.pin}
+                won={state.phase === 'done' && state.winner === you}
+                points={state.points}
+                title={
+                    winner && winner.seat !== you
+                        ? t('finale.winner', { name: winner.name })
+                        : undefined
+                }
+                standings={rankStandings(
+                    players.filter((p) => !p.left),
+                    (p) =>
+                        p.finished
+                            ? 1_000_000 - p.finished
+                            : p.position * 1000 + p.score / 1000,
+                    (p, rank) => ({
+                        key: p.seat,
+                        name: p.name,
+                        rank,
+                        score: p.finished
+                            ? t('snakes.finishBonus.finished', {
+                                  rank: p.finished,
+                              })
+                            : `${p.position}/100`,
+                        character: p.character,
+                        seat: p.seat,
+                        userId: p.user_id,
+                        isYou: p.seat === you,
+                    }),
+                )}
+                onPlayAgain={isHost ? () => send({ t: 'start' }) : undefined}
+            />
         </>
     );
 }

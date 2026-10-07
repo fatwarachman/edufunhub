@@ -147,6 +147,10 @@ type game struct {
 	stepAt  time.Time
 	started time.Time
 	ended   time.Time
+	// roundTime is the answer window: the host's choice or the grade default.
+	roundTime time.Duration
+	// stopped marks a game the host ended for everyone.
+	stopped bool
 }
 
 type room = lobby.Room[game, player]
@@ -179,6 +183,9 @@ func (h *Hub) Leave(uid int64, now time.Time) []int64 { return h.rooms.Leave(uid
 // HandOver moves the host role away from a host disconnected for longer
 // than lobby.HostGrace; the game keeps running either way.
 func (h *Hub) HandOver(now time.Time) []int64 { return h.rooms.HandOver(now, lobby.HostGrace) }
+
+// RoomPhase reports the phase of the room with the given PIN (PIN lookup).
+func (h *Hub) RoomPhase(pin string) (string, bool) { return h.rooms.PhaseOf(pin) }
 
 // Presence reports the room uid is seated in (portal "continue playing").
 func (h *Hub) Presence(uid int64) (lobby.Presence, bool) { return h.rooms.PresenceOf(uid) }
@@ -226,11 +233,26 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 		h.seed++
 		r.Game = game{
 			step: StepCountdown, grade: grade, stepAt: now, started: now,
-			rng:  rand.New(rand.NewPCG(h.seed, h.seed^0x6a09e667f3bcc909)),
-			bank: questions.NewFor(h.Spec.Key, grade, h.seed).For("", r.Humans()...),
-			seen: map[string]bool{},
+			roundTime: r.AnswerTime(h.Spec.RoundTime(grade)),
+			rng:       rand.New(rand.NewPCG(h.seed, h.seed^0x6a09e667f3bcc909)),
+			bank:      questions.NewFor(h.Spec.Key, grade, h.seed).For("", r.Humans()...),
+			seen:      map[string]bool{},
 		}
 		return nil
+	})
+}
+
+// SetAnswerTime picks the answer time per question (host, before start).
+func (h *Hub) SetAnswerTime(uid int64, seconds int, now time.Time) ([]int64, error) {
+	return h.rooms.SetAnswerTime(uid, seconds, now)
+}
+
+// Stop ends the running game for everyone (host only): rounds played so far
+// count and every player still in the room is paid.
+func (h *Hub) Stop(uid int64, now time.Time) ([]int64, error) {
+	return h.rooms.Stop(uid, now, func(r *room) {
+		r.Game.stopped = true
+		h.end(r, now)
 	})
 }
 
@@ -287,8 +309,8 @@ func (h *Hub) Answer(uid int64, option int, now time.Time) ([]int64, error) {
 		}
 		p.answered, p.choice = true, option
 		if option == g.current.Question.Answer {
-			left := max(0, h.Spec.RoundTime(g.grade)-now.Sub(g.stepAt))
-			p.gained = ScoreCorrect + int(int64(SpeedBonus)*int64(left)/int64(h.Spec.RoundTime(g.grade)))
+			left := max(0, g.roundTime-now.Sub(g.stepAt))
+			p.gained = ScoreCorrect + int(int64(SpeedBonus)*int64(left)/int64(g.roundTime))
 		}
 		r.Touch(now)
 		if allAnswered(r) {
@@ -348,7 +370,7 @@ func (h *Hub) advance(r *room, now time.Time) {
 			h.ask(r, now)
 		}
 	case StepQuestion:
-		if elapsed >= h.Spec.RoundTime(g.grade) || allAnswered(r) {
+		if elapsed >= g.roundTime || allAnswered(r) {
 			reveal(r, now)
 		}
 	case StepReveal:
@@ -499,6 +521,7 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 		if r.Phase == lobby.PhaseDone {
 			w := winner(r)
 			msg["winner"] = w
+			msg["stopped"] = g.stopped
 			if i := r.SeatIndex(claims.Subject); i >= 0 {
 				p := r.Seats[i].Data
 				msg["result"] = Message{"points": Award(p.earned, w == i), "correct": p.correct, "wrong": p.wrong, "score": p.score, "won": w == i}
@@ -526,10 +549,10 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 			question := Message{
 				"id": fmt.Sprintf("%s-%d", r.Pin, g.round), "subject": q.Subject, "worth": q.Worth(),
 				"text": q.Prompt.Get(locale), "options": opts, "choice": choice,
-				"visual": localize(g.current.Visual, locale), "round_ms": h.Spec.RoundTime(g.grade).Milliseconds(),
+				"visual": localize(g.current.Visual, locale), "round_ms": g.roundTime.Milliseconds(),
 			}
 			if g.step == StepQuestion {
-				question["remaining_ms"] = max(0, (h.Spec.RoundTime(g.grade) - elapsed).Milliseconds())
+				question["remaining_ms"] = max(0, (g.roundTime - elapsed).Milliseconds())
 			} else {
 				gained := 0
 				if i := r.SeatIndex(claims.Subject); i >= 0 {

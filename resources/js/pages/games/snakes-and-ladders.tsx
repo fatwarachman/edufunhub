@@ -1,4 +1,5 @@
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { DigitalClock } from '@/components/digital-clock';
 import {
     BackButton,
     NavButton,
@@ -75,7 +76,7 @@ export default function SnakesAndLaddersGame({
 
             <header className="sticky top-0 z-30 border-b-4 border-[#1f2a44] bg-[#FFF9E6]/95 backdrop-blur-md">
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
-                    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                    <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
                             href={backHref}
                             label={t(
@@ -89,10 +90,11 @@ export default function SnakesAndLaddersGame({
                             <span className="truncate font-display text-lg font-black text-[#1f2a44] sm:text-2xl">
                                 {t('snakes.title')}
                             </span>
-                            <span className="hidden text-xs font-bold text-slate-600 sm:block">
+                            <span className="hidden truncate text-xs font-bold text-slate-600 sm:block">
                                 {t('snakes.tagline')}
                             </span>
                         </div>
+                        <DigitalClock className="edu-clock--game" />
                     </div>
 
                     <div className="flex shrink-0 items-center gap-1.5">
