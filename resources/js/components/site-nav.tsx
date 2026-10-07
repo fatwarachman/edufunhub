@@ -7,6 +7,7 @@ import { Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     BookOpenCheck,
+    BrainCircuit,
     Gamepad2,
     Home,
     LayoutDashboard,
@@ -163,6 +164,13 @@ const ADMIN_ITEM: NavItem = {
     icon: ShieldCheck,
 };
 
+/** Signed-in players: own ability analysis, icon button in the header. */
+const ABILITY_ITEM: NavItem = {
+    href: '/ability',
+    labelKey: 'nav.ability',
+    icon: BrainCircuit,
+};
+
 /** Signed-in players: icon button next to the bell, labelled in the phone menu. */
 const FEEDBACK_ITEM: NavItem = {
     href: '/feedback',
@@ -170,10 +178,16 @@ const FEEDBACK_ITEM: NavItem = {
     icon: MessageSquarePlus,
 };
 
+const LOGIN_ITEM: NavItem = {
+    href: '/login',
+    labelKey: 'nav.login',
+    icon: LogIn,
+};
+
 const GUEST_ITEMS: NavItem[] = [
     { href: '/', labelKey: 'nav.home', icon: Home, external: true },
     { href: '/gamelist', labelKey: 'nav.games', icon: Gamepad2 },
-    { href: '/login', labelKey: 'nav.login', icon: LogIn },
+    LOGIN_ITEM,
 ];
 
 function isActive(url: string, href: string): boolean {
@@ -277,6 +291,17 @@ export function SiteNav({
             {signedIn && (
                 <div className="edu-nav-links">
                     <NavButton
+                        href={ABILITY_ITEM.href}
+                        icon={ABILITY_ITEM.icon}
+                        label={t(ABILITY_ITEM.labelKey)}
+                        iconOnly
+                        active={
+                            isActive(url, ABILITY_ITEM.href) ||
+                            isActive(url, '/a')
+                        }
+                        testId="nav-ability"
+                    />
+                    <NavButton
                         href={FEEDBACK_ITEM.href}
                         icon={FEEDBACK_ITEM.icon}
                         label={t(FEEDBACK_ITEM.labelKey)}
@@ -351,12 +376,10 @@ function MobileMenu({
         };
     }, [open]);
 
+    /* Guests get sign in / sign up as buttons at the top of the panel. */
     const entries: NavItem[] = signedIn
-        ? [...items, FEEDBACK_ITEM]
-        : [
-              ...items,
-              { href: '/register', labelKey: 'nav.register', icon: UserPlus },
-          ];
+        ? [...items, ABILITY_ITEM, FEEDBACK_ITEM]
+        : items.filter((item) => item !== LOGIN_ITEM);
 
     return (
         <div className="edu-nav-more" ref={root}>
@@ -385,6 +408,28 @@ function MobileMenu({
                 hidden={!open}
                 data-testid="nav-more-panel"
             >
+                {!signedIn && (
+                    <div
+                        className="edu-nav-more-auth"
+                        data-testid="nav-more-auth"
+                    >
+                        <NavButton
+                            href={LOGIN_ITEM.href}
+                            icon={LOGIN_ITEM.icon}
+                            label={t(LOGIN_ITEM.labelKey)}
+                            active={isActive(url, LOGIN_ITEM.href)}
+                            testId="nav-more-login"
+                        />
+                        <NavButton
+                            href="/register"
+                            icon={UserPlus}
+                            label={t('nav.registerFree')}
+                            variant="primary"
+                            active={isActive(url, '/register')}
+                            testId="nav-more-register"
+                        />
+                    </div>
+                )}
                 <ul>
                     {entries.map((item) => {
                         const Icon = item.icon;

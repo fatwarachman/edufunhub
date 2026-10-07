@@ -16,7 +16,8 @@ export function BrandWordmark({ hideOnPhone }: { hideOnPhone?: boolean }) {
             data-testid="brand-wordmark"
         >
             <span className="edu-brand-name">
-                edufun<span>hub</span>.com
+                edu<span className="edu-brand-fun">fun</span>
+                <span>hub</span>.com
             </span>
             <span className="edu-brand-tagline">{t('brand.tagline')}</span>
         </span>

@@ -48,6 +48,8 @@ button{cursor:pointer;font:inherit;border:0;background:0}
 .site-header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:3px solid var(--ink);backdrop-filter:blur(12px)}
 /* Mobile menu scrolls inside the sticky header instead of growing past the viewport. */
 #mobile-nav{max-height:calc(100dvh - 75px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+/* Sign in / sign up stay pinned at the top while the menu list scrolls. */
+.mobile-nav-auth{position:sticky;top:-16px;z-index:2;display:flex;gap:8px;margin:-16px -24px 6px;padding:16px 24px 14px;background:var(--cream);border-bottom:2px solid rgba(21,27,46,.08)}
 .site-header .container{display:flex;align-items:center;justify-content:space-between;height:72px}
 .logo{display:flex;align-items:center;gap:12px}
 .logo-mark{width:44px;height:44px;background:var(--amber);border:3px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink);transition:transform .2s}
@@ -55,6 +57,8 @@ button{cursor:pointer;font:inherit;border:0;background:0}
 .logo-mark svg{width:24px;height:24px;stroke:var(--ink);stroke-width:2.5;fill:none}
 .logo-text{font-family:var(--display-font);font-weight:700;font-size:22px;letter-spacing:-.02em}
 .logo-text span{color:var(--coral)}
+/* Header wordmark: "fun" in the brand amber of the logo mark and buttons. */
+.logo-text .logo-fun{color:var(--amber)}
 .logo-tag{font-size:11px;font-weight:600;color:var(--ink);opacity:.5;letter-spacing:.04em}
 .nav-desktop{display:none;gap:4px;align-items:center}
 @media(min-width:1024px){.nav-desktop{display:flex}}
@@ -509,7 +513,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/><path d="M8 8V6a4 4 0 018 0v2"/></svg>
       </div>
       <div>
-        <div class="logo-text">edufun<span>hub</span>.com</div>
+        <div class="logo-text">edu<span class="logo-fun">fun</span><span>hub</span>.com</div>
         <div class="logo-tag">Bermain · Belajar · Berprestasi</div>
       </div>
     </a>
@@ -607,6 +611,10 @@ button{cursor:pointer;font:inherit;border:0;background:0}
 
   <!-- Mobile Nav -->
   <div id="mobile-nav" style="display:none;padding:16px 24px 24px;border-top:2px solid var(--ink);background:var(--cream)">
+    <div class="mobile-nav-auth">
+      <a href="/login" class="btn btn-outline" style="flex:1;justify-content:center">Masuk</a>
+      <a href="/register" class="btn btn-primary" style="flex:1;justify-content:center">Daftar Gratis</a>
+    </div>
     <a href="#game-modes" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Mode Game</a>
     <div style="height:1px;background:rgba(21,27,46,.08);margin:4px 0"></div>
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.35);padding:8px 0 4px">Mainkan</div>
@@ -635,10 +643,6 @@ button{cursor:pointer;font:inherit;border:0;background:0}
     <a href="#subjects" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Mata Pelajaran</a>
     <a href="#proof" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Komunitas</a>
     <a href="#faq" style="display:block;padding:12px 0;font-weight:700;font-size:16px">FAQ</a>
-    <div style="margin-top:16px;display:flex;gap:8px">
-      <a href="/login" class="btn btn-outline" style="flex:1;justify-content:center">Masuk</a>
-      <a href="/register" class="btn btn-primary" style="flex:1;justify-content:center">Daftar Gratis</a>
-    </div>
   </div>
 </header>
 
