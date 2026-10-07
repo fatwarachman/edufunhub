@@ -59,6 +59,10 @@
     color: inherit;
     white-space: nowrap;
 }
+/* "fun" in the brand amber of the logo mark and buttons, flat like the rest. */
+.auth-brand .edu-brand-name .edu-brand-fun {
+    color: var(--auth-amber);
+}
 .auth-brand .edu-brand-tagline {
     color: var(--muted-foreground, #515667);
     font-family: 'DM Sans', system-ui, sans-serif;

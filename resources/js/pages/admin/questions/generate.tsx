@@ -1,4 +1,8 @@
-import { AiBadge, FlashMessages } from '@/components/admin/admin-kit';
+import {
+    AiBadge,
+    ConfirmDialog,
+    FlashMessages,
+} from '@/components/admin/admin-kit';
 import {
     fieldClass,
     formatDateTime,
@@ -17,14 +21,16 @@ import {
     ChevronDown,
     CircleAlert,
     CircleCheck,
+    CircleSlash,
     Clock,
     History,
     Loader2,
     Sparkles,
+    Square,
 } from 'lucide-react';
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react';
 
-type ItemStatus = 'queued' | 'running' | 'done' | 'failed';
+type ItemStatus = 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
 
 interface GenerationItem {
     subject: string;
@@ -43,12 +49,13 @@ interface Generation {
     grades: number[];
     per_combination: number;
     activate: boolean;
-    status: 'queued' | 'running' | 'done' | 'failed';
+    status: 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
     total_jobs: number;
     done_jobs: number;
     created_count: number;
     skipped_count: number;
     error: string | null;
+    cancelled_at: string | null;
     requested_by: string | null;
     created_at: string | null;
     finished_at: string | null;
@@ -403,9 +410,25 @@ export default function GenerateQuestions({
 
 function GenerationRow({ generation: g }: { generation: Generation }) {
     const subjectLabel = useSubjectLabel();
+    const [confirming, setConfirming] = useState(false);
+    const [stopping, setStopping] = useState(false);
     const progress =
         g.total_jobs > 0 ? Math.round((g.done_jobs / g.total_jobs) * 100) : 0;
     const live = g.status === 'queued' || g.status === 'running';
+    const stopRequested = live && g.cancelled_at !== null;
+    const stop = () =>
+        router.post(
+            `/admin/questions/generate/${g.id}/cancel`,
+            {},
+            {
+                preserveScroll: true,
+                onStart: () => setStopping(true),
+                onFinish: () => {
+                    setStopping(false);
+                    setConfirming(false);
+                },
+            },
+        );
     return (
         <li
             className="flex flex-col gap-2 py-3"
@@ -418,6 +441,8 @@ function GenerationRow({ generation: g }: { generation: Generation }) {
                         <Loader2 className="size-4 animate-spin text-violet-500" />
                     ) : g.status === 'failed' ? (
                         <CircleAlert className="size-4 text-destructive" />
+                    ) : g.status === 'cancelled' ? (
+                        <CircleSlash className="size-4 text-amber-500" />
                     ) : (
                         <CircleCheck className="size-4 text-emerald-500" />
                     )}
@@ -429,11 +454,60 @@ function GenerationRow({ generation: g }: { generation: Generation }) {
                         </span>
                     )}
                 </span>
-                <span className="text-xs text-muted-foreground">
-                    {formatDateTime(g.created_at)} · {g.requested_by ?? '—'} ·{' '}
-                    <span className="font-mono">{g.model}</span>
+                <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span>
+                        {formatDateTime(g.created_at)} · {g.requested_by ?? '—'}{' '}
+                        · <span className="font-mono">{g.model}</span>
+                    </span>
+                    {live && !stopRequested && (
+                        <button
+                            type="button"
+                            onClick={() => setConfirming(true)}
+                            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 px-3 text-xs font-medium text-red-700 hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:border-red-900 dark:bg-red-950/40 dark:text-red-200 dark:hover:bg-red-950/70"
+                            data-testid={`generation-${g.id}-stop`}
+                        >
+                            <Square
+                                className="size-3.5 fill-current"
+                                aria-hidden
+                            />
+                            {tr('Stop')}
+                        </button>
+                    )}
                 </span>
             </div>
+            {stopRequested && (
+                <p
+                    className="flex items-center gap-2 text-xs font-medium text-amber-700 dark:text-amber-300"
+                    data-testid={`generation-${g.id}-stopping`}
+                >
+                    <Loader2
+                        className="size-3.5 animate-spin motion-reduce:animate-none"
+                        aria-hidden
+                    />
+                    {tr(
+                        'Stopping: finishing the questions in progress, the rest will not start.',
+                    )}
+                </p>
+            )}
+            {g.status === 'cancelled' && (
+                <p
+                    className="text-xs font-medium text-amber-700 dark:text-amber-300"
+                    data-testid={`generation-${g.id}-stopped`}
+                >
+                    {tr(
+                        'Stopped by an admin. Questions already created are kept.',
+                    )}
+                </p>
+            )}
+            <ConfirmDialog
+                open={confirming}
+                title="Stop question generation?"
+                message="Questions already created stay in the bank. Subjects and grades still in progress finish their current batch; the ones not started yet are skipped."
+                confirmLabel={tr('Stop generating')}
+                processing={stopping}
+                onClose={() => setConfirming(false)}
+                onConfirm={stop}
+            />
             <p className="text-xs text-muted-foreground">
                 {g.subjects.map((subject) => subjectLabel(subject)).join(', ')}{' '}
                 · {g.grades.map(gradeLabel).join(', ')} · {g.per_combination}{' '}
@@ -506,6 +580,12 @@ const STATUS_STYLE: Record<
         bar: 'bg-red-500',
         icon: 'text-destructive',
     },
+    cancelled: {
+        label: 'Stopped',
+        chip: 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200',
+        bar: 'bg-amber-500',
+        icon: 'text-amber-500',
+    },
 };
 
 function StatusIcon({
@@ -537,6 +617,9 @@ function StatusIcon({
     if (status === 'failed') {
         return <CircleAlert className={iconClass} aria-hidden />;
     }
+    if (status === 'cancelled') {
+        return <CircleSlash className={iconClass} aria-hidden />;
+    }
     return <Clock className={iconClass} aria-hidden />;
 }
 
@@ -552,6 +635,9 @@ function subjectStatus(items: GenerationItem[]): ItemStatus {
         return items.some((item) => item.status !== 'queued')
             ? 'running'
             : 'queued';
+    }
+    if (items.some((item) => item.status === 'cancelled')) {
+        return 'cancelled';
     }
     return 'failed';
 }
@@ -576,7 +662,10 @@ function SubjectProgress({
         new Map(),
     );
     const finished = items.filter(
-        (item) => item.status === 'done' || item.status === 'failed',
+        (item) =>
+            item.status === 'done' ||
+            item.status === 'failed' ||
+            item.status === 'cancelled',
     ).length;
     const running = items.filter((item) => item.status === 'running');
     const now = running

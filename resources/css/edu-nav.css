@@ -605,6 +605,12 @@
         display: none;
     }
 }
+/* Teacher/admin icon rows below 1024px: the brand mark covers the portal link. */
+@media (max-width: 1023px) {
+    .edu-nav-bar--crowded .edu-nav-mobile-hide {
+        display: none;
+    }
+}
 
 /* Groups inside the nav bar behave like direct children. */
 .edu-nav-links {
@@ -621,6 +627,35 @@
     margin: 0;
     padding: 0;
     list-style: none;
+}
+/* Guest phone menu: sign in / sign up side by side above the links. */
+/* Stays pinned at the top while the panel's link list scrolls. */
+.edu-nav-more-auth {
+    position: sticky;
+    top: -10px;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: -10px -10px 8px;
+    padding: 10px 10px 10px;
+    border-bottom: 2px solid rgba(21, 27, 46, 0.1);
+    background: #fffaf0;
+}
+/* Higher specificity than the phone icon-only rules: keep the text labels. */
+.edu-nav-bar .edu-nav-more-auth .edu-nav-btn {
+    width: 100%;
+    min-width: 0;
+    padding: 0 12px;
+    justify-content: center;
+}
+.edu-nav-bar .edu-nav-more-auth .edu-nav-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: nowrap;
 }
 .edu-nav-more-icon {
     background: #ffd93d;
@@ -772,7 +807,7 @@
     }
 }
 /*
- * 1024–1119px: the feedback icon joins the plain player nav, so labelled
+ * 1024–1119px: the feedback and ability icons join the plain player nav, so labelled
  * buttons get slimmer padding and gaps to keep the header on one row.
  */
 @media (min-width: 1024px) and (max-width: 1119px) {
@@ -784,12 +819,20 @@
         padding: 0 10px;
     }
 }
+/* 1024–1079px: the ability icon also joins, so labelled buttons slim down more. */
+@media (min-width: 1024px) and (max-width: 1079px) {
+    .edu-nav-bar:not(.edu-nav-bar--crowded)
+        .edu-nav-btn:not(.edu-nav-btn--icon, [data-testid='nav-logout']) {
+        gap: 6px;
+        padding: 0 7px;
+    }
+}
 /*
- * Teacher/admin accounts have extra nav items. Up to 1279px their log out
+ * Teacher/admin accounts have extra nav items. Up to 1365px their log out
  * button is icon-only, and up to 1199px every item is (labels stay for
  * screen readers and tooltips).
  */
-@media (min-width: 1024px) and (max-width: 1279px) {
+@media (min-width: 1024px) and (max-width: 1365px) {
     .edu-nav-bar--crowded [data-testid='nav-logout'] {
         padding: 0;
         width: 44px;

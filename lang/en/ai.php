@@ -18,6 +18,8 @@ return [
     'pick_grade' => 'Choose at least one grade.',
     'too_many' => 'This would generate :total questions; the limit per request is :max.',
     'generation_started' => 'Generating :total questions in the background.',
+    'generation_stopped' => 'Question generation stopped. Questions already created are kept.',
+    'generation_not_running' => 'This request has already finished or been stopped.',
     'teacher_assigned' => ':name is now a teacher and can open Ruang Guru.',
     'teacher_removed' => ':name is no longer a teacher.',
     'assessment_started' => 'AI ability analysis started. The result appears here in a minute.',

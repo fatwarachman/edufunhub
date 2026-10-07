@@ -14,6 +14,8 @@ import {
     BookMarked,
     Bot,
     ChartColumnBig,
+    ChartNoAxesCombined,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
     Clock,
@@ -32,6 +34,7 @@ import {
     Settings,
     ShieldCheck,
     ShoppingBag,
+    SlidersHorizontal,
     Sun,
     Swords,
     Trophy,
@@ -57,40 +60,59 @@ interface NavItem {
     superadminOnly?: boolean;
 }
 
-const navItems: NavItem[] = [
+/** Expandable sidebar entry that groups related pages (e.g. settings). */
+interface NavGroup {
+    title: string;
+    icon: React.ElementType;
+    children: NavItem[];
+}
+
+type NavEntry = NavItem | NavGroup;
+
+function isGroup(entry: NavEntry): entry is NavGroup {
+    return 'children' in entry;
+}
+
+const navItems: NavEntry[] = [
     { title: 'Dashboard', href: '/admin/dashboard', icon: Gauge, exact: true },
     { title: 'Users', href: '/admin/users', icon: Users },
     { title: 'Roles', href: '/admin/roles', icon: ShieldCheck },
     { title: 'Permissions', href: '/admin/permissions', icon: Lock },
     {
-        title: 'User Statistics',
-        href: '/admin/user-statistics',
-        icon: UsersRound,
-        superadminOnly: true,
-    },
-    {
-        title: 'Playing Time',
-        href: '/admin/playing-time',
-        icon: Clock,
-        superadminOnly: true,
-    },
-    {
-        title: 'Screen Time',
-        href: '/admin/screen-time',
-        icon: MonitorSmartphone,
-        superadminOnly: true,
-    },
-    {
-        title: 'Game Statistics',
-        href: '/admin/games',
-        icon: ChartColumnBig,
-        superadminOnly: true,
-    },
-    {
-        title: 'Leaderboard',
-        href: '/admin/leaderboard',
-        icon: Trophy,
-        superadminOnly: true,
+        title: 'Analytics',
+        icon: ChartNoAxesCombined,
+        children: [
+            {
+                title: 'User Statistics',
+                href: '/admin/user-statistics',
+                icon: UsersRound,
+                superadminOnly: true,
+            },
+            {
+                title: 'Playing Time',
+                href: '/admin/playing-time',
+                icon: Clock,
+                superadminOnly: true,
+            },
+            {
+                title: 'Screen Time',
+                href: '/admin/screen-time',
+                icon: MonitorSmartphone,
+                superadminOnly: true,
+            },
+            {
+                title: 'Game Statistics',
+                href: '/admin/games',
+                icon: ChartColumnBig,
+                superadminOnly: true,
+            },
+            {
+                title: 'Leaderboard',
+                href: '/admin/leaderboard',
+                icon: Trophy,
+                superadminOnly: true,
+            },
+        ],
     },
     {
         title: 'Question Bank',
@@ -105,27 +127,9 @@ const navItems: NavItem[] = [
         superadminOnly: true,
     },
     {
-        title: 'Point Rules',
-        href: '/admin/point-rules',
-        icon: Coins,
-        superadminOnly: true,
-    },
-    {
-        title: 'Sound Settings',
-        href: '/admin/sound-settings',
-        icon: Volume2,
-        superadminOnly: true,
-    },
-    {
         title: 'Notifications',
         href: '/admin/notifications',
         icon: BellRing,
-        superadminOnly: true,
-    },
-    {
-        title: 'AI Settings',
-        href: '/admin/ai-settings',
-        icon: Bot,
         superadminOnly: true,
     },
     {
@@ -160,7 +164,35 @@ const navItems: NavItem[] = [
     },
     { title: 'Feedback', href: '/admin/feedback', icon: MessageSquarePlus },
     { title: 'Activity Log', href: '/admin/activity-log', icon: Activity },
-    { title: 'Settings', href: '/admin/settings', icon: Settings },
+    {
+        title: 'Settings',
+        icon: Settings,
+        children: [
+            {
+                title: 'General',
+                href: '/admin/settings',
+                icon: SlidersHorizontal,
+            },
+            {
+                title: 'Sound Settings',
+                href: '/admin/sound-settings',
+                icon: Volume2,
+                superadminOnly: true,
+            },
+            {
+                title: 'AI Settings',
+                href: '/admin/ai-settings',
+                icon: Bot,
+                superadminOnly: true,
+            },
+            {
+                title: 'Point Rules',
+                href: '/admin/point-rules',
+                icon: Coins,
+                superadminOnly: true,
+            },
+        ],
+    },
 ];
 
 function isActive(href: string, currentUrl: string, exact = false): boolean {
@@ -187,6 +219,32 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const currentUrl = usePage().url;
     const prevUrlRef = useRef(currentUrl);
+    const canSee = (item: NavItem) =>
+        !item.superadminOnly || Boolean(auth.user.is_superadmin);
+    const groupActive = (group: NavGroup) =>
+        group.children.some((child) =>
+            isActive(child.href, currentUrl, child.exact),
+        );
+    /* Groups start open when the current page is inside them. */
+    const [openGroups, setOpenGroups] = useState<Set<string>>(
+        () =>
+            new Set(
+                navItems
+                    .filter(isGroup)
+                    .filter(groupActive)
+                    .map((group) => group.title),
+            ),
+    );
+    const toggleGroup = (title: string) =>
+        setOpenGroups((current) => {
+            const next = new Set(current);
+            if (next.has(title)) {
+                next.delete(title);
+            } else {
+                next.add(title);
+            }
+            return next;
+        });
 
     // Close sidebar on mobile when route changes
     useEffect(() => {
@@ -212,6 +270,33 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
 
     const user = auth.user;
     const initials = getInitials(user.name);
+    const linkClasses = cn(
+        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+        'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+        'focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none',
+    );
+    const renderLink = (item: NavItem) => {
+        const active = isActive(item.href, currentUrl, item.exact);
+        return (
+            <Link
+                href={item.href}
+                className={cn(
+                    linkClasses,
+                    active &&
+                        'bg-sidebar-accent text-sidebar-accent-foreground',
+                    !active && 'text-sidebar-foreground/80',
+                    sidebarCollapsed && 'md:justify-center md:px-2',
+                )}
+                aria-current={active ? 'page' : undefined}
+                title={sidebarCollapsed ? tr(item.title) : undefined}
+            >
+                <item.icon className="size-4 shrink-0" />
+                {!sidebarCollapsed && (
+                    <span className="truncate">{tr(item.title)}</span>
+                )}
+            </Link>
+        );
+    };
 
     return (
         <div key={i18n.language} className="flex min-h-screen bg-background">
@@ -228,7 +313,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
             <aside
                 className={cn(
                     'fixed inset-y-0 left-0 z-50 flex flex-col bg-sidebar text-sidebar-foreground transition-all duration-200',
-                    'md:relative md:z-auto',
+                    'md:sticky md:top-0 md:z-auto md:h-dvh md:shrink-0 md:self-start',
                     sidebarCollapsed ? 'md:w-14' : 'md:w-64',
                     sidebarOpen
                         ? 'w-72 translate-x-0'
@@ -266,54 +351,102 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                 </div>
 
                 {/* Nav items */}
-                <nav className="flex-1 overflow-y-auto p-2">
+                <nav className="flex-1 [scrollbar-width:thin] [scrollbar-color:color-mix(in_oklab,var(--sidebar-foreground)_25%,transparent)_transparent] overflow-y-auto p-2">
                     <ul className="flex flex-col gap-1" role="list">
-                        {navItems
-                            .filter(
-                                (item) =>
-                                    !item.superadminOnly ||
-                                    auth.user.is_superadmin,
-                            )
-                            .map((item) => {
-                                const active = isActive(
-                                    item.href,
-                                    currentUrl,
-                                    item.exact,
-                                );
-                                return (
-                                    <li key={item.href}>
-                                        <Link
-                                            href={item.href}
-                                            className={cn(
-                                                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                                                'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                                                'focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none',
-                                                active &&
-                                                    'bg-sidebar-accent text-sidebar-accent-foreground',
-                                                !active &&
-                                                    'text-sidebar-foreground/80',
-                                                sidebarCollapsed &&
-                                                    'md:justify-center md:px-2',
-                                            )}
-                                            aria-current={
-                                                active ? 'page' : undefined
-                                            }
-                                            title={
-                                                sidebarCollapsed
-                                                    ? item.title
-                                                    : undefined
-                                            }
-                                        >
-                                            <item.icon className="size-4 shrink-0" />
-                                            {!sidebarCollapsed && (
-                                                <span className="truncate">
-                                                    {tr(item.title)}
-                                                </span>
-                                            )}
-                                        </Link>
+                        {navItems.map((entry) => {
+                            if (!isGroup(entry)) {
+                                return canSee(entry) ? (
+                                    <li key={entry.href}>
+                                        {renderLink(entry)}
                                     </li>
-                                );
-                            })}
+                                ) : null;
+                            }
+                            const children = entry.children.filter(canSee);
+                            if (children.length === 0) {
+                                return null;
+                            }
+                            const active = groupActive(entry);
+                            const open =
+                                openGroups.has(entry.title) &&
+                                !sidebarCollapsed;
+                            const panelId = `admin-nav-${entry.title.toLowerCase().replace(/\s+/g, '-')}`;
+                            return (
+                                <li key={entry.title}>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (sidebarCollapsed) {
+                                                setSidebarCollapsed(false);
+                                                setOpenGroups((current) =>
+                                                    new Set(current).add(
+                                                        entry.title,
+                                                    ),
+                                                );
+                                                return;
+                                            }
+                                            toggleGroup(entry.title);
+                                        }}
+                                        className={cn(
+                                            linkClasses,
+                                            'w-full text-left',
+                                            active &&
+                                                !open &&
+                                                'bg-sidebar-accent text-sidebar-accent-foreground',
+                                            !(active && !open) &&
+                                                'text-sidebar-foreground/80',
+                                            active && 'font-semibold',
+                                            sidebarCollapsed &&
+                                                'md:justify-center md:px-2',
+                                        )}
+                                        aria-expanded={open}
+                                        aria-controls={panelId}
+                                        title={
+                                            sidebarCollapsed
+                                                ? tr(entry.title)
+                                                : undefined
+                                        }
+                                        data-testid="admin-nav-group"
+                                    >
+                                        <entry.icon className="size-4 shrink-0" />
+                                        {!sidebarCollapsed && (
+                                            <>
+                                                <span className="min-w-0 flex-1 truncate">
+                                                    {tr(entry.title)}
+                                                </span>
+                                                <ChevronDown
+                                                    className={cn(
+                                                        'size-4 shrink-0 transition-transform duration-200 motion-reduce:transition-none',
+                                                        open && 'rotate-180',
+                                                    )}
+                                                />
+                                            </>
+                                        )}
+                                    </button>
+                                    <div
+                                        id={panelId}
+                                        className={cn(
+                                            'grid transition-[grid-template-rows,opacity,margin] duration-200 ease-out motion-reduce:transition-none',
+                                            open
+                                                ? 'mt-1 grid-rows-[1fr] opacity-100'
+                                                : 'grid-rows-[0fr] opacity-0',
+                                        )}
+                                        aria-hidden={!open}
+                                        inert={!open}
+                                    >
+                                        <ul
+                                            className="ml-[1.15rem] flex min-h-0 flex-col gap-1 overflow-hidden border-l border-sidebar-border pl-2"
+                                            role="list"
+                                        >
+                                            {children.map((child) => (
+                                                <li key={child.href}>
+                                                    {renderLink(child)}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </li>
+                            );
+                        })}
 
                         {/* Separator */}
                         <li

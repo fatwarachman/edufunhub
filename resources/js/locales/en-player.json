@@ -349,7 +349,9 @@
         "admin": "Admin",
         "chat": "Chat",
         "clock": "Current time {{time}}",
-        "feedback": "Send feedback"
+        "feedback": "Send feedback",
+        "ability": "Ability analysis",
+        "registerFree": "Sign up free"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -2078,8 +2080,25 @@
             "shareTitle": "EduFunHub Analysis Result",
             "shareWa": "Share to WhatsApp",
             "shareScores": "Score per subject",
-            "shareFooter": "EduFunHub analysis result on the EduFunHub portal. Come learn while playing: {{url}}"
+            "shareFooter": "See the full analysis on EduFunHub and come learn while playing: {{url}}",
+            "openPage": "Open analysis page",
+            "shareSummary": "Summary",
+            "shareStrengths": "Strengths",
+            "shareGrowth": "Room to grow"
         }
+    },
+    "abilityPage": {
+        "title": "EduFunHub Analysis Result",
+        "heading": "{{name}}'s ability analysis",
+        "intro": "A summary of learning abilities from games played on EduFunHub: score per subject, strengths and learning tips.",
+        "ctaTitle": "Want to know your abilities too?",
+        "ctaBody": "Learn while playing on EduFunHub and collect points from every game.",
+        "ctaPortal": "Go to Home",
+        "back": "Back to Home",
+        "cardTitle": "Analysis result",
+        "emptyTitle": "No analysis yet",
+        "emptyBody": "Keep playing games on EduFunHub. Your ability analysis will appear here once the EduFunHub team creates it.",
+        "emptyCta": "Play games"
     },
     "feedback": {
         "title": "Send Feedback",

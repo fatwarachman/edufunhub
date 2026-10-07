@@ -445,7 +445,10 @@ export default function Dashboard({
                             </div>
                         }
                     >
-                        <AbilityCard ability={ability} />
+                        <AbilityCard
+                            ability={ability}
+                            ownerName={displayName}
+                        />
                         <Analytics stats={stats} number={number} />
                     </Deferred>
 

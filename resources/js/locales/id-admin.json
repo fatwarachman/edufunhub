@@ -1556,5 +1556,12 @@
     "“{0}” will be removed from level {1}.": "“{0}” akan dihapus dari level {1}.",
     "“{0}” will be removed. Items that players own or wear cannot be deleted; hide them instead.": "“{0}” akan dihapus. Item yang dimiliki atau dipakai pemain tidak dapat dihapus; sembunyikan saja.",
     "” and its": "” beserta",
-    "✓ Email verified": "✓ Email terverifikasi"
+    "✓ Email verified": "✓ Email terverifikasi",
+    "Stop": "Hentikan",
+    "Stop generating": "Hentikan pembuatan",
+    "Stop question generation?": "Hentikan pembuatan soal?",
+    "Questions already created stay in the bank. Subjects and grades still in progress finish their current batch; the ones not started yet are skipped.": "Soal yang sudah jadi tetap tersimpan di bank soal. Mata pelajaran dan kelas yang sedang diproses menyelesaikan batch saat ini; yang belum dimulai tidak akan dilanjutkan.",
+    "Stopping: finishing the questions in progress, the rest will not start.": "Menghentikan: menyelesaikan soal yang sedang diproses, sisanya tidak dilanjutkan.",
+    "Stopped by an admin. Questions already created are kept.": "Dihentikan oleh admin. Soal yang sudah jadi tetap disimpan.",
+    "Stopped": "Dihentikan"
 }

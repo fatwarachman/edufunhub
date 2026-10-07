@@ -23,6 +23,7 @@ import {
     ChartNoAxesColumn,
     ChevronLeft,
     ChevronRight,
+    CircleCheck,
     Coins,
     GraduationCap,
     Landmark,
@@ -915,7 +916,20 @@ function QuestionList({
                                                     {gameLabel(game)}
                                                 </Badge>
                                             ))}
-                                            {!question.is_active && (
+                                            {question.is_active ? (
+                                                <Badge tone="success">
+                                                    <span
+                                                        className="inline-flex items-center gap-1"
+                                                        data-testid="question-active-badge"
+                                                    >
+                                                        <CircleCheck
+                                                            className="size-3"
+                                                            aria-hidden
+                                                        />
+                                                        {tr('Active')}
+                                                    </span>
+                                                </Badge>
+                                            ) : (
                                                 <Badge tone="muted">
                                                     {tr('Inactive')}
                                                 </Badge>
@@ -1267,7 +1281,7 @@ function Badge({
     tone = 'default',
 }: {
     children: ReactNode;
-    tone?: 'default' | 'primary' | 'muted' | 'amber';
+    tone?: 'default' | 'primary' | 'muted' | 'amber' | 'success';
 }) {
     return (
         <span
@@ -1278,6 +1292,8 @@ function Badge({
                 tone === 'default' && 'bg-secondary text-secondary-foreground',
                 tone === 'amber' &&
                     'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
+                tone === 'success' &&
+                    'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
             )}
         >
             {children}

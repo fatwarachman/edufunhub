@@ -348,7 +348,9 @@
         "admin": "Admin",
         "chat": "Chat",
         "clock": "Jam sekarang {{time}}",
-        "feedback": "Kirim masukan"
+        "feedback": "Kirim masukan",
+        "ability": "Analisa kemampuan",
+        "registerFree": "Daftar gratis"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -2077,8 +2079,25 @@
             "shareTitle": "Hasil Analisa EduFunHub",
             "shareWa": "Bagikan ke WhatsApp",
             "shareScores": "Nilai per mapel",
-            "shareFooter": "Hasil analisa EduFunHub di portal EduFunHub. Yuk ikut belajar sambil bermain: {{url}}"
+            "shareFooter": "Lihat hasil analisa lengkap di EduFunHub, yuk ikut belajar sambil bermain: {{url}}",
+            "openPage": "Buka halaman analisa",
+            "shareSummary": "Ringkasan",
+            "shareStrengths": "Kekuatan",
+            "shareGrowth": "Perlu ditingkatkan"
         }
+    },
+    "abilityPage": {
+        "title": "Hasil Analisa EduFunHub",
+        "heading": "Analisa kemampuan {{name}}",
+        "intro": "Ringkasan kemampuan belajar dari hasil bermain di EduFunHub: nilai per mapel, kekuatan, dan saran belajar.",
+        "ctaTitle": "Mau tahu kemampuanmu juga?",
+        "ctaBody": "Belajar sambil bermain di EduFunHub dan kumpulkan poin dari setiap game.",
+        "ctaPortal": "Ke Beranda",
+        "back": "Kembali ke Beranda",
+        "cardTitle": "Hasil analisa",
+        "emptyTitle": "Analisa belum tersedia",
+        "emptyBody": "Terus bermain game di EduFunHub. Hasil analisa kemampuanmu akan muncul di sini setelah dibuat oleh tim EduFunHub.",
+        "emptyCta": "Main game"
     },
     "feedback": {
         "title": "Kirim Masukan",

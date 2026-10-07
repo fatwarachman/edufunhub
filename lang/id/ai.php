@@ -18,6 +18,8 @@ return [
     'pick_grade' => 'Pilih minimal satu kelas.',
     'too_many' => 'Permintaan ini menghasilkan :total soal; batas per permintaan :max.',
     'generation_started' => 'Membuat :total soal di latar belakang.',
+    'generation_stopped' => 'Pembuatan soal dihentikan. Soal yang sudah jadi tetap disimpan.',
+    'generation_not_running' => 'Permintaan ini sudah selesai atau sudah dihentikan.',
     'teacher_assigned' => ':name sekarang guru dan dapat membuka Ruang Guru.',
     'teacher_removed' => ':name bukan guru lagi.',
     'assessment_started' => 'Analisa kemampuan AI dimulai. Hasilnya muncul di sini dalam satu menit.',
