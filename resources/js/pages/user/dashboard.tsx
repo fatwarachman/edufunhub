@@ -1046,8 +1046,33 @@ function LeaderboardCard({
             aria-labelledby="dash-board-title"
             data-testid="dash-leaderboard"
         >
-            <SectionTitle icon={Crown} id="dash-board-title">
-                {t('playerDash.board.title')}
+            <SectionTitle
+                icon={Crown}
+                id="dash-board-title"
+                aside={
+                    <Link
+                        href="/leaderboard"
+                        prefetch
+                        className="text-xs font-bold text-[#151b2e]/80 hover:text-[#151b2e] hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7]"
+                        data-testid="dash-board-all"
+                        aria-label={t('playerDash.board.seeAllLabel')}
+                    >
+                        {t('playerDash.board.seeAll')}
+                    </Link>
+                }
+            >
+                <Link
+                    href="/leaderboard"
+                    prefetch
+                    className="group inline-flex min-w-0 items-center gap-1 rounded-md underline-offset-4 hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7]"
+                    data-testid="dash-board-link"
+                >
+                    {t('playerDash.board.title')}
+                    <ChevronRight
+                        className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                        aria-hidden
+                    />
+                </Link>
             </SectionTitle>
             <div
                 className={`grid grid-cols-[1fr_1fr_1.35fr] gap-1 rounded-[1.25rem] border-2 ${INK} bg-white p-1`}
