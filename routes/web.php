@@ -13,9 +13,11 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FlagQuestController;
 use App\Http\Controllers\FloorDropController;
 use App\Http\Controllers\GameInviteController;
+use App\Http\Controllers\GameListController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\KnowledgeTrainController;
 use App\Http\Controllers\LandingStatsController;
+use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MiniGameController;
 use App\Http\Controllers\OrderRushController;
@@ -38,7 +40,6 @@ use App\Http\Middleware\EnsureTeacher;
 use App\Http\Middleware\RecordGameAccess;
 use App\Services\Ads\AdMedia;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
 // 1. Landing Page (Bauhaus Geometric)
@@ -52,6 +53,7 @@ Route::get('/player-details/regencies', RegencyController::class)->middleware('t
 Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): void {
     Route::get('/dashboard', UserDashboardController::class)->name('dashboard');
     Route::get('/portal', PortalController::class)->name('portal');
+    Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard');
     Route::get('/character', [CharacterController::class, 'show'])->name('character.show');
     Route::patch('/character', [CharacterController::class, 'update'])->name('character.update');
     Route::post('/character/items/{item}/buy', [CharacterController::class, 'buy'])->middleware('throttle:30,1')->name('character.buy');
@@ -136,9 +138,7 @@ Route::inertia('/privacy', 'legal/privacy')->name('legal.privacy');
 Route::inertia('/terms', 'legal/terms')->name('legal.terms');
 
 // 3. Games Arena & EduFun Games
-Route::get('/gamelist', function () {
-    return Inertia::render('games/index');
-})->name('gamelist');
+Route::get('/gamelist', GameListController::class)->name('gamelist');
 
 // Guests may try the demos; signed-in players must complete their details first.
 Route::middleware(EnsurePlayerDetailsComplete::class)->group(function (): void {

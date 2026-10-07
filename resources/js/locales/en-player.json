@@ -77,7 +77,11 @@
         "economyHeist": "Economy Heist",
         "orderRush": "Order Rush TKJ",
         "portSorter": "Port Sorter",
-        "turboTrivia": "Turbo Trivia"
+        "turboTrivia": "Turbo Trivia",
+        "shareWaRoom": "Share via WhatsApp",
+        "shareWaGame": "Share game",
+        "shareWaRoomText": "🎮 Let's play {{game}} together on EduFunHub!\nPIN Code: {{pin}}\nJoin link: {{url}}\nEduFunHub — Portal Edukasi Seru!",
+        "shareWaGameText": "🏆 Try {{game}} on EduFunHub!\nLink: {{url}}\nEduFunHub — Portal Edukasi Seru!"
     },
     "flagQuest": {
         "title": "Flag Quest",
@@ -792,7 +796,20 @@
         "viewLabel": "List layout",
         "viewGrid": "Card view",
         "viewList": "Compact list view",
-        "filterCount": "{{count}} games"
+        "filterCount": "{{count}} games",
+        "showDetails": "Show details for {{title}}",
+        "hideDetails": "Hide details for {{title}}",
+        "details": {
+            "modeLabel": "Mode",
+            "modeGroup": "Play with friends using a PIN or link.",
+            "modeSolo": "Play on your own.",
+            "pointsLabel": "Points",
+            "pointsYes": "Every finished game adds points to your account.",
+            "pointsNo": "Practice mode, no points.",
+            "accessLabel": "Access",
+            "accessGuest": "Try it without an account (demo mode).",
+            "accessAccount": "Sign in to play."
+        }
     },
     "snakes": {
         "title": "Educational Snakes & Ladders",
@@ -1265,7 +1282,9 @@
         "groupLabel": "Group",
         "limit": "{{count}}/{{max}}",
         "unread": "{{count}} unread",
-        "typingHint": "Enter to send, Shift+Enter for a new line"
+        "typingHint": "Enter to send, Shift+Enter for a new line",
+        "sent": "Sent",
+        "read": "Read"
     },
     "ads": {
         "sponsor": "Sponsor",
@@ -1709,9 +1728,10 @@
         "left": "Move the packet left",
         "right": "Move the packet right",
         "hint": "Slide the packet into the matching bin before it hits the ground.",
-        "canvasLabel": "Packet Sorter arena. Left and right arrows, A and D, or keys 1 to 9 move the packet, P pauses. On touch screens, swipe or tap a bin column.",
+        "canvasLabel": "Packet Sorter arena. Left and right arrows, A and D, or keys 1 to 9 move the packet, P pauses, Arrow Down or S speeds up the fall. On touch screens, swipe or tap a bin column.",
         "packetLabel": "Falling packet: {{label}}.",
         "packetCaption": "PACKET",
+        "boostHint": "↓/S = speed up drop",
         "connection": {
             "connecting": "Connecting",
             "online": "Connected",
@@ -2027,7 +2047,9 @@
             "title": "Leaderboard",
             "podium": "Podium",
             "loading": "Loading leaderboard…",
-            "points": "{{formatted}} points"
+            "points": "{{formatted}} points",
+            "seeAll": "See all",
+            "seeAllLabel": "See the full leaderboard"
         },
         "history": {
             "title": "Latest results",
@@ -2050,7 +2072,13 @@
             "progress": "Progress since the previous analysis",
             "more": "Show tips & details",
             "less": "Hide details",
-            "note": "This analysis is written by AI from your game results."
+            "note": "This analysis is written by AI from your game results.",
+            "shareBtn": "Share Analysis",
+            "shareCopied": "Copied!",
+            "shareTitle": "EduFunHub Analysis Result",
+            "shareWa": "Share to WhatsApp",
+            "shareScores": "Score per subject",
+            "shareFooter": "EduFunHub analysis result on the EduFunHub portal. Come learn while playing: {{url}}"
         }
     },
     "feedback": {
@@ -2118,5 +2146,51 @@
     },
     "brand": {
         "tagline": "Play while learning"
+    },
+    "leaderboardPage": {
+        "title": "Leaderboard",
+        "intro": "See who has collected the most points: all players, by school and per game.",
+        "back": "Back to Home",
+        "loading": "Loading leaderboard…",
+        "tabs": {
+            "label": "Leaderboard type",
+            "overall": "Overall",
+            "schools": "Schools",
+            "games": "Per game"
+        },
+        "overall": {
+            "title": "Overall ranking",
+            "intro": "Total points from every game that awards points."
+        },
+        "schools": {
+            "title": "School ranking",
+            "intro": "Points of all players at each school added together, all time.",
+            "school": "School",
+            "city": "City",
+            "players": "Players",
+            "points": "Points",
+            "mine": "your school",
+            "myRank": "Your school is #{{rank}}",
+            "empty": "No school has points yet. Invite your schoolmates to play!"
+        },
+        "mySchool": {
+            "title": "Ranking at my school",
+            "nameCity": "{{name}} · {{city}}",
+            "empty": "Nobody at your school has points yet. Be the first!",
+            "noSchool": "Add your school name on Home to see your school ranking."
+        },
+        "games": {
+            "title": "Ranking per game",
+            "intro": "Top 10 players of each game, all time.",
+            "choose": "Choose a game",
+            "search": "Search games…",
+            "noMatch": "No game found",
+            "players": "{{formatted}} players have points in this game",
+            "empty": "Nobody has earned points in this game yet. Play now and take first place!",
+            "allGames": "All Games",
+            "clickToView": "Click to view leaderboard",
+            "modalClose": "Close",
+            "rank": "Rank"
+        }
     }
 }

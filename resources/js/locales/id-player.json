@@ -76,7 +76,11 @@
         "economyHeist": "Peti Emas Misteri",
         "orderRush": "Order Rush TKJ",
         "portSorter": "Pilah Port & Protokol",
-        "turboTrivia": "Turbo Trivia"
+        "turboTrivia": "Turbo Trivia",
+        "shareWaRoom": "Bagikan via WhatsApp",
+        "shareWaGame": "Bagikan game",
+        "shareWaRoomText": "🎮 Ayo main {{game}} bareng di EduFunHub!\nKode PIN: {{pin}}\nLink gabung: {{url}}\nEduFunHub — Portal Edukasi Seru!",
+        "shareWaGameText": "🏆 Coba game {{game}} di EduFunHub!\nLink: {{url}}\nEduFunHub — Portal Edukasi Seru!"
     },
     "flagQuest": {
         "title": "Misi Bendera",
@@ -791,7 +795,20 @@
         "viewLabel": "Tampilan daftar",
         "viewGrid": "Tampilan kartu",
         "viewList": "Tampilan daftar ringkas",
-        "filterCount": "{{count}} permainan"
+        "filterCount": "{{count}} permainan",
+        "showDetails": "Tampilkan detail {{title}}",
+        "hideDetails": "Sembunyikan detail {{title}}",
+        "details": {
+            "modeLabel": "Mode",
+            "modeGroup": "Main bareng teman lewat PIN atau link.",
+            "modeSolo": "Main sendiri.",
+            "pointsLabel": "Poin",
+            "pointsYes": "Setiap permainan selesai menambah poin akunmu.",
+            "pointsNo": "Mode latihan, tidak menambah poin.",
+            "accessLabel": "Akses",
+            "accessGuest": "Bisa dicoba tanpa akun (mode demo).",
+            "accessAccount": "Masuk akun dulu untuk bermain."
+        }
     },
     "snakes": {
         "title": "Ular Tangga Edukasi",
@@ -1264,7 +1281,9 @@
         "groupLabel": "Grup",
         "limit": "{{count}}/{{max}}",
         "unread": "{{count}} belum dibaca",
-        "typingHint": "Enter untuk kirim, Shift+Enter baris baru"
+        "typingHint": "Enter untuk kirim, Shift+Enter baris baru",
+        "sent": "Terkirim",
+        "read": "Sudah dibaca"
     },
     "ads": {
         "sponsor": "Sponsor",
@@ -1708,9 +1727,10 @@
         "left": "Geser paket ke kiri",
         "right": "Geser paket ke kanan",
         "hint": "Geser paket ke keranjang yang pas sebelum menyentuh tanah.",
-        "canvasLabel": "Arena Pilah Paket. Panah kiri dan kanan, A dan D, atau angka 1 sampai 9 untuk memindahkan paket, P untuk jeda. Di layar sentuh, geser atau ketuk kolom keranjang.",
+        "canvasLabel": "Arena Pilah Paket. Panah kiri dan kanan, A dan D, atau angka 1 sampai 9 untuk memindahkan paket, P untuk jeda, Panah Bawah atau S untuk mempercepat jatuh. Di layar sentuh, geser atau ketuk kolom keranjang.",
         "packetLabel": "Paket jatuh: {{label}}.",
         "packetCaption": "PAKET",
+        "boostHint": "↓/S = percepat jatuh",
         "connection": {
             "connecting": "Menghubungkan",
             "online": "Terhubung",
@@ -2026,7 +2046,9 @@
             "title": "Papan peringkat",
             "podium": "Podium",
             "loading": "Memuat papan peringkat…",
-            "points": "{{formatted}} poin"
+            "points": "{{formatted}} poin",
+            "seeAll": "Lihat semua",
+            "seeAllLabel": "Lihat semua papan peringkat"
         },
         "history": {
             "title": "Hasil terbaru",
@@ -2049,7 +2071,13 @@
             "progress": "Perkembangan sejak analisa sebelumnya",
             "more": "Lihat saran & detail",
             "less": "Sembunyikan detail",
-            "note": "Analisa ini dibuat oleh AI dari hasil permainanmu."
+            "note": "Analisa ini dibuat oleh AI dari hasil permainanmu.",
+            "shareBtn": "Bagikan Analisa",
+            "shareCopied": "Disalin!",
+            "shareTitle": "Hasil Analisa EduFunHub",
+            "shareWa": "Bagikan ke WhatsApp",
+            "shareScores": "Nilai per mapel",
+            "shareFooter": "Hasil analisa EduFunHub di portal EduFunHub. Yuk ikut belajar sambil bermain: {{url}}"
         }
     },
     "feedback": {
@@ -2117,5 +2145,51 @@
     },
     "brand": {
         "tagline": "Bermain sambil Belajar"
+    },
+    "leaderboardPage": {
+        "title": "Papan peringkat",
+        "intro": "Lihat siapa yang paling banyak mengumpulkan poin: semua pemain, per sekolah, dan per game.",
+        "back": "Kembali ke Beranda",
+        "loading": "Memuat papan peringkat…",
+        "tabs": {
+            "label": "Jenis papan peringkat",
+            "overall": "Umum",
+            "schools": "Sekolah",
+            "games": "Per game"
+        },
+        "overall": {
+            "title": "Peringkat umum",
+            "intro": "Total poin dari semua game yang memberi poin."
+        },
+        "schools": {
+            "title": "Peringkat sekolah",
+            "intro": "Jumlah poin semua pemain di setiap sekolah, sepanjang masa.",
+            "school": "Sekolah",
+            "city": "Kota",
+            "players": "Pemain",
+            "points": "Poin",
+            "mine": "sekolahmu",
+            "myRank": "Sekolahmu di posisi #{{rank}}",
+            "empty": "Belum ada sekolah dengan poin. Ajak teman sekolahmu bermain!"
+        },
+        "mySchool": {
+            "title": "Peringkat di sekolahku",
+            "nameCity": "{{name}} · {{city}}",
+            "empty": "Belum ada pemain di sekolahmu yang punya poin. Jadilah yang pertama!",
+            "noSchool": "Isi nama sekolahmu di Beranda untuk melihat peringkat sekolahmu."
+        },
+        "games": {
+            "title": "Peringkat per game",
+            "intro": "10 pemain teratas di setiap game, sepanjang masa.",
+            "choose": "Pilih game",
+            "search": "Cari game…",
+            "noMatch": "Game tidak ditemukan",
+            "players": "{{formatted}} pemain punya poin di game ini",
+            "empty": "Belum ada yang mendapat poin di game ini. Main sekarang dan rebut posisi pertama!",
+            "allGames": "Semua Game",
+            "clickToView": "Klik untuk lihat peringkat",
+            "modalClose": "Tutup",
+            "rank": "Peringkat"
+        }
     }
 }
