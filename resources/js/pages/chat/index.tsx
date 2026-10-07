@@ -65,6 +65,37 @@ interface Conversation {
     character: CharacterLook | null;
     unread?: number;
     last?: Message | null;
+    /** Read pointers of the other members (read receipts). */
+    reads?: { user_id: number; last_read_message_id: number | null }[];
+    /** Newest message id every other member has read. */
+    read_upto?: number | null;
+}
+
+/** Applies a live read receipt to one conversation. */
+function applyRead(
+    conversation: Conversation,
+    userId: number,
+    lastRead: number,
+): Conversation {
+    const reads = (conversation.reads ?? []).map((r) =>
+        r.user_id === userId
+            ? {
+                  ...r,
+                  last_read_message_id: Math.max(
+                      r.last_read_message_id ?? 0,
+                      lastRead,
+                  ),
+              }
+            : r,
+    );
+    if (!reads.some((r) => r.user_id === userId)) {
+        return conversation;
+    }
+    return {
+        ...conversation,
+        reads,
+        read_upto: Math.min(...reads.map((r) => r.last_read_message_id ?? 0)),
+    };
 }
 
 interface ChatProps {
@@ -339,6 +370,36 @@ function PeoplePicker({
     );
 }
 
+function isReadBy(message: Message, conversation: Conversation): boolean {
+    return message.id > 0 && message.id <= (conversation.read_upto ?? 0);
+}
+
+/** Single check = sent, stacked double check (tinted) = read by all. */
+function ReadReceipt({ read, label }: { read: boolean; label: string }) {
+    return (
+        <span
+            role="img"
+            aria-label={label}
+            title={label}
+            className={cn(
+                'inline-flex items-center',
+                read ? 'text-sky-600' : 'text-slate-600',
+            )}
+            data-testid="chat-receipt"
+            data-read={read}
+        >
+            <Check className="size-3.5" strokeWidth={3} aria-hidden="true" />
+            {read && (
+                <Check
+                    className="-ml-2 size-3.5"
+                    strokeWidth={3}
+                    aria-hidden="true"
+                />
+            )}
+        </span>
+    );
+}
+
 function dayKey(iso: string | null): string {
     return iso ? new Date(iso).toDateString() : '';
 }
@@ -459,6 +520,22 @@ export default function ChatIndex({
 
     const onEvent = useCallback(
         (event: Record<string, unknown>) => {
+            if (event.t === 'read') {
+                const conversationId = Number(event.conversation_id);
+                const userId = Number(event.user_id);
+                const lastRead = Number(event.last_read_message_id);
+                if (userId === meId || !conversationId || !lastRead) {
+                    return;
+                }
+                setConversations((current) =>
+                    current.map((c) =>
+                        c.id === conversationId
+                            ? applyRead(c, userId, lastRead)
+                            : c,
+                    ),
+                );
+                return;
+            }
             if (event.t !== 'message') {
                 return;
             }
@@ -511,6 +588,21 @@ export default function ChatIndex({
     }, [refreshInbox, loadConversation]);
 
     const status = useChatSocket(live ? wsUrl : null, { onEvent, onResync });
+
+    // Coming back to a hidden tab: mark the open conversation read.
+    useEffect(() => {
+        const onVisible = () => {
+            if (document.visibilityState === 'visible' && activeRef.current) {
+                void api(
+                    `/chat/conversations/${activeRef.current}/read`,
+                    'POST',
+                );
+            }
+        };
+        document.addEventListener('visibilitychange', onVisible);
+        return () =>
+            document.removeEventListener('visibilitychange', onVisible);
+    }, []);
 
     // Without a live socket, poll so chats still arrive.
     useEffect(() => {
@@ -996,7 +1088,20 @@ export default function ChatIndex({
                                                             )}
                                                             {mine &&
                                                                 !m.pending && (
-                                                                    <Check className="size-3" />
+                                                                    <ReadReceipt
+                                                                        read={isReadBy(
+                                                                            m,
+                                                                            active,
+                                                                        )}
+                                                                        label={t(
+                                                                            isReadBy(
+                                                                                m,
+                                                                                active,
+                                                                            )
+                                                                                ? 'chat.read'
+                                                                                : 'chat.sent',
+                                                                        )}
+                                                                    />
                                                                 )}
                                                         </span>
                                                     </div>

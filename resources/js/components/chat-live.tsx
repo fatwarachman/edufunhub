@@ -6,6 +6,7 @@ import {
 } from '@/hooks/use-chat-socket';
 import { useTranslations } from '@/hooks/use-translations';
 import { type CharacterLook } from '@/lib/character/draw-character';
+import { bindChatSoundUnlock, playChatTing } from '@/lib/chat-sound';
 import { router } from '@inertiajs/react';
 import { MessageCircle, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -82,6 +83,8 @@ export function ChatLive({
         chatLive.start(live.wsUrl, live.userId);
     }, [live.wsUrl, live.userId]);
 
+    useEffect(() => bindChatSoundUnlock(), []);
+
     useChatEvents(
         useCallback(
             (event: ChatEvent) => {
@@ -100,9 +103,16 @@ export function ChatLive({
                     !message ||
                     message.type !== 'text' ||
                     !message.conversation_id ||
-                    message.user_id === live.userId ||
-                    chatLive.activeConversation === message.conversation_id
+                    message.user_id === live.userId
                 ) {
+                    return;
+                }
+                const onScreen =
+                    chatLive.activeConversation === message.conversation_id;
+                playChatTing(
+                    onScreen && document.visibilityState === 'visible',
+                );
+                if (onScreen) {
                     return;
                 }
                 const sender = (event.sender ?? null) as {

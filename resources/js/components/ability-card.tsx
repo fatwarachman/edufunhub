@@ -1,9 +1,14 @@
+import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import { useTranslations } from '@/hooks/use-translations';
+import { absoluteUrl } from '@/lib/share';
 import { SubjectIcon, useSubjectName, useSubjects } from '@/lib/subjects';
+import { SharedData } from '@/types';
+import { usePage } from '@inertiajs/react';
 import {
     BrainCircuit,
     Eye,
     Lightbulb,
+    Share2,
     Sparkles,
     Sprout,
     ThumbsUp,
@@ -71,7 +76,10 @@ export function AbilityCard({
     const subjectName = useSubjectName();
     const subjects = useSubjects();
     const [open, setOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
     const panelId = useId();
+    const { auth } = usePage<SharedData>().props;
+    const userName = auth?.user?.name ?? '';
 
     if (!ability) {
         return null;
@@ -92,6 +100,68 @@ export function AbilityCard({
         ability.learning_style !== '' ||
         ability.progress_vs_previous !== '';
 
+    const buildShareText = (): string => {
+        const summary =
+            ability.summary.length > 200
+                ? ability.summary.slice(0, 200) + '...'
+                : ability.summary;
+        const lines = [
+            `📊 ${t('playerDash.ability.shareTitle')} — ${userName}`,
+        ];
+        if (date) {
+            lines.push(t('playerDash.ability.date', { date }));
+        }
+        lines.push('', summary);
+        if (scores.length > 0) {
+            lines.push(
+                '',
+                `🎯 ${t('playerDash.ability.shareScores')}:`,
+                ...scores.map(
+                    ([subject, score]) => `• ${subjectName(subject)}: ${score}`,
+                ),
+            );
+        }
+        if (ability.strengths.length > 0) {
+            lines.push(
+                '',
+                `✅ ${t('playerDash.ability.strengths')}: ${ability.strengths.join(', ')}`,
+            );
+        }
+        if (ability.weaknesses.length > 0) {
+            lines.push(
+                `📈 ${t('playerDash.ability.growth')}: ${ability.weaknesses.join(', ')}`,
+            );
+        }
+        lines.push(
+            '',
+            `🔗 ${t('playerDash.ability.shareFooter', { url: absoluteUrl('/') })}`,
+        );
+
+        return lines.join('\n');
+    };
+
+    const handleShare = async () => {
+        const text = buildShareText();
+        const title = t('playerDash.ability.shareTitle');
+
+        if (navigator.share) {
+            try {
+                await navigator.share({ title, text });
+                return;
+            } catch {
+                // User cancelled or API failed — fall through to clipboard
+            }
+        }
+
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            // Clipboard unavailable
+        }
+    };
+
     return (
         <section
             className="auth-card flex min-w-0 flex-col gap-4 !p-4 sm:!p-5"
@@ -110,11 +180,36 @@ export function AbilityCard({
                     </span>
                     {t('playerDash.ability.title')}
                 </h2>
-                {date && (
-                    <span className="text-xs font-semibold text-[#151b2e]/80">
-                        {t('playerDash.ability.date', { date })}
-                    </span>
-                )}
+                <div className="flex items-center gap-2">
+                    {date && (
+                        <span className="text-xs font-semibold text-[#151b2e]/80">
+                            {t('playerDash.ability.date', { date })}
+                        </span>
+                    )}
+                    <WhatsAppShareButton
+                        compact
+                        text={buildShareText()}
+                        label={t('playerDash.ability.shareWa')}
+                        testId="ability-share-wa"
+                        className="size-9"
+                    />
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={handleShare}
+                            className={`grid size-9 shrink-0 place-items-center rounded-xl border-2 ${INK} bg-white shadow-[2px_2px_0_#151b2e] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#151b2e]`}
+                            aria-label={t('playerDash.ability.shareBtn')}
+                            data-testid="ability-share-btn"
+                        >
+                            <Share2 className="size-4" aria-hidden />
+                        </button>
+                        {copied && (
+                            <span className="absolute top-full right-0 mt-1 rounded-lg bg-[#151b2e] px-2 py-1 text-xs font-semibold whitespace-nowrap text-white">
+                                {t('playerDash.ability.shareCopied')}
+                            </span>
+                        )}
+                    </div>
+                </div>
             </div>
 
             <p

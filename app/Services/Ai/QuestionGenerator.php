@@ -6,6 +6,7 @@ use App\Ai\Agents\QuestionWriter;
 use App\Models\Question;
 use App\Models\QuestionGeneration;
 use App\Models\Subject;
+use Closure;
 use Illuminate\Support\Str;
 use JsonException;
 use RuntimeException;
@@ -21,11 +22,12 @@ class QuestionGenerator
     public function __construct(private OpenAiCompatibleClient $client, private AiSettings $settings) {}
 
     /**
+     * @param  (Closure(int, int): void)|null  $onProgress  called with the created and skipped totals after every batch
      * @return array{created: int, skipped: int}
      *
      * @throws RuntimeException
      */
-    public function generate(QuestionGeneration $generation, string $subject, int $grade, int $count): array
+    public function generate(QuestionGeneration $generation, string $subject, int $grade, int $count, ?Closure $onProgress = null): array
     {
         $provider = $this->client->register();
         $created = 0;
@@ -62,6 +64,9 @@ class QuestionGenerator
                     'updated_by' => $generation->requested_by,
                 ]);
                 $created++;
+            }
+            if ($onProgress !== null) {
+                $onProgress($created, $skipped);
             }
             if ($skipped > $count * 2) {
                 break;

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { type GameSocketStatus } from '@/hooks/use-game-socket';
 import { useTranslations } from '@/hooks/use-translations';
 import { type CharacterLook } from '@/lib/character/draw-character';
+import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import { cn } from '@/lib/utils';
 import {
     Copy,
@@ -412,6 +413,15 @@ export function RoomLobby({
                                 >
                                     {t('room.share')}
                                 </ShareButton>
+                                <WhatsAppShareButton
+                                    text={t('player.shareWaRoomText', {
+                                        game: title,
+                                        pin: room.pin,
+                                        url: link,
+                                    })}
+                                    label={t('player.shareWaRoom')}
+                                    testId="room-share-wa"
+                                />
                             </div>
                             {shareError && (
                                 <div className="mt-3">

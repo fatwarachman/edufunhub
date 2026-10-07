@@ -255,6 +255,17 @@ func (s *Session) resumeLocked(now time.Time) {
 
 // Land: the packet with id reached the ground above bin.
 func (s *Session) Land(id string, bin int, now time.Time) (Message, *Result, error) {
+	return s.land(id, bin, now, true)
+}
+
+// Drop: the player sped the packet up (soft drop) and it reached the ground
+// above bin before the natural fall time. The landing clock check is skipped;
+// the packet must already be visible (past its spawn delay).
+func (s *Session) Drop(id string, bin int, now time.Time) (Message, *Result, error) {
+	return s.land(id, bin, now, false)
+}
+
+func (s *Session) land(id string, bin int, now time.Time, strict bool) (Message, *Result, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.LastSeen = now
@@ -267,7 +278,10 @@ func (s *Session) Land(id string, bin int, now time.Time) (Message, *Result, err
 	if bin < 0 || bin >= len(s.set.Bins) {
 		return nil, nil, ErrBin
 	}
-	if s.elapsed(now) < Fall(s.round)-Tolerance {
+	if strict && s.elapsed(now) < Fall(s.round)-Tolerance {
+		return nil, nil, ErrTooEarly
+	}
+	if !strict && s.elapsed(now) < 0 {
 		return nil, nil, ErrTooEarly
 	}
 	if bin == s.packet.Bin {

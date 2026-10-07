@@ -4,6 +4,7 @@ import PlayerCharacter, {
 } from '@/components/player-character';
 import { PlayerCountBadge } from '@/components/player-count-badge';
 import { NavButton } from '@/components/site-nav';
+import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import {
     Popover,
     PopoverContent,
@@ -14,6 +15,7 @@ import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { gameIcon } from '@/lib/games';
 import { gradeLabel, hasGrade } from '@/lib/grade';
+import { absoluteUrl } from '@/lib/share';
 import { Deferred, Link, router } from '@inertiajs/react';
 import {
     CircleAlert,
@@ -144,6 +146,10 @@ export default function Portal({
                 ),
         [categories, filter],
     );
+    const totalGames = useMemo(
+        () => categories.reduce((sum, c) => sum + c.games.length, 0),
+        [categories],
+    );
     const levelPercent = Math.round(
         (progress.levelProgress / progress.pointsPerLevel) * 100,
     );
@@ -267,23 +273,54 @@ export default function Portal({
                             aria-label={t('portal.filterLabel')}
                         >
                             {[
-                                { key: 'all', titleKey: 'portal.all' },
-                                ...categories,
-                            ].map((c) => (
-                                <button
-                                    key={c.key}
-                                    type="button"
-                                    aria-pressed={filter === c.key}
-                                    onClick={() => setFilter(c.key)}
-                                    className={`min-h-11 rounded-full border-2 border-[#151b2e] px-4 text-sm font-bold transition-colors ${
-                                        filter === c.key
-                                            ? 'bg-[#151b2e] text-white'
-                                            : 'bg-white hover:bg-[#fff0cf]'
-                                    }`}
-                                >
-                                    {t(c.titleKey)}
-                                </button>
-                            ))}
+                                {
+                                    key: 'all',
+                                    titleKey: 'portal.all',
+                                    count: totalGames,
+                                },
+                                ...categories.map((c) => ({
+                                    key: c.key,
+                                    titleKey: c.titleKey,
+                                    count: c.games.length,
+                                })),
+                            ].map((c) => {
+                                const active = filter === c.key;
+                                return (
+                                    <button
+                                        key={c.key}
+                                        type="button"
+                                        aria-pressed={active}
+                                        onClick={() => setFilter(c.key)}
+                                        data-testid={`portal-filter-${c.key}`}
+                                        className={`inline-flex min-h-11 max-w-full items-center gap-2 rounded-full border-2 border-[#151b2e] py-1 pr-1.5 pl-4 text-sm font-bold transition-colors ${
+                                            active
+                                                ? 'bg-[#151b2e] text-white'
+                                                : 'bg-white hover:bg-[#fff0cf]'
+                                        }`}
+                                    >
+                                        <span className="min-w-0 truncate">
+                                            {t(c.titleKey)}
+                                        </span>
+                                        <span
+                                            className={`inline-flex h-6 min-w-7 shrink-0 items-center justify-center rounded-full px-2 text-xs font-black tabular-nums ${
+                                                active
+                                                    ? 'bg-[#ffd93d] text-[#151b2e]'
+                                                    : 'border-2 border-[#151b2e] bg-[#fff4d6] text-[#151b2e]'
+                                            }`}
+                                            data-testid={`portal-filter-count-${c.key}`}
+                                        >
+                                            <span className="sr-only">
+                                                {t('gameList.filterCount', {
+                                                    count: c.count,
+                                                })}
+                                            </span>
+                                            <span aria-hidden>
+                                                {numberFormat.format(c.count)}
+                                            </span>
+                                        </span>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -410,13 +447,38 @@ export default function Portal({
                                                 )}
                                             />
                                         ) : (
-                                            <NavButton
-                                                href={game.url}
-                                                icon={Play}
-                                                label={t('portal.play')}
-                                                variant="primary"
-                                                testId={`portal-play-${game.key}`}
-                                            />
+                                            <div className="flex items-center gap-2">
+                                                <div className="min-w-0 flex-1">
+                                                    <NavButton
+                                                        href={game.url}
+                                                        icon={Play}
+                                                        label={t(
+                                                            'portal.play',
+                                                        )}
+                                                        variant="primary"
+                                                        block
+                                                        testId={`portal-play-${game.key}`}
+                                                    />
+                                                </div>
+                                                <WhatsAppShareButton
+                                                    compact
+                                                    text={t(
+                                                        'player.shareWaGameText',
+                                                        {
+                                                            game: t(
+                                                                game.titleKey,
+                                                            ),
+                                                            url: absoluteUrl(
+                                                                game.url,
+                                                            ),
+                                                        },
+                                                    )}
+                                                    label={t(
+                                                        'player.shareWaGame',
+                                                    )}
+                                                    testId={`portal-share-wa-${game.key}`}
+                                                />
+                                            </div>
                                         )}
                                     </article>
                                 </li>

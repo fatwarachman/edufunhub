@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\BulkQuestionRequest;
 use App\Http\Requests\Admin\QuestionRequest;
 use App\Models\Question;
 use App\Models\Subject;
+use App\Models\User;
 use App\Services\ActivityLogPresenter;
 use App\Services\PointRules;
 use App\Services\QuestionAnalytics;
@@ -20,25 +21,32 @@ use Inertia\Response;
 
 class QuestionController extends Controller
 {
+    /** Creator filters for the question list (`teacher` covers teacher-written and imported questions). */
+    public const CREATOR_FILTERS = ['ai', 'teacher', 'admin', 'system'];
+
     /**
      * Subject overview first; choosing a subject (or searching) opens the question list.
      */
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'game', 'band', 'subject', 'type', 'status', 'sort', 'source']);
+        $filters = $this->normalizeFilters($request->only(['search', 'game', 'band', 'subject', 'type', 'status', 'sort', 'source', 'bonus', 'author']));
         $subject = $filters['subject'] ?? null;
-        $showList = in_array($subject, [...Subject::keys(), 'all'], true) || filled($filters['search'] ?? null) || filled($filters['source'] ?? null);
+        $showList = in_array($subject, [...Subject::keys(), 'all'], true) || filled($filters['search'] ?? null) || filled($filters['source'] ?? null) || filled($filters['bonus'] ?? null);
+        $bySource = Question::query()->selectRaw('source, COUNT(*) as total, SUM(CASE WHEN is_active THEN 0 ELSE 1 END) as inactive')->groupBy('source')->get()->toBase()->keyBy('source');
 
         return Inertia::render('admin/questions/index', [
             'mode' => $showList ? 'list' : 'subjects',
             'subjectStats' => $this->subjectStats(),
             'questions' => $showList ? $this->questionList($filters) : null,
+            'sourceCounts' => $showList ? $this->sourceCounts($filters) : null,
+            'teachers' => $showList && ($filters['source'] ?? null) === 'teacher' ? $this->teacherAuthors() : [],
             'filters' => (object) $filters,
             'summary' => [
-                'total' => Question::query()->count(),
+                'total' => (int) $bySource->sum('total'),
                 'active' => Question::query()->active()->count(),
-                'ai' => Question::query()->where('source', Question::SOURCE_AI)->count(),
-                'ai_pending' => Question::query()->where('source', Question::SOURCE_AI)->where('is_active', false)->count(),
+                'ai' => (int) ($bySource->get(Question::SOURCE_AI)->total ?? 0),
+                'ai_pending' => (int) ($bySource->get(Question::SOURCE_AI)->inactive ?? 0),
+                'teacher' => (int) $bySource->only(Question::TEACHER_SOURCES)->sum('total'),
                 'bonus' => Question::query()->where('points', '>', 0)->count(),
                 'byGame' => collect(Question::GAMES)->mapWithKeys(fn (string $game): array => [
                     $game => Question::query()->active()->whereJsonContains('games', $game)->count(),
@@ -46,6 +54,87 @@ class QuestionController extends Controller
             ],
             ...$this->options(),
         ]);
+    }
+
+    /**
+     * Keep only known filter values. The legacy `source=bonus` link maps to the separate `bonus` filter.
+     *
+     * @param  array<string, mixed>  $filters
+     * @return array<string, string>
+     */
+    private function normalizeFilters(array $filters): array
+    {
+        $filters = array_filter($filters, fn (mixed $value): bool => is_string($value) && $value !== '');
+
+        if (($filters['source'] ?? null) === 'bonus') {
+            $filters['bonus'] = '1';
+            unset($filters['source']);
+        }
+
+        if (isset($filters['source']) && ! in_array($filters['source'], self::CREATOR_FILTERS, true)) {
+            unset($filters['source']);
+        }
+
+        if (isset($filters['bonus']) && $filters['bonus'] !== '1') {
+            unset($filters['bonus']);
+        }
+
+        if (isset($filters['author']) && (($filters['source'] ?? null) !== 'teacher' || ! ctype_digit($filters['author']))) {
+            unset($filters['author']);
+        }
+
+        return $filters;
+    }
+
+    /**
+     * Restrict a query to one creator type.
+     */
+    private function applyCreator(Builder $query, ?string $creator): void
+    {
+        match ($creator) {
+            'ai' => $query->where('source', Question::SOURCE_AI),
+            'teacher' => $query->whereIn('source', Question::TEACHER_SOURCES),
+            'admin' => $query->where('source', 'admin'),
+            'system' => $query->where('source', 'system'),
+            default => null,
+        };
+    }
+
+    /**
+     * Question counts per creator type for the current filters (ignoring the creator filter itself), in one grouped query.
+     *
+     * @param  array<string, string>  $filters
+     * @return array{all: int, ai: int, teacher: int, admin: int, system: int}
+     */
+    private function sourceCounts(array $filters): array
+    {
+        $rows = $this->filteredQuery([...$filters, 'source' => null, 'author' => null])
+            ->selectRaw('source, COUNT(*) as total')
+            ->groupBy('source')
+            ->pluck('total', 'source');
+
+        return [
+            'all' => (int) $rows->sum(),
+            'ai' => (int) ($rows[Question::SOURCE_AI] ?? 0),
+            'teacher' => (int) $rows->only(Question::TEACHER_SOURCES)->sum(),
+            'admin' => (int) ($rows['admin'] ?? 0),
+            'system' => (int) ($rows['system'] ?? 0),
+        ];
+    }
+
+    /**
+     * Teachers who wrote or imported at least one question (id and name only).
+     *
+     * @return list<array{id: int, name: string}>
+     */
+    private function teacherAuthors(): array
+    {
+        return User::query()
+            ->whereIn('id', Question::query()->whereIn('source', Question::TEACHER_SOURCES)->whereNotNull('created_by')->select('created_by'))
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
+            ->all();
     }
 
     /**
@@ -79,12 +168,13 @@ class QuestionController extends Controller
     }
 
     /**
-     * @param  array<string, mixed>  $filters
+     * The list query with every filter applied except sorting.
+     *
+     * @param  array<string, string|null>  $filters
      */
-    private function questionList(array $filters): LengthAwarePaginator
+    private function filteredQuery(array $filters): Builder
     {
-        $query = Question::query()
-            ->with('author:id,name')
+        return Question::query()
             ->when($filters['search'] ?? null, fn (Builder $q, string $search) => $q->where(fn (Builder $q) => $q
                 ->where('prompt_id', 'like', '%'.addcslashes($search, '%_\\').'%')
                 ->orWhere('prompt_en', 'like', '%'.addcslashes($search, '%_\\').'%')
@@ -93,10 +183,20 @@ class QuestionController extends Controller
             ->when(isset($filters['band']) && $filters['band'] !== '' && array_key_exists((int) $filters['band'], Question::BANDS), fn (Builder $q) => $q->where('band', (int) $filters['band']))
             ->when(in_array($filters['subject'] ?? null, Subject::keys(), true), fn (Builder $q) => $q->where('subject', $filters['subject']))
             ->when(in_array($filters['type'] ?? null, Question::TYPES, true), fn (Builder $q) => $q->where('type', $filters['type']))
-            ->when(($filters['source'] ?? null) === 'ai', fn (Builder $q) => $q->where('source', Question::SOURCE_AI))
-            ->when(($filters['source'] ?? null) === 'bonus', fn (Builder $q) => $q->where('points', '>', 0))
+            ->tap(fn (Builder $q) => $this->applyCreator($q, $filters['source'] ?? null))
+            ->when($filters['author'] ?? null, fn (Builder $q, string $author) => $q->where('created_by', (int) $author))
+            ->when(($filters['bonus'] ?? null) === '1', fn (Builder $q) => $q->where('points', '>', 0))
             ->when(($filters['status'] ?? null) === 'active', fn (Builder $q) => $q->where('is_active', true))
-            ->when(($filters['status'] ?? null) === 'inactive', fn (Builder $q) => $q->where('is_active', false))
+            ->when(($filters['status'] ?? null) === 'inactive', fn (Builder $q) => $q->where('is_active', false));
+    }
+
+    /**
+     * @param  array<string, string>  $filters
+     */
+    private function questionList(array $filters): LengthAwarePaginator
+    {
+        $query = $this->filteredQuery($filters)
+            ->with('author:id,name')
             ->when(($filters['sort'] ?? null) === 'hardest', fn (Builder $q) => $q->where('times_answered', '>', 0)->orderByRaw('times_correct * 1.0 / times_answered asc'))
             ->when(($filters['sort'] ?? null) === 'most_answered', fn (Builder $q) => $q->orderByDesc('times_answered'))
             ->orderBy('band')

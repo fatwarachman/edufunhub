@@ -95,6 +95,14 @@ func (s *Server) servePortSorter(w http.ResponseWriter, r *http.Request) {
 			}
 			send(msg)
 			finish(res)
+		case "drop":
+			msg, res, err := sess.Drop(in.Packet, in.Option, now)
+			if err != nil {
+				send(portsorter.Message{"t": "error", "code": err.Error()})
+				continue
+			}
+			send(msg)
+			finish(res)
 		case "pause":
 			send(sess.Pause(now))
 		case "resume":
