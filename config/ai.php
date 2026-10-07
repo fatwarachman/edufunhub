@@ -30,6 +30,14 @@ return [
     ],
 
     /*
+    | Queue connection for the admin "generate questions" jobs (one per
+    | subject and grade). Null uses the default connection.
+    */
+    'question_generation' => [
+        'connection' => env('AI_GENERATION_QUEUE_CONNECTION'),
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Caching
     |--------------------------------------------------------------------------

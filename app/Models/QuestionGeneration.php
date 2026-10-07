@@ -53,6 +53,50 @@ class QuestionGeneration extends Model
         return $this->hasMany(Question::class, 'generation_id');
     }
 
+    /** @return HasMany<QuestionGenerationItem, $this> */
+    public function items(): HasMany
+    {
+        return $this->hasMany(QuestionGenerationItem::class, 'generation_id');
+    }
+
+    /** Create one queued progress row per subject/grade pair. */
+    public function createItems(): void
+    {
+        $now = now();
+        $rows = [];
+        foreach ($this->subjects as $subject) {
+            foreach ($this->grades as $grade) {
+                $rows[] = [
+                    'generation_id' => $this->id,
+                    'subject' => $subject,
+                    'grade' => (int) $grade,
+                    'status' => QuestionGenerationItem::QUEUED,
+                    'target' => $this->per_combination,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+        foreach (array_chunk($rows, 200) as $chunk) {
+            QuestionGenerationItem::query()->insert($chunk);
+        }
+    }
+
+    /** Progress row of one subject/grade; created on demand for requests made before progress tracking. */
+    public function itemFor(string $subject, int $grade): QuestionGenerationItem
+    {
+        return QuestionGenerationItem::query()->firstOrCreate(
+            ['generation_id' => $this->id, 'subject' => $subject, 'grade' => $grade],
+            ['status' => QuestionGenerationItem::QUEUED, 'target' => $this->per_combination, 'created_count' => 0, 'skipped_count' => 0],
+        );
+    }
+
+    /** The first job to start moves the request from queued to running. */
+    public function markRunning(): void
+    {
+        $this->newQuery()->whereKey($this->id)->where('status', 'queued')->update(['status' => 'running']);
+    }
+
     /** Record a finished subject/grade job; closes the request after the last one. */
     public function jobFinished(int $created, int $skipped, ?string $error = null): void
     {

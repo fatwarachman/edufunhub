@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\QuestionGeneration;
+use App\Models\QuestionGenerationItem;
 use App\Services\Ai\QuestionGenerator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -10,7 +11,8 @@ use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Generates the questions of one subject and grade for an AI request.
+ * Generates the questions of one subject and grade for an AI request and
+ * records its progress on the matching question_generation_items row.
  */
 class GenerateQuestions implements ShouldQueue
 {
@@ -22,17 +24,32 @@ class GenerateQuestions implements ShouldQueue
 
     public function __construct(public QuestionGeneration $generation, public string $subject, public int $grade)
     {
+        $this->onConnection(config('ai.question_generation.connection'));
         $this->onQueue('low');
     }
 
     public function handle(QuestionGenerator $generator): void
     {
+        $item = $this->generation->itemFor($this->subject, $this->grade);
+        if ($item->isFinished()) {
+            return;
+        }
+        $item->update(['status' => QuestionGenerationItem::RUNNING, 'started_at' => now()]);
+        $this->generation->markRunning();
+
         try {
-            $result = $generator->generate($this->generation, $this->subject, $this->grade, $this->generation->per_combination);
-            $this->generation->jobFinished($result['created'], $result['skipped']);
+            $result = $generator->generate(
+                $this->generation,
+                $this->subject,
+                $this->grade,
+                $this->generation->per_combination,
+                fn (int $created, int $skipped) => $item->update(['created_count' => $created, 'skipped_count' => $skipped]),
+            );
+            $this->finish(QuestionGenerationItem::DONE, $result['created'], $result['skipped']);
         } catch (Throwable $exception) {
             report($exception);
-            $this->generation->jobFinished(0, 0, Str::limit("{$this->subject}/{$this->grade}: ".$exception->getMessage(), 500));
+            $item->refresh();
+            $this->finish(QuestionGenerationItem::FAILED, $item->created_count, $item->skipped_count, $this->describe($exception->getMessage()));
         }
     }
 
@@ -42,6 +59,37 @@ class GenerateQuestions implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-        $this->generation->jobFinished(0, 0, Str::limit("{$this->subject}/{$this->grade}: ".($exception?->getMessage() ?? 'job failed'), 500));
+        $item = $this->generation->itemFor($this->subject, $this->grade);
+        $this->finish(QuestionGenerationItem::FAILED, $item->created_count, $item->skipped_count, $this->describe($exception?->getMessage() ?? 'job failed'));
+    }
+
+    /**
+     * Close the item once: the conditional update makes a late failed() after
+     * handle() (or a retried job) a no-op so request totals are counted once.
+     */
+    private function finish(string $status, int $created, int $skipped, ?string $error = null): void
+    {
+        $closed = QuestionGenerationItem::query()
+            ->where('generation_id', $this->generation->id)
+            ->where('subject', $this->subject)
+            ->where('grade', $this->grade)
+            ->whereNotIn('status', [QuestionGenerationItem::DONE, QuestionGenerationItem::FAILED])
+            ->update([
+                'status' => $status,
+                'created_count' => $created,
+                'skipped_count' => $skipped,
+                'error' => $error,
+                'finished_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        if ($closed === 1) {
+            $this->generation->jobFinished($created, $skipped, $error);
+        }
+    }
+
+    private function describe(string $message): string
+    {
+        return Str::limit("{$this->subject}/{$this->grade}: {$message}", 500);
     }
 }

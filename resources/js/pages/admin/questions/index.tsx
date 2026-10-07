@@ -36,7 +36,10 @@ import {
     PowerOff,
     RotateCcw,
     Scale,
+    School,
     Search,
+    Settings2,
+    ShieldCheck,
     Sparkles,
     Trash2,
 } from 'lucide-react';
@@ -82,18 +85,46 @@ interface Filters {
     status?: string;
     sort?: string;
     source?: string;
+    bonus?: string;
+    author?: string;
 }
+
+type CreatorFilter = 'ai' | 'teacher' | 'admin' | 'system';
+
+type SourceCounts = Record<'all' | CreatorFilter, number>;
+
+const CREATOR_FILTERS: {
+    value: CreatorFilter | undefined;
+    label: string;
+    icon: React.ElementType;
+}[] = [
+    { value: undefined, label: 'All', icon: Layers },
+    { value: 'ai', label: 'AI', icon: Sparkles },
+    { value: 'teacher', label: 'Teacher', icon: School },
+    { value: 'admin', label: 'Admin', icon: ShieldCheck },
+    { value: 'system', label: 'System', icon: Settings2 },
+];
+
+const LIST_TITLES: Record<CreatorFilter, string> = {
+    ai: 'AI-created questions',
+    teacher: 'Teacher-created questions',
+    admin: 'Admin-created questions',
+    system: 'System questions',
+};
 
 interface QuestionsProps {
     mode: 'subjects' | 'list';
     subjectStats: SubjectStat[];
     questions: PaginatedData<QuestionRow> | null;
+    sourceCounts: SourceCounts | null;
+    teachers: { id: number; name: string }[];
     filters: Filters;
     summary: {
         total: number;
         active: number;
         ai: number;
         ai_pending: number;
+        teacher: number;
         bonus: number;
         byGame: Record<string, number>;
     };
@@ -217,7 +248,7 @@ function SubjectOverview({
                 </div>
             </div>
 
-            {(summary.ai > 0 || summary.bonus > 0) && (
+            {(summary.ai > 0 || summary.teacher > 0 || summary.bonus > 0) && (
                 <div className="flex flex-wrap gap-2 text-sm">
                     {summary.ai > 0 && (
                         <Link
@@ -235,9 +266,20 @@ function SubjectOverview({
                             )}
                         </Link>
                     )}
+                    {summary.teacher > 0 && (
+                        <Link
+                            href="/admin/questions?source=teacher"
+                            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 hover:bg-accent"
+                            data-testid="questions-teacher-link"
+                        >
+                            <SourceBadge source="teacher" />
+                            {formatNumber(summary.teacher)}{' '}
+                            {tr('Teacher-created')}
+                        </Link>
+                    )}
                     {summary.bonus > 0 && (
                         <Link
-                            href="/admin/questions?source=bonus"
+                            href="/admin/questions?bonus=1"
                             className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 hover:bg-accent"
                         >
                             <Coins className="size-4 text-amber-500" />
@@ -366,6 +408,8 @@ function QuestionList({
     subjects,
     bands,
     subjectStats,
+    sourceCounts,
+    teachers,
 }: QuestionsProps) {
     const subjectLabel = useSubjectLabel();
     const [search, setSearch] = useState(filters.search ?? '');
@@ -453,6 +497,7 @@ function QuestionList({
         filters.type ||
         filters.status ||
         filters.source ||
+        filters.bonus ||
         filters.sort,
     );
     const prev = questions.links.find((link) =>
@@ -463,9 +508,9 @@ function QuestionList({
         ? subjectLabel(subject)
         : filters.subject === 'all'
           ? 'All subjects'
-          : filters.source === 'ai' && !filters.search
-            ? 'AI-created questions'
-            : filters.source === 'bonus' && !filters.search
+          : filters.source && !filters.search
+            ? (LIST_TITLES[filters.source as CreatorFilter] ?? 'Search results')
+            : filters.bonus && !filters.search
               ? 'Bonus questions'
               : 'Search results';
 
@@ -527,6 +572,57 @@ function QuestionList({
                     </GradeTab>
                 ))}
             </div>
+
+            {sourceCounts && (
+                <div className="flex min-w-0 flex-col gap-1.5">
+                    <span
+                        id="questions-creator-label"
+                        className="text-xs font-medium text-muted-foreground"
+                    >
+                        {tr('Created by')}
+                    </span>
+                    <div
+                        className="-mx-1 flex min-w-0 [scrollbar-width:thin] gap-1.5 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible"
+                        role="group"
+                        aria-labelledby="questions-creator-label"
+                        data-testid="questions-source-filter"
+                    >
+                        {CREATOR_FILTERS.map((option) => {
+                            const active =
+                                (filters.source ?? undefined) === option.value;
+                            const Icon = option.icon;
+                            return (
+                                <button
+                                    key={option.label}
+                                    type="button"
+                                    aria-pressed={active}
+                                    onClick={() =>
+                                        apply({
+                                            source: option.value,
+                                            author: undefined,
+                                        })
+                                    }
+                                    data-testid={`questions-source-${option.value ?? 'all'}`}
+                                    className={cn(
+                                        'inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                                        active
+                                            ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                                            : 'border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground',
+                                    )}
+                                >
+                                    <Icon className="size-4" />
+                                    {tr(option.label)}
+                                    <Count>
+                                        {formatNumber(
+                                            sourceCounts[option.value ?? 'all'],
+                                        )}
+                                    </Count>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm">
                 <div className="relative min-w-56 flex-1">
@@ -594,18 +690,35 @@ function QuestionList({
                     <option value="active">{tr('Active')}</option>
                     <option value="inactive">{tr('Inactive')}</option>
                 </select>
+                {filters.source === 'teacher' && teachers.length > 0 && (
+                    <select
+                        aria-label={tr('Teacher')}
+                        value={filters.author ?? ''}
+                        onChange={(e) =>
+                            apply({ author: e.target.value || undefined })
+                        }
+                        className={cn(fieldClass, 'max-w-full min-w-0')}
+                        data-testid="questions-author-filter"
+                    >
+                        <option value="">{tr('All teachers')}</option>
+                        {teachers.map((teacher) => (
+                            <option key={teacher.id} value={teacher.id}>
+                                {teacher.name}
+                            </option>
+                        ))}
+                    </select>
+                )}
                 <select
-                    aria-label={tr('Source')}
-                    value={filters.source ?? ''}
+                    aria-label={tr('Bonus')}
+                    value={filters.bonus ?? ''}
                     onChange={(e) =>
-                        apply({ source: e.target.value || undefined })
+                        apply({ bonus: e.target.value || undefined })
                     }
                     className={fieldClass}
-                    data-testid="questions-source-filter"
+                    data-testid="questions-bonus-filter"
                 >
-                    <option value="">{tr('Any source')}</option>
-                    <option value="ai">{tr('AI-created')}</option>
-                    <option value="bonus">{tr('Bonus questions')}</option>
+                    <option value="">{tr('Any points')}</option>
+                    <option value="1">{tr('Bonus questions')}</option>
                 </select>
                 <select
                     aria-label={tr('Sort')}
@@ -740,7 +853,7 @@ function QuestionList({
                                 />
                                 <div
                                     className={cn(
-                                        'flex w-20 shrink-0 flex-col items-center justify-center rounded-xl px-2 py-2 text-center',
+                                        'flex w-16 shrink-0 flex-col items-center justify-center rounded-xl px-1.5 py-2 text-center sm:w-20 sm:px-2',
                                         BAND_TONE[question.band],
                                     )}
                                     data-testid="question-grade"
@@ -772,9 +885,10 @@ function QuestionList({
                                             </span>
                                         </p>
                                         <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                                            {question.source === 'ai' && (
-                                                <AiBadge />
-                                            )}
+                                            <SourceBadge
+                                                source={question.source}
+                                                author={question.author}
+                                            />
                                             {(question.points ?? 0) > 0 && (
                                                 <Badge tone="amber">
                                                     {tr('Bonus +')}
@@ -801,14 +915,6 @@ function QuestionList({
                                                     {gameLabel(game)}
                                                 </Badge>
                                             ))}
-                                            <span className="text-muted-foreground">
-                                                {tr('by')}{' '}
-                                                {question.author ??
-                                                    (question.source ===
-                                                    'system'
-                                                        ? tr('EduFunHub')
-                                                        : tr('Unknown'))}
-                                            </span>
                                             {!question.is_active && (
                                                 <Badge tone="muted">
                                                     {tr('Inactive')}
@@ -819,7 +925,7 @@ function QuestionList({
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex shrink-0 items-center gap-4">
+                                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:shrink-0 sm:justify-start">
                                         <div className="flex flex-col items-end text-xs">
                                             <span
                                                 className={cn(
@@ -840,7 +946,7 @@ function QuestionList({
                                                 {tr('answers')}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-1">
+                                        <div className="flex flex-wrap items-center gap-1">
                                             <IconButton
                                                 label={tr('Statistics')}
                                                 href={`/admin/questions/${question.id}`}
@@ -896,7 +1002,7 @@ function QuestionList({
                         {tr('Showing')} {questions.from}–{questions.to}{' '}
                         {tr('of')} {questions.total}
                     </span>
-                    <div className="flex items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-1">
                         <PageLink
                             href={prev?.url ?? null}
                             label={tr('Previous')}
@@ -1095,6 +1201,56 @@ function GradeTab({
         >
             {children}
         </button>
+    );
+}
+
+/** Who created a question: AI, a teacher (with name), an admin or the built-in system bank. */
+function SourceBadge({
+    source,
+    author,
+}: {
+    source: string;
+    author?: string | null;
+}) {
+    if (source === 'ai') {
+        return <AiBadge className="py-1 text-xs" />;
+    }
+
+    const teacher = source === 'teacher' || source === 'import';
+    const label = teacher
+        ? author
+            ? tr('Teacher: {0}', [author])
+            : tr('Teacher')
+        : source === 'admin'
+          ? author
+              ? tr('Admin: {0}', [author])
+              : tr('Admin')
+          : source === 'system'
+            ? tr('System')
+            : tr('Unknown');
+
+    return (
+        <span
+            className={cn(
+                'inline-flex max-w-full min-w-0 items-center gap-1 rounded-full border px-2 py-0.5 font-medium',
+                teacher
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
+                    : source === 'admin'
+                      ? 'border-sky-300 bg-sky-50 text-sky-800 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-300'
+                      : 'border-border bg-muted text-muted-foreground',
+            )}
+            title={label}
+            data-testid="question-source-badge"
+        >
+            {teacher ? (
+                <School className="size-3 shrink-0" />
+            ) : source === 'admin' ? (
+                <ShieldCheck className="size-3 shrink-0" />
+            ) : (
+                <Settings2 className="size-3 shrink-0" />
+            )}
+            <span className="truncate">{label}</span>
+        </span>
     );
 }
 

@@ -7,9 +7,11 @@ use App\Http\Requests\Admin\GenerateQuestionsRequest;
 use App\Jobs\GenerateQuestions;
 use App\Models\Question;
 use App\Models\QuestionGeneration;
+use App\Models\QuestionGenerationItem;
 use App\Models\Subject;
 use App\Services\Ai\AiSettings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,7 +35,7 @@ class QuestionGenerationController extends Controller
             'maxTotal' => self::MAX_TOTAL,
             'aiTotal' => Question::query()->where('source', Question::SOURCE_AI)->count(),
             'generations' => QuestionGeneration::query()
-                ->with('requester:id,name')
+                ->with(['requester:id,name', 'items' => fn ($query) => $query->orderBy('id')])
                 ->latest('id')
                 ->limit(15)
                 ->get()
@@ -42,6 +44,7 @@ class QuestionGenerationController extends Controller
                     'requested_by' => $generation->requester?->name,
                     'created_at' => $generation->created_at?->toIso8601String(),
                     'finished_at' => $generation->finished_at?->toIso8601String(),
+                    'items' => $generation->items->map(fn (QuestionGenerationItem $item): array => $item->toProgress())->values(),
                 ]),
         ]);
     }
@@ -58,17 +61,22 @@ class QuestionGenerationController extends Controller
             return back()->withErrors(['per_combination' => __('ai.too_many', ['total' => $total, 'max' => self::MAX_TOTAL])]);
         }
 
-        $generation = QuestionGeneration::query()->create([
-            'requested_by' => $request->user()->id,
-            'model' => (string) $settings->model(),
-            'subjects' => array_values($data['subjects']),
-            'grades' => array_values(array_map('intval', $data['grades'])),
-            'per_combination' => $data['per_combination'],
-            'games' => array_values($data['games']),
-            'activate' => $data['activate'],
-            'status' => 'queued',
-            'total_jobs' => count($data['subjects']) * count($data['grades']),
-        ]);
+        $generation = DB::transaction(function () use ($request, $settings, $data): QuestionGeneration {
+            $generation = QuestionGeneration::query()->create([
+                'requested_by' => $request->user()->id,
+                'model' => (string) $settings->model(),
+                'subjects' => array_values($data['subjects']),
+                'grades' => array_values(array_map('intval', $data['grades'])),
+                'per_combination' => $data['per_combination'],
+                'games' => array_values($data['games']),
+                'activate' => $data['activate'],
+                'status' => 'queued',
+                'total_jobs' => count($data['subjects']) * count($data['grades']),
+            ]);
+            $generation->createItems();
+
+            return $generation;
+        });
 
         foreach ($generation->subjects as $subject) {
             foreach ($generation->grades as $grade) {
