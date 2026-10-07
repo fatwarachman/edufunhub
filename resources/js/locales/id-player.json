@@ -2037,7 +2037,20 @@
         },
         "loadingStats": "Memuat statistik…",
         "settings": "Profil & pengaturan",
-        "explore": "Kategori permainan"
+        "explore": "Kategori permainan",
+        "ability": {
+            "title": "Analisa kemampuanmu",
+            "date": "Dianalisa {{date}}",
+            "scores": "Skor per mata pelajaran",
+            "strengths": "Kekuatanmu",
+            "growth": "Yang bisa ditingkatkan",
+            "tips": "Saran belajar",
+            "style": "Gaya belajar",
+            "progress": "Perkembangan sejak analisa sebelumnya",
+            "more": "Lihat saran & detail",
+            "less": "Sembunyikan detail",
+            "note": "Analisa ini dibuat oleh AI dari hasil permainanmu."
+        }
     },
     "feedback": {
         "title": "Kirim Masukan",
