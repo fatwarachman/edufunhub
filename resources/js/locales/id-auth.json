@@ -32,7 +32,11 @@
         "birthDate": "Tanggal lahir",
         "birthDateHint": "Dipakai untuk mengetahui usia peserta.",
         "schoolName": "Sekolah terakhir",
-        "schoolNamePlaceholder": "Contoh: SDN 1 Bogor"
+        "schoolNamePlaceholder": "Contoh: SDN 1 Bogor",
+        "googleOnly": "Akun baru dibuat dengan akun Google. Cukup satu klik, tanpa kata sandi baru.",
+        "google": "Daftar dengan Google",
+        "googleUnavailable": "Pendaftaran dengan Google belum tersedia. Silakan coba lagi nanti.",
+        "googleWhy": "Email dari Google sudah terverifikasi, jadi akunmu lebih aman. Setelah masuk, lengkapi tanggal lahir dan sekolahmu."
     },
     "login": {
         "adminTitle": "Masuk Admin",
@@ -43,8 +47,8 @@
         "description": "Masuk, jelajahi permainan edukasi, dan temukan cara baru menikmati setiap tantangan.",
         "title": "Masuk",
         "subtitle": "Masuk ke akun Anda",
-        "google": "Daftar / Masuk dengan Google",
-        "unavailable": "Login Google belum tersedia. Gunakan email untuk masuk atau mendaftar.",
+        "google": "Masuk dengan Google",
+        "unavailable": "Login Google belum tersedia. Gunakan email dan kata sandi untuk masuk.",
         "alternative": "atau dengan email",
         "email": "Alamat email",
         "emailPlaceholder": "nama@contoh.com",
@@ -56,7 +60,7 @@
         "pending": "Sedang masuk…",
         "submit": "Masuk",
         "newAccount": "Belum punya akun?",
-        "register": "Daftar gratis"
+        "register": "Daftar dengan Google"
     },
     "verify": {
         "title": "Verifikasi email",

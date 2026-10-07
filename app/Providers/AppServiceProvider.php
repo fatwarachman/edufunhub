@@ -109,6 +109,24 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by('feedback:'.($request->user()?->id ?: $request->ip()));
         });
 
+        // Join with a room PIN: own counter, so guessing codes stays slow.
+        RateLimiter::for('profile', function (Request $request) {
+            return Limit::perMinute(20)->by('profile:'.$request->user()?->id);
+        });
+
+        RateLimiter::for('profile-password', function (Request $request) {
+            return Limit::perMinute(6)->by('profile-password:'.$request->user()?->id);
+        });
+
+        RateLimiter::for('join-pin', function (Request $request) {
+            return Limit::perMinute(20)->by('join-pin:'.($request->user()?->id ?: $request->ip()));
+        });
+
+        // End-of-game leaderboard modal: one read per finished game.
+        RateLimiter::for('game-leaderboard', function (Request $request) {
+            return Limit::perMinute(30)->by('game-leaderboard:'.($request->user()?->id ?: $request->ip()));
+        });
+
         self::registerFeatureFlags();
     }
 }
