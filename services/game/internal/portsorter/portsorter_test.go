@@ -163,6 +163,30 @@ func TestLandingTooEarlyOrStaleIsRefused(t *testing.T) {
 	}
 }
 
+func TestDropLandsBeforeFallTime(t *testing.T) {
+	s, now := newRun("ports-basic")
+	at, id, p := land(s)
+	// Soft drop is refused only while the packet has not spawned yet.
+	if _, _, err := s.Drop(id, p.Bin, now.Add(-time.Second)); err != ErrTooEarly {
+		t.Fatalf("drop before spawn: %v", err)
+	}
+	if _, _, err := s.Drop(id, 4, now.Add(time.Second)); err != ErrBin {
+		t.Fatalf("drop bad bin: %v", err)
+	}
+	// Well before the natural landing time (and before Land's tolerance).
+	early := at.Add(-Fall(0) / 2)
+	msg, _, err := s.Drop(id, p.Bin, early)
+	if err != nil {
+		t.Fatalf("early drop: %v", err)
+	}
+	if fb := msg["feedback"].(Message); fb["kind"] != FeedbackCorrect {
+		t.Fatalf("drop on the right bin must count: %v", fb)
+	}
+	if _, _, err := s.Drop(id, p.Bin, early); err != ErrPacket {
+		t.Fatalf("double drop: %v", err)
+	}
+}
+
 func TestPerfectRunSpeedsUpAndAwardsMax(t *testing.T) {
 	for _, key := range []string{"ports-basic", "ports-services"} {
 		s, _ := newRun(key)

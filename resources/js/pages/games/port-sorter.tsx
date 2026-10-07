@@ -123,6 +123,8 @@ interface Run {
     } | null;
     levelUp: { level: number; life: number } | null;
     pulse: number;
+    boostActive: boolean;
+    boostedElapsed: number;
 }
 
 export default function PortSorter({
@@ -153,6 +155,8 @@ export default function PortSorter({
         landed: null,
         levelUp: null,
         pulse: 0,
+        boostActive: false,
+        boostedElapsed: 0,
     });
     const reported = useRef<string | null>(null);
     const caption = useRef('');
@@ -214,6 +218,8 @@ export default function PortSorter({
                         r.label = packet.label;
                         r.sent = false;
                         r.column = packet.column;
+                        r.boostActive = false;
+                        r.boostedElapsed = 0;
                         r.packetX = columnX(
                             packet.column,
                             columnCount(next.bins),
@@ -316,10 +322,24 @@ export default function PortSorter({
                 setColumn(Number(event.key) - 1);
             } else if (event.key === 'p' || event.key === 'P') {
                 togglePause();
+            } else if (event.key === 'ArrowDown' || event.key === 's') {
+                event.preventDefault();
+                if (steerable()) {
+                    run.current.boostActive = true;
+                }
+            }
+        };
+        const onKeyUp = (event: KeyboardEvent) => {
+            if (event.key === 'ArrowDown' || event.key === 's') {
+                run.current.boostActive = false;
             }
         };
         window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
+        window.addEventListener('keyup', onKeyUp);
+        return () => {
+            window.removeEventListener('keydown', onKey);
+            window.removeEventListener('keyup', onKeyUp);
+        };
     }, [move, setColumn, togglePause]);
 
     useEffect(() => {
@@ -370,9 +390,18 @@ export default function PortSorter({
             if (packet) {
                 const since = st?.paused ? 0 : now - r.receivedAt;
                 waiting = since < r.delay && r.elapsedAtReceive === 0;
+                // Boost: hold ArrowDown/s to accelerate fall 3× (extra 2× dt per frame).
+                if (r.boostActive && running && !waiting && !r.sent) {
+                    r.boostedElapsed += dt * 2 * 1000;
+                }
                 const travelled =
-                    r.elapsedAtReceive + Math.max(0, since - r.delay);
+                    r.elapsedAtReceive +
+                    Math.max(0, since - r.delay) +
+                    r.boostedElapsed;
                 progress = Math.min(1, travelled / r.fall);
+                if (progress >= 1) {
+                    r.boostActive = false;
+                }
                 if (
                     running &&
                     progress >= 1 &&
@@ -382,7 +411,7 @@ export default function PortSorter({
                 ) {
                     r.sent = true;
                     sendRef.current({
-                        t: 'land',
+                        t: r.boostedElapsed > 0 ? 'drop' : 'land',
                         packet: r.packetId,
                         option: r.column,
                     });
@@ -542,6 +571,27 @@ export default function PortSorter({
                     320,
                 );
                 ctx.restore();
+            }
+
+            // Boost indicator: shown while ArrowDown/s is held.
+            if (r.boostActive && running) {
+                const blink = Math.floor(now / 180) % 2 === 0;
+                if (blink) {
+                    ctx.save();
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.strokeStyle = INK;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.roundRect(WIDTH - 130, 8, 118, 34, 10);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.fillStyle = INK;
+                    ctx.font = '800 18px system-ui, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('⚡ BOOST', WIDTH - 71, 25, 110);
+                    ctx.restore();
+                }
             }
 
             frame = requestAnimationFrame(draw);
@@ -819,6 +869,9 @@ export default function PortSorter({
                         <ChevronRight className="size-8" />
                     </button>
                 </div>
+                <p className="hidden text-center text-xs text-[#4d6b80] sm:block" aria-hidden="true">
+                    ←/A · →/D · 1–9 · P={t('portSorter.pause')} · {t('portSorter.boostHint')}
+                </p>
             </main>
         </div>
     );
