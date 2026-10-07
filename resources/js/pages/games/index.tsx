@@ -2,6 +2,8 @@ import { PlayerCountBadge } from '@/components/player-count-badge';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import { gameIcon } from '@/lib/games';
+import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
+import { absoluteUrl } from '@/lib/share';
 import { gradeShortLabel } from '@/lib/grade';
 import { cn } from '@/lib/utils';
 import { type GameMenuGame, type SharedData } from '@/types';
@@ -9,7 +11,9 @@ import { Head, usePage } from '@inertiajs/react';
 import {
     Blocks,
     ChefHat,
+    ChevronDown,
     Coins,
+    Flame,
     FlaskConical,
     Gamepad2,
     LayoutGrid,
@@ -23,6 +27,7 @@ import {
     SearchX,
     Sparkles,
     Swords,
+    TrendingUp,
     X,
 } from 'lucide-react';
 import { type ReactNode, useMemo, useState, useSyncExternalStore } from 'react';
@@ -97,9 +102,27 @@ function initialQuery(pageUrl: string): string {
     }
 }
 
-export default function GameList() {
-    const { t } = useTranslations();
+interface GamePopularity {
+    plays: number;
+    popularRank: number | null;
+}
+
+interface GameListProps {
+    /** Plays and dense "most played" rank per game key (public counts only). */
+    popularity?: Record<string, GamePopularity>;
+    popularityDays?: number;
+}
+
+export default function GameList({
+    popularity = {},
+    popularityDays = 30,
+}: GameListProps) {
+    const { t, i18n } = useTranslations();
     const { props, url: pageUrl } = usePage<SharedData>();
+    const numberFormat = useMemo(
+        () => new Intl.NumberFormat(i18n.language),
+        [i18n.language],
+    );
     const signedIn = Boolean(props.auth?.user);
     const categories = useMemo(() => props.gameMenu ?? [], [props.gameMenu]);
     const [filter, setFilter] = useState<string>('all');
@@ -109,7 +132,19 @@ export default function GameList() {
         readView,
         () => 'grid' as GameView,
     );
+    const [openRows, setOpenRows] = useState<Set<string>>(() => new Set());
     const backHref = signedIn ? '/portal' : '/';
+
+    const toggleRow = (key: string) =>
+        setOpenRows((current) => {
+            const next = new Set(current);
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+            }
+            return next;
+        });
     const searching = query.trim() !== '';
 
     const matched = useMemo(() => {
@@ -160,6 +195,9 @@ export default function GameList() {
         setFilter('all');
     };
 
+    /** Same size for every pill on a list row so they wrap evenly. */
+    const rowBadge = 'px-2.5 text-[11px] shadow-none';
+
     const range = (min: number, max: number) =>
         min === max
             ? gradeShortLabel(t, min)
@@ -191,14 +229,21 @@ export default function GameList() {
         </span>
     );
 
-    const playButton = (game: GameMenuGame, compact = false): ReactNode =>
+    /** Row variant: icon-only (with screen-reader label) on phones, labelled from sm. */
+    const rowButtonClass =
+        'max-sm:w-11 max-sm:px-0 max-sm:[&_.edu-nav-label]:sr-only';
+
+    const playButton = (
+        game: GameMenuGame,
+        variant: 'card' | 'row' = 'card',
+    ): ReactNode =>
         !signedIn && !game.guestPlayable ? (
             <NavButton
                 href="/login"
                 icon={LogIn}
                 label={t('nav.loginToPlay')}
-                block={!compact}
-                className={compact ? 'w-full sm:w-auto' : undefined}
+                block={variant === 'card'}
+                className={variant === 'row' ? rowButtonClass : undefined}
                 testId={`gamelist-login-${game.key}`}
             />
         ) : (
@@ -207,11 +252,63 @@ export default function GameList() {
                 icon={Play}
                 label={t('gameList.play')}
                 variant="primary"
-                block={!compact}
-                className={compact ? 'w-full sm:w-auto' : undefined}
+                block={variant === 'card'}
+                className={variant === 'row' ? rowButtonClass : undefined}
                 testId={`gamelist-play-${game.key}`}
             />
         );
+
+    const shareButton = (game: GameMenuGame): ReactNode => (
+        <WhatsAppShareButton
+            compact
+            text={t('player.shareWaGameText', {
+                game: t(game.titleKey),
+                url: absoluteUrl(game.url),
+            })}
+            label={t('player.shareWaGame')}
+            testId={`gamelist-share-wa-${game.key}`}
+        />
+    );
+
+    const popularBadge = (key: string, className?: string): ReactNode => {
+        const rank = popularity[key]?.popularRank ?? null;
+        return rank === null ? null : (
+            <span
+                className={cn(
+                    'inline-flex items-center gap-1 rounded-full border-2 border-[#1f2a44] bg-[#ffe1e6] px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-[#9b1c3a]',
+                    className,
+                )}
+                data-testid={`gamelist-popular-${key}`}
+            >
+                <Flame className="size-3 shrink-0" aria-hidden />
+                {t('portal.mostPlayed', { rank })}
+            </span>
+        );
+    };
+
+    const playsBadge = (key: string, className?: string): ReactNode => {
+        const plays = popularity[key]?.plays ?? 0;
+        return (
+            <span
+                className={cn(
+                    'inline-flex max-w-full min-w-0 items-center gap-1 rounded-full border-2 border-dashed border-[#1f2a44]/40 bg-white px-2 py-0.5 text-[11px] font-bold text-[#1f2a44]/80',
+                    className,
+                )}
+                data-testid={`gamelist-plays-${key}`}
+            >
+                <TrendingUp className="size-3 shrink-0" aria-hidden />
+                <span className="min-w-0">
+                    {plays > 0
+                        ? t('portal.plays', {
+                              count: plays,
+                              formatted: numberFormat.format(plays),
+                              days: popularityDays,
+                          })
+                        : t('portal.playsNone', { days: popularityDays })}
+                </span>
+            </span>
+        );
+    };
 
     const viewOptions: { key: GameView; icon: LucideIcon; label: string }[] = [
         { key: 'grid', icon: LayoutGrid, label: t('gameList.viewGrid') },
@@ -459,39 +556,100 @@ export default function GameList() {
                                 >
                                     {category.games.map((game) => {
                                         const Icon = gameIcon(game.icon);
+                                        const open = openRows.has(game.key);
+                                        const panelId = `gamelist-row-panel-${game.key}`;
+                                        const title = t(game.titleKey);
+                                        const details: [string, string][] = [
+                                            [
+                                                'gameList.details.modeLabel',
+                                                game.maxPlayers > 1
+                                                    ? 'gameList.details.modeGroup'
+                                                    : 'gameList.details.modeSolo',
+                                            ],
+                                            [
+                                                'gameList.details.pointsLabel',
+                                                game.awardsPoints
+                                                    ? 'gameList.details.pointsYes'
+                                                    : 'gameList.details.pointsNo',
+                                            ],
+                                            [
+                                                'gameList.details.accessLabel',
+                                                game.guestPlayable
+                                                    ? 'gameList.details.accessGuest'
+                                                    : 'gameList.details.accessAccount',
+                                            ],
+                                        ];
                                         return (
                                             <li
                                                 key={game.key}
-                                                className="flex min-w-0 flex-col gap-3 rounded-2xl border-3 border-[#1f2a44] bg-white p-3 shadow-[3px_3px_0px_#1f2a44] sm:flex-row sm:items-center sm:gap-4 sm:p-4"
+                                                className="min-w-0 rounded-2xl border-3 border-[#1f2a44] bg-white shadow-[3px_3px_0px_#1f2a44]"
                                                 data-testid={`gamelist-row-${game.key}`}
                                             >
-                                                <div className="flex min-w-0 flex-1 items-center gap-3">
-                                                    <div
-                                                        className="flex size-11 shrink-0 items-center justify-center rounded-xl border-2 border-[#1f2a44] text-white shadow-[2px_2px_0px_#1f2a44]"
-                                                        style={{
-                                                            background:
-                                                                game.accent,
-                                                        }}
+                                                <div className="flex min-w-0 items-center gap-2 p-2 pb-0 sm:gap-3 sm:p-3 sm:pb-0">
+                                                    <button
+                                                        type="button"
+                                                        aria-expanded={open}
+                                                        aria-controls={panelId}
+                                                        aria-label={t(
+                                                            open
+                                                                ? 'gameList.hideDetails'
+                                                                : 'gameList.showDetails',
+                                                            { title },
+                                                        )}
+                                                        onClick={() =>
+                                                            toggleRow(game.key)
+                                                        }
+                                                        data-testid={`gamelist-row-toggle-${game.key}`}
+                                                        className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-xl p-1 text-left transition-colors hover:bg-[#FFF9E6] focus-visible:ring-3 focus-visible:ring-[#6c5ce7] focus-visible:outline-none sm:gap-4"
                                                     >
-                                                        <Icon
-                                                            className="size-6 stroke-[2.5]"
+                                                        <span
+                                                            className="flex size-11 shrink-0 items-center justify-center rounded-xl border-2 border-[#1f2a44] text-white shadow-[2px_2px_0px_#1f2a44]"
+                                                            style={{
+                                                                background:
+                                                                    game.accent,
+                                                            }}
+                                                        >
+                                                            <Icon
+                                                                className="size-6 stroke-[2.5]"
+                                                                aria-hidden
+                                                            />
+                                                        </span>
+                                                        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                                                            <span className="font-display text-base leading-tight font-black break-words text-[#1f2a44] sm:text-lg">
+                                                                {title}
+                                                            </span>
+                                                            <span className="truncate text-xs font-bold text-slate-600">
+                                                                {t(
+                                                                    category.titleKey,
+                                                                )}
+                                                            </span>
+                                                        </span>
+                                                        <ChevronDown
+                                                            className={cn(
+                                                                'size-5 shrink-0 text-[#1f2a44] transition-transform duration-300 motion-reduce:transition-none',
+                                                                open &&
+                                                                    'rotate-180',
+                                                            )}
                                                             aria-hidden
                                                         />
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <h3 className="font-display text-base leading-tight font-black break-words text-[#1f2a44] sm:text-lg">
-                                                            {t(game.titleKey)}
-                                                        </h3>
-                                                        <p className="mt-0.5 truncate text-xs font-bold text-slate-600">
-                                                            {t(
-                                                                category.titleKey,
-                                                            )}
-                                                        </p>
+                                                    </button>
+                                                    <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                                                        {shareButton(game)}
+                                                        {playButton(
+                                                            game,
+                                                            'row',
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:justify-end">
-                                                    {gradeBadge(game)}
-                                                    {pointsBadge(game)}
+                                                <div
+                                                    className="flex min-w-0 flex-wrap items-center gap-1.5 px-3 pt-2 pb-3 sm:pr-4 sm:pb-4 sm:pl-[76px]"
+                                                    data-testid={`gamelist-row-badges-${game.key}`}
+                                                >
+                                                    {gradeBadge(game, rowBadge)}
+                                                    {pointsBadge(
+                                                        game,
+                                                        rowBadge,
+                                                    )}
                                                     <PlayerCountBadge
                                                         minPlayers={
                                                             game.minPlayers
@@ -499,12 +657,75 @@ export default function GameList() {
                                                         maxPlayers={
                                                             game.maxPlayers
                                                         }
-                                                        className="max-w-full px-3 text-xs font-black shadow-[1.5px_1.5px_0px_#1f2a44]"
+                                                        className={cn(
+                                                            rowBadge,
+                                                            'gap-1',
+                                                        )}
                                                         testId={`gamelist-players-${game.key}`}
                                                     />
+                                                    {popularBadge(
+                                                        game.key,
+                                                        rowBadge,
+                                                    )}
+                                                    {playsBadge(
+                                                        game.key,
+                                                        rowBadge,
+                                                    )}
                                                 </div>
-                                                <div className="shrink-0">
-                                                    {playButton(game, true)}
+                                                <div
+                                                    id={panelId}
+                                                    role="region"
+                                                    aria-label={title}
+                                                    aria-hidden={!open}
+                                                    inert={!open}
+                                                    data-testid={panelId}
+                                                    className={cn(
+                                                        'grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none',
+                                                        open
+                                                            ? 'grid-rows-[1fr] opacity-100'
+                                                            : 'grid-rows-[0fr] opacity-0',
+                                                    )}
+                                                >
+                                                    <div className="min-h-0 overflow-hidden">
+                                                        <div className="flex min-w-0 flex-col gap-3 border-t-2 border-[#1f2a44]/10 px-3 pt-3 pb-3 sm:px-4 sm:pb-4">
+                                                            {game.descriptionKey && (
+                                                                <p
+                                                                    className="text-sm leading-relaxed font-semibold text-slate-600"
+                                                                    data-testid={`gamelist-row-description-${game.key}`}
+                                                                >
+                                                                    {t(
+                                                                        game.descriptionKey,
+                                                                    )}
+                                                                </p>
+                                                            )}
+                                                            <dl className="grid min-w-0 gap-2 text-sm sm:grid-cols-3 sm:gap-3">
+                                                                {details.map(
+                                                                    ([
+                                                                        label,
+                                                                        value,
+                                                                    ]) => (
+                                                                        <div
+                                                                            key={
+                                                                                label
+                                                                            }
+                                                                            className="min-w-0 rounded-xl border-2 border-dashed border-[#1f2a44]/25 bg-[#FFF9E6] px-3 py-2"
+                                                                        >
+                                                                            <dt className="text-xs font-black tracking-wide text-[#1f2a44] uppercase">
+                                                                                {t(
+                                                                                    label,
+                                                                                )}
+                                                                            </dt>
+                                                                            <dd className="mt-0.5 font-semibold break-words text-slate-600">
+                                                                                {t(
+                                                                                    value,
+                                                                                )}
+                                                                            </dd>
+                                                                        </div>
+                                                                    ),
+                                                                )}
+                                                            </dl>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </li>
                                         );
@@ -557,10 +778,20 @@ export default function GameList() {
                                                             )}
                                                         </p>
                                                     )}
+                                                    <div
+                                                        className="mt-3 flex min-w-0 flex-wrap items-center gap-1.5"
+                                                        data-testid={`gamelist-game-popularity-${game.key}`}
+                                                    >
+                                                        {popularBadge(game.key)}
+                                                        {playsBadge(game.key)}
+                                                    </div>
                                                 </div>
 
-                                                <div className="mt-6 border-t-2 border-[#1f2a44]/10 pt-4">
-                                                    {playButton(game)}
+                                                <div className="mt-6 flex items-center gap-2 border-t-2 border-[#1f2a44]/10 pt-4">
+                                                    <div className="min-w-0 flex-1">
+                                                        {playButton(game)}
+                                                    </div>
+                                                    {shareButton(game)}
                                                 </div>
                                             </article>
                                         );

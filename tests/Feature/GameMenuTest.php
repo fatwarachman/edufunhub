@@ -60,6 +60,39 @@ it('links every game from the landing page menu', function (string $url): void {
     expect($landing)->toContain('href="'.$url.'"');
 })->with(['/games/flag-quest', '/games/sky-quiz', '/games/quiz-duel', '/games/knowledge-train', '/games/snakes-and-ladders', '/games/market-math', '/games/number-garden', '/games/explore-indonesia', '/games/mini-lab', '/games/floor-drop', '/games/economy-heist', '/games/order-rush', '/games/port-sorter', '/games/turbo-trivia']);
 
+it('labels the list-view accordion and filter counts in both locales', function (): void {
+    foreach (['id', 'en'] as $locale) {
+        $catalog = json_decode(
+            file_get_contents(resource_path("js/locales/{$locale}-player.json")),
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        );
+
+        expect($catalog['gameList'])->toHaveKeys(['showDetails', 'hideDetails', 'filterCount'])
+            ->and($catalog['gameList']['showDetails'])->toContain('{{title}}')
+            ->and($catalog['gameList']['hideDetails'])->toContain('{{title}}')
+            ->and($catalog['portal'])->toHaveKeys(['all', 'filterLabel']);
+    }
+});
+
+it('describes list-view game details and popularity in both locales', function (): void {
+    $keys = ['modeLabel', 'modeGroup', 'modeSolo', 'pointsLabel', 'pointsYes', 'pointsNo', 'accessLabel', 'accessGuest', 'accessAccount'];
+
+    foreach (['id', 'en'] as $locale) {
+        $catalog = json_decode(
+            file_get_contents(resource_path("js/locales/{$locale}-player.json")),
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        );
+
+        expect($catalog['gameList']['details'])->toHaveKeys($keys)
+            ->and(array_filter($catalog['gameList']['details'], fn (string $text): bool => trim($text) === ''))->toBe([])
+            ->and($catalog['portal']['mostPlayed'])->toContain('{{rank}}')
+            ->and($catalog['portal']['plays'])->toContain('{{formatted}}')->toContain('{{days}}')
+            ->and($catalog['portal']['playsNone'])->toContain('{{days}}');
+    }
+});
+
 it('describes every coming-soon game in both locales', function (): void {
     $games = ['monsterCafe', 'saboteurLab', 'bossDefense', 'pixelPainter', 'tetrisQuiz', 'osiPingPong'];
 

@@ -8,6 +8,7 @@ use App\Models\PlayerProfile;
 use App\Models\PointLedger;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Read model for the player portal: game catalog, progress level and leaderboard.
@@ -19,6 +20,11 @@ class PlayerPortal
 
     /** Ranks that get a "most played" badge; games with equal plays share a rank. */
     public const POPULAR_BADGES = 3;
+
+    /** Cache for the public game list popularity (guests can open /gamelist). */
+    public const POPULARITY_CACHE_KEY = 'gamelist.popularity';
+
+    public const POPULARITY_CACHE_SECONDS = 300;
 
     /**
      * @param  array<string, int>  $plays  Play counts per game key (see popularity()).
@@ -77,6 +83,38 @@ class PlayerPortal
             ->pluck('plays', 'game_key')
             ->map(fn (mixed $count): int => (int) $count)
             ->all();
+    }
+
+    /**
+     * Play counts and "most played" ranks for every catalog game, keyed by game key.
+     * Ranks match catalog(): equal counts share a rank, only the top POPULAR_BADGES get one.
+     *
+     * @param  array<string, int>  $plays  Play counts per game key (see popularity()).
+     * @return array<string, array{plays: int, popularRank: int|null}>
+     */
+    public function popularityByGame(array $plays): array
+    {
+        return collect($this->catalog(null, $plays))
+            ->flatMap(fn (array $category): array => $category['games'])
+            ->mapWithKeys(fn (array $game): array => [$game['key'] => [
+                'plays' => $game['plays'],
+                'popularRank' => $game['popularRank'],
+            ]])
+            ->all();
+    }
+
+    /**
+     * Public, cached popularity for the game list page (counts only, no player data).
+     *
+     * @return array<string, array{plays: int, popularRank: int|null}>
+     */
+    public function cachedPopularity(): array
+    {
+        return Cache::remember(
+            self::POPULARITY_CACHE_KEY,
+            self::POPULARITY_CACHE_SECONDS,
+            fn (): array => $this->popularityByGame($this->popularity()),
+        );
     }
 
     /**
