@@ -1,124 +1,30 @@
+import { Google } from '@/components/brand-icons';
 import { BrandWordmark } from '@/components/brand-wordmark';
 import InputError from '@/components/input-error';
-import { SchoolPicker } from '@/components/school-picker';
 import { BackButton, NavButton } from '@/components/site-nav';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/hooks/use-translations';
-import { Head, useForm } from '@inertiajs/react';
-import {
-    Calendar,
-    Eye,
-    EyeOff,
-    Gamepad2,
-    Loader2,
-    Lock,
-    Mail,
-    User,
-} from 'lucide-react';
-import { type FormEventHandler, useState } from 'react';
+import { Head, usePage } from '@inertiajs/react';
+import { Gamepad2, ShieldCheck } from 'lucide-react';
 import '../../../css/auth-landing.css';
 
-function PasswordStrength({ password }: { password: string }) {
-    const { t } = useTranslations();
-    const checks = [
-        { label: t('register.length'), pass: password.length >= 8 },
-        { label: t('register.uppercase'), pass: /[A-Z]/.test(password) },
-        { label: t('register.lowercase'), pass: /[a-z]/.test(password) },
-        { label: t('register.number'), pass: /[0-9]/.test(password) },
-        { label: t('register.symbol'), pass: /[^A-Za-z0-9]/.test(password) },
-    ];
-
-    const score = checks.filter((c) => c.pass).length;
-
-    const strengthLabel =
-        score === 0
-            ? ''
-            : score <= 2
-              ? t('register.weak')
-              : score <= 3
-                ? t('register.fair')
-                : score === 4
-                  ? t('register.good')
-                  : t('register.strong');
-
-    const strengthColor =
-        score === 0
-            ? 'bg-muted'
-            : score <= 2
-              ? 'bg-red-500'
-              : score <= 3
-                ? 'bg-yellow-500'
-                : score === 4
-                  ? 'bg-blue-500'
-                  : 'bg-green-500';
-
-    if (!password) return null;
-
-    return (
-        <div className="mt-2 space-y-2">
-            <div className="flex items-center gap-2">
-                <div className="flex flex-1 gap-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                        <div
-                            key={i}
-                            className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
-                                i <= score ? strengthColor : 'bg-muted'
-                            }`}
-                        />
-                    ))}
-                </div>
-                {strengthLabel && (
-                    <span className="text-xs text-muted-foreground">
-                        {strengthLabel}
-                    </span>
-                )}
-            </div>
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-1">
-                {checks.map((check) => (
-                    <li
-                        key={check.label}
-                        className={`flex items-center gap-1.5 text-xs ${
-                            check.pass
-                                ? 'text-green-600 dark:text-green-400'
-                                : 'text-muted-foreground'
-                        }`}
-                    >
-                        <span
-                            className={`size-1.5 rounded-full ${check.pass ? 'bg-green-500' : 'bg-muted-foreground/40'}`}
-                        />
-                        {check.label}
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
+interface RegisterProps {
+    googleEnabled: boolean;
+    googleRedirectUrl: string | null;
 }
 
-export default function Register() {
+/**
+ * New accounts are created only with a Google account (verified email).
+ * Manual email + password sign-up is closed; existing accounts still sign
+ * in on /login.
+ */
+export default function Register({
+    googleEnabled,
+    googleRedirectUrl,
+}: RegisterProps) {
     const { t } = useTranslations();
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
-
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        email: '',
-        birth_date: '',
-        school_name: '',
-        school_city: '',
-        password: '',
-        password_confirmation: '',
-    });
-    const today = new Date().toISOString().slice(0, 10);
-
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        post('/register', {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
-    };
+    const { errors } = usePage<{ errors: Record<string, string> }>().props;
 
     return (
         <>
@@ -130,7 +36,11 @@ export default function Register() {
             </Head>
             <div className="auth-landing">
                 <header className="auth-header">
-                    <a href="/" className="auth-brand" aria-label="edufunhub.com">
+                    <a
+                        href="/"
+                        className="auth-brand"
+                        aria-label="edufunhub.com"
+                    >
                         <span className="auth-brand-mark">
                             <Gamepad2 className="size-6" />
                         </span>
@@ -163,7 +73,10 @@ export default function Register() {
                         className="min-w-0"
                         aria-labelledby="register-heading"
                     >
-                        <div className="auth-card">
+                        <div
+                            className="auth-card"
+                            data-testid="register-google-only"
+                        >
                             <div className="mb-6 flex flex-col gap-2">
                                 <h2
                                     id="register-heading"
@@ -172,287 +85,73 @@ export default function Register() {
                                     {t('register.title')}
                                 </h2>
                                 <p className="text-sm text-muted-foreground">
-                                    {t('register.subtitle')}
+                                    {t('register.googleOnly')}
                                 </p>
                             </div>
-                            <form onSubmit={submit} noValidate>
-                                <div className="flex flex-col gap-5">
-                                    {/* Name */}
-                                    <div className="flex flex-col gap-1.5">
-                                        <Label htmlFor="name">
-                                            {t('register.name')}
-                                        </Label>
-                                        <div className="relative">
-                                            <User className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="name"
-                                                type="text"
-                                                name="name"
-                                                value={data.name}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'name',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder={t(
-                                                    'register.namePlaceholder',
-                                                )}
-                                                autoComplete="name"
-                                                autoFocus
-                                                required
-                                            />
-                                        </div>
-                                        <InputError message={errors.name} />
-                                    </div>
-
-                                    {/* Email */}
-                                    <div className="flex flex-col gap-1.5">
-                                        <Label htmlFor="email">
-                                            {t('login.email')}
-                                        </Label>
-                                        <div className="relative">
-                                            <Mail className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                name="email"
-                                                value={data.email}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'email',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                placeholder={t(
-                                                    'login.emailPlaceholder',
-                                                )}
-                                                autoComplete="email"
-                                                required
-                                            />
-                                        </div>
-                                        <InputError message={errors.email} />
-                                    </div>
-
-                                    {/* Birth date */}
-                                    <div className="flex flex-col gap-1.5">
-                                        <Label htmlFor="birth_date">
-                                            {t('register.birthDate')}
-                                        </Label>
-                                        <div className="relative">
-                                            <Calendar className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="birth_date"
-                                                type="date"
-                                                name="birth_date"
-                                                value={data.birth_date}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'birth_date',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pl-9"
-                                                max={today}
-                                                autoComplete="bday"
-                                                required
-                                            />
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('register.birthDateHint')}
-                                        </p>
-                                        <InputError
-                                            message={errors.birth_date}
-                                        />
-                                    </div>
-
-                                    {/* Last school + city */}
-                                    <SchoolPicker
-                                        variant="auth"
-                                        endpoint="/register/schools"
-                                        idPrefix="school"
-                                        schoolName={data.school_name}
-                                        schoolCity={data.school_city}
-                                        onSchoolNameChange={(value) =>
-                                            setData('school_name', value)
-                                        }
-                                        onSchoolCityChange={(value) =>
-                                            setData('school_city', value)
-                                        }
-                                        schoolError={errors.school_name}
-                                        cityError={errors.school_city}
-                                        required
-                                    />
-
-                                    {/* Password */}
-                                    <div className="flex flex-col gap-1.5">
-                                        <Label htmlFor="password">
-                                            {t('login.password')}
-                                        </Label>
-                                        <div className="relative">
-                                            <Lock className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="password"
-                                                type={
-                                                    showPassword
-                                                        ? 'text'
-                                                        : 'password'
-                                                }
-                                                name="password"
-                                                value={data.password}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'password',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pr-10 pl-9"
-                                                placeholder="••••••••"
-                                                autoComplete="new-password"
-                                                required
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setShowPassword((s) => !s)
-                                                }
-                                                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
-                                                aria-label={
-                                                    showPassword
-                                                        ? t('register.hide')
-                                                        : t('register.show')
-                                                }
-                                            >
-                                                {showPassword ? (
-                                                    <EyeOff className="size-4" />
-                                                ) : (
-                                                    <Eye className="size-4" />
-                                                )}
-                                            </button>
-                                        </div>
-                                        <InputError message={errors.password} />
-                                        <PasswordStrength
-                                            password={data.password}
-                                        />
-                                    </div>
-
-                                    {/* Password confirmation */}
-                                    <div className="flex flex-col gap-1.5">
-                                        <Label htmlFor="password_confirmation">
-                                            {t('register.confirm')}
-                                        </Label>
-                                        <div className="relative">
-                                            <Lock className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                                            <Input
-                                                id="password_confirmation"
-                                                type={
-                                                    showConfirm
-                                                        ? 'text'
-                                                        : 'password'
-                                                }
-                                                name="password_confirmation"
-                                                value={
-                                                    data.password_confirmation
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'password_confirmation',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="pr-10 pl-9"
-                                                placeholder="••••••••"
-                                                autoComplete="new-password"
-                                                required
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setShowConfirm((s) => !s)
-                                                }
-                                                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none"
-                                                aria-label={
-                                                    showConfirm
-                                                        ? t(
-                                                              'register.hideConfirm',
-                                                          )
-                                                        : t(
-                                                              'register.showConfirm',
-                                                          )
-                                                }
-                                            >
-                                                {showConfirm ? (
-                                                    <EyeOff className="size-4" />
-                                                ) : (
-                                                    <Eye className="size-4" />
-                                                )}
-                                            </button>
-                                        </div>
-                                        <InputError
-                                            message={
-                                                errors.password_confirmation
-                                            }
-                                        />
-                                        {data.password &&
-                                            data.password_confirmation && (
-                                                <p
-                                                    className={`text-xs ${
-                                                        data.password ===
-                                                        data.password_confirmation
-                                                            ? 'text-green-600 dark:text-green-400'
-                                                            : 'text-red-500'
-                                                    }`}
-                                                >
-                                                    {data.password ===
-                                                    data.password_confirmation
-                                                        ? t('register.match')
-                                                        : t(
-                                                              'register.mismatch',
-                                                          )}
-                                                </p>
-                                            )}
-                                    </div>
-
-                                    {/* Submit */}
+                            <div className="flex flex-col gap-4">
+                                {googleEnabled && googleRedirectUrl ? (
                                     <Button
-                                        type="submit"
-                                        className="w-full font-semibold"
-                                        disabled={processing}
+                                        variant="outline"
+                                        asChild
+                                        className="auth-google h-auto min-h-12 w-full py-3 text-center text-base whitespace-normal"
                                     >
-                                        {processing ? (
-                                            <>
-                                                <Loader2 className="mr-2 size-4 animate-spin" />
-                                                {t('register.pending')}
-                                            </>
-                                        ) : (
-                                            t('register.title')
-                                        )}
+                                        <a
+                                            href={googleRedirectUrl}
+                                            data-testid="register-google"
+                                        >
+                                            <Google className="size-5 shrink-0" />
+                                            {t('register.google')}
+                                        </a>
                                     </Button>
-
-                                    <p className="text-center text-xs text-muted-foreground">
-                                        {t('register.agreement')}{' '}
-                                        <TextLink
-                                            href="/terms"
-                                            className="text-xs"
+                                ) : (
+                                    <>
+                                        <Button
+                                            variant="outline"
+                                            disabled
+                                            className="auth-google h-auto min-h-12 w-full py-3 text-center text-base whitespace-normal"
+                                            aria-describedby="register-google-unavailable"
                                         >
-                                            {t('register.terms')}
-                                        </TextLink>{' '}
-                                        {t('register.and')}{' '}
-                                        <TextLink
-                                            href="/privacy"
-                                            className="text-xs"
+                                            <Google className="size-5 shrink-0" />
+                                            {t('register.google')}
+                                        </Button>
+                                        <p
+                                            id="register-google-unavailable"
+                                            className="text-center text-xs text-muted-foreground"
+                                            data-testid="register-google-unavailable"
                                         >
-                                            {t('register.privacy')}
-                                        </TextLink>
-                                        .
-                                    </p>
-                                </div>
-                            </form>
+                                            {t('register.googleUnavailable')}
+                                        </p>
+                                    </>
+                                )}
+                                {errors?.google && (
+                                    <div role="alert">
+                                        <InputError message={errors.google} />
+                                    </div>
+                                )}
+                                <p className="flex items-start gap-2 rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                                    <ShieldCheck
+                                        className="mt-0.5 size-4 shrink-0 text-green-600"
+                                        aria-hidden="true"
+                                    />
+                                    {t('register.googleWhy')}
+                                </p>
+                                <p className="text-center text-xs text-muted-foreground">
+                                    {t('register.agreement')}{' '}
+                                    <TextLink href="/terms" className="text-xs">
+                                        {t('register.terms')}
+                                    </TextLink>{' '}
+                                    {t('register.and')}{' '}
+                                    <TextLink
+                                        href="/privacy"
+                                        className="text-xs"
+                                    >
+                                        {t('register.privacy')}
+                                    </TextLink>
+                                    .
+                                </p>
+                            </div>
                         </div>
 
-                        {/* Login link */}
                         <p className="mt-6 text-center text-sm text-muted-foreground">
                             {t('register.existing')}{' '}
                             <TextLink href="/login">

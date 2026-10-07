@@ -193,15 +193,15 @@ test('leaderboard ranks players per week, month and all time', function (): void
     $this->actingAs($viewer)->get('/portal')->assertInertia(fn (Assert $page) => $page
         ->has('leaderboards.week.entries', 1)
         ->where('leaderboards.week.entries.0.name', 'Viewer')
-        ->where('leaderboards.week.entries.0.points', 50)
-        ->where('leaderboards.week.me', ['rank' => 1, 'points' => 50])
+        ->where('leaderboards.week.entries.0.points', 20)
+        ->where('leaderboards.week.me', ['rank' => 1, 'points' => 20])
         ->has('leaderboards.month.entries', 2)
         ->where('leaderboards.month.entries.0.name', 'Monthly')
-        ->where('leaderboards.month.me', ['rank' => 2, 'points' => 50])
+        ->where('leaderboards.month.me', ['rank' => 2, 'points' => 20])
         ->has('leaderboards.all.entries', 3)
         ->where('leaderboards.all.entries.0.name', 'Veteran')
         ->where('leaderboards.all.entries.2.isMe', true)
-        ->where('leaderboards.all.me', ['rank' => 3, 'points' => 50]));
+        ->where('leaderboards.all.me', ['rank' => 3, 'points' => 20]));
 });
 
 test('leaderboard shows the viewer standing outside the top ten', function (): void {

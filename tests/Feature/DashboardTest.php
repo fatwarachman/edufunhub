@@ -35,7 +35,7 @@ test('unverified new player gets real empty dashboard without writes', function 
     $this->assertDatabaseCount('game_histories', 0);
 });
 
-test('dashboard shows earned points, spendable balance and own newest history', function (): void {
+test('dashboard shows one point total (earned minus spent) and own newest history', function (): void {
     $user = User::factory()->create();
     PointLedger::factory()->for($user)->create(['points' => 25]);
     PointLedger::factory()->for($user)->create(['points' => -5]);
@@ -44,7 +44,7 @@ test('dashboard shows earned points, spendable balance and own newest history', 
     $latest = GameHistory::factory()->for($user)->create(['game_name' => 'Sky Quiz']);
     GameHistory::factory()->create(['game_name' => 'Private game']);
     $this->actingAs($user)->get('/dashboard')->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('user/dashboard', false)->where('points', 25)->where('balance', 20)->has('history', 2)
+        ->component('user/dashboard', false)->where('points', 20)->missing('balance')->has('history', 2)
         ->where('history.0.id', $latest->id)->where('history.0.game_name', 'Sky Quiz')
         ->where('history.1.game_name', 'Old game'));
 });

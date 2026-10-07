@@ -109,7 +109,7 @@ class GoogleAuthController extends Controller
             return $this->failure('This account cannot use Google sign-in. Please sign in with email and password or contact support.');
         }
 
-        if ($user->is_superadmin || $user->hasRole('admin')) {
+        if ($user->isAdmin()) {
             return $this->failure(__('Admin accounts must sign in with email and password.'));
         }
 

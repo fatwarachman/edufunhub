@@ -120,18 +120,15 @@ describe('school city', function (): void {
             ->assertSessionHasErrors('school_city');
     });
 
-    test('registration stores the school city', function (): void {
-        $this->post(route('register.store'), [
-            'name' => 'Peserta Kota',
-            'email' => 'kota@example.com',
+    test('player details store the school city', function (): void {
+        $user = User::factory()->create();
+        $this->actingAs($user)->patch(route('player-details.update'), [
             'birth_date' => now()->subYears(10)->toDateString(),
             'school_name' => 'SDN 1 Depok',
             'school_city' => 'Kota Depok',
-            'password' => 'password',
-            'password_confirmation' => 'password',
         ])->assertRedirect();
 
-        expect(User::query()->where('email', 'kota@example.com')->sole()->playerProfile->school_city)->toBe('Kota Depok');
+        expect($user->fresh()->playerProfile->school_city)->toBe('Kota Depok');
     });
 });
 

@@ -1,15 +1,16 @@
+import { JoinByPinCard } from '@/components/join-by-pin';
 import { OnlineDot } from '@/components/online-dot';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
 import { PlayerCountBadge } from '@/components/player-count-badge';
 import { NavButton } from '@/components/site-nav';
-import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
@@ -254,6 +255,8 @@ export default function Portal({
                 <ActiveGames games={activeGames ?? []} />
             </Deferred>
 
+            <JoinByPinCard />
+
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
                 <section
                     className="flex min-w-0 flex-col gap-5"
@@ -452,9 +455,7 @@ export default function Portal({
                                                     <NavButton
                                                         href={game.url}
                                                         icon={Play}
-                                                        label={t(
-                                                            'portal.play',
-                                                        )}
+                                                        label={t('portal.play')}
                                                         variant="primary"
                                                         block
                                                         testId={`portal-play-${game.key}`}

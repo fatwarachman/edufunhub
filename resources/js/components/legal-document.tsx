@@ -1,3 +1,4 @@
+import { DigitalClock } from '@/components/digital-clock';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
@@ -60,8 +61,10 @@ export function LegalDocument({ document }: { document: LegalDocumentKey }) {
                             external
                         />
                         <span className="truncate font-display text-xl font-black text-[#1f2a44] sm:text-2xl">
-                            edu<span className="text-[#FF9E44]">funhub</span>.com
+                            edu<span className="text-[#FF9E44]">funhub</span>
+                            .com
                         </span>
+                        <DigitalClock />
                     </div>
                     <SiteNav compact />
                 </div>

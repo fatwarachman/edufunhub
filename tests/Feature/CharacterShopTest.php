@@ -42,7 +42,7 @@ it('shows the builder with balance, owned items and the catalog', function (): v
         ->where('options.genders', ['boy', 'girl']));
 });
 
-it('buys an item with points without lowering level points', function (): void {
+it('buys an item and the points go down right away', function (): void {
     $user = shopPlayer(200);
     $sword = CharacterItem::query()->where('key', 'knight-sword')->firstOrFail();
 
@@ -51,7 +51,7 @@ it('buys an item with points without lowering level points', function (): void {
     $portal = app(PlayerPortal::class);
     expect($user->characterItems()->pluck('character_items.id')->all())->toBe([$sword->id])
         ->and($portal->balance($user))->toBe(200 - $sword->price)
-        ->and($portal->totalPoints($user))->toBe(200)
+        ->and($portal->totalPoints($user))->toBe(200 - $sword->price)
         ->and($user->pointLedgers()->where('points', -$sword->price)->exists())->toBeTrue();
 
     $this->get('/character')->assertInertia(fn (Assert $page) => $page
@@ -160,7 +160,7 @@ it('shows equipped items on the leaderboard', function (): void {
     PlayerProfile::query()->where('user_id', $user->id)->update(['grade' => 4]);
 
     $this->get('/portal')->assertInertia(fn (Assert $page) => $page
-        ->where('leaderboards.all.entries.0.points', 500)
+        ->where('leaderboards.all.entries.0.points', 500 - $crown->price)
         ->where('leaderboards.all.entries.0.character.items.hat.style', 'crown'));
 });
 

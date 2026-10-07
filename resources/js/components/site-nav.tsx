@@ -1,5 +1,6 @@
 import { DigitalClock } from '@/components/digital-clock';
 import { GameMenu } from '@/components/game-menu';
+import { JoinByPinButton } from '@/components/join-by-pin';
 import { NotificationBell } from '@/components/notification-bell';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
@@ -8,8 +9,10 @@ import {
     ArrowLeft,
     BookOpenCheck,
     BrainCircuit,
+    CircleUserRound,
     Gamepad2,
     Home,
+    KeyRound,
     LayoutDashboard,
     LogIn,
     LogOut,
@@ -92,7 +95,7 @@ export function NavButton({
     const common = {
         className: classes({ variant, iconOnly, block, className }),
         'aria-label': iconOnly ? label : undefined,
-        title: iconOnly ? label : undefined,
+        'data-tip': block ? undefined : label,
         'aria-current': active ? ('page' as const) : undefined,
         'data-testid': testId,
     };
@@ -171,6 +174,13 @@ const ABILITY_ITEM: NavItem = {
     icon: BrainCircuit,
 };
 
+/** Signed-in players: own profile (account, details, password). */
+const PROFILE_ITEM: NavItem = {
+    href: '/profile',
+    labelKey: 'nav.profile',
+    icon: CircleUserRound,
+};
+
 /** Signed-in players: icon button next to the bell, labelled in the phone menu. */
 const FEEDBACK_ITEM: NavItem = {
     href: '/feedback',
@@ -205,10 +215,16 @@ function isActive(url: string, href: string): boolean {
 export function SiteNav({
     className,
     compact,
+    clock = false,
 }: {
     className?: string;
     /** Collapse labels to icons below 1024px (crowded game headers). */
     compact?: boolean;
+    /**
+     * Render the clock inside the nav. Off by default: headers place
+     * <DigitalClock /> next to the logo instead.
+     */
+    clock?: boolean;
 }) {
     const { t } = useTranslations();
     const { props, url } = usePage<SharedData>();
@@ -256,7 +272,7 @@ export function SiteNav({
             onClick={() => router.post('/logout')}
             className="edu-nav-btn"
             aria-label={t('nav.logout')}
-            title={t('nav.logout')}
+            data-tip={t('nav.logout')}
             data-testid="nav-logout"
         >
             <LogOut aria-hidden="true" />
@@ -286,10 +302,11 @@ export function SiteNav({
                 .join(' ')}
             data-testid="site-nav"
         >
-            <DigitalClock />
+            {clock && <DigitalClock />}
             <div className="edu-nav-links">{links}</div>
             {signedIn && (
                 <div className="edu-nav-links">
+                    <JoinByPinButton />
                     <NavButton
                         href={ABILITY_ITEM.href}
                         icon={ABILITY_ITEM.icon}
@@ -308,6 +325,14 @@ export function SiteNav({
                         iconOnly
                         active={isActive(url, FEEDBACK_ITEM.href)}
                         testId="nav-feedback"
+                    />
+                    <NavButton
+                        href={PROFILE_ITEM.href}
+                        icon={PROFILE_ITEM.icon}
+                        label={t(PROFILE_ITEM.labelKey)}
+                        iconOnly
+                        active={isActive(url, PROFILE_ITEM.href)}
+                        testId="nav-profile"
                     />
                 </div>
             )}
@@ -378,7 +403,7 @@ function MobileMenu({
 
     /* Guests get sign in / sign up as buttons at the top of the panel. */
     const entries: NavItem[] = signedIn
-        ? [...items, ABILITY_ITEM, FEEDBACK_ITEM]
+        ? [...items, ABILITY_ITEM, FEEDBACK_ITEM, PROFILE_ITEM]
         : items.filter((item) => item !== LOGIN_ITEM);
 
     return (
@@ -391,7 +416,7 @@ function MobileMenu({
                 aria-expanded={open}
                 aria-controls={panelId}
                 aria-label={t('nav.menu')}
-                title={t('nav.menu')}
+                data-tip={open ? undefined : t('nav.menu')}
                 onClick={() => setOpen((value) => !value)}
                 data-testid="nav-more"
             >
@@ -431,6 +456,18 @@ function MobileMenu({
                     </div>
                 )}
                 <ul>
+                    {signedIn && (
+                        <li>
+                            <JoinByPinButton className="edu-game-menu-item">
+                                <span className="edu-game-menu-icon edu-nav-more-icon">
+                                    <KeyRound aria-hidden="true" />
+                                </span>
+                                <span className="edu-game-menu-title">
+                                    {t('joinPin.button')}
+                                </span>
+                            </JoinByPinButton>
+                        </li>
+                    )}
                     {entries.map((item) => {
                         const Icon = item.icon;
                         const content = (

@@ -669,7 +669,12 @@
     text-align: left;
     cursor: pointer;
 }
-@media (max-width: 639px) {
+/*
+ * Game headers share the row with the game logo, title, clock and points:
+ * below 1280px every nav item folds into the menu button (bell stays) so the
+ * game title stays readable.
+ */
+@media (max-width: 1279px) {
     .edu-nav-bar--compact .edu-nav-links {
         display: none;
     }
@@ -883,5 +888,176 @@
 @media (prefers-reduced-motion: reduce) {
     .edu-clock-colon {
         animation: none;
+    }
+}
+
+/* End-of-game celebration (components/game-finale.tsx). */
+.edu-confetti-piece {
+    position: absolute;
+    top: -16px;
+    opacity: 0;
+    animation-name: edu-confetti-fall;
+    animation-timing-function: cubic-bezier(0.25, 0.6, 0.45, 1);
+    animation-fill-mode: forwards;
+    will-change: transform, opacity;
+}
+@keyframes edu-confetti-fall {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(var(--drift, 0px), 105vh, 0)
+            rotate(var(--spin, 360deg));
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .edu-confetti {
+        display: none;
+    }
+}
+
+/*
+ * Game headers (compact nav) share the row with the game logo, title, points
+ * and sound buttons. Labelled nav buttons left the title no room (title and
+ * tagline squeezed to 0px), so the compact nav stays icon-only up to 1535px
+ * (1799px for admins, who have more items) and the clock drops its date and seconds there. Labels stay for screen readers and tooltips.
+ */
+@media (max-width: 1799px) {
+    .edu-nav-bar--compact.edu-nav-bar--crowded .edu-nav-btn {
+        padding: 0;
+        width: 44px;
+    }
+    .edu-nav-bar--compact.edu-nav-bar--crowded .edu-nav-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+    .edu-nav-bar--compact.edu-nav-bar--crowded .edu-clock {
+        padding: 0 10px;
+    }
+    .edu-nav-bar--compact.edu-nav-bar--crowded .edu-clock-day,
+    .edu-nav-bar--compact.edu-nav-bar--crowded .edu-clock-seconds {
+        display: none;
+    }
+}
+@media (max-width: 1535px) {
+    .edu-nav-bar--compact .edu-nav-btn {
+        padding: 0;
+        width: 44px;
+    }
+    .edu-nav-bar--compact .edu-nav-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+}
+
+/*
+ * Game header brand (logo, title, tagline): keeps room for a readable title
+ * next to the nav instead of shrinking to nothing.
+ */
+@media (min-width: 640px) {
+    .edu-game-brand {
+        min-width: 11rem;
+    }
+    .edu-game-brand:has(.edu-clock--game) {
+        min-width: 15rem;
+    }
+}
+@media (min-width: 1280px) {
+    .edu-game-brand:has(.edu-clock--game) {
+        min-width: 19rem;
+    }
+}
+@media (max-width: 1279px) {
+    .edu-clock--game {
+        padding: 0 10px;
+    }
+    .edu-clock--game .edu-clock-day,
+    .edu-clock--game .edu-clock-seconds {
+        display: none;
+    }
+}
+
+/*
+ * Clock next to the logo (game headers): hidden on narrow phones where the
+ * title needs the room; the nav menu keeps the essentials there.
+ */
+@media (max-width: 639px) {
+    .edu-clock--game {
+        display: none;
+    }
+}
+
+/*
+ * Hover/focus tooltip with the menu name for every header nav button
+ * (labels are often collapsed to icons). Uses the button's data-tip.
+ */
+.edu-nav-btn[data-tip],
+.edu-game-menu-trigger[data-tip] {
+    position: relative;
+}
+.edu-nav-btn[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    z-index: 60;
+    transform: translate(-50%, -2px);
+    padding: 4px 8px;
+    border: 2px solid #151b2e;
+    border-radius: 8px;
+    background: #151b2e;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    box-shadow: 2px 2px 0 #f5a623;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 0.12s ease,
+        transform 0.12s ease;
+}
+.edu-nav-btn[data-tip]:hover::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    transition-delay: 0.25s;
+}
+
+.edu-nav-btn[data-tip]:focus-visible::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+/* Rightmost buttons: keep the tooltip inside the viewport. */
+.edu-nav-bar > :last-child .edu-nav-btn[data-tip]::after,
+.edu-nav-bar
+    > .edu-nav-links:last-of-type
+    .edu-nav-btn[data-tip]:last-child::after {
+    left: auto;
+    right: 0;
+    transform: translate(0, -2px);
+}
+.edu-nav-bar > :last-child .edu-nav-btn[data-tip]:hover::after,
+.edu-nav-bar
+    > .edu-nav-links:last-of-type
+    .edu-nav-btn[data-tip]:last-child:hover::after {
+    transform: translate(0, 0);
+}
+@media (prefers-reduced-motion: reduce) {
+    .edu-nav-btn[data-tip]::after {
+        transition: none;
     }
 }

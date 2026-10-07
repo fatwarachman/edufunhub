@@ -124,12 +124,12 @@ it('pre-fills email in login page from invitation link', function () {
         );
 });
 
-it('pre-fills email in register page from invitation link', function () {
+it('sends invited new users to the Google-only register page', function () {
     $this->get('/register?email=newuser@example.com&redirect=/invitations/some-token')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('auth/register')
-            ->where('email', 'newuser@example.com')
-            ->where('redirect', '/invitations/some-token')
+            ->has('googleEnabled')
+            ->missing('email')
         );
 });

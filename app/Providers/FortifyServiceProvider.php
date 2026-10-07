@@ -7,8 +7,10 @@ use App\Actions\Fortify\ResetUserPassword;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Responses\LoginResponse;
 use App\Http\Responses\TwoFactorLoginResponse;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -34,14 +36,15 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Fortify::authenticateUsing(function (Request $request): ?\App\Models\User {
-            $user = \App\Models\User::query()->where('email', $request->input('email'))->first();
-            if (! $user || ! \Illuminate\Support\Facades\Hash::check($request->input('password'), $user->password) || $user->disabled_at !== null) {
+        Fortify::authenticateUsing(function (Request $request): ?User {
+            $user = User::query()->where('email', $request->input('email'))->first();
+            if (! $user || ! Hash::check($request->input('password'), $user->password) || $user->disabled_at !== null) {
                 return null;
             }
-            if ($request->routeIs('admin.login.store') && ! ($user->is_superadmin || $user->hasRole('admin'))) {
+            if ($request->routeIs('admin.login.store') && ! $user->isAdmin()) {
                 return null;
             }
+
             return $user;
         });
         $this->configureActions();
@@ -84,11 +87,6 @@ class FortifyServiceProvider extends ServiceProvider
 
         Fortify::verifyEmailView(fn (Request $request) => Inertia::render('auth/verify-email', [
             'status' => $request->session()->get('status'),
-        ]));
-
-        Fortify::registerView(fn (Request $request) => Inertia::render('auth/register', [
-            'email' => $request->query('email'),
-            'redirect' => $request->query('redirect'),
         ]));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));

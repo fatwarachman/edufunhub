@@ -1,44 +1,43 @@
 <?php
 
-test('registration screen can be rendered', function () {
-    $response = $this->get(route('register'));
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
+use Inertia\Testing\AssertableInertia as Assert;
 
-    $response->assertStatus(200);
-});
+test('registration screen offers only Google sign-up', function (bool $enabled) {
+    config([
+        'services.google.client_id' => $enabled ? 'client' : '',
+        'services.google.client_secret' => $enabled ? 'secret' : '',
+        'services.google.redirect' => $enabled ? 'http://localhost/auth/google/callback' : '',
+    ]);
 
-test('new users can register', function () {
-    $response = $this->post(route('register.store'), [
+    $this->get(route('register'))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('auth/register')
+        ->where('googleEnabled', $enabled)
+        ->where('googleRedirectUrl', $enabled ? route('google.redirect') : null));
+})->with([true, false]);
+
+test('manual email and password sign-up is closed', function () {
+    expect(Route::has('register.store'))->toBeFalse();
+
+    $this->post('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'birth_date' => now()->subYears(10)->toDateString(),
         'school_name' => 'SDN 1 Bogor',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ]);
+    ])->assertStatus(405);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('portal', absolute: false));
-});
-
-test('new users start in Indonesian', function () {
-    $this->post(route('register.store'), [
-        'name' => 'Pemain Baru',
-        'email' => 'baru@example.com',
-        'birth_date' => now()->subYears(9)->toDateString(),
-        'school_name' => 'SDN 2 Bogor',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-    ]);
-
-    expect(\App\Models\User::query()->where('email', 'baru@example.com')->value('locale'))->toBe('id');
-
-    $this->get('/dashboard')->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->where('locale', 'id'));
+    $this->assertGuest();
+    expect(User::query()->where('email', 'test@example.com')->exists())->toBeFalse();
 });
 
 test('the users table defaults to Indonesian', function () {
-    $id = \Illuminate\Support\Facades\DB::table('users')->insertGetId([
+    $id = DB::table('users')->insertGetId([
         'name' => 'Raw', 'email' => 'raw@example.com', 'password' => 'x', 'created_at' => now(), 'updated_at' => now(),
     ]);
 
-    expect(\Illuminate\Support\Facades\DB::table('users')->where('id', $id)->value('locale'))->toBe('id');
+    expect(DB::table('users')->where('id', $id)->value('locale'))->toBe('id');
 });

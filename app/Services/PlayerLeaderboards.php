@@ -90,6 +90,31 @@ class PlayerLeaderboards
     }
 
     /**
+     * Top players of one game with the viewer's standing (end-of-game modal).
+     * Not cached: the modal opens right after a game and must show its points.
+     *
+     * @return array{key: string, titleKey: string, icon: string, accent: string, players: int, entries: list<array<string, mixed>>, me: array{rank: int, points: int}|null}|null
+     */
+    public function game(User $viewer, string $key): ?array
+    {
+        $game = collect($this->pointGames())->firstWhere('key', $key);
+
+        if ($game === null) {
+            return null;
+        }
+
+        $prefix = addcslashes($key, '%_\\').':%';
+        $scores = $this->scores(fn (Builder $query) => $query->where('reason', 'like', $prefix));
+
+        return [
+            ...$game,
+            'players' => count($scores),
+            'entries' => $this->entries($viewer, array_slice($scores, 0, self::GAME_LIMIT, true)),
+            'me' => $this->standingIn($viewer, $scores),
+        ];
+    }
+
+    /**
      * Catalog games that award points, in catalog order.
      *
      * @return list<array{key: string, titleKey: string, icon: string, accent: string}>
@@ -119,10 +144,10 @@ class PlayerLeaderboards
     private function scores(?callable $scope = null): array
     {
         $rows = PointLedger::query()
-            ->where('points', '>', 0)
             ->whereIn('user_id', User::query()->select('id')->whereNull('disabled_at'))
             ->when($scope, $scope)
             ->groupBy('user_id')
+            ->havingRaw('SUM(points) > 0')
             ->selectRaw('user_id, SUM(points) as total_points')
             ->get()
             ->map(fn (PointLedger $row): array => [(int) $row->user_id, (int) $row->getAttribute('total_points')])

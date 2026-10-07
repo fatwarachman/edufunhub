@@ -189,7 +189,7 @@ class UserAnalytics
                 'play_seconds' => (int) $totals->duration,
                 'first_played_at' => $totals->first_played_at ? Carbon::parse($totals->first_played_at)->toIso8601String() : null,
                 'last_played_at' => $totals->last_played_at ? Carbon::parse($totals->last_played_at)->toIso8601String() : null,
-                'rank' => $this->rankFor($user, $ledgerPoints),
+                'rank' => $this->rankFor($user, $ledgerPoints - $spent),
                 'logins' => LoginActivity::query()->where('user_id', $user->id)->where('is_successful', true)->count(),
                 'failed_logins' => LoginActivity::query()->where('user_id', $user->id)->where('is_successful', false)->count(),
             ],
@@ -559,7 +559,6 @@ class UserAnalytics
         }
 
         $ahead = PointLedger::query()
-            ->where('points', '>', 0)
             ->whereIn('user_id', User::query()->select('id')->whereNull('disabled_at'))
             ->groupBy('user_id')
             ->havingRaw('SUM(points) > ?', [$points])

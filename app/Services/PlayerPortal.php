@@ -150,18 +150,18 @@ class PlayerPortal
     }
 
     /**
-     * Points earned by playing. Drives level and ranking; spending in the
-     * character shop does not lower it.
+     * The player's points: one number. Playing (correct answers) adds to it,
+     * buying in the character shop takes from it. Level and ranking follow it.
      */
     public function totalPoints(User $user): int
     {
-        return (int) $user->pointLedgers()->where('points', '>', 0)->sum('points');
+        return (int) $user->pointLedgers()->sum('points');
     }
 
-    /** Points available to spend: everything earned minus shop purchases. */
+    /** Alias of totalPoints(): there is only one kind of points. */
     public function balance(User $user): int
     {
-        return (int) $user->pointLedgers()->sum('points');
+        return $this->totalPoints($user);
     }
 
     /** @var array<string, int|null> Leaderboard periods and their window in days (null = all time). */
@@ -193,16 +193,19 @@ class PlayerPortal
      */
     public function leaderboard(User $viewer, int $limit = 10, ?int $days = null): array
     {
-        $earned = function ($query) use ($days): void {
-            $query->where('points', '>', 0)
-                ->when($days !== null, fn ($query) => $query->where('created_at', '>=', now()->subDays($days)));
+        $window = function ($query) use ($days): void {
+            $query->when($days !== null, fn ($query) => $query->where('created_at', '>=', now()->subDays($days)));
         };
 
         /** @var Collection<int, User> $users */
         $users = User::query()
             ->whereNull('disabled_at')
-            ->whereHas('pointLedgers', $earned)
-            ->withSum(['pointLedgers as total_points' => $earned], 'points')
+            ->whereIn('id', PointLedger::query()
+                ->select('user_id')
+                ->when($days !== null, fn ($query) => $query->where('created_at', '>=', now()->subDays($days)))
+                ->groupBy('user_id')
+                ->havingRaw('SUM(points) > 0'))
+            ->withSum(['pointLedgers as total_points' => $window], 'points')
             ->with('playerProfile')
             ->orderByDesc('total_points')
             ->orderBy('id')
@@ -234,16 +237,14 @@ class PlayerPortal
     {
         $since = $days !== null ? now()->subDays($days) : null;
         $points = (int) $viewer->pointLedgers()
-            ->where('points', '>', 0)
             ->when($since, fn ($query) => $query->where('created_at', '>=', $since))
             ->sum('points');
 
-        if ($points === 0 || $viewer->disabled_at !== null) {
+        if ($points <= 0 || $viewer->disabled_at !== null) {
             return null;
         }
 
         $ahead = PointLedger::query()
-            ->where('points', '>', 0)
             ->when($since, fn ($query) => $query->where('created_at', '>=', $since))
             ->whereIn('user_id', User::query()->select('id')->whereNull('disabled_at')->whereKeyNot($viewer->id))
             ->groupBy('user_id')
@@ -260,12 +261,11 @@ class PlayerPortal
      */
     public function rankOf(User $viewer, int $points): ?int
     {
-        if (! $viewer->pointLedgers()->where('points', '>', 0)->exists()) {
+        if ($points <= 0) {
             return null;
         }
 
         $ahead = PointLedger::query()
-            ->where('points', '>', 0)
             ->whereIn('user_id', User::query()->select('id')->whereNull('disabled_at')->whereKeyNot($viewer->id))
             ->groupBy('user_id')
             ->havingRaw('SUM(points) > ?', [$points])

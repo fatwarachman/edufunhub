@@ -1,4 +1,5 @@
 import { BrandWordmark } from '@/components/brand-wordmark';
+import { DigitalClock } from '@/components/digital-clock';
 import { SiteNav } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
@@ -39,16 +40,19 @@ export default function PlayerLayout({
                 />
             </Head>
             <header className="auth-header">
-                <Link
-                    href="/portal"
-                    className="auth-brand"
-                    aria-label="edufunhub.com"
-                >
-                    <span className="auth-brand-mark">
-                        <Gamepad2 className="size-6" />
-                    </span>
-                    <BrandWordmark hideOnPhone />
-                </Link>
+                <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                    <Link
+                        href="/portal"
+                        className="auth-brand"
+                        aria-label="edufunhub.com"
+                    >
+                        <span className="auth-brand-mark">
+                            <Gamepad2 className="size-6" />
+                        </span>
+                        <BrandWordmark hideOnPhone />
+                    </Link>
+                    <DigitalClock />
+                </div>
                 <SiteNav compact />
             </header>
             <main

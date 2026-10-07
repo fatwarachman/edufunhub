@@ -8,7 +8,10 @@ import { OnlineDot } from '@/components/online-dot';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
-import { SchoolPicker } from '@/components/school-picker';
+import {
+    PlayerDetailsCard,
+    type PlayerDetails,
+} from '@/components/player-details-card';
 import { NavButton } from '@/components/site-nav';
 import { Vault, type VaultItem } from '@/components/vault';
 import { useTranslations } from '@/hooks/use-translations';
@@ -33,8 +36,6 @@ import {
     GraduationCap,
     Heart,
     History,
-    IdCard,
-    MapPin,
     Medal,
     Play,
     School,
@@ -44,7 +45,7 @@ import {
     Trophy,
     UserRound,
 } from 'lucide-react';
-import { type ReactNode, useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 
 type LeaderboardPeriod = 'week' | 'month' | 'all';
 
@@ -112,15 +113,8 @@ interface HistoryItem {
     played_at: string;
 }
 
-interface PlayerDetails {
-    birth_date: string | null;
-    school_name: string | null;
-    school_city: string | null;
-}
-
 interface DashboardProps {
     points: number;
-    balance: number;
     vault: VaultItem[];
     grade: number | null;
     playerDetails: PlayerDetails;
@@ -234,7 +228,6 @@ function SkeletonBlock({ className }: { className?: string }) {
 
 export default function Dashboard({
     points,
-    balance,
     vault,
     grade,
     playerDetails,
@@ -399,15 +392,6 @@ export default function Dashboard({
                         {number.format(points)}
                     </p>
                     <p className="text-sm">{t('player.pointsNote')}</p>
-                    <p
-                        className={`flex items-center justify-between gap-2 rounded-xl border-2 ${INK} bg-white/70 px-3 py-2 text-sm font-bold`}
-                        data-testid="dashboard-balance"
-                    >
-                        <span>{t('shop.balance')}</span>
-                        <span className="tabular-nums">
-                            {number.format(balance)}
-                        </span>
-                    </p>
                 </div>
             </section>
 
@@ -1410,128 +1394,6 @@ function PageLink({
             {text}
             {trailing && icon}
         </Link>
-    );
-}
-
-function ageFromBirthDate(birthDate: string): number {
-    const [year, month, day] = birthDate.split('-').map(Number);
-    const now = new Date();
-    const hadBirthday =
-        now.getMonth() + 1 > month ||
-        (now.getMonth() + 1 === month && now.getDate() >= day);
-
-    return now.getFullYear() - year - (hadBirthday ? 0 : 1);
-}
-
-function PlayerDetailsCard({ details }: { details: PlayerDetails }) {
-    const { t } = useTranslations();
-    const form = useForm<{
-        birth_date: string;
-        school_name: string;
-        school_city: string;
-    }>({
-        birth_date: details.birth_date ?? '',
-        school_name: details.school_name ?? '',
-        school_city: details.school_city ?? '',
-    });
-    const today = new Date().toISOString().slice(0, 10);
-    const complete = Boolean(details.birth_date && details.school_name);
-
-    return (
-        <section
-            id="player-details"
-            className="auth-card flex scroll-mt-6 flex-col gap-3 !p-4 sm:!p-5"
-        >
-            <h2 className="flex items-center gap-2 text-xl font-bold">
-                <IdCard className="size-5" aria-hidden />
-                {t('player.details')}
-            </h2>
-            {complete && details.birth_date ? (
-                <p className="flex flex-wrap items-center gap-x-1.5 text-sm font-semibold">
-                    <span>
-                        {t('player.age', {
-                            count: ageFromBirthDate(details.birth_date),
-                        })}
-                    </span>
-                    <span aria-hidden>·</span>
-                    <span className="break-words">{details.school_name}</span>
-                    {details.school_city && (
-                        <span className="inline-flex items-center gap-1 text-[#151b2e]/75">
-                            <MapPin className="size-3.5" aria-hidden />
-                            {details.school_city}
-                        </span>
-                    )}
-                </p>
-            ) : (
-                <p className="text-sm text-muted-foreground">
-                    {t('player.detailsNote')}
-                </p>
-            )}
-            <form
-                className="flex flex-col gap-3"
-                onSubmit={(event) => {
-                    event.preventDefault();
-                    form.patch('/player-details', { preserveScroll: true });
-                }}
-            >
-                <label
-                    htmlFor="birth-date-input"
-                    className="text-sm font-semibold"
-                >
-                    {t('player.birthDate')}
-                </label>
-                <input
-                    id="birth-date-input"
-                    type="date"
-                    name="birth_date"
-                    value={form.data.birth_date}
-                    max={today}
-                    onChange={(event) =>
-                        form.setData('birth_date', event.target.value)
-                    }
-                    className="min-h-11 w-full rounded-xl border-2 border-[#151b2e] bg-white px-3.5 font-semibold"
-                />
-                <InputError message={form.errors.birth_date} />
-                <SchoolPicker
-                    idPrefix="details-school"
-                    schoolName={form.data.school_name}
-                    schoolCity={form.data.school_city}
-                    onSchoolNameChange={(value) =>
-                        form.setData((current) => ({
-                            ...current,
-                            school_name: value,
-                        }))
-                    }
-                    onSchoolCityChange={(value) =>
-                        form.setData((current) => ({
-                            ...current,
-                            school_city: value,
-                        }))
-                    }
-                    schoolError={form.errors.school_name}
-                    cityError={form.errors.school_city}
-                />
-                {form.recentlySuccessful && (
-                    <p
-                        role="status"
-                        className="text-sm font-semibold text-[#116a56]"
-                    >
-                        {t('player.detailsSaved')}
-                    </p>
-                )}
-                <button
-                    type="submit"
-                    disabled={
-                        form.processing ||
-                        form.data.birth_date === '' ||
-                        form.data.school_name.trim() === ''
-                    }
-                    className="px-5 py-2.5 font-bold disabled:opacity-50"
-                >
-                    {t('player.detailsSave')}
-                </button>
-            </form>
-        </section>
     );
 }
 

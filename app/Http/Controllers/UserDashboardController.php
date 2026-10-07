@@ -24,7 +24,6 @@ class UserDashboardController extends Controller
 
         return Inertia::render('user/dashboard', [
             'points' => $points,
-            'balance' => $portal->balance($user),
             'character' => $profile->character(),
             'vault' => $shop->vault($user, $user->locale === 'en' ? 'en' : 'id'),
             'grade' => $profile->grade,
