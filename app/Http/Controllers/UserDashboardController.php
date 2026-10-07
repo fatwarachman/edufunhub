@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
+use App\Models\User;
+use App\Models\UserAbilityAssessment;
 use App\Services\CharacterShop;
 use App\Services\PlayerBadges;
 use App\Services\PlayerDashboardStats;
@@ -55,6 +57,42 @@ class UserDashboardController extends Controller
             ],
             'leaderboards' => Inertia::defer(fn (): array => $portal->leaderboards($user), 'board'),
             'stats' => Inertia::defer(fn (): array => $stats->for($user), 'stats'),
+            'ability' => Inertia::defer(fn (): ?array => $this->latestAbility($user), 'stats'),
         ]);
+    }
+
+    /**
+     * The player's latest finished AI analysis, without the model input,
+     * model name or requester (those stay on the admin page).
+     *
+     * @return array{analyzed_at: ?string, summary: string, strengths: list<string>, weaknesses: list<string>, subject_scores: array<string, int>, recommendations: list<string>, learning_style: string, progress_vs_previous: string}|null
+     */
+    private function latestAbility(User $user): ?array
+    {
+        $assessment = UserAbilityAssessment::query()
+            ->select(['id', 'user_id', 'result', 'updated_at'])
+            ->where('user_id', $user->id)
+            ->where('status', UserAbilityAssessment::DONE)
+            ->latest('updated_at')
+            ->latest('id')
+            ->first();
+        $result = $assessment?->result;
+
+        if (! is_array($result) || ! is_string($result['summary'] ?? null)) {
+            return null;
+        }
+
+        $list = fn (string $key): array => array_values(array_filter((array) ($result[$key] ?? []), 'is_string'));
+
+        return [
+            'analyzed_at' => $assessment->updated_at?->toIso8601String(),
+            'summary' => $result['summary'],
+            'strengths' => $list('strengths'),
+            'weaknesses' => $list('weaknesses'),
+            'subject_scores' => array_map('intval', array_filter((array) ($result['subject_scores'] ?? []), 'is_numeric')),
+            'recommendations' => $list('recommendations'),
+            'learning_style' => (string) ($result['learning_style'] ?? ''),
+            'progress_vs_previous' => (string) ($result['progress_vs_previous'] ?? ''),
+        ];
     }
 }

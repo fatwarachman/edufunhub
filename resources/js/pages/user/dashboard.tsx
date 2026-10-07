@@ -1,3 +1,4 @@
+import { AbilityCard, type PlayerAbility } from '@/components/ability-card';
 import { BadgeCollection } from '@/components/badge-collection';
 import { type BadgeProgress } from '@/components/badges';
 import InputError from '@/components/input-error';
@@ -150,6 +151,8 @@ interface DashboardProps {
     leaderboards?: Record<LeaderboardPeriod, LeaderboardData>;
     /** Deferred: personal analytics. */
     stats?: DashboardStats;
+    /** Deferred: latest AI ability analysis made by an admin, if any. */
+    ability?: PlayerAbility | null;
 }
 
 const INK = 'border-[#151b2e]';
@@ -244,6 +247,7 @@ export default function Dashboard({
     historyPagination,
     leaderboards,
     stats,
+    ability,
 }: DashboardProps) {
     const { t, i18n } = useTranslations();
     const { auth } = usePage<SharedData>().props;
@@ -441,6 +445,7 @@ export default function Dashboard({
                             </div>
                         }
                     >
+                        <AbilityCard ability={ability} />
                         <Analytics stats={stats} number={number} />
                     </Deferred>
 

@@ -2038,7 +2038,20 @@
         },
         "loadingStats": "Loading stats…",
         "settings": "Profile & settings",
-        "explore": "Game categories"
+        "explore": "Game categories",
+        "ability": {
+            "title": "Your ability analysis",
+            "date": "Analyzed {{date}}",
+            "scores": "Score per subject",
+            "strengths": "Your strengths",
+            "growth": "Room to grow",
+            "tips": "Learning tips",
+            "style": "Learning style",
+            "progress": "Progress since the previous analysis",
+            "more": "Show tips & details",
+            "less": "Hide details",
+            "note": "This analysis is written by AI from your game results."
+        }
     },
     "feedback": {
         "title": "Send Feedback",

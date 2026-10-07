@@ -6,6 +6,7 @@ use App\Models\PointLedger;
 use App\Models\Question;
 use App\Models\QuestionAnswer;
 use App\Models\User;
+use App\Models\UserAbilityAssessment;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -215,5 +216,50 @@ describe('dashboard analytics', function (): void {
                 ->has('stats.games', 0)
                 ->has('stats.subjects', 0)
                 ->has('stats.activity', 14)));
+    });
+});
+
+describe('ability analysis on the player dashboard', function (): void {
+    test('shows the latest finished analysis without admin-only data', function (): void {
+        $player = User::factory()->create();
+        PlayerProfile::factory()->for($player)->create();
+        $admin = User::factory()->create(['is_superadmin' => true]);
+        UserAbilityAssessment::factory()->for($player)->done(['summary' => 'Analisa lama yang sudah diganti.'])->create([
+            'requested_by' => $admin->id, 'updated_at' => now()->subDays(3),
+        ]);
+        UserAbilityAssessment::factory()->for($player)->done(['summary' => 'Peserta unggul di matematika.'])->create([
+            'requested_by' => $admin->id, 'model' => 'secret-model', 'input_snapshot' => ['player' => ['age' => 10]],
+        ]);
+        UserAbilityAssessment::factory()->for($player)->failed()->create(['updated_at' => now()->addMinute()]);
+
+        $this->actingAs($player)->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('user/dashboard')
+                ->missing('ability')
+                ->loadDeferredProps('stats', fn (Assert $reload) => $reload
+                    ->where('ability.summary', 'Peserta unggul di matematika.')
+                    ->where('ability.strengths', ['Matematika dasar'])
+                    ->where('ability.subject_scores', ['math' => 80, 'science' => 55])
+                    ->where('ability.recommendations', ['Latih soal cerita 10 menit per hari.'])
+                    ->has('ability.analyzed_at')
+                    ->missing('ability.model')
+                    ->missing('ability.input_snapshot')
+                    ->missing('ability.requested_by')
+                    ->missing('ability.game_insights')
+                    ->missing('ability.confidence')
+                )
+            );
+    });
+
+    test('is null until an analysis has finished and never shows another player', function (): void {
+        $player = User::factory()->create();
+        PlayerProfile::factory()->for($player)->create();
+        UserAbilityAssessment::factory()->for($player)->create();
+        UserAbilityAssessment::factory()->done(['summary' => 'Milik pemain lain.'])->create();
+
+        $this->actingAs($player)->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('stats', fn (Assert $reload) => $reload->where('ability', null))
+            );
     });
 });
