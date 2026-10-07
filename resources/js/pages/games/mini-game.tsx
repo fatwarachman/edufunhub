@@ -1,5 +1,11 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { DigitalClock } from '@/components/digital-clock';
+import { GameFinale, rankStandings } from '@/components/game-finale';
+import {
+    AnswerTimePicker,
+    RoomLeaveControl,
+} from '@/components/multiplayer/host-controls';
 import {
     ConnectionBadge,
     RoomEntry,
@@ -507,6 +513,18 @@ export default function MiniGame({
                 onStart={() => send({ t: 'start' })}
                 onLeave={() => send({ t: 'leave' })}
                 soloHint={t('mini.soloHint')}
+                settings={
+                    <AnswerTimePicker
+                        value={state.answer_seconds ?? 0}
+                        options={
+                            state.answer_times ?? [0, 10, 15, 20, 30, 45, 60]
+                        }
+                        disabled={!isHost}
+                        onChange={(seconds) =>
+                            send({ t: 'answer_time', seconds })
+                        }
+                    />
+                }
             />
         );
     } else {
@@ -700,15 +718,12 @@ export default function MiniGame({
                     {error && <RoomError code={error} />}
 
                     {playing && (
-                        <Button
-                            variant="ghost"
-                            onClick={() => send({ t: 'leave' })}
-                            data-testid="mini-leave"
-                            className="min-h-11 self-center text-xs font-bold text-slate-600"
-                        >
-                            <DoorOpen className="size-4" />
-                            {t('room.leave')}
-                        </Button>
+                        <RoomLeaveControl
+                            isHost={isHost}
+                            onLeave={() => send({ t: 'leave' })}
+                            onStop={() => send({ t: 'stop' })}
+                            testId="mini-leave"
+                        />
                     )}
 
                     {state.phase === 'done' && (
@@ -722,6 +737,14 @@ export default function MiniGame({
                                 className="size-14"
                                 style={{ color: theme.accent }}
                             />
+                            {state.stopped && (
+                                <p
+                                    className="rounded-full border-2 border-[#1f2a44] bg-white px-3 py-1 text-xs font-black"
+                                    data-testid="room-stopped"
+                                >
+                                    {t('room.hostExit.stopped')}
+                                </p>
+                            )}
                             <h2 className="font-display text-2xl font-black">
                                 {state.result?.won
                                     ? solo
@@ -811,7 +834,7 @@ export default function MiniGame({
                 style={{ background: `${theme.bg}f2` }}
             >
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
-                    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                    <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
                             href={backHref}
                             label={t('nav.backToPortal')}
@@ -827,10 +850,11 @@ export default function MiniGame({
                             <h1 className="truncate font-display text-lg font-black sm:text-2xl">
                                 {title}
                             </h1>
-                            <span className="hidden text-xs font-bold text-slate-600 sm:block">
+                            <span className="hidden truncate text-xs font-bold text-slate-600 sm:block">
                                 {t(`mini.games.${game}.tagline`)}
                             </span>
                         </div>
+                        <DigitalClock className="edu-clock--game" />
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                         <span
@@ -865,6 +889,49 @@ export default function MiniGame({
                 <GameAdStrip />
                 {body}
             </main>
+            <GameFinale
+                game={game}
+                done={state?.phase === 'done'}
+                matchKey={state?.pin}
+                won={state?.result?.won ?? false}
+                points={state?.result?.points}
+                title={
+                    state?.phase === 'done' &&
+                    !state.result?.won &&
+                    players.length > 1
+                        ? (state.winner ?? -1) >= 0
+                            ? t('finale.winner', {
+                                  name: players[state.winner ?? -1]?.name,
+                              })
+                            : t('finale.draw')
+                        : undefined
+                }
+                standings={
+                    players.length > 1
+                        ? rankStandings(
+                              players.filter((p) => !p.left),
+                              (p) => p.score,
+                              (p, rank) => ({
+                                  key: p.seat,
+                                  name: p.name,
+                                  rank,
+                                  score: p.score,
+                                  detail: t('finale.correctWrong', {
+                                      correct: p.correct,
+                                      wrong: (p.history ?? []).filter(
+                                          (ok) => !ok,
+                                      ).length,
+                                  }),
+                                  character: p.character,
+                                  seat: p.seat,
+                                  userId: p.user_id,
+                                  isYou: p.seat === state?.you,
+                              }),
+                          )
+                        : []
+                }
+                onPlayAgain={isHost ? () => send({ t: 'start' }) : undefined}
+            />
         </div>
     );
 }

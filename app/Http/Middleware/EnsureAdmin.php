@@ -17,7 +17,7 @@ class EnsureAdmin
     {
         $user = $request->user();
 
-        if (! $user || (! $user->is_superadmin && ! $user->hasRole('admin'))) {
+        if (! $user || ! $user->isAdmin()) {
             abort(403, 'Unauthorized. Admin access required.');
         }
 

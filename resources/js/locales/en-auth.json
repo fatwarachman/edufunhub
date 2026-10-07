@@ -32,7 +32,11 @@
         "birthDate": "Date of birth",
         "birthDateHint": "Used to know the participant's age.",
         "schoolName": "Last school",
-        "schoolNamePlaceholder": "Example: SDN 1 Bogor"
+        "schoolNamePlaceholder": "Example: SDN 1 Bogor",
+        "googleOnly": "New accounts are created with a Google account. One click, no new password.",
+        "google": "Sign up with Google",
+        "googleUnavailable": "Google sign-up is not available yet. Please try again later.",
+        "googleWhy": "Google verifies your email, so your account is safer. After signing in, fill in your birth date and school."
     },
     "login": {
         "adminTitle": "Admin Sign In",
@@ -43,8 +47,8 @@
         "description": "Sign in, explore educational games, and discover a new way to enjoy every challenge.",
         "title": "Log in",
         "subtitle": "Sign in to your account",
-        "google": "Sign up / Sign in with Google",
-        "unavailable": "Google sign-in is unavailable. Use email to sign in or register.",
+        "google": "Sign in with Google",
+        "unavailable": "Google sign-in is not available yet. Use your email and password to sign in.",
         "alternative": "or with email",
         "email": "Email address",
         "emailPlaceholder": "you@example.com",
@@ -56,7 +60,7 @@
         "pending": "Signing in…",
         "submit": "Sign in",
         "newAccount": "Don’t have an account?",
-        "register": "Create an account"
+        "register": "Sign up with Google"
     },
     "verify": {
         "title": "Verify email",

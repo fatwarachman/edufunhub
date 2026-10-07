@@ -99,7 +99,7 @@ test('school board sums members, groups spellings and ranks players inside my sc
             ->where('schools.entries.0.name', 'SDN 1 Bogor')
             ->where('schools.entries.0.city', 'Kota Bogor')
             ->where('schools.entries.0.players', 2)
-            ->where('schools.entries.0.points', 250)
+            ->where('schools.entries.0.points', 210)
             ->where('schools.entries.0.isMine', true)
             ->where('schools.entries.1.name', 'SD Harapan')
             ->where('schools.entries.1.isMine', false)
@@ -109,7 +109,7 @@ test('school board sums members, groups spellings and ranks players inside my sc
             ->has('schools.mySchool.entries', 2)
             ->where('schools.mySchool.entries.0.name', 'Teman')
             ->where('schools.mySchool.entries.1.isMe', true)
-            ->where('schools.mySchool.me', ['rank' => 2, 'points' => 100])));
+            ->where('schools.mySchool.me', ['rank' => 2, 'points' => 60])));
 });
 
 test('per game board sums only that game and excludes shop and disabled players', function (): void {

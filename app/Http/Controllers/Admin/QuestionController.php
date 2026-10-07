@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BulkQuestionRequest;
 use App\Http\Requests\Admin\QuestionRequest;
 use App\Models\Question;
+use App\Models\QuestionGeneration;
 use App\Models\Subject;
 use App\Models\User;
 use App\Services\ActivityLogPresenter;
@@ -36,6 +37,7 @@ class QuestionController extends Controller
 
         return Inertia::render('admin/questions/index', [
             'mode' => $showList ? 'list' : 'subjects',
+            'liveGenerations' => fn (): array => QuestionGeneration::liveProgress(),
             'subjectStats' => $this->subjectStats(),
             'questions' => $showList ? $this->questionList($filters) : null,
             'sourceCounts' => $showList ? $this->sourceCounts($filters) : null,
@@ -187,7 +189,9 @@ class QuestionController extends Controller
             ->when($filters['author'] ?? null, fn (Builder $q, string $author) => $q->where('created_by', (int) $author))
             ->when(($filters['bonus'] ?? null) === '1', fn (Builder $q) => $q->where('points', '>', 0))
             ->when(($filters['status'] ?? null) === 'active', fn (Builder $q) => $q->where('is_active', true))
-            ->when(($filters['status'] ?? null) === 'inactive', fn (Builder $q) => $q->where('is_active', false));
+            ->when(($filters['status'] ?? null) === 'inactive', fn (Builder $q) => $q->where('is_active', false))
+            ->when(($filters['status'] ?? null) === 'played', fn (Builder $q) => $q->where('times_answered', '>', 0))
+            ->when(($filters['status'] ?? null) === 'unplayed', fn (Builder $q) => $q->where('times_answered', 0));
     }
 
     /**

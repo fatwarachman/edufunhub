@@ -16,6 +16,12 @@ class Role extends Model
     /** Teachers author questions and earn compensation for correct answers. */
     public const TEACHER = 'guru';
 
+    /** Full access; mirrors the users.is_superadmin flag. */
+    public const SUPER_ADMIN = 'super-admin';
+
+    /** Admin panel access (everything except super admin only pages). */
+    public const ADMIN = 'admin';
+
     /**
      * The attributes that are mass assignable.
      *

@@ -17,6 +17,8 @@ return [
     'public_minigame_ws_base' => env('GAME_SERVICE_PUBLIC_MINIGAME_WS_BASE', '/game-ws'),
     /* Signed endpoint listing the rooms a player is seated in (portal "continue playing"). */
     'presence_url' => env('GAME_SERVICE_PRESENCE_URL', 'http://edufunhub-game:8090/internal/presence'),
+    /* Signed endpoint listing the open rooms that own a PIN (join with only the code). */
+    'room_url' => env('GAME_SERVICE_ROOM_URL', 'http://edufunhub-game:8090/internal/room'),
     'presence_timeout' => (float) env('GAME_SERVICE_PRESENCE_TIMEOUT', 1.5),
     'token_ttl' => (int) env('GAME_SERVICE_TOKEN_TTL', 900),
     'signature_tolerance' => (int) env('GAME_SERVICE_SIGNATURE_TOLERANCE', 300),

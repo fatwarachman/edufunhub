@@ -1,5 +1,6 @@
 import AdSlot from '@/components/ads/ad-slot';
 import ChallengeDialog from '@/components/flag-quest/challenge-dialog';
+import { GameFinale } from '@/components/game-finale';
 import {
     type GameSubject,
     rememberedSubject,
@@ -1104,6 +1105,14 @@ export default function FlagQuest({
                             {t('flagQuest.complete.saved')}
                         </p>
                         <AdMoment moment="win" muted={muted} />
+                        <GameFinale
+                            game="flag-quest"
+                            done
+                            matchKey={`${complete.mission}-${complete.seconds}-${complete.correct}`}
+                            won
+                            points={complete.points}
+                            title={t('flagQuest.complete.title')}
+                        />
                         <AdSlot placement="arena.result" className="w-full" />
                         <div className="flex w-full flex-col gap-2 sm:flex-row">
                             <button

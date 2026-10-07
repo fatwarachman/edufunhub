@@ -111,6 +111,8 @@ func (s *Server) serveCrossword(w http.ResponseWriter, r *http.Request) {
 			ids = s.crosswords.Leave(claims.Subject, now)
 		case "level":
 			ids, err = s.crosswords.SetLevel(claims.Subject, in.Level, now)
+		case "stop":
+			ids, err = s.crosswords.Stop(claims.Subject, now)
 		case "start":
 			ids, err = s.crosswords.Start(claims.Subject, now)
 		case "guess":

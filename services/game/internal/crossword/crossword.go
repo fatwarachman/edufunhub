@@ -143,6 +143,9 @@ func (h *Hub) Leave(uid int64, now time.Time) []int64 { return h.rooms.Leave(uid
 // than lobby.HostGrace; the game keeps running either way.
 func (h *Hub) HandOver(now time.Time) []int64 { return h.rooms.HandOver(now, lobby.HostGrace) }
 
+// RoomPhase reports the phase of the room with the given PIN (PIN lookup).
+func (h *Hub) RoomPhase(pin string) (string, bool) { return h.rooms.PhaseOf(pin) }
+
 // Presence reports the room uid is seated in (portal "continue playing").
 func (h *Hub) Presence(uid int64) (lobby.Presence, bool) { return h.rooms.PresenceOf(uid) }
 func (h *Hub) Enter(c auth.Claims, pin string, now time.Time) ([]int64, error) {
@@ -314,6 +317,11 @@ func (g *game) visible(cell [2]int) bool {
 		}
 	}
 	return false
+}
+
+// Stop ends the running game for everyone (host only); solved words count.
+func (h *Hub) Stop(uid int64, now time.Time) ([]int64, error) {
+	return h.rooms.Stop(uid, now, func(r *room) { h.end(r, "stopped", now) })
 }
 
 // Tick ends rooms whose time ran out.

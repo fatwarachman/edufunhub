@@ -6,13 +6,38 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { type FormEventHandler, type ReactNode, useState } from 'react';
 
+interface PermissionOption {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    roles: { id: number }[];
+}
+
+interface PermissionModule {
+    id: number;
+    name: string;
+    slug: string;
+    permissions: PermissionOption[];
+}
+
 interface EditUserProps {
     user: AdminUser;
     roles: Role[];
     userRoles: number[];
+    modules: PermissionModule[];
+    userPermissions: number[];
+    canOverridePermissions: boolean;
 }
 
-export default function EditUser({ user, roles, userRoles }: EditUserProps) {
+export default function EditUser({
+    user,
+    roles,
+    userRoles,
+    modules,
+    userPermissions,
+    canOverridePermissions,
+}: EditUserProps) {
     const [showPassword, setShowPassword] = useState(false);
 
     const { data, setData, put, processing, errors } = useForm({
@@ -21,7 +46,20 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
         password: '',
         password_confirmation: '',
         roles: userRoles ?? [],
+        permissions: userPermissions ?? [],
     });
+    const superRoleId = roles.find((role) => role.slug === 'super-admin')?.id;
+    const isSuper =
+        superRoleId !== undefined && data.roles.includes(superRoleId);
+    const fromRole = (permission: PermissionOption) =>
+        permission.roles.some((role) => data.roles.includes(role.id));
+    const togglePermission = (permissionId: number) =>
+        setData(
+            'permissions',
+            data.permissions.includes(permissionId)
+                ? data.permissions.filter((id) => id !== permissionId)
+                : [...data.permissions, permissionId],
+        );
 
     const toggleRole = (roleId: number) => {
         setData(
@@ -235,7 +273,113 @@ export default function EditUser({ user, roles, userRoles }: EditUserProps) {
                                 ))}
                             </div>
                             <InputError message={errors.roles} />
+                            {data.roles.length > 1 && (
+                                <p className="text-xs text-muted-foreground">
+                                    {tr(
+                                        'With several roles the user gets every permission of all of them; Super Admin always wins.',
+                                    )}
+                                </p>
+                            )}
                         </fieldset>
+
+                        {canOverridePermissions && (
+                            <fieldset
+                                className="flex flex-col gap-3"
+                                data-testid="user-permission-overrides"
+                            >
+                                <legend className="text-sm font-medium text-foreground">
+                                    {tr('Extra permissions (override)')}
+                                </legend>
+                                <p className="-mt-1 text-xs text-muted-foreground">
+                                    {isSuper
+                                        ? tr(
+                                              'Super Admin already has every permission.',
+                                          )
+                                        : tr(
+                                              'Give this user permissions on top of their roles. Ticked and locked items come from a role.',
+                                          )}
+                                </p>
+                                {!isSuper &&
+                                    modules
+                                        .filter(
+                                            (module) =>
+                                                module.permissions.length > 0,
+                                        )
+                                        .map((module) => (
+                                            <div
+                                                key={module.id}
+                                                className="rounded-lg border border-border p-3"
+                                            >
+                                                <p className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                                                    {tr(module.name)}
+                                                </p>
+                                                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                                                    {module.permissions.map(
+                                                        (permission) => {
+                                                            const viaRole =
+                                                                fromRole(
+                                                                    permission,
+                                                                );
+                                                            return (
+                                                                <label
+                                                                    key={
+                                                                        permission.id
+                                                                    }
+                                                                    className="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-2 py-1 text-sm hover:bg-muted/50 has-[:disabled]:cursor-default has-[:disabled]:opacity-70"
+                                                                    title={
+                                                                        permission.description ??
+                                                                        undefined
+                                                                    }
+                                                                >
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={
+                                                                            viaRole ||
+                                                                            data.permissions.includes(
+                                                                                permission.id,
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            viaRole
+                                                                        }
+                                                                        onChange={() =>
+                                                                            togglePermission(
+                                                                                permission.id,
+                                                                            )
+                                                                        }
+                                                                        data-testid={`permission-${permission.slug}`}
+                                                                        className="size-4 shrink-0 rounded border-input accent-primary focus-visible:ring-2 focus-visible:ring-ring"
+                                                                    />
+                                                                    <span className="min-w-0 truncate">
+                                                                        {tr(
+                                                                            permission.name,
+                                                                        )}
+                                                                    </span>
+                                                                    {viaRole ? (
+                                                                        <span className="ml-auto shrink-0 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] text-secondary-foreground">
+                                                                            {tr(
+                                                                                'Role',
+                                                                            )}
+                                                                        </span>
+                                                                    ) : data.permissions.includes(
+                                                                          permission.id,
+                                                                      ) ? (
+                                                                        <span className="ml-auto shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
+                                                                            {tr(
+                                                                                'Override',
+                                                                            )}
+                                                                        </span>
+                                                                    ) : null}
+                                                                </label>
+                                                            );
+                                                        },
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                <InputError message={errors.permissions} />
+                            </fieldset>
+                        )}
 
                         {/* Actions */}
                         <div className="flex items-center justify-end gap-3 pt-2">

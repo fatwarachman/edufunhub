@@ -1,3 +1,4 @@
+import { DigitalClock } from '@/components/digital-clock';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { ResponsiveTable } from '@/components/responsive-table';
 import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
@@ -229,7 +230,7 @@ export function TurboShell({
                 style={{ background: `${BG}f2` }}
             >
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
-                    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                    <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
                             href={backHref}
                             label={t('nav.backToPortal')}
@@ -249,6 +250,7 @@ export function TurboShell({
                                 {t('turboTrivia.tagline')}
                             </span>
                         </div>
+                        <DigitalClock className="edu-clock--game" />
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                         {extra}

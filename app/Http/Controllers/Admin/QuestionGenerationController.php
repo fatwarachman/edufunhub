@@ -7,7 +7,6 @@ use App\Http\Requests\Admin\GenerateQuestionsRequest;
 use App\Jobs\GenerateQuestions;
 use App\Models\Question;
 use App\Models\QuestionGeneration;
-use App\Models\QuestionGenerationItem;
 use App\Models\Subject;
 use App\Services\Ai\AiSettings;
 use Illuminate\Http\RedirectResponse;
@@ -40,14 +39,7 @@ class QuestionGenerationController extends Controller
                 ->latest('id')
                 ->limit(15)
                 ->get()
-                ->map(fn (QuestionGeneration $generation): array => [
-                    ...$generation->only(['id', 'model', 'subjects', 'grades', 'per_combination', 'activate', 'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error']),
-                    'cancelled_at' => $generation->cancelled_at?->toIso8601String(),
-                    'requested_by' => $generation->requester?->name,
-                    'created_at' => $generation->created_at?->toIso8601String(),
-                    'finished_at' => $generation->finished_at?->toIso8601String(),
-                    'items' => $generation->items->map(fn (QuestionGenerationItem $item): array => $item->toProgress())->values(),
-                ]),
+                ->map(fn (QuestionGeneration $generation): array => $generation->toProgressPayload()),
         ]);
     }
 

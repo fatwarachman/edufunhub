@@ -124,6 +124,8 @@ type match struct {
 	started  time.Time
 	ended    time.Time
 	changed  bool
+	// roundTime is the answer window (a private room host may change it).
+	roundTime time.Duration
 }
 
 type waiting struct {
@@ -221,7 +223,8 @@ func (h *Hub) Busy(uid int64) bool {
 
 // StartPrivate starts a match between two invited friends (room PIN flow).
 // Grade bands may differ; questions follow the lower grade.
-func (h *Hub) StartPrivate(a, b auth.Claims, pin, subject string, now time.Time) ([]int64, error) {
+// roundTime > 0 overrides RoundTime (the host's answer time).
+func (h *Hub) StartPrivate(a, b auth.Claims, pin, subject string, roundTime time.Duration, now time.Time) ([]int64, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	for _, c := range []auth.Claims{a, b} {
@@ -235,6 +238,9 @@ func (h *Hub) StartPrivate(a, b auth.Claims, pin, subject string, now time.Time)
 	}
 	m := h.startLocked(a, b, subject, false, now)
 	m.pin = pin
+	if roundTime > 0 {
+		m.roundTime = roundTime
+	}
 	return m.humanIDs(), nil
 }
 
@@ -273,6 +279,8 @@ func (h *Hub) startLocked(a, b auth.Claims, subject string, bot bool, now time.T
 		phase:   PhaseCountdown,
 		phaseAt: now,
 		started: now,
+
+		roundTime: RoundTime,
 	}
 	m.players[0] = &player{claims: a, choice: -1}
 	m.players[1] = &player{claims: b, choice: -1, bot: bot}
@@ -341,8 +349,8 @@ func (m *match) humanIDs() []int64 {
 func (m *match) record(p *player, option int, now time.Time) {
 	p.answered, p.choice, p.gained = true, option, 0
 	if option == m.question.Answer {
-		left := max(0, RoundTime-now.Sub(m.phaseAt))
-		p.gained = ScoreCorrect + int(int64(SpeedBonus)*int64(left)/int64(RoundTime))
+		left := max(0, m.roundTime-now.Sub(m.phaseAt))
+		p.gained = ScoreCorrect + int(int64(SpeedBonus)*int64(left)/int64(m.roundTime))
 		p.score += p.gained
 		p.earned += m.question.Worth()
 		p.correct++
@@ -441,7 +449,7 @@ func (m *match) advance(now time.Time) []Result {
 				m.changed = true
 			}
 		}
-		if (m.players[0].answered && m.players[1].answered) || now.Sub(m.phaseAt) >= RoundTime {
+		if (m.players[0].answered && m.players[1].answered) || now.Sub(m.phaseAt) >= m.roundTime {
 			m.reveal(now)
 			m.changed = true
 		}
@@ -600,6 +608,7 @@ func (h *Hub) stateLocked(uid int64, claims auth.Claims, now time.Time) Message 
 		msg["you"] = Message{"name": claims.Name, "grade": claims.Grade, "character": claims.Character}
 		return msg
 	}
+	msg["round_ms"] = m.roundTime.Milliseconds()
 	locale := h.locales[uid]
 	me := m.playerByID(uid)
 	op := m.opponent(me)
@@ -635,7 +644,7 @@ func (h *Hub) stateLocked(uid int64, claims auth.Claims, now time.Time) Message 
 		}
 		if m.phase == PhaseQuestion {
 			q["id"] = fmt.Sprintf("%s-%d", m.id, m.round+1)
-			q["remaining_ms"] = max(0, (RoundTime - now.Sub(m.phaseAt)).Milliseconds())
+			q["remaining_ms"] = max(0, (m.roundTime - now.Sub(m.phaseAt)).Milliseconds())
 		} else {
 			msg["reveal"] = Message{
 				"answer": m.question.Answer, "yours": me.choice, "theirs": op.choice,

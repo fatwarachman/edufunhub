@@ -1,5 +1,6 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { GameFinale, podiumStandings } from '@/components/game-finale';
 import { ConnectionBadge, RoomError } from '@/components/multiplayer/room';
 import { SubjectPicker } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
@@ -243,6 +244,36 @@ export default function TurboTriviaArena({ serviceReady, wsUrl }: ArenaProps) {
             {(state.phase === 'NONE' || state.phase === 'LOBBY') && (
                 <HowToPlay className="mx-auto w-full max-w-3xl" />
             )}
+            <GameFinale
+                game="turbo-trivia"
+                done={state.phase === 'GAME_OVER'}
+                matchKey={state.pin}
+                won={state.result?.won ?? false}
+                points={state.result?.points}
+                title={
+                    state.podium?.[0] && !state.result?.won
+                        ? t('turboTrivia.result.winner', {
+                              name: state.podium[0].name,
+                          })
+                        : undefined
+                }
+                standings={podiumStandings(
+                    state.ranking,
+                    state.you?.user_id ?? state.result?.user_id,
+                    (row) =>
+                        row.finished
+                            ? raceClock(row.race_ms)
+                            : t('turboTrivia.result.dnf', {
+                                  percent: Math.round(
+                                      (row.progress / state.laps) * 100,
+                                  ),
+                              }),
+                    (row) =>
+                        `${t('turboTrivia.result.correct')} ${row.correct} · ${t('turboTrivia.result.accuracy')} ${row.accuracy}%`,
+                )}
+                onPlayAgain={() => act({ t: 'start_game' })}
+                playAgainLabel={t('turboTrivia.arena.again')}
+            />
         </TurboShell>
     );
 }

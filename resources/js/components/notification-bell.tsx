@@ -294,7 +294,7 @@ export function NotificationBell() {
                 aria-expanded={open}
                 aria-controls={panelId}
                 aria-label={label}
-                title={label}
+                data-tip={open ? undefined : label}
                 onClick={() => {
                     setOpen((value) => !value);
                     if (!open) {

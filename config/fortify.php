@@ -144,7 +144,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Manual sign-up is closed: new accounts come only from Google (GoogleAuthController).
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

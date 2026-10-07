@@ -1,5 +1,7 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { DigitalClock } from '@/components/digital-clock';
+import { GameFinale } from '@/components/game-finale';
 import {
     type GameSubject,
     rememberedSubject,
@@ -449,7 +451,7 @@ export default function KnowledgeTrain({
         <div className="min-h-dvh bg-[#eef9f1] text-[#20364a]">
             <Head title={`${t('train.title')} — EduFunHub`} />
             <header className="flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
-                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <BackButton
                         href="/portal"
                         label={t('nav.backToPortal')}
@@ -459,6 +461,7 @@ export default function KnowledgeTrain({
                         <TrainFront className="size-6 shrink-0" />
                         <span className="truncate">{t('train.title')}</span>
                     </h1>
+                    <DigitalClock className="edu-clock--game" />
                 </div>
                 <SiteNav compact className="shrink-0" />
             </header>
@@ -662,6 +665,17 @@ export default function KnowledgeTrain({
                     </button>
                 </div>
             </main>
+            <GameFinale
+                game="knowledge-train"
+                done={phase === 'done' && Boolean(state?.result)}
+                matchKey={
+                    state?.result
+                        ? `${state.result.seconds}-${state.result.correct}-${state.score}`
+                        : null
+                }
+                won={state?.result?.passed ?? false}
+                points={state?.result?.points}
+            />
         </div>
     );
 }

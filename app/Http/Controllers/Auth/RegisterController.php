@@ -3,20 +3,19 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RegisterController extends Controller
 {
     /**
-     * Show the registration form via Inertia.
+     * Sign-up page: new accounts are created only with a Google account.
      */
-    public function showRegisterForm(Request $request): Response
+    public function showRegisterForm(): Response
     {
         return Inertia::render('auth/register', [
-            'email'    => $request->query('email'),
-            'redirect' => $request->query('redirect'),
+            'googleEnabled' => GoogleAuthController::enabled(),
+            'googleRedirectUrl' => GoogleAuthController::enabled() ? route('google.redirect') : null,
         ]);
     }
 }

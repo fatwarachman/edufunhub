@@ -12,7 +12,7 @@ class UpdateFeedbackStatusRequest extends FormRequest
     {
         $user = $this->user();
 
-        return $user !== null && ($user->is_superadmin || $user->hasRole('admin'));
+        return $user !== null && ($user->isAdmin());
     }
 
     /**

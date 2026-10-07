@@ -36,14 +36,14 @@ class EnsurePasswordNotExpired
         if ($lastUpdated && $lastUpdated->diffInDays(now()) > $expiryDays) {
             // Allow the password reset/confirm routes, the redirect destination itself, and the
             // routes needed to actually change the password, to avoid a redirect loop.
-            if ($request->routeIs('password.*', 'profile.edit', 'profile.update', 'user-password.update', 'security.authentication', 'logout')) {
+            if ($request->routeIs('password.*', 'profile.show', 'profile.password', 'user-password.update', 'security.authentication', 'logout')) {
                 return $next($request);
             }
 
             // You can either log them out and redirect to forgot password, or redirect to a custom 'update password' view.
             // Using Fortify's `password.confirm` flow or a custom notification flow is ideal.
             // For now, let's redirect to standard profile page with an error flashed (assuming profile has a password update block).
-            return redirect()->route('profile.edit')->with('error', 'Your password has expired. Please update it immediately.');
+            return redirect()->route('profile.show')->with('error', __('profile.password_expired'));
         }
 
         return $next($request);

@@ -236,12 +236,70 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Check whether this user has a given permission through their roles.
+     * Permissions given to this user directly (override), on top of roles.
+     *
+     * @return BelongsToMany<Permission, $this>
+     */
+    public function directPermissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class, 'permission_user')->withTimestamps();
+    }
+
+    /**
+     * Admin panel access. With several roles the highest one counts: a super
+     * admin is always an admin too.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_superadmin || $this->hasRole(Role::ADMIN);
+    }
+
+    /**
+     * Check whether this user has a given permission through their roles or
+     * a direct (override) permission. Super admins have every permission.
      */
     public function hasPermission(string $slug): bool
     {
         return $this->is_superadmin
+            || $this->directPermissions()->where('slug', $slug)->exists()
             || $this->roles()->whereHas('permissions', fn ($q) => $q->where('slug', $slug))->exists();
+    }
+
+    /**
+     * Every permission slug the user holds (roles + direct overrides).
+     *
+     * @return list<string>
+     */
+    public function permissionSlugs(): array
+    {
+        if ($this->is_superadmin) {
+            return Permission::query()->orderBy('slug')->pluck('slug')->all();
+        }
+
+        return Permission::query()
+            ->where(fn ($query) => $query
+                ->whereHas('roles', fn ($roles) => $roles->whereIn('roles.id', $this->roles()->select('roles.id')))
+                ->orWhereIn('id', $this->directPermissions()->select('permissions.id')))
+            ->orderBy('slug')
+            ->pluck('slug')
+            ->all();
+    }
+
+    /**
+     * Replace the user's roles. The "super-admin" role and the is_superadmin
+     * flag always move together, so a user given several roles gets the
+     * highest one.
+     *
+     * @param  list<int>  $roleIds
+     */
+    public function syncRoles(array $roleIds): void
+    {
+        $this->roles()->sync($roleIds);
+
+        $superadmin = Role::query()->whereKey($roleIds)->where('slug', Role::SUPER_ADMIN)->exists();
+        if ($this->is_superadmin !== $superadmin) {
+            $this->forceFill(['is_superadmin' => $superadmin])->save();
+        }
     }
 
     /**

@@ -4,23 +4,6 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-test('self registered user gets participant role only', function (): void {
-    $this->post(route('register.store'), [
-        'name' => 'Peserta Baru',
-        'email' => 'peserta@example.com',
-        'birth_date' => now()->subYears(10)->toDateString(),
-        'school_name' => 'SDN 1 Bogor',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-    ]);
-
-    $user = User::query()->where('email', 'peserta@example.com')->sole();
-
-    expect($user->roles()->pluck('slug')->all())->toBe([Role::PARTICIPANT])
-        ->and($user->is_superadmin)->toBeFalse()
-        ->and($user->hasRole('admin'))->toBeFalse();
-});
-
 test('participant role assignment reuses the existing role and is idempotent', function (): void {
     $role = Role::query()->where('slug', Role::PARTICIPANT)->sole();
     $user = User::factory()->create();

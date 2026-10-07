@@ -111,15 +111,18 @@ class LandingStats
      */
     private function leaderboard(?int $days): array
     {
-        $earned = function ($query) use ($days): void {
-            $query->where('points', '>', 0)
-                ->when($days !== null, fn ($query) => $query->where('created_at', '>=', now()->subDays($days)));
+        $window = function ($query) use ($days): void {
+            $query->when($days !== null, fn ($query) => $query->where('created_at', '>=', now()->subDays($days)));
         };
 
         /** @var Collection<int, User> $users */
         $users = $this->eligibleUsers()
-            ->whereHas('pointLedgers', $earned)
-            ->withSum(['pointLedgers as total_points' => $earned], 'points')
+            ->whereIn('id', PointLedger::query()
+                ->select('user_id')
+                ->when($days !== null, fn ($query) => $query->where('created_at', '>=', now()->subDays($days)))
+                ->groupBy('user_id')
+                ->havingRaw('SUM(points) > 0'))
+            ->withSum(['pointLedgers as total_points' => $window], 'points')
             ->with('playerProfile:id,user_id,nickname,school_name,grade')
             ->orderByDesc('total_points')
             ->orderBy('id')

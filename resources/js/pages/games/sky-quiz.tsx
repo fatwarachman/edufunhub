@@ -1,5 +1,7 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { DigitalClock } from '@/components/digital-clock';
+import { GameFinale } from '@/components/game-finale';
 import { Joystick, type StickVector } from '@/components/games/joystick';
 import {
     type GameSubject,
@@ -1083,7 +1085,7 @@ export default function SkyQuiz({
         <div className="min-h-dvh bg-[#eef5f7] text-[#20364a]">
             <Head title={`${t('sky.title')} — EduFunHub`} />
             <header className="flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
-                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <BackButton
                         href={backHref}
                         label={t(
@@ -1095,6 +1097,7 @@ export default function SkyQuiz({
                         <Plane className="size-6 shrink-0" />
                         <span className="truncate">{t('sky.title')}</span>
                     </h1>
+                    <DigitalClock className="edu-clock--game" />
                 </div>
                 <SiteNav compact className="shrink-0" />
             </header>
@@ -1587,6 +1590,15 @@ export default function SkyQuiz({
                     </span>
                 </p>
             </main>
+            <GameFinale
+                game="sky-quiz"
+                done={screen === 'ended'}
+                matchKey={screen === 'ended' ? 'flight' : null}
+                won={passed}
+                points={signedIn ? earned : undefined}
+                onPlayAgain={ready && !needsGrade ? start : undefined}
+                playAgainLabel={t('sky.playAgain')}
+            />
         </div>
     );
 }

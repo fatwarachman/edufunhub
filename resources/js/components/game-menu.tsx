@@ -67,7 +67,7 @@ export function GameMenu({ active }: { active: boolean }) {
                 aria-controls={menuId}
                 aria-current={active ? 'page' : undefined}
                 aria-label={t('nav.games')}
-                title={t('nav.games')}
+                data-tip={open ? undefined : t('nav.games')}
                 onClick={() => setOpen((value) => !value)}
                 data-testid="game-menu-trigger"
             >

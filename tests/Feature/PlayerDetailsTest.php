@@ -9,35 +9,31 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-function registrationPayload(array $overrides = []): array
+function detailsPayload(array $overrides = []): array
 {
     return [
-        'name' => 'Peserta Baru',
-        'email' => 'peserta@example.com',
         'birth_date' => now()->subYears(10)->subDay()->toDateString(),
         'school_name' => '  SDN 1 Bogor  ',
-        'password' => 'password',
-        'password_confirmation' => 'password',
         ...$overrides,
     ];
 }
 
-test('registration stores birth date and trimmed last school', function (): void {
-    $this->post(route('register.store'), registrationPayload())->assertRedirect();
+test('player details store birth date and trimmed last school', function (): void {
+    $user = User::factory()->create();
+    $this->actingAs($user)->patch(route('player-details.update'), detailsPayload())->assertRedirect();
 
-    $profile = User::query()->where('email', 'peserta@example.com')->sole()->playerProfile;
+    $profile = $user->fresh()->playerProfile;
 
     expect($profile->birth_date->toDateString())->toBe(now()->subYears(10)->subDay()->toDateString())
         ->and($profile->school_name)->toBe('SDN 1 Bogor')
         ->and($profile->age)->toBe(10);
 });
 
-test('registration rejects missing or invalid participant details', function (array $overrides, string $field): void {
-    $this->post(route('register.store'), registrationPayload($overrides))->assertSessionHasErrors($field);
+test('player details reject missing or invalid values', function (array $overrides, string $field): void {
+    $user = User::factory()->create();
+    $this->actingAs($user)->patch(route('player-details.update'), detailsPayload($overrides))->assertSessionHasErrors($field);
 
-    $this->assertGuest();
-    $this->assertDatabaseCount('users', User::query()->count());
-    expect(User::query()->where('email', 'peserta@example.com')->exists())->toBeFalse();
+    expect($user->fresh()->playerProfile)->toBeNull();
 })->with([
     'missing birth date' => [['birth_date' => ''], 'birth_date'],
     'bad format' => [['birth_date' => '10/01/2015'], 'birth_date'],

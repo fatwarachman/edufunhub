@@ -1,5 +1,8 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { DigitalClock } from '@/components/digital-clock';
+import { GameFinale, rankStandings } from '@/components/game-finale';
+import { RoomLeaveControl } from '@/components/multiplayer/host-controls';
 import {
     ConnectionBadge,
     RoomEntry,
@@ -635,15 +638,12 @@ export default function Crossword({
                     )}
 
                     {playing && (
-                        <Button
-                            variant="ghost"
-                            onClick={() => send({ t: 'leave' })}
-                            data-testid="crossword-leave"
-                            className="min-h-11 self-center text-xs font-bold text-slate-600"
-                        >
-                            <DoorOpen className="size-4" />
-                            {t('room.leave')}
-                        </Button>
+                        <RoomLeaveControl
+                            isHost={isHost}
+                            onLeave={() => send({ t: 'leave' })}
+                            onStop={() => send({ t: 'stop' })}
+                            testId="crossword-leave"
+                        />
                     )}
 
                     {state.phase === 'done' && (
@@ -664,6 +664,15 @@ export default function Crossword({
                                       ? t('crossword.result.draw')
                                       : t(`crossword.result.${state.reason}`)}
                             </h2>
+                            {state.reason === 'stopped' &&
+                                (winner || state.draw) && (
+                                    <p
+                                        className="mx-auto mt-2 w-fit rounded-full border-2 border-[#1f2a44] bg-white px-3 py-1 text-xs font-black"
+                                        data-testid="room-stopped"
+                                    >
+                                        {t('room.hostExit.stopped')}
+                                    </p>
+                                )}
                             {state.reason === 'time' &&
                                 (state.unsolved ?? 0) > 0 && (
                                     <p
@@ -866,7 +875,7 @@ export default function Crossword({
             </Head>
             <header className="sticky top-0 z-30 border-b-4 border-[#1f2a44] bg-[#f0f9ff]/95 backdrop-blur-md">
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
-                    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                    <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
                             href={backHref}
                             label={t('nav.backToPortal')}
@@ -876,10 +885,11 @@ export default function Crossword({
                             <span className="truncate font-display text-lg font-black sm:text-2xl">
                                 {t('crossword.title')}
                             </span>
-                            <span className="hidden text-xs font-bold text-slate-600 sm:block">
+                            <span className="hidden truncate text-xs font-bold text-slate-600 sm:block">
                                 {t('crossword.tagline')}
                             </span>
                         </div>
+                        <DigitalClock className="edu-clock--game" />
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                         <span
@@ -914,6 +924,48 @@ export default function Crossword({
                 <GameAdStrip />
                 {body}
             </main>
+            <GameFinale
+                game="crossword"
+                done={state?.phase === 'done'}
+                matchKey={state?.pin}
+                won={
+                    state?.phase === 'done' &&
+                    (state.winner ?? -1) >= 0 &&
+                    state.winner === state.you
+                }
+                points={state?.points}
+                title={
+                    state?.phase === 'done' && (state.winner ?? -1) >= 0
+                        ? state.winner === state.you
+                            ? undefined
+                            : t('finale.winner', {
+                                  name: players[state.winner ?? -1]?.name,
+                              })
+                        : state?.draw
+                          ? t('finale.draw')
+                          : undefined
+                }
+                standings={rankStandings(
+                    players.filter((p) => !p.left),
+                    (p) => p.score,
+                    (p, rank) => ({
+                        key: p.seat,
+                        name: p.name,
+                        rank,
+                        score: t('crossword.score', { score: p.score }),
+                        character: p.character,
+                        seat: p.seat,
+                        userId: p.user_id,
+                        isYou: p.seat === state?.you,
+                    }),
+                )}
+                onPlayAgain={
+                    state?.host === state?.you
+                        ? () => send({ t: 'start' })
+                        : undefined
+                }
+                playAgainLabel={t('crossword.result.again')}
+            />
         </div>
     );
 }

@@ -9,7 +9,7 @@
         "intro": "Ready for your next learning adventure?",
         "customize": "Customize character",
         "points": "Your points",
-        "pointsNote": "Points from verified game results.",
+        "pointsNote": "Goes up when you answer correctly in games, goes down when you shop for your character.",
         "categories": "Game categories",
         "demoNote": "Current games are demos; demo results do not award points or history.",
         "history": "Game history",
@@ -351,7 +351,8 @@
         "clock": "Current time {{time}}",
         "feedback": "Send feedback",
         "ability": "Ability analysis",
-        "registerFree": "Sign up free"
+        "registerFree": "Sign up free",
+        "profile": "Profile"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -811,6 +812,11 @@
             "accessLabel": "Access",
             "accessGuest": "Try it without an account (demo mode).",
             "accessAccount": "Sign in to play."
+        },
+        "hot": {
+            "tab": "Hottest",
+            "title": "Hottest games",
+            "intro": "Games ordered by how often they were played in the last {{days}} days."
         }
     },
     "snakes": {
@@ -1024,10 +1030,30 @@
             "invalid_item": "Unknown item.",
             "no_item": "You don't have that item.",
             "no_target": "There is no target ahead of you.",
-            "kart_finished": "Your kart already finished."
+            "kart_finished": "Your kart already finished.",
+            "invalid_answer_time": "That answer time is not available."
         },
         "copyPinLabel": "Copy PIN",
-        "copyLinkLabel": "Copy link"
+        "copyLinkLabel": "Copy link",
+        "hostExit": {
+            "button": "Leave / stop",
+            "title": "Leave the game?",
+            "intro": "You host this room. Choose one:",
+            "leaveTitle": "Only I leave",
+            "leaveHint": "The game goes on for the others and another player becomes host.",
+            "stopTitle": "Stop the game for everyone",
+            "stopHint": "The game ends now for every player. Points earned so far are kept.",
+            "cancel": "Cancel",
+            "stopped": "The host stopped the game."
+        },
+        "answerTime": {
+            "label": "Answer time per question",
+            "auto": "Automatic (by grade)",
+            "secondsShort": "sec",
+            "hint": "Applies to every player in this room.",
+            "badge": "{{seconds}} s per question",
+            "default": "Standard ({{seconds}} s)"
+        }
     },
     "crossword": {
         "title": "Crossword",
@@ -1071,7 +1097,8 @@
             "waitingHost": "Waiting for the host to play again…",
             "leave": "Leave",
             "timeUp": "Time's up! {{count}} words were not solved; the answers are revealed.",
-            "draw": "It's a draw! No win bonus."
+            "draw": "It's a draw! No win bonus.",
+            "stopped": "The host stopped the game."
         },
         "playing": "Players",
         "grade": "Grade {{grade}}",
@@ -1081,8 +1108,8 @@
     "shop": {
         "title": "Character & Shop",
         "intro": "Pick your character style, then trade points for hats, outfits, weapons and more.",
-        "balance": "Spendable points",
-        "balanceNote": "Shopping never lowers your level or rank.",
+        "balance": "Your points",
+        "balanceNote": "Points go up when you answer correctly in games and go down when you shop.",
         "look": "Appearance",
         "gender": "Character",
         "boy": "Boy",
@@ -2210,6 +2237,96 @@
             "clickToView": "Click to view leaderboard",
             "modalClose": "Close",
             "rank": "Rank"
+        }
+    },
+    "finale": {
+        "title": "Leaderboard",
+        "titleWin": "Congratulations, you won!",
+        "titleDone": "Game over!",
+        "titleSolo": "Great job, game finished!",
+        "points": "+{{points}} points added to your account",
+        "pointsShort": "{{points}} pts",
+        "tabs": {
+            "match": "This game",
+            "all": "Game ranking"
+        },
+        "allTime": "All-time {{game}} champions",
+        "myRank": "You are #{{rank}} of {{total}} players · {{points}} pts",
+        "empty": "Nobody on this board yet. You can be the first!",
+        "error": "The leaderboard could not be loaded. Try again later.",
+        "loading": "Loading leaderboard…",
+        "fullBoard": "See full leaderboard",
+        "again": "Play again",
+        "ok": "Close",
+        "close": "Close leaderboard",
+        "reopen": "Ranking",
+        "rank": "Place {{rank}}",
+        "winner": "{{name}} wins!",
+        "draw": "It's a draw!",
+        "guest": "Sign up for free to join the leaderboard and collect points.",
+        "correctWrong": "{{correct}} correct • {{wrong}} wrong"
+    },
+    "joinPin": {
+        "button": "Join with PIN",
+        "title": "Join a game with a PIN",
+        "intro": "Type the 6 digit PIN from your friend or teacher. You go straight into the game.",
+        "label": "Game PIN",
+        "placeholder": "6 digit PIN",
+        "submit": "Join",
+        "searching": "Looking for the game…",
+        "notFound": "No game uses PIN {{pin}}. Check the digits, or ask the host for a new PIN.",
+        "invalid": "The PIN has 6 digits.",
+        "error": "The game server cannot be reached. Try again in a moment.",
+        "choose": "PIN {{pin}} is used by several games. Pick one:",
+        "started": "already started",
+        "open": "waiting for players",
+        "close": "Close",
+        "going": "Opening {{game}}…"
+    },
+    "profile": {
+        "title": "My profile",
+        "stats": {
+            "points": "Points",
+            "level": "Level",
+            "rank": "Rank",
+            "games": "Games"
+        },
+        "editCharacter": "Edit character",
+        "openDashboard": "Open dashboard",
+        "info": {
+            "title": "Account details",
+            "grade": "Grade",
+            "age": "Age",
+            "joined": "Joined",
+            "lastSeen": "Last active",
+            "roles": "Roles",
+            "signIn": "Sign-in methods",
+            "emailPassword": "Email and password",
+            "linked": "Linked with {{provider}}"
+        },
+        "account": {
+            "title": "Account",
+            "name": "Full name",
+            "email": "Email",
+            "emailVerified": "Email verified. Contact an admin to change it.",
+            "emailLocked": "Contact an admin to change your email.",
+            "saved": "Profile saved.",
+            "save": "Save"
+        },
+        "password": {
+            "title": "Change password",
+            "setTitle": "Set a password",
+            "intro": "Enter your current password, then a new one.",
+            "changedAt": "Last changed {{date}}.",
+            "setIntro": "You sign in with Google. Set a password to also sign in with your email.",
+            "current": "Current password",
+            "new": "New password",
+            "confirm": "Repeat new password",
+            "rule": "At least 8 characters with letters and numbers.",
+            "show": "Show password",
+            "hide": "Hide password",
+            "saved": "Password changed.",
+            "submit": "Save password"
         }
     }
 }

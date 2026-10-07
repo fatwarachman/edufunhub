@@ -9,7 +9,7 @@
         "intro": "Siap untuk petualangan belajar berikutnya?",
         "customize": "Kustomisasi karakter",
         "points": "Poin kamu",
-        "pointsNote": "Poin dari hasil permainan yang telah diverifikasi.",
+        "pointsNote": "Bertambah saat kamu menjawab benar di game, berkurang saat kamu belanja di toko karakter.",
         "categories": "Kategori permainan",
         "demoNote": "Permainan saat ini masih demo; hasil demo tidak menambah poin atau riwayat.",
         "history": "Riwayat permainan",
@@ -350,7 +350,8 @@
         "clock": "Jam sekarang {{time}}",
         "feedback": "Kirim masukan",
         "ability": "Analisa kemampuan",
-        "registerFree": "Daftar gratis"
+        "registerFree": "Daftar gratis",
+        "profile": "Profil"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -810,6 +811,11 @@
             "accessLabel": "Akses",
             "accessGuest": "Bisa dicoba tanpa akun (mode demo).",
             "accessAccount": "Masuk akun dulu untuk bermain."
+        },
+        "hot": {
+            "tab": "Terpanas",
+            "title": "Game terpanas",
+            "intro": "Urutan game yang paling sering dimainkan dalam {{days}} hari terakhir."
         }
     },
     "snakes": {
@@ -1023,10 +1029,30 @@
             "invalid_item": "Item tidak dikenal.",
             "no_item": "Kamu tidak punya item itu.",
             "no_target": "Belum ada target di depanmu.",
-            "kart_finished": "Kartmu sudah finish."
+            "kart_finished": "Kartmu sudah finish.",
+            "invalid_answer_time": "Pilihan waktu menjawab tidak tersedia."
         },
         "copyPinLabel": "Salin PIN",
-        "copyLinkLabel": "Salin link"
+        "copyLinkLabel": "Salin link",
+        "hostExit": {
+            "button": "Keluar / hentikan",
+            "title": "Keluar dari permainan?",
+            "intro": "Kamu host ruang ini. Pilih salah satu:",
+            "leaveTitle": "Hanya saya yang keluar",
+            "leaveHint": "Permainan tetap berjalan untuk pemain lain, dan pemain lain menjadi host.",
+            "stopTitle": "Hentikan permainan untuk semua",
+            "stopHint": "Permainan langsung selesai di semua pemain. Poin yang sudah didapat tetap tersimpan.",
+            "cancel": "Batal",
+            "stopped": "Permainan dihentikan oleh host."
+        },
+        "answerTime": {
+            "label": "Waktu menjawab per soal",
+            "auto": "Otomatis (sesuai kelas)",
+            "secondsShort": "detik",
+            "hint": "Berlaku untuk semua pemain di ruang ini.",
+            "badge": "{{seconds}} detik per soal",
+            "default": "Standar ({{seconds}} detik)"
+        }
     },
     "crossword": {
         "title": "Teka-Teki Silang",
@@ -1070,7 +1096,8 @@
             "waitingHost": "Menunggu host memulai lagi…",
             "leave": "Keluar",
             "timeUp": "Waktu habis! {{count}} kata belum terjawab, kunci jawaban dibuka.",
-            "draw": "Seri! Tidak ada bonus menang."
+            "draw": "Seri! Tidak ada bonus menang.",
+            "stopped": "Permainan dihentikan oleh host."
         },
         "playing": "Pemain",
         "grade": "Kelas {{grade}}",
@@ -1080,8 +1107,8 @@
     "shop": {
         "title": "Karakter & Toko",
         "intro": "Pilih gaya karaktermu, lalu tukar poin dengan topi, baju, senjata, dan lainnya.",
-        "balance": "Poin bisa dibelanjakan",
-        "balanceNote": "Belanja tidak mengurangi level dan peringkat.",
+        "balance": "Poinmu",
+        "balanceNote": "Poin bertambah saat kamu menjawab benar di game dan berkurang saat kamu belanja.",
         "look": "Penampilan",
         "gender": "Karakter",
         "boy": "Laki-laki",
@@ -2209,6 +2236,96 @@
             "clickToView": "Klik untuk lihat peringkat",
             "modalClose": "Tutup",
             "rank": "Peringkat"
+        }
+    },
+    "finale": {
+        "title": "Papan peringkat",
+        "titleWin": "Selamat, kamu juara!",
+        "titleDone": "Permainan selesai!",
+        "titleSolo": "Hebat, permainan selesai!",
+        "points": "+{{points}} poin masuk ke akunmu",
+        "pointsShort": "{{points}} poin",
+        "tabs": {
+            "match": "Permainan ini",
+            "all": "Peringkat game"
+        },
+        "allTime": "Juara {{game}} sepanjang masa",
+        "myRank": "Posisimu #{{rank}} dari {{total}} pemain · {{points}} poin",
+        "empty": "Belum ada pemain di papan ini. Kamu bisa jadi yang pertama!",
+        "error": "Papan peringkat belum bisa dimuat. Coba lagi nanti.",
+        "loading": "Memuat papan peringkat…",
+        "fullBoard": "Lihat semua peringkat",
+        "again": "Main lagi",
+        "ok": "Tutup",
+        "close": "Tutup papan peringkat",
+        "reopen": "Peringkat",
+        "rank": "Juara {{rank}}",
+        "winner": "{{name}} juara!",
+        "draw": "Seri!",
+        "guest": "Daftar gratis untuk masuk papan peringkat dan mengumpulkan poin.",
+        "correctWrong": "{{correct}} benar • {{wrong}} salah"
+    },
+    "joinPin": {
+        "button": "Masuk pakai PIN",
+        "title": "Masuk ke permainan dengan PIN",
+        "intro": "Ketik 6 digit PIN dari temanmu atau guru. Kamu langsung masuk ke permainannya.",
+        "label": "PIN permainan",
+        "placeholder": "6 digit PIN",
+        "submit": "Masuk",
+        "searching": "Mencari permainan…",
+        "notFound": "Tidak ada permainan dengan PIN {{pin}}. Cek lagi angkanya, atau minta PIN baru ke host.",
+        "invalid": "PIN harus 6 angka.",
+        "error": "Server permainan belum bisa dihubungi. Coba lagi sebentar lagi.",
+        "choose": "PIN {{pin}} dipakai di beberapa permainan. Pilih permainannya:",
+        "started": "sudah dimulai",
+        "open": "menunggu pemain",
+        "close": "Tutup",
+        "going": "Membuka {{game}}…"
+    },
+    "profile": {
+        "title": "Profil saya",
+        "stats": {
+            "points": "Poin",
+            "level": "Level",
+            "rank": "Peringkat",
+            "games": "Permainan"
+        },
+        "editCharacter": "Ubah karakter",
+        "openDashboard": "Buka dasbor",
+        "info": {
+            "title": "Detail akun",
+            "grade": "Kelas",
+            "age": "Usia",
+            "joined": "Bergabung",
+            "lastSeen": "Terakhir aktif",
+            "roles": "Peran",
+            "signIn": "Cara masuk",
+            "emailPassword": "Email dan kata sandi",
+            "linked": "Terhubung dengan {{provider}}"
+        },
+        "account": {
+            "title": "Data akun",
+            "name": "Nama lengkap",
+            "email": "Email",
+            "emailVerified": "Email sudah terverifikasi. Hubungi admin bila perlu mengganti email.",
+            "emailLocked": "Hubungi admin bila perlu mengganti email.",
+            "saved": "Profil tersimpan.",
+            "save": "Simpan"
+        },
+        "password": {
+            "title": "Ganti kata sandi",
+            "setTitle": "Buat kata sandi",
+            "intro": "Masukkan kata sandi saat ini, lalu kata sandi baru.",
+            "changedAt": "Terakhir diganti {{date}}.",
+            "setIntro": "Kamu masuk dengan Google. Buat kata sandi agar bisa juga masuk dengan email.",
+            "current": "Kata sandi saat ini",
+            "new": "Kata sandi baru",
+            "confirm": "Ulangi kata sandi baru",
+            "rule": "Minimal 8 karakter, berisi huruf dan angka.",
+            "show": "Tampilkan kata sandi",
+            "hide": "Sembunyikan kata sandi",
+            "saved": "Kata sandi berhasil diganti.",
+            "submit": "Simpan kata sandi"
         }
     }
 }

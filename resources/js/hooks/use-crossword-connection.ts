@@ -40,7 +40,7 @@ export interface CrosswordState extends Partial<
     };
     words?: CrosswordWord[];
     remaining_ms?: number;
-    reason?: 'solved' | 'time';
+    reason?: 'solved' | 'time' | 'stopped';
     winner?: number;
     points?: number;
     answers?: string[];

@@ -24,10 +24,13 @@ export interface SnakesState {
     local_seats: boolean;
     winner?: number;
     points?: number;
-    reason?: 'finish' | 'forfeit' | 'time';
+    reason?: 'finish' | 'forfeit' | 'time' | 'stopped';
     /** Game length in minutes chosen by the host (0 = until someone finishes). */
     minutes?: number;
     durations?: number[];
+    /** Host's answer time per question in seconds (0 = standard). */
+    answer_seconds?: number;
+    answer_times?: number[];
     finish_bonus?: number;
     /** Seat that reached square 100 first (-1 = nobody yet). */
     first?: number;

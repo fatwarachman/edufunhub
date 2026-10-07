@@ -1,9 +1,9 @@
 import { PlayerAvatar } from '@/components/player-avatar';
 import { Button } from '@/components/ui/button';
+import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import { type GameSocketStatus } from '@/hooks/use-game-socket';
 import { useTranslations } from '@/hooks/use-translations';
 import { type CharacterLook } from '@/lib/character/draw-character';
-import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import { cn } from '@/lib/utils';
 import {
     Copy,
@@ -59,6 +59,10 @@ export interface RoomPayload<Seat extends RoomSeat = RoomSeat> {
     local_seats: boolean;
     /** Host's question subject (`mix` = every subject). */
     subject?: string;
+    /** Host's answer time per question in seconds (0 = game default). */
+    answer_seconds?: number;
+    /** Answer times the host can pick. */
+    answer_times?: number[];
 }
 
 /** Shareable invite link for a room: /games/{game}/join/{pin}. */

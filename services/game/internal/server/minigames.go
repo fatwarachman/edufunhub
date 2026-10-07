@@ -120,6 +120,10 @@ func (s *Server) serveMini(key string) http.HandlerFunc {
 				ids = hub.Leave(claims.Subject, now)
 			case "start":
 				ids, err = hub.Start(claims.Subject, now)
+			case "stop":
+				ids, err = hub.Stop(claims.Subject, now)
+			case "answer_time":
+				ids, err = hub.SetAnswerTime(claims.Subject, in.Seconds, now)
 			case "answer":
 				ids, err = hub.Answer(claims.Subject, in.Option, now)
 			case "locale":

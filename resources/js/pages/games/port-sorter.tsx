@@ -1,5 +1,7 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { DigitalClock } from '@/components/digital-clock';
+import { GameFinale } from '@/components/game-finale';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { useMyUserId } from '@/hooks/use-chat-socket';
@@ -646,7 +648,7 @@ export default function PortSorter({
         <div className="min-h-dvh bg-[#e9f6f4] text-[#20364a]">
             <Head title={`${t('portSorter.title')} — EduFunHub`} />
             <header className="flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
-                <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <BackButton
                         href="/portal"
                         label={t('nav.backToPortal')}
@@ -658,6 +660,7 @@ export default function PortSorter({
                             {t('portSorter.title')}
                         </span>
                     </h1>
+                    <DigitalClock className="edu-clock--game" />
                 </div>
                 <SiteNav compact className="shrink-0" />
             </header>
@@ -869,10 +872,25 @@ export default function PortSorter({
                         <ChevronRight className="size-8" />
                     </button>
                 </div>
-                <p className="hidden text-center text-xs text-[#4d6b80] sm:block" aria-hidden="true">
-                    ←/A · →/D · 1–9 · P={t('portSorter.pause')} · {t('portSorter.boostHint')}
+                <p
+                    className="hidden text-center text-xs text-[#4d6b80] sm:block"
+                    aria-hidden="true"
+                >
+                    ←/A · →/D · 1–9 · P={t('portSorter.pause')} ·{' '}
+                    {t('portSorter.boostHint')}
                 </p>
             </main>
+            <GameFinale
+                game="port-sorter"
+                done={phase === 'done' && Boolean(state?.result)}
+                matchKey={
+                    state?.result
+                        ? `${state.result.seconds}-${state.result.correct}-${state.score}`
+                        : null
+                }
+                won={state?.result?.passed ?? false}
+                points={state?.result?.points}
+            />
         </div>
     );
 }

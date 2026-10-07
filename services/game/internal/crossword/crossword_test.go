@@ -326,3 +326,20 @@ func TestEqualScoresAreADrawWithoutBonus(t *testing.T) {
 		}
 	}
 }
+
+func TestHostStopsTheGameForEveryone(t *testing.T) {
+	h := NewHub(5)
+	now := time.Unix(1_800_000_000, 0)
+	_, _ = h.Create(claims(1), 1, now)
+	_, _ = h.Enter(claims(2), roomOf(h, 1).Pin, now)
+	_, _ = h.Start(1, now)
+	if _, err := h.Stop(2, now); err != ErrNotHost {
+		t.Fatalf("guest stop: %v", err)
+	}
+	if _, err := h.Stop(1, now); err != nil {
+		t.Fatal(err)
+	}
+	if st := h.State(claims(2), now); st["reason"] != "stopped" {
+		t.Fatalf("reason %v", st["reason"])
+	}
+}

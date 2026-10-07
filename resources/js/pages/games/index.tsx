@@ -1,10 +1,12 @@
+import { DigitalClock } from '@/components/digital-clock';
+import { JoinByPinCard } from '@/components/join-by-pin';
 import { PlayerCountBadge } from '@/components/player-count-badge';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
+import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import { useTranslations } from '@/hooks/use-translations';
 import { gameIcon } from '@/lib/games';
-import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
-import { absoluteUrl } from '@/lib/share';
 import { gradeShortLabel } from '@/lib/grade';
+import { absoluteUrl } from '@/lib/share';
 import { cn } from '@/lib/utils';
 import { type GameMenuGame, type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -113,6 +115,9 @@ interface GameListProps {
     popularityDays?: number;
 }
 
+/** Pseudo filter: every game ordered by plays (most played first). */
+const HOT = 'hot';
+
 export default function GameList({
     popularity = {},
     popularityDays = 30,
@@ -175,11 +180,44 @@ export default function GameList({
         (sum, category) => sum + category.games.length,
         0,
     );
-    const shown = matched.filter(
-        (category) =>
-            (filter === 'all' || category.key === filter) &&
-            category.games.length > 0,
+    /** "Hottest": every game, most played first (ties keep catalog order). */
+    const hottest = useMemo(() => {
+        const games = matched.flatMap((category) => category.games);
+        const order = new Map(games.map((game, index) => [game.key, index]));
+        return [...games].sort(
+            (a, b) =>
+                (popularity[b.key]?.plays ?? 0) -
+                    (popularity[a.key]?.plays ?? 0) ||
+                (order.get(a.key) ?? 0) - (order.get(b.key) ?? 0),
+        );
+    }, [matched, popularity]);
+    const categoryOf = useMemo(
+        () =>
+            new Map(
+                categories.flatMap((category) =>
+                    category.games.map(
+                        (game) => [game.key, category.titleKey] as const,
+                    ),
+                ),
+            ),
+        [categories],
     );
+    const shown =
+        filter === HOT
+            ? hottest.length > 0
+                ? [
+                      {
+                          key: HOT,
+                          titleKey: 'gameList.hot.title',
+                          games: hottest,
+                      },
+                  ]
+                : []
+            : matched.filter(
+                  (category) =>
+                      (filter === 'all' || category.key === filter) &&
+                      category.games.length > 0,
+              );
     const shownCount = shown.reduce(
         (sum, category) => sum + category.games.length,
         0,
@@ -343,6 +381,7 @@ export default function GameList({
                                 {t('gameList.tagline')}
                             </span>
                         </div>
+                        <DigitalClock />
                     </div>
 
                     <SiteNav compact />
@@ -365,6 +404,8 @@ export default function GameList({
                         {t('gameList.intro')}
                     </p>
                 </div>
+
+                <JoinByPinCard className="mx-auto mt-8 max-w-3xl" />
 
                 <div className="mx-auto mt-8 flex max-w-3xl items-stretch gap-2 sm:gap-3">
                     <div className="relative min-w-0 flex-1">
@@ -459,6 +500,11 @@ export default function GameList({
                             titleKey: 'portal.all',
                             count: matchedTotal,
                         },
+                        {
+                            key: HOT,
+                            titleKey: 'gameList.hot.tab',
+                            count: matchedTotal,
+                        },
                         ...matched.map((category) => ({
                             key: category.key,
                             titleKey: category.titleKey,
@@ -484,6 +530,17 @@ export default function GameList({
                                         'opacity-60',
                                 )}
                             >
+                                {category.key === HOT && (
+                                    <Flame
+                                        className={cn(
+                                            'size-4 shrink-0',
+                                            active
+                                                ? 'text-[#FFD93D]'
+                                                : 'text-[#FF6584]',
+                                        )}
+                                        aria-hidden
+                                    />
+                                )}
                                 {t(category.titleKey)}
                                 <span
                                     className={cn(
@@ -544,17 +601,33 @@ export default function GameList({
                                 id={`category-${category.key}`}
                                 className="mb-5 flex items-center gap-3 font-display text-2xl font-black text-[#1f2a44]"
                             >
+                                {category.key === HOT && (
+                                    <Flame
+                                        className="size-6 shrink-0 text-[#FF6584]"
+                                        aria-hidden
+                                    />
+                                )}
                                 {t(category.titleKey)}
                                 <span className="rounded-full border-2 border-[#1f2a44] bg-white px-2.5 py-0.5 text-sm">
                                     {category.games.length}
                                 </span>
                             </h2>
+                            {category.key === HOT && (
+                                <p
+                                    className="-mt-3 mb-5 text-sm font-bold text-slate-600"
+                                    data-testid="gamelist-hot-intro"
+                                >
+                                    {t('gameList.hot.intro', {
+                                        days: popularityDays,
+                                    })}
+                                </p>
+                            )}
                             {view === 'list' ? (
                                 <ul
                                     className="flex flex-col gap-3"
                                     data-testid={`gamelist-rows-${category.key}`}
                                 >
-                                    {category.games.map((game) => {
+                                    {category.games.map((game, index) => {
                                         const Icon = gameIcon(game.icon);
                                         const open = openRows.has(game.key);
                                         const panelId = `gamelist-row-panel-${game.key}`;
@@ -616,11 +689,24 @@ export default function GameList({
                                                         </span>
                                                         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                                                             <span className="font-display text-base leading-tight font-black break-words text-[#1f2a44] sm:text-lg">
+                                                                {category.key ===
+                                                                    HOT && (
+                                                                    <span
+                                                                        className="mr-1.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-[#1f2a44] bg-[#FF6584] px-1 align-[2px] text-xs text-white tabular-nums"
+                                                                        data-testid={`gamelist-hot-rank-${game.key}`}
+                                                                    >
+                                                                        {index +
+                                                                            1}
+                                                                    </span>
+                                                                )}
                                                                 {title}
                                                             </span>
                                                             <span className="truncate text-xs font-bold text-slate-600">
                                                                 {t(
-                                                                    category.titleKey,
+                                                                    categoryOf.get(
+                                                                        game.key,
+                                                                    ) ??
+                                                                        category.titleKey,
                                                                 )}
                                                             </span>
                                                         </span>
@@ -733,7 +819,7 @@ export default function GameList({
                                 </ul>
                             ) : (
                                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                                    {category.games.map((game) => {
+                                    {category.games.map((game, index) => {
                                         const Icon = gameIcon(game.icon);
                                         return (
                                             <article
@@ -768,9 +854,29 @@ export default function GameList({
                                                         </div>
                                                     </div>
 
-                                                    <h3 className="mt-5 font-display text-xl font-black text-[#1f2a44]">
-                                                        {t(game.titleKey)}
+                                                    <h3 className="mt-5 flex items-center gap-2 font-display text-xl font-black text-[#1f2a44]">
+                                                        {category.key ===
+                                                            HOT && (
+                                                            <span
+                                                                className="inline-flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full border-2 border-[#1f2a44] bg-[#FF6584] px-1.5 text-sm text-white tabular-nums"
+                                                                data-testid={`gamelist-hot-rank-${game.key}`}
+                                                            >
+                                                                {index + 1}
+                                                            </span>
+                                                        )}
+                                                        <span className="min-w-0">
+                                                            {t(game.titleKey)}
+                                                        </span>
                                                     </h3>
+                                                    {category.key === HOT && (
+                                                        <p className="mt-1 text-xs font-bold text-slate-600">
+                                                            {t(
+                                                                categoryOf.get(
+                                                                    game.key,
+                                                                ) ?? '',
+                                                            )}
+                                                        </p>
+                                                    )}
                                                     {game.descriptionKey && (
                                                         <p className="mt-3 text-sm leading-relaxed font-semibold text-slate-600">
                                                             {t(

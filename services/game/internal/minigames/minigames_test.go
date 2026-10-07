@@ -230,3 +230,60 @@ func TestBankQuestionsJoinTheRotation(t *testing.T) {
 		t.Fatalf("expected a bundled science bank question, got %+v", q)
 	}
 }
+
+func TestHostPicksAnswerTimeAndStopsTheGameForEveryone(t *testing.T) {
+	h := NewHub(Specs["market-math"], 13)
+	now := time.Unix(1_800_000_000, 0)
+	a, b := claims(1, 5, "market-math"), claims(2, 5, "market-math")
+	h.Create(a, now)
+	_, _ = h.Enter(b, roomOf(h, 1).Pin, now)
+	if _, err := h.SetAnswerTime(2, 30, now); err != lobby.ErrNotHost {
+		t.Fatalf("guest answer time: %v", err)
+	}
+	if _, err := h.SetAnswerTime(1, 7, now); err != lobby.ErrAnswerTime {
+		t.Fatalf("unknown answer time: %v", err)
+	}
+	if _, err := h.SetAnswerTime(1, 45, now); err != nil {
+		t.Fatal(err)
+	}
+	if st := h.State(b, now); st["answer_seconds"] != 45 {
+		t.Fatalf("state answer_seconds %v", st["answer_seconds"])
+	}
+	if _, err := h.Stop(1, now); err != lobby.ErrPhase {
+		t.Fatalf("stop in lobby: %v", err)
+	}
+	_, _ = h.Start(1, now)
+	now = now.Add(Countdown)
+	h.Tick(now)
+	if q := h.State(b, now)["question"].(Message); q["round_ms"] != int64(45000) {
+		t.Fatalf("round_ms %v", q["round_ms"])
+	}
+	// Still open after the grade default; closes at the host's 45 s.
+	now = now.Add(Specs["market-math"].RoundTime(5))
+	h.Tick(now)
+	if roomOf(h, 1).Game.step != StepQuestion {
+		t.Fatal("answer time must follow the host's choice")
+	}
+	now = now.Add(45*time.Second - Specs["market-math"].RoundTime(5))
+	h.Tick(now)
+	if roomOf(h, 1).Game.step != StepReveal {
+		t.Fatal("round closes at the host's answer time")
+	}
+	if _, err := h.Stop(2, now); err != lobby.ErrNotHost {
+		t.Fatalf("guest stop: %v", err)
+	}
+	ids, err := h.Stop(1, now)
+	if err != nil || len(ids) != 2 {
+		t.Fatalf("stop: %v %v", ids, err)
+	}
+	if roomOf(h, 2).Phase != lobby.PhaseDone {
+		t.Fatal("stop ends the game for every player")
+	}
+	st := h.State(b, now)
+	if st["stopped"] != true || st["result"] == nil {
+		t.Fatalf("stopped state %v", st)
+	}
+	if len(h.TakeResults()) != 2 {
+		t.Fatal("every player is settled once")
+	}
+}
