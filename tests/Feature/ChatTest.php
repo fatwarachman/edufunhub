@@ -6,6 +6,7 @@ use App\Models\PlayerProfile;
 use App\Models\User;
 use Database\Factories\ChatConversationFactory;
 use Illuminate\Http\Client\Request as HttpRequest;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -281,4 +282,73 @@ it('does not share the live chat socket with guests or when the chat service is 
 
     config(['chat-service.secret' => 'short']);
     $this->actingAs(chatPlayer('Rani'))->get('/portal')->assertOk()->assertInertia(fn (Assert $page) => $page->where('chatLive', null));
+});
+
+it('returns the other members read pointer with the conversation', function (): void {
+    $rani = chatPlayer('Rani');
+    $budi = chatPlayer('Budi');
+    $conversation = ChatConversationFactory::between($rani, $budi);
+
+    $first = $this->actingAs($rani)->postJson("/chat/conversations/{$conversation->id}/messages", ['body' => 'satu'])->json('message.id');
+    $this->actingAs($rani)->getJson("/chat/conversations/{$conversation->id}")
+        ->assertOk()
+        ->assertJsonPath('conversation.read_upto', 0)
+        ->assertJsonPath('conversation.reads.0.user_id', $budi->id);
+
+    $this->actingAs($budi)->getJson("/chat/conversations/{$conversation->id}")->assertOk();
+    $this->actingAs($rani)->getJson("/chat/conversations/{$conversation->id}")
+        ->assertJsonPath('conversation.read_upto', $first)
+        ->assertJsonPath('conversation.reads.0.last_read_message_id', $first);
+    expect(collect($this->actingAs($rani)->getJson('/chat/inbox')->json('conversations'))->firstWhere('id', $conversation->id)['read_upto'])->toBe($first);
+});
+
+it('publishes a read receipt to the other members only when the read pointer moves', function (): void {
+    $rani = chatPlayer('Rani');
+    $budi = chatPlayer('Budi');
+    $conversation = ChatConversationFactory::between($rani, $budi);
+    $id = $this->actingAs($rani)->postJson("/chat/conversations/{$conversation->id}/messages", ['body' => 'halo'])->json('message.id');
+
+    $readEvents = fn (): Collection => Http::recorded()
+        ->map(fn (array $pair): array => json_decode($pair[0]->body(), true))
+        ->filter(fn (array $body): bool => ($body['event']['t'] ?? null) === 'read')
+        ->values();
+
+    $this->actingAs($budi)->postJson("/chat/conversations/{$conversation->id}/read")->assertOk();
+    $this->actingAs($budi)->postJson("/chat/conversations/{$conversation->id}/read")->assertOk();
+    $this->actingAs($budi)->getJson("/chat/conversations/{$conversation->id}")->assertOk();
+
+    expect($readEvents())->toHaveCount(1)
+        ->and($readEvents()[0]['users'])->toBe([$rani->id])
+        ->and($readEvents()[0]['event'])->toBe([
+            't' => 'read',
+            'conversation_id' => $conversation->id,
+            'user_id' => $budi->id,
+            'last_read_message_id' => $id,
+        ]);
+});
+
+it('reports group reads only once every other member has read', function (): void {
+    $rani = chatPlayer('Rani');
+    $budi = chatPlayer('Budi');
+    $citra = chatPlayer('Citra');
+    $group = ChatConversationFactory::group([$rani, $budi, $citra]);
+    $id = $this->actingAs($rani)->postJson("/chat/conversations/{$group->id}/messages", ['body' => 'halo'])->json('message.id');
+
+    $this->actingAs($budi)->postJson("/chat/conversations/{$group->id}/read")->assertOk();
+    $this->actingAs($rani)->getJson("/chat/conversations/{$group->id}?before=999999")->assertJsonPath('conversation.read_upto', 0);
+
+    $this->actingAs($citra)->postJson("/chat/conversations/{$group->id}/read")->assertOk();
+    $this->actingAs($rani)->getJson("/chat/conversations/{$group->id}?before=999999")->assertJsonPath('conversation.read_upto', $id);
+});
+
+it('does not expose read state of conversations to non-members', function (): void {
+    $rani = chatPlayer('Rani');
+    $budi = chatPlayer('Budi');
+    $intruder = chatPlayer('Iseng');
+    $conversation = ChatConversationFactory::between($rani, $budi);
+    $this->actingAs($rani)->postJson("/chat/conversations/{$conversation->id}/messages", ['body' => 'rahasia'])->assertCreated();
+
+    $this->actingAs($intruder)->postJson("/chat/conversations/{$conversation->id}/read")->assertNotFound();
+    expect($this->actingAs($intruder)->getJson('/chat/inbox')->json('conversations'))->toBe([]);
+    Http::assertNotSent(fn (HttpRequest $request): bool => (json_decode($request->body(), true)['event']['t'] ?? null) === 'read');
 });

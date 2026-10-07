@@ -135,11 +135,29 @@ class ChatService
         return $message;
     }
 
+    /**
+     * Moves the reader's pointer to the newest message and tells the other
+     * members live (read receipts). Nothing is published when the pointer
+     * did not move, so repeated reads stay quiet.
+     */
     public function markRead(ChatConversation $conversation, User $user): void
     {
         $last = $conversation->messages()->max('id');
-        $conversation->participants()->where('user_id', $user->id)->update(['last_read_message_id' => $last]);
+        $advanced = $last !== null && $conversation->participants()
+            ->where('user_id', $user->id)
+            ->where(fn (Builder $q) => $q->whereNull('last_read_message_id')->orWhere('last_read_message_id', '<', $last))
+            ->update(['last_read_message_id' => $last]) > 0;
         $this->clearNotification($user, $conversation);
+
+        if ($advanced) {
+            $others = $conversation->activeParticipants()->where('user_id', '!=', $user->id)->pluck('user_id')->all();
+            $this->client->publish($others, [
+                't' => 'read',
+                'conversation_id' => $conversation->id,
+                'user_id' => $user->id,
+                'last_read_message_id' => (int) $last,
+            ]);
+        }
     }
 
     public function unreadTotal(User $user): int
@@ -204,6 +222,11 @@ class ChatService
                 'role' => $m->pivot->role,
             ])->values()->all(),
             'character' => $conversation->isGroup() ? null : ($looks[$others->first()?->id] ?? null),
+            'reads' => $others->map(fn (User $m): array => [
+                'user_id' => $m->id,
+                'last_read_message_id' => $m->pivot->last_read_message_id === null ? null : (int) $m->pivot->last_read_message_id,
+            ])->values()->all(),
+            'read_upto' => $others->isEmpty() ? null : (int) $others->min(fn (User $m): int => (int) $m->pivot->last_read_message_id),
         ];
     }
 
