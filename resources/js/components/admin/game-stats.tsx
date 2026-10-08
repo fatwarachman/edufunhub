@@ -20,6 +20,7 @@ export const GAME_LABELS: Record<string, string> = {
     'order-rush': 'Order Rush TKJ',
     'port-sorter': 'Port Sorter',
     'turbo-trivia': 'Turbo Trivia',
+    'block-battle': 'Block Battle',
 };
 
 /**

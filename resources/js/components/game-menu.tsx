@@ -81,7 +81,7 @@ export function GameMenu({ active }: { active: boolean }) {
             </button>
             <div
                 id={menuId}
-                className="edu-game-menu-panel"
+                className="edu-game-menu-panel edu-game-menu-panel--split"
                 data-open={open}
                 hidden={!open}
             >
@@ -93,80 +93,90 @@ export function GameMenu({ active }: { active: boolean }) {
                     <LayoutGrid aria-hidden="true" />
                     <span>{t('nav.allGames')}</span>
                 </Link>
-                {categories.map((category) => (
-                    <section
-                        key={category.key}
-                        className="edu-game-menu-group"
-                        aria-labelledby={`${menuId}-${category.key}`}
-                        data-testid={`game-menu-group-${category.key}`}
-                    >
-                        <h3
-                            id={`${menuId}-${category.key}`}
-                            className="edu-game-menu-heading"
+                <div
+                    className="edu-game-menu-scroll"
+                    data-testid="game-menu-scroll"
+                >
+                    {categories.map((category) => (
+                        <section
+                            key={category.key}
+                            className="edu-game-menu-group"
+                            aria-labelledby={`${menuId}-${category.key}`}
+                            data-testid={`game-menu-group-${category.key}`}
                         >
-                            {t(category.titleKey)}
-                        </h3>
-                        <ul>
-                            {category.games.map((game) => {
-                                const Icon = gameIcon(game.icon);
-                                const locked = !signedIn && !game.guestPlayable;
-                                return (
-                                    <li key={game.key}>
-                                        <Link
-                                            href={locked ? '/login' : game.url}
-                                            className="edu-game-menu-item"
-                                            aria-current={
-                                                url.split(/[?#]/)[0] ===
-                                                game.url
-                                                    ? 'page'
-                                                    : undefined
-                                            }
-                                            data-testid={`game-menu-item-${game.key}`}
-                                        >
-                                            <span
-                                                className="edu-game-menu-icon"
-                                                style={{
-                                                    background: game.accent,
-                                                }}
+                            <h3
+                                id={`${menuId}-${category.key}`}
+                                className="edu-game-menu-heading"
+                            >
+                                {t(category.titleKey)}
+                            </h3>
+                            <ul>
+                                {category.games.map((game) => {
+                                    const Icon = gameIcon(game.icon);
+                                    const locked =
+                                        !signedIn && !game.guestPlayable;
+                                    return (
+                                        <li key={game.key}>
+                                            <Link
+                                                href={
+                                                    locked ? '/login' : game.url
+                                                }
+                                                className="edu-game-menu-item"
+                                                aria-current={
+                                                    url.split(/[?#]/)[0] ===
+                                                    game.url
+                                                        ? 'page'
+                                                        : undefined
+                                                }
+                                                data-testid={`game-menu-item-${game.key}`}
                                             >
-                                                <Icon aria-hidden="true" />
-                                            </span>
-                                            <span className="edu-game-menu-text">
-                                                <span className="edu-game-menu-title">
-                                                    {t(game.titleKey)}
+                                                <span
+                                                    className="edu-game-menu-icon"
+                                                    style={{
+                                                        background: game.accent,
+                                                    }}
+                                                >
+                                                    <Icon aria-hidden="true" />
                                                 </span>
-                                                <span className="edu-game-menu-meta">
-                                                    {t('nav.gradeRange', {
-                                                        range: range(
-                                                            game.minGrade,
-                                                            game.maxGrade,
-                                                        ),
-                                                    })}
-                                                    {' · '}
-                                                    {playerCountLabel(
-                                                        t,
-                                                        game.minPlayers,
-                                                        game.maxPlayers,
-                                                    )}
-                                                    {' · '}
-                                                    {locked
-                                                        ? t('nav.loginToPlay')
-                                                        : game.awardsPoints
-                                                          ? t(
-                                                                'portal.earnsPoints',
-                                                            )
-                                                          : t(
-                                                                'portal.practice',
-                                                            )}
+                                                <span className="edu-game-menu-text">
+                                                    <span className="edu-game-menu-title">
+                                                        {t(game.titleKey)}
+                                                    </span>
+                                                    <span className="edu-game-menu-meta">
+                                                        {t('nav.gradeRange', {
+                                                            range: range(
+                                                                game.minGrade,
+                                                                game.maxGrade,
+                                                            ),
+                                                        })}
+                                                        {' · '}
+                                                        {playerCountLabel(
+                                                            t,
+                                                            game.minPlayers,
+                                                            game.maxPlayers,
+                                                        )}
+                                                        {' · '}
+                                                        {locked
+                                                            ? t(
+                                                                  'nav.loginToPlay',
+                                                              )
+                                                            : game.awardsPoints
+                                                              ? t(
+                                                                    'portal.earnsPoints',
+                                                                )
+                                                              : t(
+                                                                    'portal.practice',
+                                                                )}
+                                                    </span>
                                                 </span>
-                                            </span>
-                                        </Link>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </section>
-                ))}
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </section>
+                    ))}
+                </div>
             </div>
         </div>
     );

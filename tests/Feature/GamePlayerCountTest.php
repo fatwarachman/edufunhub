@@ -38,6 +38,7 @@ it('mirrors the Go service player limits', function (): void {
         ->and($ranges['quiz-duel'])->toBe([1, 2])
         ->and($ranges['floor-drop'])->toBe([2, 100])
         ->and($ranges['turbo-trivia'])->toBe([2, 40])
+        ->and($ranges['block-battle'])->toBe([1, 50])
         ->and($ranges['economy-heist'])->toBe([2, 60])
         ->and($ranges['order-rush'])->toBe([2, 60])
         ->and($ranges['sky-quiz'])->toBe([1, 1])
@@ -64,6 +65,9 @@ it('shares player counts on the portal game cards', function (): void {
         ->where('categories.2.games.5.key', 'turbo-trivia')
         ->where('categories.2.games.5.minPlayers', 2)
         ->where('categories.2.games.5.maxPlayers', 40)
+        ->where('categories.2.games.6.key', 'block-battle')
+        ->where('categories.2.games.6.minPlayers', 1)
+        ->where('categories.2.games.6.maxPlayers', 50)
         ->where('categories.4.games.0.minPlayers', 1)
         ->where('categories.4.games.0.maxPlayers', 1));
 });

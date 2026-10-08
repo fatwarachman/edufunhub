@@ -14,6 +14,7 @@ return [
     'public_economy_heist_ws_url' => env('GAME_SERVICE_PUBLIC_ECONOMY_HEIST_WS_URL', '/game-ws/economy-heist'),
     'public_order_rush_ws_url' => env('GAME_SERVICE_PUBLIC_ORDER_RUSH_WS_URL', '/game-ws/order-rush'),
     'public_turbo_trivia_ws_url' => env('GAME_SERVICE_PUBLIC_TURBO_TRIVIA_WS_URL', '/game-ws/turbo-trivia'),
+    'public_block_battle_ws_url' => env('GAME_SERVICE_PUBLIC_BLOCK_BATTLE_WS_URL', '/game-ws/block-battle'),
     'public_minigame_ws_base' => env('GAME_SERVICE_PUBLIC_MINIGAME_WS_BASE', '/game-ws'),
     /* Signed endpoint listing the rooms a player is seated in (portal "continue playing"). */
     'presence_url' => env('GAME_SERVICE_PRESENCE_URL', 'http://edufunhub-game:8090/internal/presence'),

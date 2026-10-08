@@ -1,0 +1,548 @@
+/* Block Battle (Tetris Kuis): boards, attack flights and walkthrough. */
+
+/* Phone play view: board + quiz + pad fill the screen under the header. */
+.bb-play {
+    height: calc(100dvh - 4.5rem);
+    min-height: 34rem;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (min-width: 1024px) {
+    .bb-play {
+        height: calc(100dvh - 5.5rem);
+        min-height: 36rem;
+    }
+}
+
+.bb-touch {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.bb-pad {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    transition:
+        transform 0.08s ease,
+        box-shadow 0.08s ease;
+}
+
+.bb-pad:not(:disabled):active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 #1f2a44;
+}
+
+.bb-countdown {
+    animation: bb-pop-in 1s ease-out infinite;
+}
+
+.bb-pop {
+    animation: bb-pop-in 0.3s ease-out;
+}
+
+.bb-toast {
+    animation: bb-toast 3.2s ease-out forwards;
+}
+
+.bb-turn {
+    animation: bb-pulse 0.9s ease-in-out infinite;
+}
+
+/* Arena mini boards. */
+.bb-mini > div > div {
+    transition: box-shadow 0.2s ease;
+}
+
+.bb-mini--exposed > div > div {
+    box-shadow:
+        0 0 0 2px #dc2626,
+        0 0 6px 1px #f87171;
+    animation: bb-glow 0.9s ease-in-out infinite;
+}
+
+.bb-mini--penalty > div > div {
+    box-shadow: 0 0 0 2px #7c3aed;
+}
+
+.bb-mini--exposed.bb-mini--penalty > div > div {
+    box-shadow:
+        0 0 0 2px #dc2626,
+        0 0 0 4px #7c3aed;
+}
+
+.bb-mini--out {
+    opacity: 0.75;
+}
+
+.bb-mini-hit > div {
+    animation: bb-shake 0.45s ease-out;
+}
+
+.bb-garbage-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 2px solid #1f2a44;
+    border-radius: 3px;
+    background: repeating-linear-gradient(
+        90deg,
+        #6b7280 0 18%,
+        #4b5563 18% 20%
+    );
+    box-shadow:
+        0 0 0 2px rgb(255 255 255 / 0.6),
+        0 6px 14px rgb(15 23 42 / 0.45);
+    will-change: transform, opacity;
+}
+
+/* Phone board feedback. */
+.bb-board-hit {
+    animation: bb-shake 0.45s ease-out;
+}
+
+.bb-board--penalty {
+    box-shadow: 0 0 0 3px #7c3aed;
+}
+
+.bb-board--exposed {
+    box-shadow:
+        0 0 0 3px #dc2626,
+        0 0 16px 2px #f87171;
+}
+
+.bb-penalty-banner {
+    animation: bb-pulse 0.8s ease-in-out infinite;
+}
+
+/* Fortress. */
+.bb-monster-hit {
+    animation: bb-monster-hit 0.6s ease-out;
+}
+
+.bb-wall-hit {
+    animation: bb-shake 0.5s ease-out;
+}
+
+@keyframes bb-pop-in {
+    0% {
+        transform: scale(1.4);
+        opacity: 0.2;
+    }
+    30% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes bb-toast {
+    0% {
+        transform: translateY(-8px) scale(0.9);
+        opacity: 0;
+    }
+    10% {
+        transform: translateY(0) scale(1.05);
+        opacity: 1;
+    }
+    20% {
+        transform: scale(1);
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes bb-pulse {
+    50% {
+        transform: scale(1.03);
+        filter: brightness(1.08);
+    }
+}
+
+@keyframes bb-glow {
+    50% {
+        box-shadow:
+            0 0 0 2px #dc2626,
+            0 0 10px 2px #f87171;
+    }
+}
+
+@keyframes bb-shake {
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+    20% {
+        transform: translate(-4px, 2px);
+    }
+    40% {
+        transform: translate(4px, -2px);
+    }
+    60% {
+        transform: translate(-3px, 1px);
+    }
+    80% {
+        transform: translate(2px, 0);
+    }
+}
+
+@keyframes bb-monster-hit {
+    0% {
+        transform: scale(1) rotate(0);
+    }
+    25% {
+        transform: scale(1.18) rotate(-8deg);
+        filter: brightness(1.6);
+    }
+    55% {
+        transform: scale(0.95) rotate(6deg);
+    }
+    100% {
+        transform: scale(1) rotate(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bb-countdown,
+    .bb-pop,
+    .bb-turn,
+    .bb-penalty-banner,
+    .bb-mini--exposed > div > div,
+    .bb-mini-hit > div,
+    .bb-board-hit,
+    .bb-monster-hit,
+    .bb-wall-hit {
+        animation: none;
+    }
+
+    .bb-toast {
+        animation: none;
+        opacity: 1;
+    }
+}
+
+/* How-to-play walkthrough (auto-playing illustrated scenes). */
+.bb-howto-scene {
+    animation: bb-howto-in 0.45s ease-out;
+}
+
+.bb-howto-progress {
+    width: 0;
+    animation-name: bb-howto-progress;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+.bb-howto-pop {
+    animation: bb-howto-pop 0.4s ease-out both;
+}
+
+.bb-howto-rise {
+    animation: bb-howto-rise 0.45s ease-out both;
+}
+
+.bb-howto-pick {
+    animation: bb-howto-pick 0.5s ease-out both;
+}
+
+.bb-howto-dim {
+    animation: bb-howto-dim 0.4s ease-out both;
+}
+
+.bb-howto-glow {
+    animation: bb-howto-glow 0.8s ease-out both;
+}
+
+.bb-howto-clear {
+    animation: bb-howto-clear 0.9s ease-in 0.8s both;
+}
+
+.bb-howto-garbage {
+    opacity: 0;
+    animation: bb-howto-garbage 1s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.bb-howto-shake {
+    animation: bb-shake 0.45s ease-out both;
+}
+
+.bb-howto-rise-garbage {
+    animation: bb-howto-rise-garbage 0.5s ease-out both;
+}
+
+.bb-howto-settle {
+    animation: bb-howto-settle 0.35s ease-in 1.7s both;
+}
+
+.bb-howto-push {
+    animation: bb-howto-push 0.5s ease-out 2.6s both;
+}
+
+@keyframes bb-howto-settle {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(200%);
+    }
+}
+
+@keyframes bb-howto-push {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-100%);
+    }
+}
+
+.bb-howto-explode {
+    animation: bb-howto-explode 0.9s ease-in 1s both;
+}
+
+.bb-howto-explode-late {
+    animation: bb-howto-explode 0.9s ease-in 2.7s both;
+}
+
+.bb-howto-drop {
+    animation: bb-howto-drop 1.2s cubic-bezier(0.5, 0, 0.75, 0) 0.3s both;
+}
+
+.bb-howto-armor {
+    animation: bb-howto-armor 0.6s ease-out both;
+}
+
+.bb-howto-cannon {
+    opacity: 0;
+    animation: bb-howto-cannon 0.5s ease-out both;
+}
+
+.bb-howto-monster {
+    animation: bb-monster-hit 0.6s ease-out both;
+}
+
+.bb-howto-hp {
+    width: 100%;
+    animation: bb-howto-hp 0.6s ease-out both;
+}
+
+.bb-howto-wallhit {
+    animation: bb-shake 0.5s ease-out both;
+}
+
+@keyframes bb-howto-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bb-howto-progress {
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes bb-howto-pop {
+    0% {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes bb-howto-rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes bb-howto-pick {
+    0% {
+        transform: scale(1);
+    }
+    40% {
+        transform: scale(0.94);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow:
+            inset 0 0 0 3px #facc15,
+            0 0 0 3px #86efac;
+    }
+}
+
+@keyframes bb-howto-dim {
+    to {
+        background: #f1f5f9;
+        color: #334155;
+        border-color: rgb(31 42 68 / 0.35);
+    }
+}
+
+@keyframes bb-howto-glow {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.08);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 4px #facc15;
+    }
+}
+
+@keyframes bb-howto-clear {
+    0% {
+        filter: none;
+    }
+    40% {
+        filter: brightness(2.4);
+        transform: scaleY(1);
+    }
+    100% {
+        filter: brightness(2.4);
+        transform: scaleY(0);
+        opacity: 0;
+    }
+}
+
+@keyframes bb-howto-garbage {
+    0% {
+        opacity: 0;
+        transform: translate(-150%, 0) scale(0.6);
+    }
+    15% {
+        opacity: 1;
+    }
+    50% {
+        transform: translate(-50%, -70px) scale(1.1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(60%, 10px) scale(1);
+    }
+}
+
+@keyframes bb-howto-rise-garbage {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes bb-howto-explode {
+    0% {
+        transform: scale(1);
+        filter: none;
+    }
+    30% {
+        transform: scale(1.12);
+        filter: brightness(1.8) drop-shadow(0 0 6px #facc15);
+    }
+    100% {
+        transform: scale(1.4);
+        opacity: 0;
+        filter: brightness(2.2);
+    }
+}
+
+@keyframes bb-howto-drop {
+    from {
+        transform: translateY(-300%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes bb-howto-armor {
+    from {
+        opacity: 0;
+        transform: scale(1.1);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes bb-howto-cannon {
+    0% {
+        opacity: 0;
+        transform: translateX(-90px) scaleX(0.4);
+    }
+    40% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(0) scaleX(1);
+    }
+}
+
+@keyframes bb-howto-hp {
+    to {
+        width: 62%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bb-howto-scene,
+    .bb-howto-pop,
+    .bb-howto-rise,
+    .bb-howto-pick,
+    .bb-howto-dim,
+    .bb-howto-glow,
+    .bb-howto-shake,
+    .bb-howto-rise-garbage,
+    .bb-howto-drop,
+    .bb-howto-settle,
+    .bb-howto-push,
+    .bb-howto-armor,
+    .bb-howto-monster,
+    .bb-howto-wallhit {
+        animation: none;
+    }
+
+    .bb-howto-garbage,
+    .bb-howto-cannon {
+        display: none;
+    }
+
+    .bb-howto-clear,
+    .bb-howto-explode,
+    .bb-howto-explode-late {
+        animation: none;
+        opacity: 0;
+    }
+
+    .bb-howto-hp {
+        animation: none;
+        width: 62%;
+    }
+}

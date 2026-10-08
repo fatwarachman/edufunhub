@@ -97,6 +97,8 @@ Client menganimasikan jatuhnya paket, menggambar kolom sebanyak keranjang set, m
 
 Turbo Trivia / Kart Racer (`turbo-trivia`): balap gokart kuis dua layar. Layar proyektor `/arena/turbo-trivia/{pin?}` (token `game=turbo-trivia-host`), kontroler HP murid `/play/turbo-trivia/{pin?}` (token `game=turbo-trivia`), keduanya lewat WebSocket `/game-ws/turbo-trivia` ke `GET /ws/turbo-trivia` (paket `internal/turbotrivia`). Laravel hanya merender halaman, menandatangani token, dan menggambar QR join (`GET /games/turbo-trivia/qr/{pin}`, SVG via bacon-qr-code). Go menjalankan tick 20 Hz per ruang: progress lap, efek, tabrakan pisang, rudal homing, petir, dan poin. Detail kontrak di `docs/multiplayer.md`.
 
+Tetris Kuis / Block Battle (`block-battle`): game balok kuis dua layar dengan tiga mode (BATTLE battle royale garbage, WORDS kata & rumus, FORTRESS benteng co-op). Layar proyektor `/arena/block-battle/{pin?}` (token `game=block-battle-host`), kontroler HP murid `/play/block-battle/{pin?}` (token `game=block-battle`), keduanya lewat WebSocket `/game-ws/block-battle` ke `GET /ws/block-battle` (paket `internal/blockbattle`). Laravel hanya merender halaman, menandatangani token, dan menggambar QR join (`GET /games/block-battle/qr/{pin}`). Go menjalankan tick 20 Hz per ruang: papan 10×20 per pemain (7-bag, rotasi SRS, gravitasi, lock delay, garbage), pemindaian kata/rumus, dinding benteng dan monster, soal per pemain, dan poin. Detail kontrak di `docs/multiplayer.md`.
+
 State `port_state` memuat `set{key,title,description}`, `bins[{key,name,color}]`, `packet{id,label,column,delay,fall_ms,elapsed_ms}` (tanpa jawaban), `history`, `level`; di luar permainan juga `sets` (pemilih topik) dan `legend` (contekan). `result` memuat `missed` (item yang salah). Hasil dikirim dengan `event_id` `ps-{user}-sort-{nanos}` dan `mission=sort`.
 
 Pesan Go → client: `welcome`, `correct{x,y}`, `challenge`, `gates`, `raise`, `complete`, `error{code}`, `pong`.
@@ -133,6 +135,7 @@ Chat antar pemain berjalan di container Go terpisah, `edufunhub-chat` (`docker c
 | Browser → Laravel | `POST /chat/token` | sesi web; token `base64url(json{sub,aud:"chat",exp,nonce}) "." base64url(HMAC)` |
 | Browser → Go | `GET /chat-ws/ws?token=…` (WebSocket via gateway) | token di atas; `aud` wajib `chat` sehingga token game tidak bisa dipakai |
 | Laravel → Go | `POST http://edufunhub-chat:8091/internal/publish` `{users:[ids], event:{…}}` (jaringan docker saja, tidak diekspos gateway) | `X-Chat-Timestamp` + `X-Chat-Signature = hex(HMAC(ts + "." + body))`, toleransi 300 dtk |
+| Laravel → Go | `GET http://edufunhub-chat:8091/internal/online` → `{users:[ids]}` (jaringan docker saja) | sama seperti publish, body kosong (`HMAC(ts + ".")`) |
 
 - Secret: `CHAT_SERVICE_SECRET`. Jika kosong, fallback ke `GAME_SERVICE_SECRET`.
 - Pesan baru: Laravel menyimpan pesan, lalu publish `{t:"message", message, conversation:{id,type,name}, sender:{id,name,character}}` ke semua anggota.

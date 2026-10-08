@@ -6,6 +6,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -112,5 +113,31 @@ func TestSocketWatchesPresence(t *testing.T) {
 	b.Close(websocket.StatusNormalClosure, "")
 	if _, got, err := a.Read(ctx); err != nil || string(got) != `{"online":false,"t":"presence","user":9}` {
 		t.Fatalf("offline %s %v", got, err)
+	}
+}
+
+func TestOnlineListsConnectedUsersForSignedRequests(t *testing.T) {
+	srv := New(Config{Secret: secret, AllowedOrigins: []string{"*"}})
+	ts := httptest.NewServer(srv.Handler())
+	defer ts.Close()
+	srv.Hub().Register(5)
+	srv.Hub().Register(9)
+
+	if res, _ := http.Get(ts.URL + "/internal/online"); res.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("unsigned online status %d", res.StatusCode)
+	}
+	stamp := strconv.FormatInt(time.Now().Unix(), 10)
+	mac := hmac.New(sha256.New, secret)
+	mac.Write([]byte(stamp + "."))
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/internal/online", nil)
+	req.Header.Set("X-Chat-Timestamp", stamp)
+	req.Header.Set("X-Chat-Signature", hex.EncodeToString(mac.Sum(nil)))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil || res.StatusCode != http.StatusOK {
+		t.Fatalf("online %v %v", res, err)
+	}
+	var body struct{ Users []int64 }
+	if err := json.NewDecoder(res.Body).Decode(&body); err != nil || len(body.Users) != 2 {
+		t.Fatalf("users %v %v", body.Users, err)
 	}
 }

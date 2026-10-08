@@ -119,6 +119,35 @@ class FriendService
             ->all();
     }
 
+    /**
+     * Relation of the viewer to each listed player (leaderboards, player pages).
+     * The viewer and players without a row are absent: treat them as `none`.
+     *
+     * @param  list<int>  $userIds
+     * @return array<int, array{relation: 'friends'|'sent'|'received', friendship_id: int}>
+     */
+    public function relationsFor(User $viewer, array $userIds): array
+    {
+        $userIds = array_values(array_diff($userIds, [$viewer->id]));
+        if ($userIds === []) {
+            return [];
+        }
+
+        return Friendship::query()
+            ->involving($viewer->id)
+            ->where(fn (Builder $q) => $q->whereIn('requester_id', $userIds)->orWhereIn('addressee_id', $userIds))
+            ->get()
+            ->mapWithKeys(fn (Friendship $f): array => [$f->otherId($viewer->id) => [
+                'relation' => match (true) {
+                    $f->status === Friendship::ACCEPTED => 'friends',
+                    $f->requester_id === $viewer->id => 'sent',
+                    default => 'received',
+                },
+                'friendship_id' => $f->id,
+            ]])
+            ->all();
+    }
+
     public function pendingCount(User $user): int
     {
         return Friendship::query()->where('addressee_id', $user->id)->where('status', Friendship::PENDING)->count();

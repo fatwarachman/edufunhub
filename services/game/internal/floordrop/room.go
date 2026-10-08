@@ -639,7 +639,7 @@ func (r *Room) drop(now time.Time) {
 		"t": "tile_drop", "round_id": r.round.ID, "round": r.round.Number, "correct_index": q.Answer,
 		"eliminated_user_ids": ids, "cracked_user_ids": crackedIDs, "lives": r.livesView(),
 		"survivors": r.aliveCount(), "sudden_death": r.round.SuddenDeath,
-		"tiles": r.round.Tiles[:len(q.Options)],
+		"tiles": append([]int(nil), r.round.Tiles[:len(q.Options)]...),
 	}
 	r.broadcast(func(locale string) Message {
 		out := Message{"hint": q.Hint.Get(locale)}
@@ -1104,7 +1104,7 @@ func (r *Room) sendState(c *Client, now time.Time) {
 		msg["question"] = r.questionView(locale)
 		msg["options"] = r.optionsView(locale)
 		if r.phase != PhaseQuestion {
-			msg["tiles"] = r.round.Tiles[:len(r.round.Question.Options)]
+			msg["tiles"] = append([]int(nil), r.round.Tiles[:len(r.round.Question.Options)]...)
 		}
 		if r.phase == PhaseReveal {
 			msg["correct_index"] = r.round.Question.Answer

@@ -6,6 +6,7 @@ use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\Question;
 use App\Services\CharacterShop;
+use App\Services\OnlinePlayers;
 use App\Services\PlayerAbility;
 use App\Services\PlayerBadges;
 use App\Services\PlayerDashboardStats;
@@ -16,7 +17,7 @@ use Inertia\Response;
 
 class UserDashboardController extends Controller
 {
-    public function __invoke(Request $request, PlayerPortal $portal, CharacterShop $shop, PlayerBadges $badges, PlayerDashboardStats $stats, PlayerAbility $abilities): Response
+    public function __invoke(Request $request, PlayerPortal $portal, CharacterShop $shop, PlayerBadges $badges, PlayerDashboardStats $stats, PlayerAbility $abilities, OnlinePlayers $online): Response
     {
         $user = $request->user();
         $profile = $user->playerProfile()->first() ?? new PlayerProfile;
@@ -33,6 +34,8 @@ class UserDashboardController extends Controller
                 'birth_date' => $profile->birth_date?->toDateString(),
                 'school_name' => $profile->school_name,
                 'school_city' => $profile->school_city,
+                'school_level' => $profile->school_level,
+                'school_npsn' => $profile->school_npsn,
             ],
             'categories' => $portal->catalog($profile->grade),
             'progress' => $portal->progress($points),
@@ -57,6 +60,7 @@ class UserDashboardController extends Controller
             ],
             'leaderboards' => Inertia::defer(fn (): array => $portal->leaderboards($user), 'board'),
             'stats' => Inertia::defer(fn (): array => $stats->for($user), 'stats'),
+            'onlineCount' => Inertia::defer(fn (): int => $online->count(), 'online'),
             'ability' => Inertia::defer(fn (): ?array => $abilities->present($abilities->latestFor($user)), 'stats'),
         ]);
     }

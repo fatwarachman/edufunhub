@@ -1,15 +1,14 @@
 import { JoinByPinCard } from '@/components/join-by-pin';
+import {
+    LeaderboardPlayerMenu,
+    type FriendRelation,
+} from '@/components/leaderboard-player-menu';
 import { OnlineDot } from '@/components/online-dot';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
 import { PlayerCountBadge } from '@/components/player-count-badge';
 import { NavButton } from '@/components/site-nav';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
 import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useTranslations } from '@/hooks/use-translations';
@@ -17,7 +16,7 @@ import PlayerLayout from '@/layouts/player-layout';
 import { gameIcon } from '@/lib/games';
 import { gradeLabel, hasGrade } from '@/lib/grade';
 import { absoluteUrl } from '@/lib/share';
-import { Deferred, Link, router } from '@inertiajs/react';
+import { Deferred, Link } from '@inertiajs/react';
 import {
     CircleAlert,
     Coins,
@@ -27,9 +26,7 @@ import {
     GraduationCap,
     History,
     IdCard,
-    Loader2,
     Medal,
-    MessageCircle,
     Play,
     Sparkles,
     Star,
@@ -46,6 +43,7 @@ interface LeaderboardData {
         name: string;
         points: number;
         isMe: boolean;
+        relation?: FriendRelation;
         character: { color: string; accessory: string };
     }[];
     me: { rank: number; points: number } | null;
@@ -222,7 +220,7 @@ export default function Portal({
                     </div>
                     {!hasGrade(player.grade) && (
                         <NavButton
-                            href="/dashboard#grade"
+                            href="/profile#grade"
                             icon={GraduationCap}
                             label={t('flagQuest.state.setGrade')}
                             className="self-start"
@@ -436,14 +434,14 @@ export default function Portal({
                                         </div>
                                         {needsDetails ? (
                                             <NavButton
-                                                href="/dashboard#player-details"
+                                                href="/profile#player-details"
                                                 icon={IdCard}
                                                 label={t('portal.detailsFirst')}
                                                 testId={`portal-details-${game.key}`}
                                             />
                                         ) : blocked ? (
                                             <NavButton
-                                                href="/dashboard#grade"
+                                                href="/profile#grade"
                                                 icon={GraduationCap}
                                                 label={t(
                                                     'portal.setGradeFirst',
@@ -665,11 +663,12 @@ function Leaderboard({
                                         </span>
                                     </span>
                                 ) : (
-                                    <PlayerMenu
+                                    <LeaderboardPlayerMenu
                                         userId={row.userId}
                                         name={row.name}
                                         rank={row.rank}
                                         points={numberFormat.format(row.points)}
+                                        relation={row.relation}
                                     />
                                 )}
                                 <span className="text-sm font-bold tabular-nums">
@@ -704,116 +703,6 @@ function Leaderboard({
     );
 }
 
-/**
- * Clickable leaderboard name: opens a small menu with the player's rank and
- * a "Chat" action that starts (or reopens) a direct chat with them.
- */
-function PlayerMenu({
-    userId,
-    name,
-    rank,
-    points,
-}: {
-    userId: number;
-    name: string;
-    rank: number;
-    points: string;
-}) {
-    const { t } = useTranslations();
-    const [open, setOpen] = useState(false);
-    const [busy, setBusy] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const startChat = async () => {
-        setBusy(true);
-        setError(null);
-        try {
-            const res = await fetch('/chat/direct', {
-                method: 'POST',
-                credentials: 'same-origin',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN':
-                        document.querySelector<HTMLMetaElement>(
-                            'meta[name="csrf-token"]',
-                        )?.content ?? '',
-                },
-                body: JSON.stringify({ user_id: userId }),
-            });
-            const data = (await res.json().catch(() => ({}))) as {
-                conversation?: { id: number };
-                message?: string;
-            };
-            if (!res.ok || !data.conversation) {
-                setError(data.message ?? t('portal.playerMenu.chatError'));
-                return;
-            }
-            setOpen(false);
-            router.visit(`/chat?c=${data.conversation.id}`);
-        } catch {
-            setError(t('portal.playerMenu.chatError'));
-        } finally {
-            setBusy(false);
-        }
-    };
-
-    return (
-        <Popover
-            open={open}
-            onOpenChange={(next) => {
-                setOpen(next);
-                setError(null);
-            }}
-        >
-            <PopoverTrigger asChild>
-                <button
-                    type="button"
-                    className="min-w-0 flex-1 truncate rounded-md text-left text-sm font-bold underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7]"
-                    aria-label={t('portal.playerMenu.open', { name })}
-                    data-testid={`portal-leaderboard-player-${userId}`}
-                >
-                    {name}
-                </button>
-            </PopoverTrigger>
-            <PopoverContent
-                align="start"
-                sideOffset={6}
-                className="w-60 rounded-2xl border-[3px] border-[#151b2e] bg-white p-3 text-[#151b2e] shadow-[4px_4px_0_#151b2e]"
-                data-testid="portal-player-menu"
-            >
-                <p className="truncate text-sm font-bold">{name}</p>
-                <p className="text-xs font-semibold text-[#151b2e]/75">
-                    {t('portal.playerMenu.summary', { rank, points })}
-                </p>
-                <button
-                    type="button"
-                    onClick={startChat}
-                    disabled={busy}
-                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border-[2.5px] border-[#151b2e] bg-[#ffd93d] px-3 text-sm font-bold shadow-[2px_2px_0_#151b2e] transition-colors hover:bg-[#ffe680] disabled:opacity-60"
-                    data-testid="portal-player-chat"
-                >
-                    {busy ? (
-                        <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                        <MessageCircle className="size-4" />
-                    )}
-                    {t('portal.playerMenu.chat')}
-                </button>
-                {error && (
-                    <p
-                        className="mt-2 text-xs font-bold text-[#c0262d]"
-                        role="alert"
-                    >
-                        {error}
-                    </p>
-                )}
-            </PopoverContent>
-        </Popover>
-    );
-}
-
 function PlayerDetailsNotice({ emphasized }: { emphasized: boolean }) {
     const { t } = useTranslations();
 
@@ -837,7 +726,7 @@ function PlayerDetailsNotice({ emphasized }: { emphasized: boolean }) {
                 </p>
             </div>
             <NavButton
-                href="/dashboard#player-details"
+                href="/profile#player-details"
                 icon={IdCard}
                 label={t('portal.detailsNoticeAction')}
                 variant="primary"

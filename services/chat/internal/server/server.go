@@ -71,7 +71,19 @@ func (s *Server) Handler() http.Handler {
 	})
 	mux.HandleFunc("GET /ws", s.serveWS)
 	mux.HandleFunc("POST /internal/publish", s.publish)
+	mux.HandleFunc("GET /internal/online", s.online)
 	return mux
+}
+
+// online lists every connected user id for Laravel (signed like publish,
+// over an empty body).
+func (s *Server) online(w http.ResponseWriter, r *http.Request) {
+	if !auth.VerifyRequest(s.cfg.Secret, r.Header.Get("X-Chat-Timestamp"), r.Header.Get("X-Chat-Signature"), nil, s.cfg.Now(), 5*time.Minute) {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string][]int64{"users": s.hub.OnlineUsers()})
 }
 
 type publishRequest struct {

@@ -52,7 +52,7 @@ func (s *Server) FindPin(pin string) []RoomMatch {
 	for _, room := range []struct {
 		game string
 		hub  roomHub
-	}{{"floor-drop", s.floor}, {"economy-heist", s.heist}, {"order-rush", s.rush}, {"turbo-trivia", s.turbo}} {
+	}{{"floor-drop", s.floor}, {"economy-heist", s.heist}, {"order-rush", s.rush}, {"turbo-trivia", s.turbo}, {"block-battle", s.block}} {
 		if phase, ok := room.hub.RoomPhase(pin); ok && phase != "GAME_OVER" {
 			out = append(out, RoomMatch{Game: room.game, Phase: phase, Open: phase == "LOBBY"})
 		}

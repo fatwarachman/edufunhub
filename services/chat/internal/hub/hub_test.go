@@ -112,3 +112,25 @@ func TestOfflineGraceHidesQuickReconnects(t *testing.T) {
 		t.Fatalf("still online %v", got)
 	}
 }
+
+func TestOnlineUsersIncludesGracePeriod(t *testing.T) {
+	h := NewWithGrace(time.Hour)
+	h.Register(1)
+	gone := h.Register(2)
+	h.Register(2)
+	h.Unregister(gone)
+	h.Register(3)
+	for c := range h.clients[3] {
+		h.Unregister(c)
+	}
+	got := map[int64]bool{}
+	for _, u := range h.OnlineUsers() {
+		if got[u] {
+			t.Fatalf("duplicate %d", u)
+		}
+		got[u] = true
+	}
+	if len(got) != 3 || !got[1] || !got[2] || !got[3] {
+		t.Fatalf("online %v", got)
+	}
+}

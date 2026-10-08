@@ -193,6 +193,23 @@ func (h *Hub) Online(users []int64) []int64 {
 	return out
 }
 
+// OnlineUsers lists every user online right now (sockets open or within
+// the offline grace), unordered.
+func (h *Hub) OnlineUsers() []int64 {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	out := make([]int64, 0, len(h.clients)+len(h.leaving))
+	for u := range h.clients {
+		out = append(out, u)
+	}
+	for u := range h.leaving {
+		if len(h.clients[u]) == 0 {
+			out = append(out, u)
+		}
+	}
+	return out
+}
+
 // Stats returns connected users and sockets.
 func (h *Hub) Stats() (users, sockets int) {
 	h.mu.RLock()

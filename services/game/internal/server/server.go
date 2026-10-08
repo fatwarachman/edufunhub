@@ -19,6 +19,7 @@ import (
 	"github.com/coder/websocket/wsjson"
 
 	"edufunhub/game/internal/auth"
+	"edufunhub/game/internal/blockbattle"
 	"edufunhub/game/internal/crossword"
 	"edufunhub/game/internal/duel"
 	"edufunhub/game/internal/floordrop"
@@ -50,6 +51,8 @@ type Config struct {
 	OrderRush orderrush.Config
 	// TurboTrivia timings (zero = turbotrivia.Defaults).
 	TurboTrivia turbotrivia.Config
+	// BlockBattle timings (zero = blockbattle.Defaults).
+	BlockBattle blockbattle.Config
 }
 
 type connection struct{ cancel context.CancelFunc }
@@ -83,6 +86,8 @@ type Server struct {
 	rushConns     map[floorKey]*orderrush.Client
 	turbo         *turbotrivia.Hub
 	turboConns    map[floorKey]*turbotrivia.Client
+	block         *blockbattle.Hub
+	blockConns    map[floorKey]*blockbattle.Client
 	started       time.Time
 }
 
@@ -109,6 +114,9 @@ func New(cfg Config) *Server {
 	if cfg.TurboTrivia.Tick == 0 {
 		cfg.TurboTrivia = turbotrivia.Defaults
 	}
+	if cfg.BlockBattle.Tick == 0 {
+		cfg.BlockBattle = blockbattle.Defaults
+	}
 	s := &Server{
 		cfg: cfg, sessions: map[int64]*session.Session{}, conns: map[int64]*connection{},
 		skies: map[int64]*sky.Session{}, skyConns: map[int64]*connection{},
@@ -127,6 +135,8 @@ func New(cfg Config) *Server {
 		rushConns:  map[floorKey]*orderrush.Client{},
 		turbo:      turbotrivia.NewHub(cfg.TurboTrivia, uint64(cfg.Now().UnixNano())^0x7b70),
 		turboConns: map[floorKey]*turbotrivia.Client{},
+		block:      blockbattle.NewHub(cfg.BlockBattle, uint64(cfg.Now().UnixNano())^0xb10c),
+		blockConns: map[floorKey]*blockbattle.Client{},
 		started:    cfg.Now(),
 	}
 	for i, key := range minigames.Keys {
@@ -157,6 +167,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /ws/economy-heist", s.serveHeist)
 	mux.HandleFunc("GET /ws/order-rush", s.serveOrderRush)
 	mux.HandleFunc("GET /ws/turbo-trivia", s.serveTurboTrivia)
+	mux.HandleFunc("GET /ws/block-battle", s.serveBlockBattle)
 	mux.HandleFunc("GET /internal/stats", s.serveStats)
 	mux.HandleFunc("GET /internal/presence", s.servePresence)
 	mux.HandleFunc("GET /internal/room", s.serveFindPin)

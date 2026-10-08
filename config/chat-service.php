@@ -7,6 +7,8 @@ return [
     'public_ws_url' => env('CHAT_SERVICE_PUBLIC_WS_URL', '/chat-ws/ws'),
     // Internal URL Laravel posts new messages to (fan-out to open sockets).
     'publish_url' => env('CHAT_SERVICE_PUBLISH_URL', 'http://edufunhub-chat:8091/internal/publish'),
+    // Internal URL listing every user with an open socket (online players).
+    'online_url' => env('CHAT_SERVICE_ONLINE_URL', 'http://edufunhub-chat:8091/internal/online'),
     'token_ttl' => (int) env('CHAT_SERVICE_TOKEN_TTL', 3600),
     'timeout' => (float) env('CHAT_SERVICE_TIMEOUT', 2),
 ];

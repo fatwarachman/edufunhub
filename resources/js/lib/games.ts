@@ -1,5 +1,6 @@
 import { type GameMenuCategory, type GameMenuGame } from '@/types';
 import {
+    Blocks,
     Cable,
     CarFront,
     Dice5,
@@ -37,6 +38,7 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
     cable: Cable,
     network: Network,
     kart: CarFront,
+    blocks: Blocks,
 };
 
 export function gameIcon(icon: string): LucideIcon {

@@ -1389,7 +1389,7 @@ export default function SkyQuiz({
                                         )}
                                     {needsGrade ? (
                                         <NavButton
-                                            href="/dashboard#grade"
+                                            href="/profile#grade"
                                             icon={GraduationCap}
                                             label={t('sky.setGrade')}
                                             variant="primary"

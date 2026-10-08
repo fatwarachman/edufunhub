@@ -80,6 +80,12 @@ class ActiveGames
                 : route('games.turbo-trivia.play', ['pin' => $pin], absolute: false);
         }
 
+        if ($game['key'] === 'block-battle') {
+            return $host
+                ? route('games.block-battle.arena', ['pin' => $pin], absolute: false)
+                : route('games.block-battle.play', ['pin' => $pin], absolute: false);
+        }
+
         if (in_array($game['key'], ['floor-drop', 'economy-heist', 'order-rush'], true)) {
             return route($game['route'], array_filter(['role' => $host ? 'host' : 'player', 'pin' => $host ? null : $pin]), absolute: false);
         }

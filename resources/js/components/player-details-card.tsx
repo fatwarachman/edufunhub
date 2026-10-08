@@ -8,6 +8,8 @@ export interface PlayerDetails {
     birth_date: string | null;
     school_name: string | null;
     school_city: string | null;
+    school_level?: string | null;
+    school_npsn?: string | null;
 }
 
 function ageFromBirthDate(birthDate: string): number {
@@ -27,10 +29,14 @@ export function PlayerDetailsCard({ details }: { details: PlayerDetails }) {
         birth_date: string;
         school_name: string;
         school_city: string;
+        school_level: string;
+        school_npsn: string;
     }>({
         birth_date: details.birth_date ?? '',
         school_name: details.school_name ?? '',
         school_city: details.school_city ?? '',
+        school_level: details.school_level ?? '',
+        school_npsn: details.school_npsn ?? '',
     });
     const today = new Date().toISOString().slice(0, 10);
     const complete = Boolean(details.birth_date && details.school_name);
@@ -92,22 +98,26 @@ export function PlayerDetailsCard({ details }: { details: PlayerDetails }) {
                 <InputError message={form.errors.birth_date} />
                 <SchoolPicker
                     idPrefix="details-school"
-                    schoolName={form.data.school_name}
-                    schoolCity={form.data.school_city}
-                    onSchoolNameChange={(value) =>
+                    value={{
+                        city: form.data.school_city,
+                        level: form.data.school_level,
+                        name: form.data.school_name,
+                        npsn: form.data.school_npsn,
+                    }}
+                    onChange={(next) =>
                         form.setData((current) => ({
                             ...current,
-                            school_name: value,
+                            school_city: next.city,
+                            school_level: next.level,
+                            school_name: next.name,
+                            school_npsn: next.npsn,
                         }))
                     }
-                    onSchoolCityChange={(value) =>
-                        form.setData((current) => ({
-                            ...current,
-                            school_city: value,
-                        }))
+                    schoolError={
+                        form.errors.school_name ?? form.errors.school_npsn
                     }
-                    schoolError={form.errors.school_name}
                     cityError={form.errors.school_city}
+                    levelError={form.errors.school_level}
                 />
                 {form.recentlySuccessful && (
                     <p

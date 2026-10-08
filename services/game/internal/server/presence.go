@@ -43,7 +43,7 @@ func (s *Server) Presence(uid int64) []Activity {
 		Presence(uid int64) (pin, phase string, host, ok bool)
 	}
 	for game, hub := range map[string]roomHub{
-		"floor-drop": s.floor, "economy-heist": s.heist, "order-rush": s.rush, "turbo-trivia": s.turbo,
+		"floor-drop": s.floor, "economy-heist": s.heist, "order-rush": s.rush, "turbo-trivia": s.turbo, "block-battle": s.block,
 	} {
 		if pin, phase, host, ok := hub.Presence(uid); ok {
 			out = append(out, Activity{Game: game, Pin: pin, Phase: phase, Host: host})

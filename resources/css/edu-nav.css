@@ -138,6 +138,32 @@
 .edu-game-menu-panel[hidden] {
     display: none;
 }
+/* Games dropdown: "All games" stays put while only the game list scrolls. */
+.edu-game-menu-panel--split {
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+}
+.edu-game-menu-panel--split > .edu-game-menu-all {
+    flex-shrink: 0;
+    margin: 10px 10px 0;
+}
+.edu-game-menu-scroll {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+    margin-top: 10px;
+    padding: 0 10px 10px;
+    border-top: 2px solid rgba(21, 27, 46, 0.12);
+    padding-top: 10px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
 @keyframes edu-game-menu-in {
     from {
         opacity: 0;

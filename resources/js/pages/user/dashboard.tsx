@@ -1,29 +1,29 @@
 import { AbilityCard, type PlayerAbility } from '@/components/ability-card';
 import { BadgeCollection } from '@/components/badge-collection';
 import { type BadgeProgress } from '@/components/badges';
-import InputError from '@/components/input-error';
 import { InstallAppCard } from '@/components/install-app-card';
 import { LanguageToggle } from '@/components/language-toggle';
+import {
+    LeaderboardPlayerMenu,
+    type FriendRelation,
+} from '@/components/leaderboard-player-menu';
 import { OnlineDot } from '@/components/online-dot';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
-import {
-    PlayerDetailsCard,
-    type PlayerDetails,
-} from '@/components/player-details-card';
-import { QuestionLevelPicker } from '@/components/question-level-picker';
+import { type PlayerDetails } from '@/components/player-details-card';
 import { NavButton } from '@/components/site-nav';
 import { Vault, type VaultItem } from '@/components/vault';
 import { useFreshOnHistory } from '@/hooks/use-fresh-on-history';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { gameIcon } from '@/lib/games';
-import { GRADE_LEVELS, gradeLabel, hasGrade } from '@/lib/grade';
+import { gradeLabel, hasGrade } from '@/lib/grade';
+import { questionLevelKey } from '@/lib/question-levels';
 import { SubjectIcon, useSubjectName, useSubjects } from '@/lib/subjects';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
-import { Deferred, Link, useForm, usePage } from '@inertiajs/react';
+import { Deferred, Link, usePage } from '@inertiajs/react';
 import {
     Activity,
     BarChart3,
@@ -38,7 +38,9 @@ import {
     GraduationCap,
     Heart,
     History,
+    MapPin,
     Medal,
+    PencilLine,
     Play,
     School,
     Settings2,
@@ -46,6 +48,7 @@ import {
     Target,
     Trophy,
     UserRound,
+    Users,
 } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
 
@@ -59,6 +62,7 @@ interface LeaderboardEntry {
     name: string;
     points: number;
     isMe: boolean;
+    relation?: FriendRelation;
     character: CharacterData;
 }
 
@@ -150,6 +154,8 @@ interface DashboardProps {
     stats?: DashboardStats;
     /** Deferred: latest AI ability analysis made by an admin, if any. */
     ability?: PlayerAbility | null;
+    /** Deferred: players online right now. */
+    onlineCount?: number;
 }
 
 const INK = 'border-[#151b2e]';
@@ -245,6 +251,7 @@ export default function Dashboard({
     leaderboards,
     stats,
     ability,
+    onlineCount,
 }: DashboardProps) {
     const { t, i18n } = useTranslations();
     const { auth } = usePage<SharedData>().props;
@@ -383,20 +390,23 @@ export default function Dashboard({
                         <LanguageToggle />
                     </div>
                 </div>
-                <div
-                    className={`flex flex-col gap-2 rounded-2xl border-[3px] ${INK} bg-[#ffd93d] p-4 md:col-span-2 lg:col-span-1`}
-                >
-                    <p className="flex items-center gap-2 font-bold">
-                        <Coins className="size-5" aria-hidden />
-                        {t('player.points')}
-                    </p>
-                    <p
-                        className="text-4xl font-bold tabular-nums sm:text-5xl"
-                        data-testid="dashboard-points"
+                <div className="flex min-w-0 flex-col gap-3 md:col-span-2 lg:col-span-1">
+                    <div
+                        className={`flex flex-col gap-2 rounded-2xl border-[3px] ${INK} bg-[#ffd93d] p-4`}
                     >
-                        {number.format(points)}
-                    </p>
-                    <p className="text-sm">{t('player.pointsNote')}</p>
+                        <p className="flex items-center gap-2 font-bold">
+                            <Coins className="size-5" aria-hidden />
+                            {t('player.points')}
+                        </p>
+                        <p
+                            className="text-4xl font-bold tabular-nums sm:text-5xl"
+                            data-testid="dashboard-points"
+                        >
+                            {number.format(points)}
+                        </p>
+                        <p className="text-sm">{t('player.pointsNote')}</p>
+                    </div>
+                    <OnlineNowCard count={onlineCount} number={number} />
                 </div>
             </section>
 
@@ -479,8 +489,11 @@ export default function Dashboard({
                         <Settings2 className="size-4" aria-hidden />
                         {t('playerDash.settings')}
                     </h2>
-                    <PlayerDetailsCard details={playerDetails} />
-                    <GradeCard grade={grade} questionLevel={questionLevel} />
+                    <ProfileSummaryCard
+                        details={playerDetails}
+                        grade={grade}
+                        questionLevel={questionLevel}
+                    />
                     <InstallAppCard />
                 </aside>
             </div>
@@ -524,6 +537,65 @@ export default function Dashboard({
                 </div>
             </section>
         </PlayerLayout>
+    );
+}
+
+/** Live "players online" counter; opens the online players list. */
+function OnlineNowCard({
+    count,
+    number,
+}: {
+    count?: number;
+    number: Intl.NumberFormat;
+}) {
+    const { t } = useTranslations();
+
+    return (
+        <Link
+            href="/players/online"
+            className={`group flex min-w-0 items-center gap-3 rounded-2xl border-[3px] ${INK} bg-white p-3 shadow-[4px_4px_0_#151b2e] transition-transform hover:-translate-y-0.5 hover:bg-[#ecfdf3] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7]`}
+            aria-label={t('playerDash.online.open')}
+            data-testid="dash-online"
+        >
+            <span
+                className={`relative grid size-10 shrink-0 place-items-center rounded-xl border-2 ${INK} bg-[#a8e6cf]`}
+            >
+                <Users className="size-5" aria-hidden />
+                <span
+                    className="absolute -top-1 -right-1 size-3 rounded-full border-2 border-white bg-[#22c55e] shadow-[0_0_0_3px_rgba(34,197,94,0.25)]"
+                    aria-hidden
+                />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-[11px] leading-tight font-bold tracking-wide text-[#151b2e]/70 uppercase sm:text-xs">
+                    {t('playerDash.online.label')}
+                </span>
+                <Deferred
+                    data="onlineCount"
+                    fallback={
+                        <span
+                            className="mt-1 h-6 w-16 animate-pulse rounded-md bg-[#151b2e]/10"
+                            role="status"
+                            aria-label={t('playerDash.online.loading')}
+                        />
+                    }
+                >
+                    <span
+                        className="truncate text-xl font-bold tabular-nums"
+                        data-testid="dash-online-count"
+                    >
+                        {t('playerDash.online.count', {
+                            count: count ?? 0,
+                            formatted: number.format(count ?? 0),
+                        })}
+                    </span>
+                </Deferred>
+            </span>
+            <ChevronRight
+                className="size-5 shrink-0 transition-transform group-hover:translate-x-0.5"
+                aria-hidden
+            />
+        </Link>
     );
 }
 
@@ -1206,15 +1278,24 @@ function LeaderboardCard({
                                         />
                                         <OnlineDot userId={row.userId} />
                                     </span>
-                                    <span className="min-w-0 flex-1 truncate text-sm font-bold">
-                                        {row.name}
-                                        {row.isMe && (
+                                    {row.isMe ? (
+                                        <span className="min-w-0 flex-1 truncate text-sm font-bold">
+                                            {row.name}
                                             <span className="font-semibold text-[#151b2e]/80">
                                                 {' '}
                                                 ({t('portal.you')})
                                             </span>
-                                        )}
-                                    </span>
+                                        </span>
+                                    ) : (
+                                        <LeaderboardPlayerMenu
+                                            userId={row.userId}
+                                            name={row.name}
+                                            rank={row.rank}
+                                            points={number.format(row.points)}
+                                            relation={row.relation}
+                                            testIdPrefix="dash"
+                                        />
+                                    )}
                                     <span className="shrink-0 text-sm font-bold tabular-nums">
                                         {number.format(row.points)}
                                     </span>
@@ -1402,87 +1483,100 @@ function PageLink({
     );
 }
 
-function GradeCard({
+/**
+ * Read-only summary of the player's details, grade and question level.
+ * Editing lives on the profile page only.
+ */
+function ProfileSummaryCard({
+    details,
     grade,
     questionLevel,
 }: {
+    details: PlayerDetails;
     grade: number | null;
     questionLevel: number;
 }) {
     const { t } = useTranslations();
-    const form = useForm<{ grade: string; question_level: number }>({
-        grade: hasGrade(grade) ? String(grade) : '',
-        question_level: questionLevel,
-    });
+    const complete = Boolean(details.birth_date && details.school_name);
+    const age = details.birth_date ? ageFrom(details.birth_date) : null;
+    const rows: { label: string; value: ReactNode; testId: string }[] = [
+        {
+            label: t('profile.info.grade'),
+            value: hasGrade(grade) ? gradeLabel(t, grade) : '—',
+            testId: 'dash-settings-grade',
+        },
+        {
+            label: t('questionLevel.label'),
+            value: t(`questionLevel.levels.${questionLevelKey(questionLevel)}`),
+            testId: 'dash-settings-level',
+        },
+        {
+            label: t('profile.info.age'),
+            value: age !== null ? t('player.age', { count: age }) : '—',
+            testId: 'dash-settings-age',
+        },
+        {
+            label: t('player.schoolName'),
+            value: details.school_name ? (
+                <span className="flex flex-col">
+                    <span>{details.school_name}</span>
+                    {details.school_city && (
+                        <span className="inline-flex items-center gap-1 text-xs text-[#151b2e]/75">
+                            <MapPin className="size-3.5 shrink-0" aria-hidden />
+                            {details.school_city}
+                        </span>
+                    )}
+                </span>
+            ) : (
+                '—'
+            ),
+            testId: 'dash-settings-school',
+        },
+    ];
+
     return (
-        <section
-            id="grade"
-            className="auth-card flex scroll-mt-6 flex-col gap-3 !p-4 sm:!p-5"
-        >
-            <h2 className="flex items-center gap-2 text-xl font-bold">
-                <GraduationCap className="size-5" aria-hidden />
-                {t('player.gradeAndLevel')}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-                {t('player.gradeNote')}
-            </p>
-            <form
-                className="flex flex-col gap-3"
-                onSubmit={(event) => {
-                    event.preventDefault();
-                    form.patch('/grade', { preserveScroll: true });
-                }}
-            >
-                <label htmlFor="grade-select" className="sr-only">
-                    {t('player.grade')}
-                </label>
-                <select
-                    id="grade-select"
-                    name="grade"
-                    value={form.data.grade}
-                    onChange={(event) =>
-                        form.setData('grade', event.target.value)
-                    }
-                    className="min-h-11 w-full rounded-xl border-2 border-[#151b2e] bg-white px-3.5 font-semibold"
-                >
-                    <option value="" disabled>
-                        {t('player.gradePlaceholder')}
-                    </option>
-                    {GRADE_LEVELS.map((band) => (
-                        <optgroup
-                            key={band.key}
-                            label={t(`player.gradeBands.${band.key}`)}
+        <section className={CARD} data-testid="dash-settings">
+            {!complete && (
+                <p className="rounded-xl border-2 border-dashed border-[#151b2e]/40 bg-[#fff4d6] px-3 py-2 text-sm font-semibold">
+                    {t('player.detailsNote')}
+                </p>
+            )}
+            <dl className="grid grid-cols-[minmax(0,auto)_minmax(0,1fr)] gap-x-4 gap-y-2.5 text-sm">
+                {rows.map((row) => (
+                    <div key={row.testId} className="contents">
+                        <dt className="font-semibold text-[#151b2e]/80">
+                            {row.label}
+                        </dt>
+                        <dd
+                            className="min-w-0 font-bold break-words"
+                            data-testid={row.testId}
                         >
-                            {band.grades.map((value) => (
-                                <option key={value} value={value}>
-                                    {gradeLabel(t, value)}
-                                </option>
-                            ))}
-                        </optgroup>
-                    ))}
-                </select>
-                <InputError message={form.errors.grade} />
-                <QuestionLevelPicker
-                    value={form.data.question_level}
-                    onChange={(level) => form.setData('question_level', level)}
-                />
-                <InputError message={form.errors.question_level} />
-                {form.recentlySuccessful && (
-                    <p
-                        role="status"
-                        className="text-sm font-semibold text-[#116a56]"
-                    >
-                        {t('player.gradeSaved')}
-                    </p>
-                )}
-                <button
-                    type="submit"
-                    disabled={form.processing || form.data.grade === ''}
-                    className="px-5 py-2.5 font-bold disabled:opacity-50"
-                >
-                    {t('player.gradeSave')}
-                </button>
-            </form>
+                            {row.value}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
+            <p className="text-xs font-semibold text-[#151b2e]/75">
+                {t('playerDash.settingsReadOnly')}
+            </p>
+            <Link
+                href="/profile#player-details"
+                className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 ${INK} bg-[#ffd93d] px-4 text-sm font-bold shadow-[2px_2px_0_#151b2e] hover:bg-[#ffe680] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7]`}
+                data-testid="dash-settings-edit"
+            >
+                <PencilLine className="size-4" aria-hidden />
+                {t('playerDash.settingsEdit')}
+            </Link>
         </section>
     );
+}
+
+function ageFrom(birthDate: string): number {
+    const [year, month, day] = birthDate.split('-').map(Number);
+    const now = new Date();
+    const hadBirthday =
+        now.getMonth() + 1 > month ||
+        (now.getMonth() + 1 === month && now.getDate() >= day);
+
+    return now.getFullYear() - year - (hadBirthday ? 0 : 1);
 }
