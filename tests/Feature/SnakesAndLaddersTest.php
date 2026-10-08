@@ -10,13 +10,8 @@ beforeEach(function (): void {
     config(['game-service.secret' => str_repeat('s', 40)]);
 });
 
-it('lets guests practise on one device without rooms', function (): void {
-    $this->get('/games/snakes-and-ladders')->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('games/snakes-and-ladders')
-        ->where('player', null)
-        ->where('online', false)
-        ->where('wsUrl', null)
-        ->where('pin', null));
+it('sends guests to the login page', function (): void {
+    $this->get('/games/snakes-and-ladders')->assertRedirect(route('login'));
 });
 
 it('enables online rooms for signed in players', function (): void {

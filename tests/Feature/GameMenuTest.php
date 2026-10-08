@@ -15,7 +15,7 @@ it('shares the grouped game menu with every catalog game', function (): void {
         ->where('gameMenu.0.games.0.key', 'flag-quest')
         ->where('gameMenu.0.games.0.guestPlayable', false)
         ->where('gameMenu.1.key', 'board')
-        ->where('gameMenu.1.games.0.guestPlayable', true)
+        ->where('gameMenu.1.games.0.guestPlayable', false)
         ->where('gameMenu.2.key', 'quiz')
         ->where('gameMenu.2.games.0.key', 'sky-quiz')
         ->where('gameMenu.2.games.1.key', 'quiz-duel')

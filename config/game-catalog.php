@@ -6,7 +6,8 @@ return [
     |
     | awards_points: only games whose results are verified server-side (Go game service)
     | may award points. Client-only demos must stay false.
-    | guest_playable: the game page opens without signing in (offline demo).
+    | guest_playable: must stay false. Every game page requires a signed-in
+    | account (routes/web.php auth group); guests are sent to /login.
     | multiplayer: the game uses the standard invite flow (PIN room + link
     | /games/{key}/join/{pin}, see GameInviteController and docs/multiplayer.md).
     | min_players / max_players: people who can play one round, mirroring the Go
@@ -52,7 +53,7 @@ return [
                     'max_players' => 4,
                     'awards_points' => true,
                     'requires_grade' => false,
-                    'guest_playable' => true,
+                    'guest_playable' => false,
                     'multiplayer' => true,
                 ],
             ],
@@ -74,7 +75,7 @@ return [
                     'max_players' => 1,
                     'awards_points' => true,
                     'requires_grade' => true,
-                    'guest_playable' => true,
+                    'guest_playable' => false,
                 ],
                 [
                     'key' => 'quiz-duel',

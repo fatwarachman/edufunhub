@@ -40,11 +40,8 @@ function skyResult(User $user, array $overrides = []): array
     ], $overrides);
 }
 
-it('shows the guest demo without player data', function (): void {
-    $this->get('/games/sky-quiz')->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('games/sky-quiz', false)
-        ->where('player', null)
-        ->where('serviceReady', false));
+it('sends guests to the login page', function (): void {
+    $this->get('/games/sky-quiz')->assertRedirect(route('login'));
 });
 
 it('gives signed in players their profile grade, name and points', function (): void {

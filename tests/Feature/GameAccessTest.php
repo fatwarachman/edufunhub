@@ -61,20 +61,24 @@ test('opening a game page stores the player device and operating system', functi
         ->and($access->user_agent)->toBe(ANDROID_PHONE);
 });
 
-test('guests are recorded without a user and reloads in one session count once', function (): void {
-    $this->withHeaders(['User-Agent' => WINDOWS_CHROME])->get('/games/snakes-and-ladders')->assertOk();
-    $this->withHeaders(['User-Agent' => WINDOWS_CHROME])->get('/games/snakes-and-ladders')->assertOk();
+test('reloads in one session count once and guests are never recorded', function (): void {
+    $this->withHeaders(['User-Agent' => WINDOWS_CHROME])->get('/games/snakes-and-ladders')->assertRedirect(route('login'));
+    expect(GameAccess::query()->count())->toBe(0);
+
+    $user = completePlayer();
+    $this->actingAs($user)->withHeaders(['User-Agent' => WINDOWS_CHROME])->get('/games/snakes-and-ladders')->assertOk();
+    $this->actingAs($user)->withHeaders(['User-Agent' => WINDOWS_CHROME])->get('/games/snakes-and-ladders')->assertOk();
 
     expect(GameAccess::query()->count())->toBe(1)
-        ->and(GameAccess::query()->first())->user_id->toBeNull()->device_type->toBe('desktop')->os->toBe('Windows');
+        ->and(GameAccess::query()->first())->user_id->toBe($user->id)->device_type->toBe('desktop')->os->toBe('Windows');
 
     $this->travel(11)->minutes();
-    $this->withHeaders(['User-Agent' => WINDOWS_CHROME])->get('/games/snakes-and-ladders')->assertOk();
+    $this->actingAs($user)->withHeaders(['User-Agent' => WINDOWS_CHROME])->get('/games/snakes-and-ladders')->assertOk();
     expect(GameAccess::query()->count())->toBe(2);
 });
 
 test('bots and blocked game requests are not recorded', function (): void {
-    $this->withHeaders(['User-Agent' => 'Googlebot/2.1'])->get('/games/sky-quiz')->assertOk();
+    $this->actingAs(completePlayer())->withHeaders(['User-Agent' => 'Googlebot/2.1'])->get('/games/sky-quiz')->assertOk();
     $incomplete = User::factory()->create();
     $this->actingAs($incomplete)->withHeaders(['User-Agent' => IPHONE])->get('/games/flag-quest')->assertRedirect();
 

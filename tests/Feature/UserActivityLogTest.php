@@ -144,7 +144,7 @@ it('serves bank questions to snakes practice and follows admin changes', functio
             && collect($questions)->every(fn (array $q): bool => count($q['options']) >= 3 && $q['answer'] < count($q['options']))));
 });
 
-it('gives signed-in players practice questions for their grade and guests every level', function (): void {
+it('gives signed-in players practice questions for their grade and sends guests to login', function (): void {
     $user = User::factory()->create();
     PlayerProfile::factory()->for($user)->create(['grade' => 8]);
     $bandKeys = Question::query()->active()->where('band', 2)->whereJsonContains('games', 'snakes-and-ladders')->pluck('key');
@@ -153,6 +153,5 @@ it('gives signed-in players practice questions for their grade and guests every 
         ->where('practiceQuestions', fn ($questions): bool => collect($questions)->pluck('key')->sort()->values()->all() === $bandKeys->sort()->values()->all()));
 
     auth()->logout();
-    $this->get('/games/snakes-and-ladders')->assertInertia(fn (Assert $page) => $page
-        ->where('practiceQuestions', fn ($questions): bool => collect($questions)->count() === Question::query()->active()->whereJsonContains('games', 'snakes-and-ladders')->count()));
+    $this->get('/games/snakes-and-ladders')->assertRedirect(route('login'));
 });
