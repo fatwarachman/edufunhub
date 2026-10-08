@@ -57,7 +57,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
         Route::resource('users', UserController::class);
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::patch('/users/{user}/teacher', [UserController::class, 'toggleTeacher'])->middleware(EnsureSuperadmin::class)->name('users.teacher');
-        Route::post('/impersonate/{user}', [ImpersonationController::class, 'impersonate'])->whereNumber('user')->middleware('throttle:20,1')->name('impersonate');
+        Route::post('/impersonate/{user}', [ImpersonationController::class, 'impersonate'])->whereNumber('user')->middleware('throttle:20,1,impersonate')->name('impersonate');
 
         // Roles CRUD
         Route::resource('roles', RoleController::class)->except(['show']);
@@ -71,7 +71,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
 
         // Player feedback review
         Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
-        Route::patch('/feedback/{feedback}', [FeedbackController::class, 'update'])->middleware('throttle:60,1')->name('feedback.update');
+        Route::patch('/feedback/{feedback}', [FeedbackController::class, 'update'])->middleware('throttle:60,1,feedback.update')->name('feedback.update');
 
         // Super admin: game statistics, leaderboard and question bank
         Route::middleware(EnsureSuperadmin::class)->group(function (): void {
@@ -83,12 +83,12 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::get('/screen-time', [ScreenTimeController::class, 'index'])->name('screen-time.index');
             Route::get('/questions/generate', [QuestionGenerationController::class, 'index'])->name('questions.generate');
             Route::post('/questions/generate', [QuestionGenerationController::class, 'store'])->name('questions.generate.store');
-            Route::post('/questions/generate/{generation}/cancel', [QuestionGenerationController::class, 'cancel'])->middleware('throttle:20,1')->name('questions.generate.cancel');
-            Route::post('/users/{user}/ability-assessments', [AbilityAssessmentController::class, 'store'])->middleware('throttle:5,1')->name('users.ability-assessments.store');
-            Route::post('/questions/bulk', [QuestionController::class, 'bulk'])->middleware('throttle:30,1')->name('questions.bulk');
+            Route::post('/questions/generate/{generation}/cancel', [QuestionGenerationController::class, 'cancel'])->middleware('throttle:20,1,questions.generate.cancel')->name('questions.generate.cancel');
+            Route::post('/users/{user}/ability-assessments', [AbilityAssessmentController::class, 'store'])->middleware('throttle:5,1,users.ability-assessments.store')->name('users.ability-assessments.store');
+            Route::post('/questions/bulk', [QuestionController::class, 'bulk'])->middleware('throttle:30,1,questions.bulk')->name('questions.bulk');
             Route::patch('/questions/{question}/toggle', [QuestionController::class, 'toggle'])->name('questions.toggle');
             Route::get('/notifications', [PlayerNotificationController::class, 'index'])->name('notifications.index');
-            Route::post('/notifications', [PlayerNotificationController::class, 'store'])->middleware('throttle:20,1')->name('notifications.store');
+            Route::post('/notifications', [PlayerNotificationController::class, 'store'])->middleware('throttle:20,1,notifications.store')->name('notifications.store');
             Route::get('/point-rules', [PointRulesController::class, 'index'])->name('point-rules.index');
             Route::put('/point-rules', [PointRulesController::class, 'update'])->name('point-rules.update');
             Route::get('/sound-settings', [GameSoundsController::class, 'index'])->name('sound-settings.index');
@@ -143,7 +143,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
                 Route::get('/', [AdController::class, 'index'])->name('index');
                 Route::patch('/settings/global', [AdController::class, 'toggleGlobal'])->name('settings.global');
                 Route::put('/settings/placements', [AdController::class, 'updatePlacements'])->name('settings.placements');
-                Route::get('/settings/users', [AdController::class, 'searchUsers'])->middleware('throttle:60,1')->name('settings.users');
+                Route::get('/settings/users', [AdController::class, 'searchUsers'])->middleware('throttle:60,1,settings.users')->name('settings.users');
                 Route::patch('/users/{user}', [AdController::class, 'toggleUser'])->name('users.toggle');
                 Route::get('/advertisers/create', [AdController::class, 'createAdvertiser'])->name('advertisers.create');
                 Route::post('/advertisers', [AdController::class, 'storeAdvertiser'])->name('advertisers.store');

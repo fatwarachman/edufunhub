@@ -12,23 +12,23 @@ use Illuminate\Support\Facades\Route;
 Route::get('/health', HealthController::class);
 
 Route::post('/internal/game-results', [GameResultController::class, 'store'])
-    ->middleware('throttle:120,1')
+    ->middleware('throttle:120,1,api.internal.game-results.store')
     ->name('api.internal.game-results.store');
 
 Route::get('/internal/question-bank', QuestionBankController::class)
-    ->middleware('throttle:120,1')
+    ->middleware('throttle:120,1,api.internal.question-bank')
     ->name('api.internal.question-bank');
 
 Route::get('/internal/crossword-bank', CrosswordBankController::class)
-    ->middleware('throttle:120,1')
+    ->middleware('throttle:120,1,api.internal.crossword-bank')
     ->name('api.internal.crossword-bank');
 
 Route::get('/internal/sequence-bank', SequenceBankController::class)
-    ->middleware('throttle:120,1')
+    ->middleware('throttle:120,1,api.internal.sequence-bank')
     ->name('api.internal.sequence-bank');
 
 Route::get('/internal/sorter-bank', SorterBankController::class)
-    ->middleware('throttle:120,1')
+    ->middleware('throttle:120,1,api.internal.sorter-bank')
     ->name('api.internal.sorter-bank');
 
 Route::get('/user', function (Request $request) {

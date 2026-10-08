@@ -195,7 +195,7 @@ test('oauth routes are guest only and throttled', function (string $route) {
     Socialite::shouldReceive('driver')->never();
     $user = User::factory()->withoutTwoFactor()->create();
     $this->actingAs($user)->get(route($route))->assertRedirect();
-    expect(app('router')->getRoutes()->getByName($route)->gatherMiddleware())->toContain('guest', 'throttle:10,1');
+    expect(app('router')->getRoutes()->getByName($route)->gatherMiddleware())->toContain('guest', 'throttle:10,1,google');
 })->with(['google.redirect', 'google.callback']);
 
 test('oauth request limit enforced', function (string $route) {
