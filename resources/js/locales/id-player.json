@@ -77,6 +77,7 @@
         "orderRush": "Order Rush TKJ",
         "portSorter": "Pilah Port & Protokol",
         "turboTrivia": "Turbo Trivia",
+        "blockBattle": "Tetris Kuis",
         "shareWaRoom": "Bagikan via WhatsApp",
         "shareWaGame": "Bagikan game",
         "shareWaRoomText": "🎮 Ayo main {{game}} bareng di EduFunHub!\nKode PIN: {{pin}}\nLink gabung: {{url}}\nEduFunHub — Portal Edukasi Seru!",
@@ -302,7 +303,8 @@
             "economyHeist": "Kuis emas mandiri untuk 2–60 pemain. Jawab benar, buka peti misteri, curi atau tukar emas, dan pasang perisai!",
             "orderRush": "Balapan menyusun urutan kabel UTP, core fiber, OSI, DHCP dan TCP untuk siswa TKJ. Benar beruntun dapat power-up sabotase!",
             "portSorter": "Pilah paket jaringan ke keranjang yang tepat sebelum jatuh! Topik dan keranjang diatur guru: port & protokol, layanan, dan lainnya.",
-            "turboTrivia": "Balap gokart kuis di proyektor kelas! Jawab benar untuk Nitro, lempar Kulit Pisang, tembak Rudal ke posisi 1, dan panggil Petir."
+            "turboTrivia": "Balap gokart kuis di proyektor kelas! Jawab benar untuk Nitro, lempar Kulit Pisang, tembak Rudal ke posisi 1, dan panggil Petir.",
+            "blockBattle": "Adu balok di proyektor kelas! Jawab benar untuk balok I atau serangan, susun baris, rangkai kata & rumus, atau bangun benteng bersama melawan monster."
         },
         "detailsFirst": "Isi data peserta dulu",
         "detailsNoticeTitle": "Lengkapi data peserta dulu, ya!",
@@ -767,19 +769,6 @@
                     ],
                     "fun": "Sangat visual, kontribusi langsung terlihat di layar proyektor, kompetitif tapi santai."
                 },
-                "tetrisQuiz": {
-                    "title": "Tetris Kuis / Block Battle",
-                    "inspiration": "Mekanik Tetris · logika spasial + kuis akademik",
-                    "concept": "Susun balok Tetris sambil menjawab kuis. Tersedia tiga mode permainan.",
-                    "gameplay": [
-                        "Mode Battle Royale (ala Tetris 99): tiap murid main board sendiri dengan soal kuis singkat di sampingnya. Jawab benar dapat balok I lurus atau mengirim garis sampah abu-abu ke board lawan sampai mereka tumpah (KO).",
-                        "Jawab salah atau lambat: balok jatuh 2× lebih cepat selama 5 detik, dan lawan dapat celah menyerang.",
-                        "Layar proyektor menampilkan 30–50 mini-board murid secara live, lengkap dengan animasi garis sampah yang terbang antar-murid.",
-                        "Mode Kata & Rumus: balok berisi huruf, angka, atau elemen rumus. Susunan yang membentuk kata benar (Indonesia/Inggris) atau hitungan benar (misal 4 + 5) meledakkan baris untuk kombo poin.",
-                        "Mode Benteng Co-op: sekelas membangun satu tembok benteng bersama. Jawab kuis untuk dapat giliran menjatuhkan balok penambal, sementara monster terus memukul tembok; makin rapi susunannya, makin kuat bentengnya."
-                    ],
-                    "fun": "Sensasi balas serangan dan bertahan sampai jadi juara terakhir; mode Kata & Rumus mengasah otak langsung di board, dan mode Co-op minim toxic untuk kelas SD yang butuh kekompakan."
-                },
                 "osiPingPong": {
                     "title": "Ping Pong Network / OSI Layer Match",
                     "inspiration": "Pengetahuan IT · mekanik ping pong",
@@ -1036,7 +1025,11 @@
             "no_item": "Kamu tidak punya item itu.",
             "no_target": "Belum ada target di depanmu.",
             "kart_finished": "Kartmu sudah finish.",
-            "invalid_answer_time": "Pilihan waktu menjawab tidak tersedia."
+            "invalid_answer_time": "Pilihan waktu menjawab tidak tersedia.",
+            "invalid_input": "Gerakan tidak dikenal.",
+            "invalid_reward": "Hadiah tidak dikenal.",
+            "no_reward": "Tidak ada hadiah untuk dipilih.",
+            "knocked_out": "Kamu sudah KO di permainan ini."
         },
         "copyPinLabel": "Salin PIN",
         "copyLinkLabel": "Salin link",
@@ -1995,6 +1988,224 @@
             "downloadSlides": "Unduh slide (PDF)"
         }
     },
+    "blockBattle": {
+        "title": "Tetris Kuis",
+        "tagline": "Block Battle: susun balok, jawab soal, serang lawan",
+        "switchRole": "Ganti peran",
+        "rules": "Susun balok di papanmu sendiri sambil menjawab soal. Jawaban benar memberi hadiah, jawaban salah membuat balok jatuh lebih cepat. Pilih mode: Battle, Kata & Rumus, atau Benteng.",
+        "modesTitle": "Tiga mode permainan",
+        "countdown": "Bersiap…",
+        "go": "MULAI!",
+        "roles": {
+            "choose": "Mau jadi apa?",
+            "arenaTitle": "Layar Proyektor (Guru)",
+            "arenaBody": "Buat ruang, pilih mode, tampilkan PIN & QR, lalu tonton semua papan murid live di proyektor atau Smart TV.",
+            "openArena": "Buka layar proyektor",
+            "controllerTitle": "Kontroler (HP Murid)",
+            "controllerBody": "Scan QR atau masukkan PIN, susun balok di papanmu dan jawab soal dari HP.",
+            "openController": "Main sebagai murid"
+        },
+        "modes": {
+            "BATTLE": {
+                "title": "Battle",
+                "desc": "Battle royale: hapus baris untuk mengirim balok sampah ke lawan. Bertahan paling lama!"
+            },
+            "WORDS": {
+                "title": "Kata & Rumus",
+                "desc": "Balok membawa huruf atau angka. Susun kata atau rumus target dalam satu baris supaya meledak."
+            },
+            "FORTRESS": {
+                "title": "Benteng",
+                "desc": "Kerja sama satu kelas: tambal tembok bersama dan tembak monster dengan meriam."
+            }
+        },
+        "contents": {
+            "WORDS_ID": "Kata Indonesia",
+            "WORDS_EN": "Kata Inggris",
+            "MATH": "Rumus angka"
+        },
+        "arena": {
+            "createRoom": "Buat ruang permainan",
+            "hostIntro": "Kamu jadi host. Murid bergabung dari HP masing-masing (1–50 pemain, Battle minimal 2).",
+            "roomClosed": "Ruang sudah ditutup.",
+            "scanToJoin": "Scan untuk ikut main",
+            "orOpen": "atau buka {{url}} lalu masukkan PIN",
+            "pin": "PIN",
+            "qrAlt": "Kode QR untuk masuk ruang {{pin}}",
+            "copyLink": "Salin link",
+            "copied": "Tersalin!",
+            "mode": "Mode permainan",
+            "duration": "Durasi",
+            "minutesUnit": "menit",
+            "content": "Isi balok",
+            "joined": "Pemain di ruang",
+            "playersCount": "{{count}}/{{max}} pemain",
+            "waitingPlayers": "Belum ada murid. Tampilkan PIN atau QR-nya!",
+            "start": "Mulai permainan",
+            "needPlayers": "Butuh minimal {{min}} pemain",
+            "closeRoom": "Tutup ruang",
+            "again": "Main lagi",
+            "endGame": "Akhiri permainan",
+            "fullscreen": "Layar penuh",
+            "exitFullscreen": "Keluar layar penuh",
+            "timeLeft": "Sisa waktu",
+            "alive": "{{alive}}/{{total}} bertahan",
+            "linesShort": "{{count}} baris",
+            "boardOf": "Papan {{name}}",
+            "ko": "KO"
+        },
+        "controller": {
+            "playerIntro": "Halo {{name}}! Masukkan PIN dari layar proyektor.",
+            "pinLabel": "PIN ruang",
+            "pinPlaceholder": "6 digit",
+            "join": "Masuk",
+            "waitingStart": "Kamu sudah masuk! Tunggu guru memulai permainan.",
+            "board": "Papan balokmu",
+            "next": "Berikut",
+            "pending": "Sampah",
+            "pieceLabel": "Balok {{piece}}",
+            "left": "Geser kiri",
+            "right": "Geser kanan",
+            "rotate": "Putar",
+            "soft": "Turun pelan",
+            "hard": "Jatuhkan langsung",
+            "hardShort": "Jatuh",
+            "keyboardHint": "Keyboard: ← → geser, ↑/X putar, Z putar balik, ↓ turun, Spasi jatuhkan, 1–4 jawab.",
+            "answerLabel": "Jawaban {{letter}}: {{text}}",
+            "waitQuestion": "Soal berikutnya segera datang…",
+            "correct": "Benar! Pilih hadiahmu.",
+            "correctWords": "Benar! Balok I berisi target datang berikutnya.",
+            "correctFortress": "Benar! Kamu masuk antrean pembangun.",
+            "wrong": "Salah. Jawabannya {{answer}}. Balok jatuh lebih cepat!",
+            "wrongFortress": "Salah. Jawabannya {{answer}}. Tunggu sebentar.",
+            "penalty": "HUKUMAN: balok 2x cepat ({{seconds}} dtk)",
+            "ko": "KO! Peringkat #{{rank}}",
+            "koWait": "Tonton layar proyektor sampai permainan selesai.",
+            "linesShort": "{{count}} baris",
+            "scoreShort": "{{score}} poin",
+            "targetWord": "Target: {{text}}",
+            "targetMath": "Target: = {{text}}",
+            "yourTurn": "Giliranmu membangun!",
+            "yourTurnLeft": "Giliranmu! {{seconds}} dtk",
+            "queuePosition": "Antrean ke-{{position}}",
+            "building": "{{name}} sedang membangun",
+            "answerToBuild": "Jawab benar untuk dapat giliran membangun."
+        },
+        "rewards": {
+            "title": "Hadiah jawaban benar",
+            "hint": "Pilih satu sebelum waktu habis.",
+            "I_PIECE": "Balok I",
+            "I_PIECE_help": "Balok berikutnya jadi balok I panjang",
+            "ATTACK": "Serang",
+            "ATTACK_help": "Kirim 2 baris sampah ke lawan",
+            "auto": "Tidak memilih = Serang otomatis",
+            "attackSent": "Serangan {{lines}} baris ke {{name}}!",
+            "ipieceReady": "Balok I siap jadi balok berikutnya!"
+        },
+        "fx": {
+            "PENALTY": "Cepat 2x",
+            "EXPOSED": "Terbuka"
+        },
+        "events": {
+            "attack": "{{name}} mengirim {{lines}} baris sampah ke {{target}}!",
+            "attackQuiz": "{{name}} menyerang {{target}} dengan {{lines}} baris!",
+            "attackedBy": "{{name}} mengirim {{lines}} baris sampah kepadamu!",
+            "ko": "{{name}} KO! Peringkat #{{rank}}",
+            "koBy": "{{by}} meng-KO {{name}}! Peringkat #{{rank}}",
+            "youKo": "Kamu meng-KO {{name}}!",
+            "word": "{{name}}: {{word}} +{{points}} (x{{combo}})",
+            "yourWord": "{{word}} meledak! +{{points}} (x{{combo}})",
+            "monsterHit": "Monster menghantam tembok! {{count}} balok hancur."
+        },
+        "fortress": {
+            "wall": "Tembok benteng bersama",
+            "monster": "Monster",
+            "hp": "{{hp}}/{{max}} HP",
+            "strength": "Kekuatan tembok",
+            "nextHit": "Serangan monster berikutnya: {{seconds}} dtk",
+            "builder": "Pembangun sekarang",
+            "noBuilder": "Belum ada pembangun. Jawab soal dengan benar!",
+            "queue": "Antrean",
+            "queueEmpty": "Antrean kosong.",
+            "building": "Menyiapkan tembok…"
+        },
+        "result": {
+            "podium": "Podium juara",
+            "winner": "{{name}} juara!",
+            "youWon": "Kamu juara 1!",
+            "yourRank": "Peringkatmu #{{rank}} dari {{total}}",
+            "earned": "+{{points}} poin",
+            "teamWon": "Benteng selamat! Kelas menang!",
+            "teamLost": "Benteng runtuh…",
+            "reasons": {
+                "monster_defeated": "Monster dikalahkan meriam kelas.",
+                "time_up": "Tembok bertahan sampai waktu habis.",
+                "wall_broken": "Tembok hancur dihantam monster.",
+                "stopped": "Permainan dihentikan guru."
+            },
+            "ranking": "Hasil akhir",
+            "player": "Pemain",
+            "score": "Skor",
+            "lines": "Baris",
+            "kos": "KO",
+            "correct": "Benar",
+            "accuracy": "Akurasi",
+            "alive": "Bertahan",
+            "linesValue": "{{count}} baris",
+            "scoreValue": "{{score}} poin"
+        },
+        "howTo": {
+            "title": "Cara bermain",
+            "step": "Langkah {{current}}/{{total}}",
+            "prev": "Sebelumnya",
+            "next": "Berikutnya",
+            "play": "Putar",
+            "pause": "Jeda",
+            "replay": "Putar ulang",
+            "goTo": "Ke langkah {{number}}",
+            "downloadVideo": "Unduh video (MP4)",
+            "downloadSlides": "Unduh slide (PDF)",
+            "demoProjector": "Layar proyektor",
+            "demoJoined": "Pemain masuk",
+            "demoQuestion": "7 + 9 = …",
+            "demoCorrect": "Benar! Pilih hadiah",
+            "demoGarbage": "2 baris dihapus = 1 baris sampah ke lawan",
+            "demoTargetWord": "Target: BUKU",
+            "demoTargetMath": "Target: 9",
+            "demoWordHit": "BUKU meledak! +40",
+            "demoCombo": "4+5=9 meledak! Kombo x2",
+            "demoCannon": "Baris penuh = baris lapis baja + tembakan meriam",
+            "demoMonster": "Monster menghantam tembok setiap beberapa detik",
+            "demoWinner": "{{name}} juara 1!",
+            "demoPoints": "Setiap permainan selesai menambah poin akunmu",
+            "scenes": {
+                "join": {
+                    "title": "1. Guru buka arena, murid masuk",
+                    "body": "Guru membuka Layar Proyektor, memilih mode, durasi dan materi, lalu menampilkan PIN dan QR. Murid memindai QR atau mengetik PIN di HP (sampai 50 pemain)."
+                },
+                "answer": {
+                    "title": "2. Jawab soal, ambil hadiah",
+                    "body": "Di samping papanmu selalu ada soal dengan 4 pilihan. Benar = pilih Balok I atau Serang. Salah atau waktu habis = balok jatuh 2x lebih cepat dan kamu jadi sasaran."
+                },
+                "battle": {
+                    "title": "3. Battle: kirim sampah, jatuhkan lawan",
+                    "body": "Geser, putar dan jatuhkan balok untuk menghapus baris. Menghapus 2+ baris mengirim baris sampah abu-abu ke lawan. Pemain yang baloknya menyentuh atas kena KO."
+                },
+                "words": {
+                    "title": "4. Kata & Rumus: susun lalu ledakkan",
+                    "body": "Setiap balok membawa huruf atau angka. Susun kata (misal B-U-K-U) atau rumus yang hasilnya sama dengan target (misal 4+5=9) dalam satu baris, dan baris itu meledak. Ledakan beruntun memberi kombo."
+                },
+                "fortress": {
+                    "title": "5. Benteng: satu kelas, satu tembok",
+                    "body": "Jawab benar untuk masuk antrean. Saat giliranmu, jatuhkan balok tambalan di tembok bersama. Baris penuh menembakkan meriam ke monster, sementara monster terus menghantam tembok."
+                },
+                "win": {
+                    "title": "6. Juara dan poin",
+                    "body": "Battle: yang bertahan paling lama menang. Kata & Rumus: skor tertinggi menang. Benteng: menang bersama jika monster kalah atau tembok bertahan. Setiap jawaban benar menambah poin akun."
+                }
+            }
+        }
+    },
     "language": {
         "label": "Bahasa",
         "description": "Pilih bahasa tampilan akunmu. Bawaannya Bahasa Indonesia.",
@@ -2024,7 +2235,31 @@
         "citySearch": "Cari kota/kabupaten, contoh: Bogor",
         "cityEmpty": "Kota/kabupaten tidak ditemukan.",
         "cityClear": "Hapus kota/kabupaten",
-        "cityLoading": "Memuat daftar kota/kabupaten…"
+        "cityLoading": "Memuat daftar kota/kabupaten…",
+        "step1": "Langkah 1: kota/kabupaten",
+        "step2": "Langkah 2: jenjang",
+        "step3": "Langkah 3: sekolah",
+        "level": "Jenjang sekolah",
+        "levelFirstCity": "Pilih kota/kabupaten dulu.",
+        "levels": {
+            "TK": "RA",
+            "SD": "MI sederajat",
+            "SMP": "MTs sederajat",
+            "SMA": "SMK, MA sederajat",
+            "SLB": "Luar biasa"
+        },
+        "listFirst": "Pilih kota/kabupaten dan jenjang dulu.",
+        "listPlaceholder": "Pilih sekolah dari daftar",
+        "listSearch": "Cari nama sekolah atau kecamatan",
+        "listEmpty": "Sekolah tidak ditemukan. Coba kata lain atau isi manual.",
+        "listLoading": "Memuat daftar sekolah…",
+        "listCount": "Menampilkan {{shown}} dari {{total}} sekolah. Ketik untuk mempersempit.",
+        "listClear": "Hapus pilihan sekolah",
+        "official": "Data resmi Dapodik",
+        "manual": "Sekolahku tidak ada di daftar",
+        "manualBack": "Pilih dari daftar resmi",
+        "manualHint": "Ketik nama sekolah lengkap, contoh: SDN 1 Bogor.",
+        "legacy": "Tersimpan: {{name}}. Pilih sekolahmu dari daftar agar datanya resmi."
     },
     "playerDash": {
         "title": "Beranda pemain",
@@ -2103,6 +2338,8 @@
         },
         "loadingStats": "Memuat statistik…",
         "settings": "Profil & pengaturan",
+        "settingsReadOnly": "Data di atas hanya bisa diubah dari halaman profil.",
+        "settingsEdit": "Ubah di halaman profil",
         "explore": "Kategori permainan",
         "ability": {
             "title": "Analisa kemampuanmu",
@@ -2126,6 +2363,13 @@
             "shareSummary": "Ringkasan",
             "shareStrengths": "Kekuatan",
             "shareGrowth": "Perlu ditingkatkan"
+        },
+        "online": {
+            "label": "Pemain online",
+            "count_one": "{{formatted}} pemain",
+            "count_other": "{{formatted}} pemain",
+            "open": "Lihat daftar pemain yang sedang online",
+            "loading": "Memuat jumlah pemain online…"
         }
     },
     "abilityPage": {
@@ -2428,5 +2672,40 @@
         "view": "Lihat teman",
         "later": "Nanti",
         "close": "Tutup"
+    },
+    "playerMenu": {
+        "detail": "Cek detail",
+        "addFriend": "Tambah teman",
+        "acceptFriend": "Terima pertemanan",
+        "friendError": "Permintaan pertemanan belum terkirim. Coba lagi.",
+        "relation": {
+            "friends": "Sudah berteman",
+            "sent": "Permintaan terkirim"
+        }
+    },
+    "playerPage": {
+        "title": "Profil {{name}}",
+        "friendship": "Status pertemanan",
+        "ownProfile": "Ini profilmu, buka pengaturan",
+        "info": "Informasi pemain",
+        "name": "Nama",
+        "badges": "Lencana ({{count}})",
+        "noBadges": "Belum punya lencana.",
+        "topGames": "Game favorit",
+        "noGames": "Belum pernah bermain.",
+        "plays": "{{count}}x main"
+    },
+    "onlinePlayers": {
+        "title": "Pemain online",
+        "summary_one": "{{total}} pemain sedang online",
+        "summary_other": "{{total}} pemain sedang online",
+        "recentNote": "aktif dalam 5 menit terakhir",
+        "empty": "Belum ada pemain lain yang online.",
+        "open": "Buka profil {{name}}",
+        "you": "Kamu",
+        "friend": "Teman",
+        "pages": "Halaman daftar pemain online",
+        "prev": "Sebelumnya",
+        "next": "Berikutnya"
     }
 }

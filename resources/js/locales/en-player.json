@@ -78,6 +78,7 @@
         "orderRush": "Order Rush TKJ",
         "portSorter": "Port Sorter",
         "turboTrivia": "Turbo Trivia",
+        "blockBattle": "Quiz Tetris",
         "shareWaRoom": "Share via WhatsApp",
         "shareWaGame": "Share game",
         "shareWaRoomText": "🎮 Let's play {{game}} together on EduFunHub!\nPIN Code: {{pin}}\nJoin link: {{url}}\nEduFunHub — Portal Edukasi Seru!",
@@ -303,7 +304,8 @@
             "economyHeist": "Self-paced gold quiz for 2–60 players. Answer right, open mystery chests, steal or swap gold and raise shields!",
             "orderRush": "Race to order UTP cables, fibre cores, OSI layers, DHCP and TCP steps for networking students. Streaks earn sabotage power-ups!",
             "portSorter": "Sort network packets into the right bin before they drop! Topics and bins are set by teachers: ports & protocols, services and more.",
-            "turboTrivia": "A quiz kart race on the classroom projector! Answer right for Nitro, drop Banana Peels, fire Missiles at first place and call Lightning."
+            "turboTrivia": "A quiz kart race on the classroom projector! Answer right for Nitro, drop Banana Peels, fire Missiles at first place and call Lightning.",
+            "blockBattle": "A block battle on the classroom projector! Answer right for an I piece or an attack, clear lines, build words & equations, or build a fortress together against a monster."
         },
         "detailsFirst": "Complete details first",
         "detailsNoticeTitle": "Complete your participant details first!",
@@ -768,19 +770,6 @@
                     ],
                     "fun": "Highly visual, contributions show up instantly on the projector, competitive yet relaxed."
                 },
-                "tetrisQuiz": {
-                    "title": "Tetris Quiz / Block Battle",
-                    "inspiration": "Tetris mechanics · spatial logic + academic quiz",
-                    "concept": "Stack Tetris blocks while answering quizzes. Comes with three game modes.",
-                    "gameplay": [
-                        "Battle Royale mode (Tetris 99 style): every student plays their own board with a short quiz beside it. Correct answers earn a straight I-piece or send grey garbage lines to rivals until their board overflows (KO).",
-                        "Wrong or slow answers make blocks fall 2× faster for 5 seconds and leave an opening for rivals to attack.",
-                        "The projector shows 30–50 live mini-boards, with garbage lines visibly flying from one student to another.",
-                        "Word & Formula mode: blocks carry letters, numbers or formula parts. Placing them to form a correct word (Indonesian/English) or a correct sum (e.g. 4 + 5) blasts the row for bonus combo points.",
-                        "Co-op Fortress mode: the whole class builds one fortress wall together. Answer quizzes to earn a turn dropping a patch block while monsters keep pounding the wall; the neater the stacking, the stronger the defence."
-                    ],
-                    "fun": "The thrill of striking back and surviving to be the last one standing; Word & Formula trains the brain right on the board, and Co-op is low-toxicity, great for primary classes that need teamwork."
-                },
                 "osiPingPong": {
                     "title": "Ping Pong Network / OSI Layer Match",
                     "inspiration": "IT knowledge · ping pong mechanics",
@@ -1037,7 +1026,11 @@
             "no_item": "You don't have that item.",
             "no_target": "There is no target ahead of you.",
             "kart_finished": "Your kart already finished.",
-            "invalid_answer_time": "That answer time is not available."
+            "invalid_answer_time": "That answer time is not available.",
+            "invalid_input": "Unknown move.",
+            "invalid_reward": "Unknown reward.",
+            "no_reward": "There is no reward to pick.",
+            "knocked_out": "You are already knocked out in this game."
         },
         "copyPinLabel": "Copy PIN",
         "copyLinkLabel": "Copy link",
@@ -1996,6 +1989,224 @@
             "downloadSlides": "Download slides (PDF)"
         }
     },
+    "blockBattle": {
+        "title": "Quiz Tetris",
+        "tagline": "Block Battle: stack blocks, answer quizzes, attack rivals",
+        "switchRole": "Switch role",
+        "rules": "Stack blocks on your own board while answering questions. Correct answers give rewards, wrong answers make blocks fall faster. Pick a mode: Battle, Words & Math, or Fortress.",
+        "modesTitle": "Three game modes",
+        "countdown": "Get ready…",
+        "go": "GO!",
+        "roles": {
+            "choose": "Who are you?",
+            "arenaTitle": "Projector screen (Teacher)",
+            "arenaBody": "Create a room, pick a mode, show the PIN & QR, then watch every student board live on the projector or Smart TV.",
+            "openArena": "Open projector screen",
+            "controllerTitle": "Controller (Student phone)",
+            "controllerBody": "Scan the QR or enter the PIN, stack blocks on your board and answer questions on your phone.",
+            "openController": "Play as a student"
+        },
+        "modes": {
+            "BATTLE": {
+                "title": "Battle",
+                "desc": "Battle royale: clear lines to send garbage rows to rivals. Survive the longest!"
+            },
+            "WORDS": {
+                "title": "Words & Math",
+                "desc": "Blocks carry letters or digits. Line up the target word or equation in a row to make it explode."
+            },
+            "FORTRESS": {
+                "title": "Fortress",
+                "desc": "Whole-class co-op: patch one shared wall together and fire the cannon at the monster."
+            }
+        },
+        "contents": {
+            "WORDS_ID": "Indonesian words",
+            "WORDS_EN": "English words",
+            "MATH": "Number equations"
+        },
+        "arena": {
+            "createRoom": "Create game room",
+            "hostIntro": "You are the host. Students join from their phones (1–50 players, Battle needs 2).",
+            "roomClosed": "The room was closed.",
+            "scanToJoin": "Scan to join",
+            "orOpen": "or open {{url}} and enter the PIN",
+            "pin": "PIN",
+            "qrAlt": "QR code to join room {{pin}}",
+            "copyLink": "Copy link",
+            "copied": "Copied!",
+            "mode": "Game mode",
+            "duration": "Duration",
+            "minutesUnit": "min",
+            "content": "Block content",
+            "joined": "Players in the room",
+            "playersCount": "{{count}}/{{max}} players",
+            "waitingPlayers": "No students yet. Show the PIN or QR code!",
+            "start": "Start game",
+            "needPlayers": "Needs at least {{min}} players",
+            "closeRoom": "Close room",
+            "again": "Play again",
+            "endGame": "End game",
+            "fullscreen": "Fullscreen",
+            "exitFullscreen": "Exit fullscreen",
+            "timeLeft": "Time left",
+            "alive": "{{alive}}/{{total}} alive",
+            "linesShort": "{{count}} lines",
+            "boardOf": "{{name}}'s board",
+            "ko": "KO"
+        },
+        "controller": {
+            "playerIntro": "Hi {{name}}! Enter the PIN from the projector screen.",
+            "pinLabel": "Room PIN",
+            "pinPlaceholder": "6 digits",
+            "join": "Join",
+            "waitingStart": "You are in! Wait for the teacher to start the game.",
+            "board": "Your block board",
+            "next": "Next",
+            "pending": "Garbage",
+            "pieceLabel": "{{piece}} piece",
+            "left": "Move left",
+            "right": "Move right",
+            "rotate": "Rotate",
+            "soft": "Soft drop",
+            "hard": "Hard drop",
+            "hardShort": "Drop",
+            "keyboardHint": "Keyboard: ← → move, ↑/X rotate, Z rotate back, ↓ soft drop, Space hard drop, 1–4 answer.",
+            "answerLabel": "Answer {{letter}}: {{text}}",
+            "waitQuestion": "Next question coming…",
+            "correct": "Correct! Pick your reward.",
+            "correctWords": "Correct! An I piece with your target comes next.",
+            "correctFortress": "Correct! You joined the builder queue.",
+            "wrong": "Wrong. The answer was {{answer}}. Blocks fall faster!",
+            "wrongFortress": "Wrong. The answer was {{answer}}. Wait a moment.",
+            "penalty": "PENALTY: blocks 2x faster ({{seconds}}s)",
+            "ko": "KO! Rank #{{rank}}",
+            "koWait": "Watch the projector until the game ends.",
+            "linesShort": "{{count}} lines",
+            "scoreShort": "{{score}} pts",
+            "targetWord": "Target: {{text}}",
+            "targetMath": "Target: = {{text}}",
+            "yourTurn": "Your turn to build!",
+            "yourTurnLeft": "Your turn! {{seconds}}s",
+            "queuePosition": "Queue position {{position}}",
+            "building": "{{name}} is building",
+            "answerToBuild": "Answer correctly to get a building turn."
+        },
+        "rewards": {
+            "title": "Correct answer reward",
+            "hint": "Pick one before time runs out.",
+            "I_PIECE": "I piece",
+            "I_PIECE_help": "Your next piece becomes a long I piece",
+            "ATTACK": "Attack",
+            "ATTACK_help": "Send 2 garbage rows to a rival",
+            "auto": "No pick = automatic Attack",
+            "attackSent": "{{lines}}-row attack sent to {{name}}!",
+            "ipieceReady": "I piece is up next!"
+        },
+        "fx": {
+            "PENALTY": "2x speed",
+            "EXPOSED": "Exposed"
+        },
+        "events": {
+            "attack": "{{name}} sent {{lines}} garbage rows to {{target}}!",
+            "attackQuiz": "{{name}} attacked {{target}} with {{lines}} rows!",
+            "attackedBy": "{{name}} sent you {{lines}} garbage rows!",
+            "ko": "{{name}} is KO! Rank #{{rank}}",
+            "koBy": "{{by}} knocked out {{name}}! Rank #{{rank}}",
+            "youKo": "You knocked out {{name}}!",
+            "word": "{{name}}: {{word}} +{{points}} (x{{combo}})",
+            "yourWord": "{{word}} exploded! +{{points}} (x{{combo}})",
+            "monsterHit": "The monster hit the wall! {{count}} blocks destroyed."
+        },
+        "fortress": {
+            "wall": "Shared fortress wall",
+            "monster": "Monster",
+            "hp": "{{hp}}/{{max}} HP",
+            "strength": "Wall strength",
+            "nextHit": "Next monster attack: {{seconds}}s",
+            "builder": "Current builder",
+            "noBuilder": "No builder yet. Answer a question correctly!",
+            "queue": "Queue",
+            "queueEmpty": "The queue is empty.",
+            "building": "Preparing the wall…"
+        },
+        "result": {
+            "podium": "Winners podium",
+            "winner": "{{name}} wins!",
+            "youWon": "You won first place!",
+            "yourRank": "You placed #{{rank}} of {{total}}",
+            "earned": "+{{points}} points",
+            "teamWon": "The fortress holds! The class wins!",
+            "teamLost": "The fortress fell…",
+            "reasons": {
+                "monster_defeated": "The class cannon defeated the monster.",
+                "time_up": "The wall held until time ran out.",
+                "wall_broken": "The monster broke the wall.",
+                "stopped": "The teacher stopped the game."
+            },
+            "ranking": "Final results",
+            "player": "Player",
+            "score": "Score",
+            "lines": "Lines",
+            "kos": "KOs",
+            "correct": "Correct",
+            "accuracy": "Accuracy",
+            "alive": "Survived",
+            "linesValue": "{{count}} lines",
+            "scoreValue": "{{score}} pts"
+        },
+        "howTo": {
+            "title": "How to play",
+            "step": "Step {{current}}/{{total}}",
+            "prev": "Previous",
+            "next": "Next",
+            "play": "Play",
+            "pause": "Pause",
+            "replay": "Replay",
+            "goTo": "Go to step {{number}}",
+            "downloadVideo": "Download video (MP4)",
+            "downloadSlides": "Download slides (PDF)",
+            "demoProjector": "Projector screen",
+            "demoJoined": "Players joined",
+            "demoQuestion": "7 + 9 = …",
+            "demoCorrect": "Correct! Pick a reward",
+            "demoGarbage": "2 lines cleared = 1 garbage row to a rival",
+            "demoTargetWord": "Target: BUKU",
+            "demoTargetMath": "Target: 9",
+            "demoWordHit": "BUKU exploded! +40",
+            "demoCombo": "4+5=9 exploded! Combo x2",
+            "demoCannon": "Full row = armored row + cannon shot",
+            "demoMonster": "The monster hits the wall every few seconds",
+            "demoWinner": "{{name}} takes first place!",
+            "demoPoints": "Every finished game adds points to your account",
+            "scenes": {
+                "join": {
+                    "title": "1. Teacher opens the arena, students join",
+                    "body": "The teacher opens the Projector screen, picks the mode, duration and subject, then shows the PIN and QR. Students scan the QR or type the PIN on their phones (up to 50 players)."
+                },
+                "answer": {
+                    "title": "2. Answer questions, grab rewards",
+                    "body": "Next to your board there is always a question with 4 choices. Correct = pick an I piece or Attack. Wrong or time up = blocks fall 2x faster and you become a target."
+                },
+                "battle": {
+                    "title": "3. Battle: send garbage, knock out rivals",
+                    "body": "Move, rotate and drop blocks to clear lines. Clearing 2+ lines sends gray garbage rows to a rival. A player whose blocks reach the top is knocked out."
+                },
+                "words": {
+                    "title": "4. Words & Math: line up and explode",
+                    "body": "Every block carries a letter or digit. Line up a word (e.g. B-U-K-U) or an equation that equals the target (e.g. 4+5=9) in one row and the row explodes. Back-to-back explosions give a combo."
+                },
+                "fortress": {
+                    "title": "5. Fortress: one class, one wall",
+                    "body": "Answer correctly to join the queue. On your turn, drop a patch piece on the shared wall. Full rows fire the cannon at the monster while the monster keeps hitting the wall."
+                },
+                "win": {
+                    "title": "6. Winners and points",
+                    "body": "Battle: the last one standing wins. Words & Math: the highest score wins. Fortress: everyone wins if the monster falls or the wall holds. Every correct answer adds account points."
+                }
+            }
+        }
+    },
     "language": {
         "label": "Language",
         "description": "Choose the display language for your account. Indonesian is the default.",
@@ -2025,7 +2236,31 @@
         "citySearch": "Search city/regency, e.g. Bogor",
         "cityEmpty": "No city/regency found.",
         "cityClear": "Clear city/regency",
-        "cityLoading": "Loading cities/regencies…"
+        "cityLoading": "Loading cities/regencies…",
+        "step1": "Step 1: city/regency",
+        "step2": "Step 2: level",
+        "step3": "Step 3: school",
+        "level": "School level",
+        "levelFirstCity": "Choose a city/regency first.",
+        "levels": {
+            "TK": "RA",
+            "SD": "MI, equivalent",
+            "SMP": "MTs, equivalent",
+            "SMA": "SMK, MA, equivalent",
+            "SLB": "Special needs"
+        },
+        "listFirst": "Choose a city/regency and a level first.",
+        "listPlaceholder": "Pick a school from the list",
+        "listSearch": "Search school name or district",
+        "listEmpty": "No school found. Try another word or type it in.",
+        "listLoading": "Loading schools…",
+        "listCount": "Showing {{shown}} of {{total}} schools. Type to narrow it down.",
+        "listClear": "Clear school",
+        "official": "Official Dapodik data",
+        "manual": "My school is not in the list",
+        "manualBack": "Pick from the official list",
+        "manualHint": "Type the full school name, e.g. SDN 1 Bogor.",
+        "legacy": "Saved: {{name}}. Pick your school from the list so it matches the official data."
     },
     "playerDash": {
         "title": "Player dashboard",
@@ -2104,6 +2339,8 @@
         },
         "loadingStats": "Loading stats…",
         "settings": "Profile & settings",
+        "settingsReadOnly": "These details can only be changed on the profile page.",
+        "settingsEdit": "Edit on profile page",
         "explore": "Game categories",
         "ability": {
             "title": "Your ability analysis",
@@ -2127,6 +2364,13 @@
             "shareSummary": "Summary",
             "shareStrengths": "Strengths",
             "shareGrowth": "Room to grow"
+        },
+        "online": {
+            "label": "Players online",
+            "count_one": "{{formatted}} player",
+            "count_other": "{{formatted}} players",
+            "open": "See the list of players online now",
+            "loading": "Loading online players…"
         }
     },
     "abilityPage": {
@@ -2429,5 +2673,40 @@
         "view": "See friends",
         "later": "Later",
         "close": "Close"
+    },
+    "playerMenu": {
+        "detail": "See details",
+        "addFriend": "Add friend",
+        "acceptFriend": "Accept friend request",
+        "friendError": "Friend request not sent. Please try again.",
+        "relation": {
+            "friends": "Already friends",
+            "sent": "Request sent"
+        }
+    },
+    "playerPage": {
+        "title": "{{name}}'s profile",
+        "friendship": "Friendship",
+        "ownProfile": "This is you, open settings",
+        "info": "Player info",
+        "name": "Name",
+        "badges": "Badges ({{count}})",
+        "noBadges": "No badges yet.",
+        "topGames": "Favourite games",
+        "noGames": "Has not played yet.",
+        "plays": "Played {{count}}x"
+    },
+    "onlinePlayers": {
+        "title": "Players online",
+        "summary_one": "{{total}} player online now",
+        "summary_other": "{{total}} players online now",
+        "recentNote": "active in the last 5 minutes",
+        "empty": "No other players are online yet.",
+        "open": "Open {{name}}'s profile",
+        "you": "You",
+        "friend": "Friend",
+        "pages": "Online players pages",
+        "prev": "Previous",
+        "next": "Next"
     }
 }

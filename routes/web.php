@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\BlockBattleController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\Chat\ChatController;
 use App\Http\Controllers\CrosswordController;
@@ -23,14 +24,17 @@ use App\Http\Controllers\LandingStatsController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MiniGameController;
+use App\Http\Controllers\OnlinePlayersController;
 use App\Http\Controllers\OrderRushController;
 use App\Http\Controllers\PlayerDetailsController;
 use App\Http\Controllers\PlayerNotificationController;
+use App\Http\Controllers\PlayerPageController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\PortSorterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuizDuelController;
 use App\Http\Controllers\RegencyController;
+use App\Http\Controllers\SchoolListController;
 use App\Http\Controllers\SchoolSuggestionController;
 use App\Http\Controllers\ScreenTimeController;
 use App\Http\Controllers\SkyQuizController;
@@ -53,6 +57,7 @@ Route::get('/', function () {
 
 Route::get('/landing/stats', LandingStatsController::class)->middleware('throttle:60,1,landing.stats')->name('landing.stats');
 Route::get('/player-details/regencies', RegencyController::class)->middleware('throttle:30,1,player-details.regencies')->name('player-details.regencies');
+Route::get('/player-details/school-list', SchoolListController::class)->middleware('throttle:120,1,player-details.school-list')->name('player-details.school-list');
 
 Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): void {
     Route::get('/dashboard', UserDashboardController::class)->name('dashboard');
@@ -74,6 +79,8 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/profile', [ProfileController::class, 'update'])->middleware('throttle:profile')->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'password'])->middleware('throttle:profile-password')->name('profile.password');
+    Route::get('/players/online', OnlinePlayersController::class)->middleware('throttle:60,1,players.online')->name('players.online');
+    Route::get('/players/{user}', PlayerPageController::class)->whereNumber('user')->middleware('throttle:60,1,players.show')->name('players.show');
     Route::patch('/player-details', [PlayerDetailsController::class, 'update'])->name('player-details.update');
     Route::post('/screen-time/beat', [ScreenTimeController::class, 'beat'])->middleware('throttle:10,1,screen-time.beat')->name('screen-time.beat');
     Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
@@ -139,6 +146,11 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::get('/games/turbo-trivia/qr/{pin}', [TurboTriviaController::class, 'qr'])->where('pin', '[0-9]{6}')->middleware('throttle:60,1,games.turbo-trivia.qr')->name('games.turbo-trivia.qr');
         Route::get('/arena/turbo-trivia/{pin?}', [TurboTriviaController::class, 'arena'])->where('pin', '[0-9]{6}')->middleware(RecordGameAccess::class.':turbo-trivia')->name('games.turbo-trivia.arena');
         Route::get('/play/turbo-trivia/{pin?}', [TurboTriviaController::class, 'play'])->where('pin', '[0-9]{6}')->middleware(RecordGameAccess::class.':turbo-trivia')->name('games.turbo-trivia.play');
+        Route::get('/games/block-battle', [BlockBattleController::class, 'show'])->middleware(RecordGameAccess::class.':block-battle')->name('games.block-battle');
+        Route::post('/games/block-battle/token', [BlockBattleController::class, 'token'])->middleware('throttle:30,1,games.block-battle.token')->name('games.block-battle.token');
+        Route::get('/games/block-battle/qr/{pin}', [BlockBattleController::class, 'qr'])->where('pin', '[0-9]{6}')->middleware('throttle:60,1,games.block-battle.qr')->name('games.block-battle.qr');
+        Route::get('/arena/block-battle/{pin?}', [BlockBattleController::class, 'arena'])->where('pin', '[0-9]{6}')->middleware(RecordGameAccess::class.':block-battle')->name('games.block-battle.arena');
+        Route::get('/play/block-battle/{pin?}', [BlockBattleController::class, 'play'])->where('pin', '[0-9]{6}')->middleware(RecordGameAccess::class.':block-battle')->name('games.block-battle.play');
         Route::get('/games/{game}/join/{pin}', GameInviteController::class)->where(['game' => '[a-z-]+', 'pin' => '[0-9]{6}'])->name('games.join');
         Route::post('/games/snakes-and-ladders/token', [SnakesAndLaddersController::class, 'token'])->middleware('throttle:30,1,games.snakes-and-ladders.token')->name('games.snakes-and-ladders.token');
     });

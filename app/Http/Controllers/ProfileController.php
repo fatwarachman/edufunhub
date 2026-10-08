@@ -50,6 +50,8 @@ class ProfileController extends Controller
                 'age' => $profile?->age,
                 'school_name' => $profile?->school_name,
                 'school_city' => $profile?->school_city,
+                'school_level' => $profile?->school_level,
+                'school_npsn' => $profile?->school_npsn,
                 'character' => $profile?->character(),
             ],
             'stats' => [
