@@ -174,3 +174,30 @@ test('dashboard still renders with its leaderboard', function (): void {
         ->component('user/dashboard', false)
         ->loadDeferredProps('board', fn (Assert $reload) => $reload->where('leaderboards.all.me', ['rank' => 1, 'points' => 10])));
 });
+
+test('per game cards get icon, accent and translated titles in both locales', function (): void {
+    $viewer = leaderboardPlayer('Aku', 'SD Satu');
+    $catalogs = collect(['id', 'en'])->mapWithKeys(fn (string $locale): array => [
+        $locale => json_decode((string) file_get_contents(resource_path("js/locales/{$locale}-player.json")), true),
+    ]);
+
+    $this->actingAs($viewer)->get('/leaderboard?tab=games')->assertOk()->assertInertia(function (Assert $page) use ($catalogs): void {
+        $games = $page->toArray()['props']['games'];
+
+        expect($games)->not->toBeEmpty();
+
+        foreach ($games as $game) {
+            expect($game)->toHaveKeys(['key', 'titleKey', 'icon', 'accent'])
+                ->and($game['accent'])->toMatch('/^#[0-9a-fA-F]{6}$/');
+
+            foreach ($catalogs as $catalog) {
+                expect(data_get($catalog, $game['titleKey']))->toBeString()->not->toBeEmpty();
+            }
+        }
+    });
+
+    foreach ($catalogs as $catalog) {
+        expect(data_get($catalog, 'leaderboardPage.games.viewRanking'))->toBeString()->not->toBeEmpty()
+            ->and(data_get($catalog, 'leaderboardPage.games.playersLabel'))->toBeString()->not->toBeEmpty();
+    }
+});
