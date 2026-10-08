@@ -13,6 +13,14 @@ return [
         'title' => 'Naik ke level :level!',
         'body' => 'Hebat! Terus main dan kumpulkan poin.',
     ],
+    'friend_request' => [
+        'title' => 'Permintaan pertemanan',
+        'body' => ':name ingin berteman denganmu.',
+    ],
+    'friend_accepted' => [
+        'title' => 'Permintaan diterima',
+        'body' => ':name menerima permintaan pertemananmu.',
+    ],
     'item' => [
         'title' => 'Item baru di brankas',
         'body' => ':item sudah tersimpan di brankasmu. Pakai kapan saja.',

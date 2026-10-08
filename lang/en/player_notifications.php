@@ -13,6 +13,14 @@ return [
         'title' => 'Level :level reached!',
         'body' => 'Great job! Keep playing and collecting points.',
     ],
+    'friend_request' => [
+        'title' => 'Friend request',
+        'body' => ':name wants to be your friend.',
+    ],
+    'friend_accepted' => [
+        'title' => 'Request accepted',
+        'body' => ':name accepted your friend request.',
+    ],
     'item' => [
         'title' => 'New item in your vault',
         'body' => ':item is saved in your vault. Use it any time.',

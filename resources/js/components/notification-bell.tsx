@@ -12,6 +12,7 @@ import {
     MessageCircle,
     Package,
     TrendingUp,
+    UserPlus,
     X,
     type LucideIcon,
 } from 'lucide-react';
@@ -26,7 +27,15 @@ import {
 
 export interface PlayerNotice {
     id: string;
-    kind: 'points' | 'level' | 'item' | 'teacher' | 'admin' | 'chat' | 'badge';
+    kind:
+        | 'points'
+        | 'level'
+        | 'item'
+        | 'teacher'
+        | 'admin'
+        | 'chat'
+        | 'badge'
+        | 'friend';
     title: string;
     body: string;
     url: string | null;
@@ -54,6 +63,7 @@ const KIND_ICON: Record<PlayerNotice['kind'], LucideIcon> = {
     admin: Megaphone,
     chat: MessageCircle,
     badge: Medal,
+    friend: UserPlus,
 };
 
 const KIND_TONE: Record<PlayerNotice['kind'], string> = {
@@ -64,6 +74,7 @@ const KIND_TONE: Record<PlayerNotice['kind'], string> = {
     admin: '#ff8a5c',
     chat: '#7dd3fc',
     badge: '#c4a7ff',
+    friend: '#c8f1e4',
 };
 
 function csrfToken(): string {
@@ -151,7 +162,8 @@ export function NotificationBell() {
                     (item) =>
                         !item.read &&
                         !seen.current?.has(item.id) &&
-                        !(chatIsLive && item.kind === 'chat'),
+                        !(chatIsLive && item.kind === 'chat') &&
+                        !(chatIsLive && item.kind === 'friend'),
                 );
                 if (fresh) {
                     setToast(fresh);

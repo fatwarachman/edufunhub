@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { Toaster } from 'sonner';
 import { ChatLive } from './components/chat-live';
+import { FriendLive } from './components/friend-live';
 import { ImpersonationBanner } from './components/impersonation-banner';
 import { ToastProvider } from './components/ui/toast';
 import { initializeTheme } from './hooks/use-appearance';
@@ -121,6 +122,7 @@ createInertiaApp({
                                 >
                             }
                         />
+                        <FriendLive />
                         <Toaster position="bottom-right" richColors />
                     </ToastProvider>
                 </I18nextProvider>
