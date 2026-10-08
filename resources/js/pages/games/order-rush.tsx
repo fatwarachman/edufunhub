@@ -1,4 +1,5 @@
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale, podiumStandings } from '@/components/game-finale';
 import { useRoomPin } from '@/components/multiplayer/room';
@@ -182,8 +183,8 @@ export default function OrderRush({
         >
             <Head title={`${title} — EduFunHub`} />
             <header
-                className="sticky top-0 z-30 border-b-4 border-[#1f2a44] backdrop-blur-md"
-                style={{ background: `${BG}f2` }}
+                className="sticky top-0 z-30 border-b-4 border-[#1f2a44]"
+                style={{ background: BG }}
             >
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
@@ -192,6 +193,7 @@ export default function OrderRush({
                             label={t('nav.backToPortal')}
                             iconOnly
                         />
+                        <BrandLink variant="mark" />
                         <span
                             className="hidden size-10 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] text-white shadow-[2px_2px_0px_#1f2a44] sm:grid"
                             style={{ background: ACCENT }}

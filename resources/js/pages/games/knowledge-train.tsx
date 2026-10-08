@@ -1,5 +1,6 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale } from '@/components/game-finale';
 import {
@@ -462,13 +463,14 @@ export default function KnowledgeTrain({
             data-testid="train-page"
         >
             <Head title={`${t('train.title')} — EduFunHub`} />
-            <header className="kt-header flex shrink-0 items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
+            <header className="kt-header sticky top-0 z-50 flex shrink-0 items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
                 <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <BackButton
                         href="/portal"
                         label={t('nav.backToPortal')}
                         iconOnly
                     />
+                    <BrandLink variant="mark" />
                     <h1 className="flex min-w-0 items-center gap-2 font-display text-lg font-bold sm:text-xl">
                         <TrainFront className="size-6 shrink-0" />
                         <span className="truncate">{t('train.title')}</span>

@@ -1,5 +1,6 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale, rankStandings } from '@/components/game-finale';
 import { RoomLeaveControl } from '@/components/multiplayer/host-controls';
@@ -873,7 +874,7 @@ export default function Crossword({
             <Head title={`${t('crossword.title')} — EduFunHub`}>
                 <meta name="description" content={t('crossword.meta')} />
             </Head>
-            <header className="sticky top-0 z-30 border-b-4 border-[#1f2a44] bg-[#f0f9ff]/95 backdrop-blur-md">
+            <header className="sticky top-0 z-30 border-b-4 border-[#1f2a44] bg-[#f0f9ff]">
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
@@ -881,6 +882,7 @@ export default function Crossword({
                             label={t('nav.backToPortal')}
                             iconOnly
                         />
+                        <BrandLink variant="mark" />
                         <div className="flex min-w-0 flex-col">
                             <span className="truncate font-display text-lg font-black sm:text-2xl">
                                 {t('crossword.title')}

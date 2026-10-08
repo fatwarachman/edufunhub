@@ -1,3 +1,4 @@
+import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { JoinByPinCard } from '@/components/join-by-pin';
 import { PlayerCountBadge } from '@/components/player-count-badge';
@@ -357,7 +358,7 @@ export default function GameList({
                 <meta name="description" content={t('gameList.meta')} />
             </Head>
 
-            <header className="sticky top-0 z-40 border-b-4 border-[#1f2a44] bg-[#FFF9E6]/95 backdrop-blur-md">
+            <header className="sticky top-0 z-40 border-b-4 border-[#1f2a44] bg-[#FFF9E6]">
                 <div className="mx-auto flex min-h-20 items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
                     <div className="flex min-w-0 items-center gap-3">
                         <BackButton
@@ -368,6 +369,7 @@ export default function GameList({
                             iconOnly
                             external={!signedIn}
                         />
+                        <BrandLink variant="mark" />
                         <div className="flex min-w-0 flex-col">
                             <span className="truncate font-display text-xl font-black text-[#1f2a44] sm:text-2xl">
                                 {t('gameList.arena')}{' '}

@@ -271,9 +271,10 @@ function playerGroups({
  * Main site navigation. Signed-in players get dashboard/games/portal/character,
  * the notification bell and logout; guests get home/games/login/register.
  * Labels show while they fit; when the header gets tight they fold into icons
- * one by one from the rightmost button (useNavFold). Below 768px every item
- * is an icon. In `compact` mode (game headers) narrow screens show only the
- * bell and a Menu button that opens the other items in a panel.
+ * one by one from the rightmost button (useNavFold). In `compact` mode (every
+ * header) phones below 768px always show only the bell and a Menu button that
+ * opens the other items in a panel; wider screens fall back to it only when
+ * even icons do not fit.
  */
 export function SiteNav({
     className,

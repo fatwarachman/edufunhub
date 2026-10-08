@@ -860,6 +860,22 @@
 .edu-nav-bar--compact[data-collapsed] .edu-nav-more {
     display: block;
 }
+/*
+ * Phones: every compact header keeps only the bell and the Menu button, also
+ * before the fold hook has measured (first paint, no JS yet).
+ */
+@media (max-width: 767px) {
+    .edu-nav-bar--compact .edu-nav-links {
+        display: none;
+    }
+    .edu-nav-bar--compact .edu-nav-more {
+        display: block;
+    }
+}
+/* Sticky headers: anchors scroll into view below the header, not under it. */
+html:has(.edu-nav-bar) {
+    scroll-padding-top: 96px;
+}
 /* Phones: dim the page behind open nav panels so they read as one layer. */
 @media (max-width: 767px) {
     .edu-game-menu:has(
@@ -957,12 +973,29 @@
 .edu-clock-colon {
     animation: edu-clock-blink 1s steps(1) infinite;
 }
+/*
+ * Date tiers (use-nav-fold.ts sets data-tier on the clock from the free
+ * room): only the matching line shows; hidden lines take no layout. Until
+ * the header is measured the clock shows the time only.
+ */
 .edu-clock-day {
-    font-size: 10px;
+    display: none;
+    font-size: 11px;
     font-weight: 700;
     color: #fff3c4;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.01em;
+}
+.edu-clock[data-tier='full'] .edu-clock-day[data-day='full'],
+.edu-clock[data-tier='medium'] .edu-clock-day[data-day='medium'],
+.edu-clock[data-tier='short'] .edu-clock-day[data-day='short'] {
+    display: block;
+}
+.edu-clock:not([data-tier='full'], [data-tier='medium'], [data-tier='short']) {
+    padding: 0 10px;
+}
+.edu-clock:not([data-tier='full'], [data-tier='medium'], [data-tier='short'])
+    .edu-clock-seconds {
+    display: none;
 }
 @keyframes edu-clock-blink {
     50% {
@@ -994,12 +1027,30 @@
         padding: 0 7px;
     }
 }
-@media (max-width: 1199px) {
-    .edu-clock {
-        padding: 0 10px;
-    }
-    .edu-clock-day,
-    .edu-clock-seconds {
+/*
+ * Phones too narrow for the time next to the brand and nav (use-nav-fold.ts):
+ * a slimmer badge first, hidden only when that still does not fit.
+ */
+.edu-clock[data-tier='tight'] {
+    min-height: 36px;
+    padding: 0 5px;
+    border-width: 2px;
+    border-radius: 9px;
+    box-shadow: 1.5px 1.5px 0 #f5a623;
+}
+.edu-clock[data-tier='tight'] .edu-clock-time {
+    font-size: 13px;
+}
+.auth-header :has(> .edu-clock[data-tier='tight']) {
+    gap: 6px;
+}
+.edu-clock[data-tier='hidden'] {
+    display: none;
+}
+/* Phones: time only (also before the fold hook has measured). */
+@media (max-width: 767px) {
+    .edu-clock .edu-clock-day,
+    .edu-clock .edu-clock-seconds {
         display: none;
     }
 }
@@ -1067,16 +1118,6 @@
     clip: rect(0 0 0 0);
     white-space: nowrap;
 }
-/* Admin game headers: the clock drops its date and seconds below 1800px. */
-@media (max-width: 1799px) {
-    .edu-nav-bar--compact.edu-nav-bar--crowded .edu-clock {
-        padding: 0 10px;
-    }
-    .edu-nav-bar--compact.edu-nav-bar--crowded .edu-clock-day,
-    .edu-nav-bar--compact.edu-nav-bar--crowded .edu-clock-seconds {
-        display: none;
-    }
-}
 
 /*
  * Game header brand (logo, title, tagline): keeps room for a readable title
@@ -1093,15 +1134,6 @@
 @media (min-width: 1280px) {
     .edu-game-brand:has(.edu-clock--game) {
         min-width: 19rem;
-    }
-}
-@media (max-width: 1279px) {
-    .edu-clock--game {
-        padding: 0 10px;
-    }
-    .edu-clock--game .edu-clock-day,
-    .edu-clock--game .edu-clock-seconds {
-        display: none;
     }
 }
 

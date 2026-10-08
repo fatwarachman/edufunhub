@@ -25,10 +25,11 @@ it('translates the brand tagline in Indonesian and English', function (): void {
 it('renders the shared wordmark wherever the brand appears', function (string $file): void {
     $source = file_get_contents(resource_path($file));
 
-    expect($source)->toContain('<BrandWordmark')
+    expect($source)->toMatch('/<BrandWordmark|<BrandLink/')
         ->and($source)->not->toContain('edufun<span>hub</span>.com');
 })->with([
     'js/layouts/player-layout.tsx',
+    'js/components/brand-link.tsx',
     'js/components/auth-shell.tsx',
     'js/pages/auth/login.tsx',
     'js/pages/auth/register.tsx',
@@ -149,4 +150,135 @@ it('ignores wide page content and badges sticking out of buttons when deciding t
     expect($hook)->not->toContain('page.scrollWidth > page.clientWidth')
         ->and($hook)->not->toContain('nav.scrollWidth > nav.clientWidth')
         ->and($hook)->toContain('if (row.scrollWidth > row.clientWidth + 1) {');
+});
+
+it('always folds the phone header nav into the menu button', function (): void {
+    $hook = file_get_contents(resource_path('js/hooks/use-nav-fold.ts'));
+    $css = file_get_contents(resource_path('css/edu-nav.css'));
+    $nav = file_get_contents(resource_path('js/components/site-nav.tsx'));
+
+    expect($hook)->toContain("const PHONE_QUERY = '(max-width: 767px)';")
+        ->and($hook)->toMatch("/if \\(isPhone\\(\\)\\) \\{[^}]*if \\(collapsible\\) \\{\\s*nav\\.setAttribute\\('data-collapsed', ''\\);/")
+        ->and($css)->toMatch('/@media \\(max-width: 767px\\) \\{\\s*\\.edu-nav-bar--compact \\.edu-nav-links \\{\\s*display: none;\\s*\\}\\s*\\.edu-nav-bar--compact \\.edu-nav-more \\{\\s*display: block;/')
+        ->and(strpos($nav, '<JoinByPinButton className="edu-game-menu-item">'))->toBeLessThan(strpos($nav, '{entries.map('));
+});
+
+it('passes compact to every header nav so phones get the menu button', function (string $file): void {
+    $source = file_get_contents(resource_path($file));
+
+    expect($source)->toContain('<SiteNav compact')
+        ->and(preg_match('/<SiteNav(?![^>]*compact)[^>]*>/', $source))->toBe(0);
+})->with([
+    'js/layouts/player-layout.tsx',
+    'js/components/legal-document.tsx',
+    'js/pages/games/index.tsx',
+    'js/pages/games/crossword.tsx',
+    'js/pages/games/sky-quiz.tsx',
+    'js/pages/games/knowledge-train.tsx',
+    'js/components/block-battle/shared.tsx',
+    'js/components/turbo-trivia/shared.tsx',
+]);
+
+it('shows the full weekday and month name in the desktop header clock', function (): void {
+    $clock = file_get_contents(resource_path('js/components/digital-clock.tsx'));
+
+    expect($clock)->toContain("weekday: 'long',\n        day: 'numeric',\n        month: 'long',\n        year: 'numeric',")
+        ->and($clock)->toContain("weekday: 'long',\n        day: 'numeric',\n        month: 'short',")
+        ->and($clock)->toContain("weekday: 'short',\n        day: 'numeric',\n        month: 'short',")
+        ->and($clock)->toContain("i18n.language === 'en' ? 'en-GB' : 'id-ID'")
+        ->and($clock)->toContain('data-day="full"')
+        ->and($clock)->toContain('data-day="medium"')
+        ->and($clock)->toContain('data-day="short"');
+});
+
+it('picks the clock date tier by measuring the header instead of fixed breakpoints', function (): void {
+    $css = file_get_contents(resource_path('css/edu-nav.css'));
+
+    expect($css)->not->toContain('@media (max-width: 1799px)')
+        ->and($css)->not->toContain('@media (max-width: 1199px)')
+        ->and($css)->not->toContain('@media (max-width: 1279px)')
+        ->and($css)->toContain(".edu-clock[data-tier='full'] .edu-clock-day[data-day='full']")
+        ->and($css)->toContain(".edu-clock[data-tier='medium'] .edu-clock-day[data-day='medium']")
+        ->and($css)->toContain(".edu-clock[data-tier='short'] .edu-clock-day[data-day='short']");
+});
+
+it('steps the clock date down only after every nav label is an icon', function (): void {
+    $hook = file_get_contents(resource_path('js/hooks/use-nav-fold.ts'));
+
+    $folding = strpos($hook, "button.setAttribute('data-folded', '');");
+    $tiers = strpos($hook, 'for (const tier of CLOCK_TIERS.slice(1)) {');
+    $collapse = strpos($hook, "if (collapsible && crowded(nav)) {\n                nav.setAttribute('data-collapsed', '');");
+
+    expect($hook)->toContain("export const CLOCK_TIERS = ['full', 'medium', 'short', 'time'] as const;")
+        ->and($folding)->not->toBeFalse()
+        ->and($tiers)->toBeGreaterThan($folding)
+        ->and($collapse)->toBeGreaterThan($tiers)
+        ->and($hook)->toContain("setClockTier(row, 'time');")
+        ->and($hook)->toContain('rowContent.observe(row, { childList: true, subtree: true });')
+        ->and($hook)->toContain("'.edu-game-brand, .auth-brand, .edu-brand-wordmark, h1, .edu-clock'");
+});
+
+it('keeps scroll anchors clear of the sticky header', function (): void {
+    $css = file_get_contents(resource_path('css/edu-nav.css'));
+
+    expect($css)->toMatch('/html:has\\(\\.edu-nav-bar\\) \\{\\s*scroll-padding-top: 96px;/');
+});
+
+it('links the brand to Beranda: dashboard when signed in, landing page for guests', function (): void {
+    $brand = file_get_contents(resource_path('js/components/brand-link.tsx'));
+    $indonesian = json_decode(file_get_contents(resource_path('js/locales/id-player.json')), true);
+    $english = json_decode(file_get_contents(resource_path('js/locales/en-player.json')), true);
+
+    expect($brand)->toContain("return props.auth?.user ? '/dashboard' : '/';")
+        ->and($brand)->toContain("'aria-label': t('nav.brandHome')")
+        ->and($brand)->toContain('<Link href={href} {...common}>')
+        ->and($brand)->toContain('<a href={href} {...common}>')
+        ->and($indonesian['nav']['brandHome'])->toBe('edufunhub.com, buka Beranda')
+        ->and($english['nav']['brandHome'])->toBe('edufunhub.com, open Home');
+});
+
+it('renders the Beranda brand link on every player header', function (string $file, string $tag): void {
+    $source = file_get_contents(resource_path($file));
+    $header = substr($source, strpos($source, '<header'), 1500);
+
+    expect($header)->toContain($tag)
+        ->and($source)->not->toContain('href="/portal"\n                        className="auth-brand"');
+})->with([
+    'player layout' => ['js/layouts/player-layout.tsx', '<BrandLink hideWordmarkOnPhone />'],
+    'legal document' => ['js/components/legal-document.tsx', '<BrandLink hideWordmarkOnPhone />'],
+    'game list' => ['js/pages/games/index.tsx', '<BrandLink variant="mark" />'],
+    'crossword' => ['js/pages/games/crossword.tsx', '<BrandLink variant="mark" />'],
+    'economy heist' => ['js/pages/games/economy-heist.tsx', '<BrandLink variant="mark" />'],
+    'floor drop' => ['js/pages/games/floor-drop.tsx', '<BrandLink variant="mark" />'],
+    'knowledge train' => ['js/pages/games/knowledge-train.tsx', '<BrandLink variant="mark" />'],
+    'mini game' => ['js/pages/games/mini-game.tsx', '<BrandLink variant="mark" />'],
+    'order rush' => ['js/pages/games/order-rush.tsx', '<BrandLink variant="mark" />'],
+    'port sorter' => ['js/pages/games/port-sorter.tsx', '<BrandLink variant="mark" />'],
+    'quiz duel' => ['js/pages/games/quiz-duel.tsx', '<BrandLink variant="mark" />'],
+    'block battle' => ['js/components/block-battle/shared.tsx', '<BrandLink variant="mark" />'],
+    'turbo trivia' => ['js/components/turbo-trivia/shared.tsx', '<BrandLink variant="mark" />'],
+]);
+
+it('keeps the guest auth pages linking the brand to the landing page', function (string $file): void {
+    expect(file_get_contents(resource_path($file)))->toContain('<a href="/" className="auth-brand"');
+})->with([
+    'js/components/auth-shell.tsx',
+    'js/pages/auth/login.tsx',
+    'js/pages/error.tsx',
+]);
+
+it('never lets the phone clock badge slide under the bell or menu button', function (): void {
+    $hook = file_get_contents(resource_path('js/hooks/use-nav-fold.ts'));
+    $css = file_get_contents(resource_path('css/edu-nav.css'));
+
+    $phone = strpos($hook, 'if (isPhone()) {');
+    $tight = strpos($hook, 'setClockTier(row, CLOCK_TIGHT_TIER);', $phone);
+    $hidden = strpos($hook, 'setClockTier(row, CLOCK_HIDDEN_TIER);', $phone);
+
+    expect($phone)->not->toBeFalse()
+        ->and($tight)->toBeGreaterThan($phone)
+        ->and($hidden)->toBeGreaterThan($tight)
+        ->and($hook)->toContain("addEventListener?.('loadingdone'")
+        ->and($css)->toContain(".edu-clock[data-tier='tight']")
+        ->and($css)->toMatch("/\\.edu-clock\\[data-tier='hidden'\\]\\s*\\{\\s*display: none;/");
 });

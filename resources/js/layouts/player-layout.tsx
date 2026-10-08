@@ -1,10 +1,9 @@
-import { BrandWordmark } from '@/components/brand-wordmark';
+import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { SiteNav } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Gamepad2 } from 'lucide-react';
+import { Head, usePage } from '@inertiajs/react';
 import { type ReactNode, useEffect } from 'react';
 import '../../css/auth-landing.css';
 
@@ -41,16 +40,7 @@ export default function PlayerLayout({
             </Head>
             <header className="auth-header">
                 <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                    <Link
-                        href="/portal"
-                        className="auth-brand"
-                        aria-label="edufunhub.com"
-                    >
-                        <span className="auth-brand-mark">
-                            <Gamepad2 className="size-6" />
-                        </span>
-                        <BrandWordmark hideOnPhone />
-                    </Link>
+                    <BrandLink hideWordmarkOnPhone />
                     <DigitalClock />
                 </div>
                 <SiteNav compact />

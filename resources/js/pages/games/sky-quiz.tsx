@@ -1084,7 +1084,7 @@ export default function SkyQuiz({
     return (
         <div className="min-h-dvh bg-[#eef5f7] text-[#20364a]">
             <Head title={`${t('sky.title')} — EduFunHub`} />
-            <header className="flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
+            <header className="sticky top-0 z-50 flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
                 <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <BackButton
                         href={backHref}

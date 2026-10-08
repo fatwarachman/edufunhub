@@ -28,6 +28,10 @@
     font-family: 'Instrument Sans', 'DM Sans', system-ui, sans-serif;
 }
 .auth-header {
+    /* Sticky on every width; opaque so content never shows through. */
+    position: sticky;
+    top: 0;
+    z-index: 50;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -35,6 +39,7 @@
     min-height: 76px;
     padding: 16px clamp(16px, 2vw, 32px);
     border-bottom: 3px solid var(--auth-ink);
+    background: var(--auth-cream);
 }
 .auth-brand {
     display: inline-flex;
@@ -73,8 +78,7 @@
 }
 /*
  * Phones (360-479px): compact wordmark + tagline fit next to the bell and
- * menu button. Below 360px and in the 640-767px band (every nav button shows
- * again) only the brand mark stays.
+ * menu button. Below 360px only the brand mark stays.
  */
 @media (max-width: 479px) {
     .auth-brand .edu-brand-wordmark.edu-brand-text {
@@ -87,8 +91,37 @@
         font-size: 10px;
     }
 }
-@media (max-width: 359px), (min-width: 640px) and (max-width: 767px) {
+@media (max-width: 359px) {
     .auth-brand .edu-brand-wordmark.edu-brand-text {
+        display: none;
+    }
+}
+/* Brand linking to Beranda (components/brand-link.tsx), also outside .auth-landing. */
+.edu-brand-link {
+    --auth-ink: #151b2e;
+    --auth-amber: #f5a623;
+    flex-shrink: 0;
+    border-radius: 16px;
+    color: var(--auth-ink);
+}
+.edu-brand-link:focus-visible {
+    outline: 3px solid #6c5ce7;
+    outline-offset: 4px;
+}
+/* Game headers: logo mark only, a bit smaller next to the back button. */
+.edu-brand-link--mark .auth-brand-mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    box-shadow: 2px 2px 0 var(--auth-ink);
+}
+.edu-brand-link--mark .auth-brand-mark svg {
+    width: 20px;
+    height: 20px;
+}
+/* Phones: the game title needs the room; the back button stays. */
+@media (max-width: 479px) {
+    .edu-brand-link--mark {
         display: none;
     }
 }

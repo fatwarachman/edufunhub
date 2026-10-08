@@ -29,7 +29,10 @@ const getSnapshot = () => now;
 const getServerSnapshot = () => 0;
 
 /**
- * Live digital clock for the site header. One shared timer ticks on the
+ * Live digital clock for the site header. The date under the time comes in
+ * tiers (full / medium / short); useNavFold picks the longest one that fits
+ * the header (data-tier) after the nav labels have folded, phones show the
+ * time only. One shared timer ticks on the
  * second boundary for every mounted clock; nothing renders during SSR so
  * the server and client markup match.
  */
@@ -58,7 +61,20 @@ export function DigitalClock({ className }: { className?: string }) {
             acc[part.type] = part.value;
             return acc;
         }, {});
-    const day = new Intl.DateTimeFormat(i18n.language, {
+    /* Full names, e.g. "Kamis, 8 Oktober 2026" / "Thursday, 8 October 2026". */
+    const day = new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    }).format(date);
+    /* Shorter tiers for tighter headers: "Kamis, 8 Okt", "Kam, 8 Okt". */
+    const mediumDay = new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+    }).format(date);
+    const shortDay = new Intl.DateTimeFormat(locale, {
         weekday: 'short',
         day: 'numeric',
         month: 'short',
@@ -83,8 +99,18 @@ export function DigitalClock({ className }: { className?: string }) {
                     {parts.second}
                 </span>
             </span>
-            <span className="edu-clock-day" aria-hidden="true">
+            <span className="edu-clock-day" data-day="full" aria-hidden="true">
                 {day}
+            </span>
+            <span
+                className="edu-clock-day"
+                data-day="medium"
+                aria-hidden="true"
+            >
+                {mediumDay}
+            </span>
+            <span className="edu-clock-day" data-day="short" aria-hidden="true">
+                {shortDay}
             </span>
         </time>
     );

@@ -1,5 +1,6 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale } from '@/components/game-finale';
 import { PlayerAvatar } from '@/components/player-avatar';
@@ -647,13 +648,14 @@ export default function PortSorter({
     return (
         <div className="min-h-dvh bg-[#e9f6f4] text-[#20364a]">
             <Head title={`${t('portSorter.title')} — EduFunHub`} />
-            <header className="flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
+            <header className="sticky top-0 z-50 flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
                 <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <BackButton
                         href="/portal"
                         label={t('nav.backToPortal')}
                         iconOnly
                     />
+                    <BrandLink variant="mark" />
                     <h1 className="flex min-w-0 items-center gap-2 font-display text-lg font-bold sm:text-xl">
                         <Network className="size-6 shrink-0" />
                         <span className="truncate">

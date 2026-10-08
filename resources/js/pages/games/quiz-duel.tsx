@@ -1,5 +1,6 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
+import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale } from '@/components/game-finale';
 import { AnswerTimePicker } from '@/components/multiplayer/host-controls';
@@ -240,13 +241,14 @@ export default function QuizDuel({
     return (
         <div className="min-h-dvh bg-[#fff4ec] text-[#20364a]">
             <Head title={`${t('duel.title')} — EduFunHub`} />
-            <header className="flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
+            <header className="sticky top-0 z-50 flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
                 <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <BackButton
                         href="/portal"
                         label={t('nav.backToPortal')}
                         iconOnly
                     />
+                    <BrandLink variant="mark" />
                     <h1 className="flex min-w-0 items-center gap-2 font-display text-lg font-bold sm:text-xl">
                         <Swords className="size-6 shrink-0" />
                         <span className="truncate">{t('duel.title')}</span>
