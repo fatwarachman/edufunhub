@@ -1,0 +1,156 @@
+/* Knowledge Train: viewport-fitted layout and the floating question signboard. */
+
+.kt-board {
+    animation: kt-board-float 3.2s ease-in-out infinite;
+}
+
+.kt-board__frame {
+    background:
+        repeating-linear-gradient(
+            90deg,
+            rgb(255 255 255 / 0.08) 0 2px,
+            transparent 2px 26px
+        ),
+        linear-gradient(180deg, #c98a4b 0%, #a86b34 100%);
+}
+
+.kt-board__post {
+    position: absolute;
+    bottom: -10px;
+    width: 8px;
+    height: 12px;
+    border: 2px solid #20364a;
+    border-top: 0;
+    border-radius: 0 0 4px 4px;
+    background: #8a6a4a;
+}
+
+@keyframes kt-board-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .kt-board {
+        animation: none;
+    }
+}
+
+/* Short landscape screens (phones on their side): squeeze chrome so the track keeps room. */
+@media (max-height: 520px) {
+    .kt-header {
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+    }
+
+    .kt-main {
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+    }
+
+    .kt-toolbar > *,
+    .kt-toolbar button,
+    .kt-stat {
+        min-height: 2.25rem;
+    }
+
+    .kt-toolbar button {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .kt-board__frame > div {
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+    }
+
+    .kt-board p[data-testid='train-question-text'] {
+        font-size: 1.0625rem;
+        line-height: 1.3;
+    }
+}
+
+/* Wide but short: toolbar and HUD share one row. */
+@media (max-height: 520px) and (min-width: 640px) {
+    .kt-bars {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .kt-bars > * {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .kt-toolbar {
+        flex-wrap: nowrap;
+    }
+
+    .kt-toolbar > [data-testid='train-player'] {
+        flex: 0 1 auto;
+    }
+}
+
+/* Phones (portrait): one compact toolbar row, smaller board, so the track keeps room. */
+@media (max-width: 639px) {
+    .kt-toolbar {
+        flex-wrap: nowrap;
+    }
+
+    .kt-toolbar [data-testid='train-player'] {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding-inline: 0.5rem;
+    }
+
+    .kt-toolbar > *,
+    .kt-toolbar button,
+    .kt-stat {
+        min-height: 2.25rem;
+    }
+
+    .kt-toolbar button {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .kt-toolbar > .ml-auto {
+        margin-left: 0;
+    }
+
+    .kt-toolbar [data-testid='train-connection'] {
+        display: none;
+    }
+
+    .kt-bars {
+        gap: 0.375rem;
+    }
+
+    .kt-board__frame {
+        padding: 0.25rem;
+    }
+
+    .kt-board__frame > div {
+        padding: 0.25rem 0.5rem;
+    }
+
+    .kt-board p[data-testid='train-question-text'] {
+        font-size: 0.9375rem;
+        line-height: 1.3;
+    }
+
+    .kt-arrows button {
+        min-height: 2.5rem;
+    }
+}
+
+/* Answer cards overlay the far end of the track; long answers wrap inside. */
+[data-testid^='train-option-'] {
+    overflow-wrap: anywhere;
+    hyphens: auto;
+}
