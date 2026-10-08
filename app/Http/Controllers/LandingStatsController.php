@@ -17,6 +17,6 @@ class LandingStatsController extends Controller
     {
         return response()
             ->json($this->stats->snapshot())
-            ->header('Cache-Control', 'public, max-age=60');
+            ->header('Cache-Control', 'public, max-age=30');
     }
 }

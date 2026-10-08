@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\CharacterItem;
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\PointLedger;
@@ -41,7 +42,9 @@ it('serves public landing stats without login', function (): void {
     Question::factory()->create(['is_active' => false]);
 
     $response = $this->getJson('/landing/stats')->assertOk()->assertJsonStructure([
-        'stats' => ['players', 'schools', 'games', 'plays', 'answers', 'questions'],
+        'stats' => ['players', 'schools', 'games', 'categories', 'plays', 'answers', 'questions', 'teachers', 'teacherQuestions', 'shopItems'],
+        'catalog' => [['key', 'url', 'category', 'minPlayers', 'maxPlayers']],
+        'shop',
         'leaderboards' => ['week' => [['rank', 'name', 'school', 'grade', 'points']], 'all'],
         'podium',
         'schools' => [['rank', 'name', 'players', 'points']],
@@ -108,15 +111,84 @@ it('ranks the weekly board by points earned in the last 7 days only', function (
         ->and(collect($json['leaderboards']['all'])->pluck('name')->all())->toBe(['Lama', 'Baru']);
 });
 
-it('caches the snapshot', function (): void {
+it('caches the snapshot for at most one minute', function (): void {
     landingPlayer('Pertama Kali', 100);
     $this->getJson('/landing/stats')->assertJsonPath('stats.players', 1);
 
     landingPlayer('Kedua Kali', 200);
     $this->getJson('/landing/stats')->assertJsonPath('stats.players', 1);
 
-    Cache::forget(LandingStats::CACHE_KEY);
+    $this->travel(LandingStats::CACHE_SECONDS + 1)->seconds();
     $this->getJson('/landing/stats')->assertJsonPath('stats.players', 2);
+
+    expect(LandingStats::CACHE_SECONDS)->toBeLessThanOrEqual(60);
+});
+
+it('lets browsers reuse the response for 30 seconds only', function (): void {
+    expect($this->getJson('/landing/stats')->headers->get('Cache-Control'))->toContain('max-age=30');
+});
+
+it('mirrors the game catalog exactly, with player limits and relative urls', function (): void {
+    $expected = collect(config('game-catalog.categories'))->flatMap(fn (array $category): array => collect($category['games'])
+        ->map(fn (array $game): array => [
+            'key' => $game['key'],
+            'url' => route($game['route'], absolute: false),
+            'category' => $category['key'],
+            'minPlayers' => $game['min_players'],
+            'maxPlayers' => $game['max_players'],
+        ])->all())->values()->all();
+
+    $json = $this->getJson('/landing/stats')->assertOk()->json();
+
+    expect($json['catalog'])->toBe($expected)
+        ->and($json['stats']['games'])->toBe(count($expected))
+        ->and($json['stats']['categories'])->toBe(count(config('game-catalog.categories')))
+        ->and(collect($json['catalog'])->pluck('key')->all())->toContain('crossword', 'floor-drop', 'snakes-and-ladders');
+});
+
+it('counts teachers and their active questions without staff or other sources', function (): void {
+    $teacherRole = Role::query()->firstOrCreate(['slug' => Role::TEACHER], ['name' => 'Guru']);
+    $teacher = landingPlayer('Guru Satu', 0);
+    $teacher->roles()->attach($teacherRole->id);
+    $staffTeacher = landingPlayer('Guru Admin', 0);
+    $staffTeacher->forceFill(['is_superadmin' => true])->save();
+    $staffTeacher->roles()->attach($teacherRole->id);
+
+    Question::factory()->count(2)->create(['source' => 'teacher', 'created_by' => $teacher->id, 'is_active' => true]);
+    Question::factory()->create(['source' => 'import', 'created_by' => $teacher->id, 'is_active' => false]);
+    Question::factory()->create(['source' => 'seed', 'is_active' => true]);
+
+    $json = $this->getJson('/landing/stats')->assertOk()->json();
+
+    expect($json['stats']['teachers'])->toBe(1)
+        ->and($json['stats']['teacherQuestions'])->toBe(2)
+        ->and($json['stats']['questions'])->toBe(Question::query()->active()->count());
+});
+
+it('features the priciest active shop items with name, slot and price only', function (): void {
+    CharacterItem::factory()->create(['name_id' => 'Mahkota Uji', 'slot' => 'hat', 'price' => 900]);
+    CharacterItem::factory()->create(['name_id' => 'Sayap Uji', 'slot' => 'back', 'price' => 700]);
+    CharacterItem::factory()->create(['name_id' => 'Item Nonaktif', 'price' => 5000, 'is_active' => false]);
+    CharacterItem::factory()->free()->create(['name_id' => 'Item Gratis']);
+
+    $json = $this->getJson('/landing/stats')->assertOk()->json();
+    $active = CharacterItem::query()->active()->where('price', '>', 0)->count();
+
+    expect($json['shop'][0])->toBe(['name' => 'Mahkota Uji', 'slot' => 'hat', 'price' => 900])
+        ->and($json['shop'][1]['name'])->toBe('Sayap Uji')
+        ->and(collect($json['shop'])->pluck('name')->all())->not->toContain('Item Nonaktif', 'Item Gratis')
+        ->and(count($json['shop']))->toBeLessThanOrEqual(LandingStats::SHOP_FEATURED_LIMIT)
+        ->and($json['stats']['shopItems'])->toBe($active);
+});
+
+it('serves an empty but well-formed snapshot on a fresh install', function (): void {
+    $json = $this->getJson('/landing/stats')->assertOk()->json();
+
+    expect($json['stats']['players'])->toBe(0)
+        ->and($json['leaderboards']['all'])->toBe([])
+        ->and($json['schools'])->toBe([])
+        ->and($json['playsByGame'])->toBe([])
+        ->and($json['catalog'])->not->toBeEmpty();
 });
 
 it('throttles the endpoint at 60 requests per minute', function (): void {
@@ -136,3 +208,35 @@ it('wires the landing pages to the live stats endpoint', function (): void {
         ->toContain('prefers-reduced-motion: reduce')
         ->and($games)->toContain("'/landing/stats'");
 });
+
+it('keeps invented figures out of the landing pages', function (string $file): void {
+    $html = file_get_contents(public_path('new-landing/'.$file));
+    $text = preg_replace(['#<style[\s\S]*?</style>#', '#<script[\s\S]*?</script>#', '#<svg[\s\S]*?</svg>#'], '', $html);
+    $text = html_entity_decode(strip_tags($text));
+
+    expect(preg_match_all('/\d{1,3}(?:\.\d{3})+\+?/', $text, $matches))->toBe(0, 'thousands figure: '.implode(', ', $matches[0] ?? []))
+        ->and(preg_match('/\d+\+/', $text))->toBe(0)
+        ->and(preg_match('/\d+\s*(?:[-–]\s*\d+\s*)?(?:pemain|siswa|soal|guru|pelajar|sekolah|pilihan)\b/iu', $text, $hit))->toBe(0, 'count claim: '.($hit[0] ?? ''))
+        ->and(preg_match('/Rp\s*[1-9]/', $text))->toBe(0)
+        ->and(preg_match('/\d+\s*Poin/i', $text))->toBe(0);
+})->with(['index.html', 'games.html']);
+
+it('lists every catalog game in the landing play menus', function (): void {
+    $landing = file_get_contents(public_path('new-landing/index.html'));
+
+    foreach (collect(config('game-catalog.categories'))->flatMap(fn (array $c): array => $c['games']) as $game) {
+        $url = route($game['route'], absolute: false);
+        expect(substr_count($landing, 'href="'.$url.'"'))->toBeGreaterThanOrEqual(2, $url.' missing from desktop or phone menu');
+    }
+});
+
+it('renders live data with textContent and refreshes only while visible', function (string $file): void {
+    $html = file_get_contents(public_path('new-landing/'.$file));
+    preg_match_all('#<script>([\s\S]*?)</script>#', $html, $scripts);
+    $live = collect($scripts[1])->first(fn (string $js): bool => str_contains($js, "'/landing/stats'"));
+
+    expect($live)->toContain('REFRESH_MS = 60000')
+        ->toContain("document.visibilityState === 'visible'")
+        ->toContain('textContent')
+        ->not->toMatch('/innerHTML\s*=\s*+(?!iconMarkup;)/');
+})->with(['index.html', 'games.html']);
