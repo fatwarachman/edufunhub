@@ -84,20 +84,6 @@
         white-space: nowrap;
     }
 }
-@media (max-width: 1023px) {
-    .edu-nav-bar--compact .edu-nav-btn {
-        padding: 0;
-        width: 44px;
-    }
-    .edu-nav-bar--compact .edu-nav-label {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        white-space: nowrap;
-    }
-}
 @media (max-width: 479px) {
     .edu-nav-bar .edu-nav-optional {
         display: none;
@@ -616,9 +602,176 @@
 .edu-nav-links {
     display: contents;
 }
-/* Compact (game header) menu button: phones only. */
+/* Compact (game header) menu button: shown when the header is collapsed.
+ * Positioned so the absolute panel hangs off the button (768px and up);
+ * without it the panel resolved against the page and opened off-screen. */
 .edu-nav-more {
+    position: relative;
     display: none;
+}
+/*
+ * Header parent menus and the compact menu slide down smoothly instead of
+ * popping in: they stay rendered (inert while closed) so the close also
+ * animates. Game menu panels keep using [hidden].
+ */
+.edu-nav-menu-panel,
+.edu-nav-more-panel {
+    display: none;
+    opacity: 0;
+    transform: translateY(-8px) scaleY(0.96);
+    transform-origin: top right;
+    animation: none;
+    transition:
+        opacity 180ms ease,
+        transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        display 240ms allow-discrete;
+}
+.edu-nav-menu-panel[data-open='true'],
+.edu-nav-more-panel[data-open='true'] {
+    display: flex;
+    opacity: 1;
+    transform: none;
+}
+@starting-style {
+    .edu-nav-menu-panel[data-open='true'],
+    .edu-nav-more-panel[data-open='true'] {
+        opacity: 0;
+        transform: translateY(-8px) scaleY(0.96);
+    }
+}
+.edu-nav-menu-panel {
+    width: min(280px, calc(100vw - 24px));
+}
+@media (max-width: 767px) {
+    .edu-nav-menu-panel {
+        width: auto;
+    }
+}
+.edu-nav-menu-panel ul {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.edu-nav-menu-divider {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 2px solid rgba(21, 27, 46, 0.1);
+}
+/* Phone menu sections: parent row, children slide down (grid-rows trick). */
+.edu-nav-section-toggle {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.edu-nav-section-toggle .edu-game-menu-title {
+    flex: 1;
+}
+.edu-nav-section-chevron {
+    color: rgba(21, 27, 46, 0.7);
+}
+.edu-nav-section-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+        grid-template-rows 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 200ms ease;
+}
+.edu-nav-section[data-open='true'] > .edu-nav-section-panel {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+.edu-nav-section-panel > ul {
+    min-height: 0;
+    overflow: hidden;
+    margin-left: 22px;
+    padding-left: 10px;
+    border-left: 2px dashed rgba(21, 27, 46, 0.18);
+}
+/* Burger turns into a close icon. */
+.edu-nav-burger {
+    position: relative;
+    display: grid;
+    width: 18px;
+    height: 18px;
+}
+.edu-nav-burger svg {
+    grid-area: 1 / 1;
+    transition:
+        transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 160ms ease;
+}
+.edu-nav-burger svg:last-child {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.6);
+}
+.edu-nav-burger[data-open='true'] svg:first-child {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.6);
+}
+.edu-nav-burger[data-open='true'] svg:last-child {
+    opacity: 1;
+    transform: none;
+}
+/* Label <-> icon: the label fades and the button width eases. */
+.edu-nav-bar .edu-nav-btn {
+    transition:
+        transform 120ms ease,
+        box-shadow 120ms ease,
+        background-color 120ms ease;
+}
+.edu-nav-bar .edu-nav-label {
+    animation: edu-nav-label-in 220ms ease both;
+}
+@keyframes edu-nav-label-in {
+    from {
+        opacity: 0;
+        transform: translateX(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+/* While a button morphs between label and icon the label clips inside it. */
+.edu-nav-bar .edu-nav-btn--morph {
+    justify-content: flex-start;
+    padding-inline: 11px;
+}
+.edu-nav-bar .edu-nav-btn--morph .edu-nav-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: clip;
+}
+.edu-nav-bar .edu-nav-btn[data-folded] > svg:first-child {
+    animation: edu-nav-icon-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes edu-nav-icon-pop {
+    from {
+        transform: scale(0.7);
+    }
+    to {
+        transform: none;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .edu-nav-menu-panel,
+    .edu-nav-more-panel,
+    .edu-nav-section-panel,
+    .edu-nav-burger svg,
+    .edu-nav-bar .edu-nav-btn {
+        transition: none;
+    }
+    .edu-nav-bar .edu-nav-label,
+    .edu-nav-bar .edu-nav-btn[data-folded] > svg:first-child {
+        animation: none;
+    }
 }
 .edu-nav-more-panel ul {
     display: flex;
@@ -671,22 +824,23 @@
 }
 /*
  * Game headers share the row with the game logo, title, clock and points:
- * below 1280px every nav item folds into the menu button (bell stays) so the
- * game title stays readable.
+ * when even icon-only buttons do not fit, every nav item folds into the menu
+ * button (bell stays) so the game title stays readable (use-nav-fold.ts sets
+ * data-collapsed).
  */
-@media (max-width: 1279px) {
-    .edu-nav-bar--compact .edu-nav-links {
-        display: none;
-    }
-    .edu-nav-bar--compact .edu-nav-more {
-        display: block;
-    }
+.edu-nav-bar--compact[data-collapsed] .edu-nav-links {
+    display: none;
+}
+.edu-nav-bar--compact[data-collapsed] .edu-nav-more {
+    display: block;
 }
 /* Phones: dim the page behind open nav panels so they read as one layer. */
 @media (max-width: 767px) {
-    .edu-game-menu:has(> .edu-game-menu-panel:not([hidden]))::before,
+    .edu-game-menu:has(
+            > .edu-game-menu-panel:not([hidden]):not([data-open='false'])
+        )::before,
     .edu-notice:has(> .edu-notice-panel:not([hidden]))::before,
-    .edu-nav-more:has(> .edu-nav-more-panel:not([hidden]))::before {
+    .edu-nav-more:has(> .edu-nav-more-panel[data-open='true'])::before {
         content: '';
         position: fixed;
         inset: 0;
@@ -794,24 +948,6 @@
  * the brand, so the clock shows the time only (hours and minutes).
  */
 /*
- * 1024–1199px: the clock takes the room of the logout label, so log out
- * becomes icon-only (it keeps its aria-label and tooltip).
- */
-@media (min-width: 1024px) and (max-width: 1199px) {
-    .edu-nav-bar [data-testid='nav-logout'] {
-        padding: 0;
-        width: 44px;
-    }
-    .edu-nav-bar [data-testid='nav-logout'] .edu-nav-label {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        white-space: nowrap;
-    }
-}
-/*
  * 1024–1119px: the feedback and ability icons join the plain player nav, so labelled
  * buttons get slimmer padding and gaps to keep the header on one row.
  */
@@ -830,39 +966,6 @@
         .edu-nav-btn:not(.edu-nav-btn--icon, [data-testid='nav-logout']) {
         gap: 6px;
         padding: 0 7px;
-    }
-}
-/*
- * Teacher/admin accounts have extra nav items. Up to 1365px their log out
- * button is icon-only, and up to 1199px every item is (labels stay for
- * screen readers and tooltips).
- */
-@media (min-width: 1024px) and (max-width: 1365px) {
-    .edu-nav-bar--crowded [data-testid='nav-logout'] {
-        padding: 0;
-        width: 44px;
-    }
-    .edu-nav-bar--crowded [data-testid='nav-logout'] .edu-nav-label {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        white-space: nowrap;
-    }
-}
-@media (min-width: 1024px) and (max-width: 1199px) {
-    .edu-nav-bar--crowded .edu-nav-btn {
-        padding: 0;
-        width: 44px;
-    }
-    .edu-nav-bar--crowded .edu-nav-label {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        white-space: nowrap;
     }
 }
 @media (max-width: 1199px) {
@@ -922,44 +1025,30 @@
 }
 
 /*
- * Game headers (compact nav) share the row with the game logo, title, points
- * and sound buttons. Labelled nav buttons left the title no room (title and
- * tagline squeezed to 0px), so the compact nav stays icon-only up to 1535px
- * (1799px for admins, who have more items) and the clock drops its date and seconds there. Labels stay for screen readers and tooltips.
+ * Labels fold to icons only when the header runs out of room, one by one
+ * from the rightmost button (hooks/use-nav-fold.ts sets data-folded). The
+ * label stays for screen readers and the tooltip.
  */
+.edu-nav-bar .edu-nav-btn[data-folded] {
+    padding: 0;
+    width: 44px;
+}
+.edu-nav-bar .edu-nav-btn[data-folded] .edu-nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+/* Admin game headers: the clock drops its date and seconds below 1800px. */
 @media (max-width: 1799px) {
-    .edu-nav-bar--compact.edu-nav-bar--crowded .edu-nav-btn {
-        padding: 0;
-        width: 44px;
-    }
-    .edu-nav-bar--compact.edu-nav-bar--crowded .edu-nav-label {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        white-space: nowrap;
-    }
     .edu-nav-bar--compact.edu-nav-bar--crowded .edu-clock {
         padding: 0 10px;
     }
     .edu-nav-bar--compact.edu-nav-bar--crowded .edu-clock-day,
     .edu-nav-bar--compact.edu-nav-bar--crowded .edu-clock-seconds {
         display: none;
-    }
-}
-@media (max-width: 1535px) {
-    .edu-nav-bar--compact .edu-nav-btn {
-        padding: 0;
-        width: 44px;
-    }
-    .edu-nav-bar--compact .edu-nav-label {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        white-space: nowrap;
     }
 }
 
@@ -1010,6 +1099,7 @@
 }
 .edu-nav-btn[data-tip]::after {
     content: attr(data-tip);
+    display: none;
     position: absolute;
     top: calc(100% + 8px);
     left: 50%;
@@ -1031,6 +1121,16 @@
         opacity 0.12s ease,
         transform 0.12s ease;
 }
+.edu-nav-btn[data-tip]:hover::after,
+.edu-nav-btn[data-tip]:focus-visible::after {
+    display: block;
+}
+@starting-style {
+    .edu-nav-btn[data-tip]:hover::after,
+    .edu-nav-btn[data-tip]:focus-visible::after {
+        opacity: 0;
+    }
+}
 .edu-nav-btn[data-tip]:hover::after {
     opacity: 1;
     transform: translate(-50%, 0);
@@ -1042,6 +1142,7 @@
     transform: translate(-50%, 0);
 }
 /* Rightmost buttons: keep the tooltip inside the viewport. */
+.edu-nav-bar > .edu-notice .edu-nav-btn[data-tip]::after,
 .edu-nav-bar > :last-child .edu-nav-btn[data-tip]::after,
 .edu-nav-bar
     > .edu-nav-links:last-of-type
@@ -1050,6 +1151,7 @@
     right: 0;
     transform: translate(0, -2px);
 }
+.edu-nav-bar > .edu-notice .edu-nav-btn[data-tip]:hover::after,
 .edu-nav-bar > :last-child .edu-nav-btn[data-tip]:hover::after,
 .edu-nav-bar
     > .edu-nav-links:last-of-type
