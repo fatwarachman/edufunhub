@@ -14,6 +14,8 @@ return [
     'school_name_required' => 'Enter your last school.',
     'school_name_invalid' => 'School name must be 3 to 120 characters.',
     'school_city_invalid' => 'City or regency must be 3 to 100 characters.',
+    'school_level_invalid' => 'Choose a school level: TK, SD, SMP, SMA (or equivalent) or SLB.',
+    'school_npsn_invalid' => 'School not found in the official list. Pick it again from the list.',
     'player_details_required' => 'Complete your date of birth and last school before playing.',
     'gender_invalid' => 'Choose boy or girl.',
     'skin_invalid' => 'Choose an available skin tone.',

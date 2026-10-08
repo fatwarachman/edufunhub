@@ -44,6 +44,10 @@ export function SearchableSelect({
     loadingText,
     leadingIcon,
     invalid,
+    disabled = false,
+    onSearchChange,
+    footer,
+    selectedLabel,
 }: {
     id?: string;
     value: string;
@@ -64,11 +68,23 @@ export function SearchableSelect({
     /** Icon drawn inside the trigger on the left; add left padding via className. */
     leadingIcon?: ReactNode;
     invalid?: boolean;
+    disabled?: boolean;
+    /**
+     * Server-side search: the parent fetches matching options for each query
+     * and the list is no longer filtered in the browser.
+     */
+    onSearchChange?: (search: string) => void;
+    /** Note under the option list (e.g. "showing 50 of 2,570"). */
+    footer?: ReactNode;
+    /** Trigger label for a value that is not among the current options. */
+    selectedLabel?: string;
 }) {
     const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState('');
     const selected =
         options.find((option) => option.value === value) ??
-        (value ? { value, label: value } : undefined);
+        (value ? { value, label: selectedLabel ?? value } : undefined);
+    const remote = onSearchChange !== undefined;
 
     const choose = (next: string) => {
         onChange(next);
@@ -76,7 +92,16 @@ export function SearchableSelect({
     };
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover
+            open={open && !disabled}
+            onOpenChange={(next) => {
+                setOpen(next);
+                if (!next && remote && search !== '') {
+                    setSearch('');
+                    onSearchChange?.('');
+                }
+            }}
+        >
             <div className="relative">
                 {name && <input type="hidden" name={name} value={value} />}
                 {leadingIcon && (
@@ -92,9 +117,10 @@ export function SearchableSelect({
                         aria-expanded={open}
                         aria-haspopup="listbox"
                         aria-invalid={invalid ? true : undefined}
+                        disabled={disabled}
                         className={cn(
                             className,
-                            'flex items-center gap-2 pr-16 text-left',
+                            'flex items-center gap-2 pr-16 text-left disabled:cursor-not-allowed disabled:bg-[#f4f1e8] disabled:opacity-100',
                         )}
                         data-testid={testId}
                     >
@@ -109,7 +135,7 @@ export function SearchableSelect({
                     </button>
                 </PopoverTrigger>
                 <span className="pointer-events-none absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-1">
-                    {value && clearLabel && (
+                    {value && clearLabel && !disabled && (
                         <button
                             type="button"
                             onClick={() => onChange('')}
@@ -138,6 +164,7 @@ export function SearchableSelect({
             >
                 <Command
                     className="bg-white text-[#151b2e]"
+                    shouldFilter={!remote}
                     filter={(itemValue, search, keywords) =>
                         [itemValue, ...(keywords ?? [])]
                             .join(' ')
@@ -148,6 +175,15 @@ export function SearchableSelect({
                     }
                 >
                     <CommandInput
+                        {...(remote
+                            ? {
+                                  value: search,
+                                  onValueChange: (next: string) => {
+                                      setSearch(next);
+                                      onSearchChange(next);
+                                  },
+                              }
+                            : {})}
                         placeholder={searchPlaceholder}
                         className="h-11 font-semibold placeholder:text-[#4b5268]"
                         data-testid={testId ? `${testId}-search` : undefined}
@@ -199,6 +235,11 @@ export function SearchableSelect({
                             ))}
                         </CommandGroup>
                     </CommandList>
+                    {footer && (
+                        <div className="border-t-2 border-[#151b2e]/10 px-3 py-2 text-xs font-semibold text-[#4b5268]">
+                            {footer}
+                        </div>
+                    )}
                 </Command>
             </PopoverContent>
         </Popover>

@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Concerns;
 
 use App\Models\PlayerProfile;
+use App\Models\School;
+use Illuminate\Validation\Rule;
 
 trait PlayerDetailsRules
 {
@@ -18,6 +20,8 @@ trait PlayerDetailsRules
             ],
             'school_name' => ['required', 'string', 'min:3', 'max:'.PlayerProfile::SCHOOL_NAME_MAX],
             'school_city' => ['nullable', 'string', 'min:3', 'max:'.PlayerProfile::SCHOOL_CITY_MAX],
+            'school_level' => ['nullable', 'string', Rule::in(School::LEVELS)],
+            'school_npsn' => ['nullable', 'string', 'max:10', Rule::exists('schools', 'npsn')],
         ];
     }
 
@@ -36,6 +40,11 @@ trait PlayerDetailsRules
             'school_city.string' => __('character.school_city_invalid'),
             'school_city.min' => __('character.school_city_invalid'),
             'school_city.max' => __('character.school_city_invalid'),
+            'school_level.string' => __('character.school_level_invalid'),
+            'school_level.in' => __('character.school_level_invalid'),
+            'school_npsn.string' => __('character.school_npsn_invalid'),
+            'school_npsn.max' => __('character.school_npsn_invalid'),
+            'school_npsn.exists' => __('character.school_npsn_invalid'),
         ];
     }
 }

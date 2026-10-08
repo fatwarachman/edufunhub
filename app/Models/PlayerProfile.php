@@ -15,7 +15,7 @@ class PlayerProfile extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['color', 'accessory', 'nickname', 'grade', 'question_level', 'birth_date', 'school_name', 'school_city', 'gender', 'skin', 'hair_color', 'equipped'];
+    protected $fillable = ['color', 'accessory', 'nickname', 'grade', 'question_level', 'birth_date', 'school_name', 'school_city', 'school_level', 'school_npsn', 'gender', 'skin', 'hair_color', 'equipped'];
 
     public const COLORS = ['amber', 'coral', 'teal', 'violet'];
 

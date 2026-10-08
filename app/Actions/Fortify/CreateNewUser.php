@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Http\Requests\Concerns\PlayerDetailsRules;
+use App\Models\School;
 use App\Models\User;
 use App\Services\WorkspaceService;
 use Illuminate\Support\Facades\DB;
@@ -50,11 +51,13 @@ class CreateNewUser implements CreatesNewUsers
                 'locale' => app()->getLocale(),
             ]);
             $user->assignParticipantRole();
-            $user->playerProfile()->create([
+            $user->playerProfile()->create(School::officialDetails([
                 'birth_date' => $input['birth_date'],
                 'school_name' => $input['school_name'],
                 'school_city' => $input['school_city'],
-            ]);
+                'school_level' => $input['school_level'] ?? null,
+                'school_npsn' => $input['school_npsn'] ?? null,
+            ]));
 
             // Workspace creation is now handled exclusively via the Onboarding Wizard
 

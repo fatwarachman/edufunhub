@@ -3,6 +3,9 @@
 # Run database migrations
 php artisan migrate --force
 
+# Official school list for the school picker (first boot only, ~25 s)
+php artisan schools:import --if-empty || true
+
 # Cache config + views (skip route cache — starter has duplicate route name collision)
 php artisan config:cache
 php artisan view:cache

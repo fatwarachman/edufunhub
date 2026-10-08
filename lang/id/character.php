@@ -14,6 +14,8 @@ return [
     'school_name_required' => 'Isi nama sekolah terakhir.',
     'school_name_invalid' => 'Nama sekolah 3 sampai 120 karakter.',
     'school_city_invalid' => 'Nama kota/kabupaten 3 sampai 100 karakter.',
+    'school_level_invalid' => 'Pilih jenjang sekolah: TK, SD, SMP, SMA sederajat atau SLB.',
+    'school_npsn_invalid' => 'Sekolah tidak ditemukan di daftar resmi. Pilih lagi dari daftar.',
     'player_details_required' => 'Lengkapi tanggal lahir dan sekolah terakhir dulu sebelum bermain.',
     'gender_invalid' => 'Pilih laki-laki atau perempuan.',
     'skin_invalid' => 'Pilih warna kulit yang tersedia.',
