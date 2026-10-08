@@ -1,4 +1,5 @@
 import { type PlayerAbility } from '@/components/ability-card';
+import { AbilityHistory } from '@/components/admin/ability-history';
 import { ConfirmDialog } from '@/components/admin/admin-kit';
 import {
     EmptyState,
@@ -27,7 +28,6 @@ import {
     CircleAlert,
     Database,
     Gamepad2,
-    History,
     Lightbulb,
     Loader2,
     Sparkles,
@@ -35,7 +35,7 @@ import {
     ThumbsUp,
     TrendingUp,
 } from 'lucide-react';
-import { type ReactNode, useEffect, useId, useState } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 
 type Primitive = string | number | boolean | null;
 
@@ -114,7 +114,34 @@ export interface AbilityAssessment {
     updated_at: string | null;
     error: string | null;
     result: AbilityResult | null;
+    /** Average subject score of a finished analysis. */
+    average: number | null;
+    /** Model input; only sent for the latest and latest finished analysis. */
     input: AbilityInput | null;
+}
+
+export interface ComparisonSubject {
+    subject: string;
+    previous: number | null;
+    current: number | null;
+    delta: number | null;
+    direction: 'up' | 'down' | 'same' | 'new' | 'gone' | string;
+}
+
+/** Latest finished analysis compared with the one before it (server-side). */
+export interface AbilityComparisonData {
+    previous: { id: number; date: string | null; average: number | null };
+    current: { id: number; date: string | null; average: number | null };
+    average_delta: number | null;
+    direction: string;
+    subjects: ComparisonSubject[];
+    improved: number;
+    declined: number;
+    unchanged: number;
+    strengths_gained: string[];
+    strengths_lost: string[];
+    weaknesses_new: string[];
+    weaknesses_resolved: string[];
 }
 
 export interface AbilityAssessments {
@@ -123,6 +150,9 @@ export interface AbilityAssessments {
     model: string | null;
     running: boolean;
     items: AbilityAssessment[];
+    /** All analyses of the player (items holds the latest ones). */
+    total: number;
+    comparison: AbilityComparisonData | null;
     preview: AbilityInput | null;
     /** Player-facing view of the latest finished analysis (WhatsApp share). */
     share?: (PlayerAbility & { owner_name: string }) | null;
@@ -142,24 +172,6 @@ const CONFIDENCE: Record<string, { label: string; tone: string }> = {
     tinggi: {
         label: 'High confidence',
         tone: 'border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950/40 dark:text-green-300',
-    },
-};
-
-const STATUS: Record<
-    AbilityAssessment['status'],
-    { label: string; tone: string }
-> = {
-    pending: {
-        label: 'Running',
-        tone: 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300',
-    },
-    done: {
-        label: 'Done',
-        tone: 'bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-300',
-    },
-    failed: {
-        label: 'Failed',
-        tone: 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300',
     },
 };
 
@@ -250,6 +262,7 @@ export function AbilityAssessmentPanel({
     const errors = usePage<{ errors?: Record<string, string> }>().props.errors;
     const [confirm, setConfirm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [viewedId, setViewedId] = useState<number | null>(null);
     const { start, stop } = usePoll(
         POLL_MS,
         { only: ['abilityAssessments'] },
@@ -266,9 +279,22 @@ export function AbilityAssessmentPanel({
     }, [data.running, start, stop]);
 
     const latest = data.items[0] ?? null;
-    const shown = data.items.find((item) => item.status === 'done') ?? null;
-    const history = data.items.filter((item) => item.id !== shown?.id);
-    const input = shown?.input ?? latest?.input ?? data.preview;
+    const latestDone =
+        data.items.find((item) => item.status === 'done') ?? null;
+    const shown =
+        data.items.find(
+            (item) =>
+                item.id === viewedId && item.status === 'done' && item.result,
+        ) ?? latestDone;
+    const input = latestDone?.input ?? latest?.input ?? data.preview;
+    const resultRef = useRef<HTMLDivElement>(null);
+    const view = (id: number) => {
+        setViewedId(id);
+        resultRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+        });
+    };
     const busy = data.running || submitting;
 
     const run = () => {
@@ -340,7 +366,31 @@ export function AbilityAssessmentPanel({
                 {data.share && <ShareBar share={data.share} />}
 
                 {shown?.result ? (
-                    <ResultView assessment={shown} result={shown.result} />
+                    <div
+                        ref={resultRef}
+                        className="flex scroll-mt-4 flex-col gap-3"
+                    >
+                        {shown.id !== latestDone?.id && (
+                            <Notice
+                                tone="warning"
+                                testId="ability-viewing-older"
+                            >
+                                <span>
+                                    {tr('Showing an older analysis from {0}.', [
+                                        formatDateTime(shown.created_at),
+                                    ])}{' '}
+                                    <button
+                                        type="button"
+                                        className="font-medium underline underline-offset-2"
+                                        onClick={() => setViewedId(null)}
+                                    >
+                                        {tr('Show the latest')}
+                                    </button>
+                                </span>
+                            </Notice>
+                        )}
+                        <ResultView assessment={shown} result={shown.result} />
+                    </div>
                 ) : (
                     latest?.status !== 'pending' && (
                         <EmptyState
@@ -351,7 +401,15 @@ export function AbilityAssessmentPanel({
                     )
                 )}
 
-                {history.length > 0 && <HistoryList items={history} />}
+                {data.items.length > 0 && (
+                    <AbilityHistory
+                        items={data.items}
+                        total={data.total}
+                        comparison={data.comparison}
+                        viewedId={shown?.id ?? null}
+                        onView={view}
+                    />
+                )}
 
                 {input && <InputData input={input} />}
             </div>
@@ -787,73 +845,6 @@ function Disclosure({
                     </div>
                 </div>
             </div>
-        </div>
-    );
-}
-
-function HistoryList({ items }: { items: AbilityAssessment[] }) {
-    const subjectLabel = useSubjectLabel();
-
-    return (
-        <div className="flex flex-col gap-2" data-testid="ability-history">
-            <SectionTitle icon={History} title="Previous analyses" />
-            {items.map((item) => (
-                <Disclosure
-                    key={item.id}
-                    icon={History}
-                    title={
-                        <span className="flex flex-wrap items-center gap-2">
-                            {formatDateTime(item.created_at)}
-                            <span
-                                className={cn(
-                                    'rounded-full px-2 py-0.5 text-[11px] font-semibold',
-                                    STATUS[item.status].tone,
-                                )}
-                            >
-                                {tr(STATUS[item.status].label)}
-                            </span>
-                        </span>
-                    }
-                    meta={[
-                        item.model,
-                        item.requested_by && tr('by {0}', [item.requested_by]),
-                    ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                >
-                    {item.status === 'done' && item.result ? (
-                        <div className="flex flex-col gap-3 text-sm">
-                            <p className="[overflow-wrap:anywhere] whitespace-pre-line text-foreground">
-                                {item.result.summary}
-                            </p>
-                            {Object.keys(item.result.subject_scores).length >
-                                0 && (
-                                <div className="flex flex-wrap gap-1.5">
-                                    {Object.entries(
-                                        item.result.subject_scores,
-                                    ).map(([subject, score]) => (
-                                        <span
-                                            key={subject}
-                                            className="rounded-md bg-muted px-2 py-0.5 text-xs text-foreground"
-                                        >
-                                            {subjectLabel(subject)}{' '}
-                                            <strong className="tabular-nums">
-                                                {score}
-                                            </strong>
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <p className="text-sm [overflow-wrap:anywhere] text-muted-foreground">
-                            {item.status === 'pending'
-                                ? tr('Still running.')
-                                : (item.error ?? tr('Unknown error'))}
-                        </p>
-                    )}
-                </Disclosure>
-            ))}
         </div>
     );
 }
