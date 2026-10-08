@@ -87,9 +87,11 @@ type Challenge struct {
 	Answers []questions.Answer
 	// LastWorth is what the last correct answer was worth in portal points.
 	LastWorth int
-	current   questions.Question
-	gen       *questions.Generator
-	rollFn    func() int
+	// Resumed is true when this attempt continues a failed one.
+	Resumed bool
+	current questions.Question
+	gen     *questions.Generator
+	rollFn  func() int
 }
 
 // Feedback describes the result of one answer.
@@ -113,6 +115,31 @@ func Start(kind string, checkpoint, difficulty int, gen *questions.Generator, no
 		return c
 	}
 	c.next(now)
+	return c
+}
+
+// Progress is what a player keeps from a failed attempt at a station, so a
+// retry continues from there instead of starting over.
+type Progress struct {
+	Correct  int
+	Position int
+}
+
+// Saved returns the progress to keep after this challenge failed.
+func (c *Challenge) Saved() Progress {
+	return Progress{Correct: c.Correct, Position: c.Position}
+}
+
+// Resume starts a challenge that continues a saved attempt: correct answers
+// (and the snakes & ladders square) are kept, the remaining work is fresh.
+func Resume(kind string, checkpoint, difficulty int, gen *questions.Generator, saved Progress, now time.Time) *Challenge {
+	c := Start(kind, checkpoint, difficulty, gen, now)
+	c.Resumed = saved.Correct > 0 || saved.Position > 1
+	c.Correct = min(max(saved.Correct, 0), max(c.Rules.Needed-1, 0))
+	if kind == SnakesLadders {
+		c.Position = min(max(saved.Position, 1), BoardSize-1)
+		c.Correct = 0
+	}
 	return c
 }
 
@@ -149,12 +176,16 @@ func (c *Challenge) Answer(value string, locale string, now time.Time) (Feedback
 	}
 	value = strings.TrimSpace(value)
 	var ok bool
+	var choice *int
 	switch c.Kind {
 	case TrueFalse:
 		if value != "true" && value != "false" {
 			return Feedback{}, ErrBadAnswer
 		}
 		ok = (value == "true") == (c.current.Answer == 1)
+		if c.current.FromBank {
+			choice = questions.TruthChoice(value == "true")
+		}
 	case MathSprint:
 		value = strings.ReplaceAll(value, "−", "-")
 		n, err := strconv.Atoi(value)
@@ -168,9 +199,10 @@ func (c *Challenge) Answer(value string, locale string, now time.Time) (Feedback
 			return Feedback{}, ErrBadAnswer
 		}
 		ok = i == c.current.Answer
+		choice = c.current.Original(i)
 	}
 	fb := Feedback{Correct: ok, Answer: c.answerText(locale), Hint: c.current.Hint.Get(locale)}
-	c.record(ok, now)
+	c.record(ok, choice, now)
 	return fb, nil
 }
 
@@ -240,7 +272,7 @@ func (c *Challenge) timeout(locale string, now time.Time) Feedback {
 		c.finish(c.Correct >= c.Rules.Needed)
 		return fb
 	}
-	c.record(false, now)
+	c.record(false, nil, now)
 	return fb
 }
 
@@ -255,9 +287,9 @@ func (c *Challenge) answerText(locale string) string {
 	}
 }
 
-func (c *Challenge) record(ok bool, now time.Time) {
+func (c *Challenge) record(ok bool, choice *int, now time.Time) {
 	if c.current.FromBank {
-		c.Answers = append(c.Answers, questions.Answer{Key: c.current.Key, Correct: ok})
+		c.Answers = append(c.Answers, questions.Answer{Key: c.current.Key, Correct: ok, Choice: choice})
 	}
 	if ok {
 		c.Correct++
