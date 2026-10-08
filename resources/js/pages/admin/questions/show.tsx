@@ -24,12 +24,16 @@ import { cn } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Brain,
     Cake,
+    ChartBarBig,
+    CircleAlert,
     CircleCheck,
     CircleX,
     Gamepad2,
     GraduationCap,
     History,
+    Hourglass,
     Lightbulb,
     ListChecks,
     Pencil,
@@ -37,10 +41,11 @@ import {
     School,
     Sparkles,
     Target,
+    TriangleAlert,
     UserPen,
     UsersRound,
 } from 'lucide-react';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ElementType, type ReactNode, useMemo, useState } from 'react';
 import {
     Bar,
     BarChart,
@@ -76,6 +81,31 @@ interface PlayerRow {
     first_correct: boolean;
     last_correct: boolean;
     last_answered_at: string | null;
+}
+
+interface ChoiceStat {
+    index: number;
+    text: string | null;
+    text_en: string | null;
+    is_correct: boolean;
+    count: number;
+    percent: number | null;
+}
+
+type UnderstandingLevel =
+    | 'understood'
+    | 'partial'
+    | 'misconception'
+    | 'not_understood'
+    | 'insufficient';
+
+interface Understanding {
+    level: UnderstandingLevel;
+    reason: string;
+    recorded: number;
+    correct_rate: number | null;
+    top_wrong: { index: number; count: number; percent: number | null } | null;
+    min_recorded: number;
 }
 
 interface Props {
@@ -136,6 +166,9 @@ interface Props {
             rank: number | null;
             of: number;
         };
+        choices: ChoiceStat[];
+        choice_totals: { recorded: number; unrecorded: number };
+        understanding: Understanding;
     };
     bands: { value: number; min: number; max: number }[];
 }
@@ -479,6 +512,13 @@ export default function QuestionShow({ question, stats }: Props) {
                         }
                     />
                 </div>
+
+                <ChoiceStats
+                    type={question.type}
+                    choices={stats.choices}
+                    totals={stats.choice_totals}
+                    understanding={stats.understanding}
+                />
 
                 {summary.answered === 0 ? (
                     <Panel title={tr('No answers yet')} icon={ListChecks}>
@@ -1051,3 +1091,302 @@ function BucketBars({
 QuestionShow.layout = (page: ReactNode) => (
     <AdminLayout title={tr('Question Statistics')}>{page}</AdminLayout>
 );
+
+const UNDERSTANDING: Record<
+    UnderstandingLevel,
+    {
+        icon: ElementType;
+        title: string;
+        explanation: string;
+        tip: string;
+        className: string;
+        iconClassName: string;
+    }
+> = {
+    understood: {
+        icon: CircleCheck,
+        title: 'Players understand this question',
+        explanation:
+            'Most players ({0}) pick the correct answer, so the concept is well understood.',
+        tip: 'Keep it as a warm-up or raise the level for a bigger challenge.',
+        className:
+            'border-emerald-500/40 bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-500/10',
+        iconClassName: 'text-emerald-600 dark:text-emerald-400',
+    },
+    partial: {
+        icon: Brain,
+        title: 'Players partly understand this question',
+        explanation:
+            'Only {0} answer correctly and the wrong answers are spread out, so the concept is not yet solid.',
+        tip: 'Repeat the concept with a short example and let players try a similar question again.',
+        className:
+            'border-sky-500/40 bg-sky-50 dark:border-sky-500/30 dark:bg-sky-500/10',
+        iconClassName: 'text-sky-600 dark:text-sky-400',
+    },
+    misconception: {
+        icon: TriangleAlert,
+        title: 'Possible misconception',
+        explanation:
+            'Many players ({0}) choose the same wrong answer {1}. They likely share the same wrong idea.',
+        tip: 'Explain why option {0} is wrong and contrast it with the correct answer.',
+        className:
+            'border-amber-500/40 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10',
+        iconClassName: 'text-amber-600 dark:text-amber-400',
+    },
+    not_understood: {
+        icon: CircleAlert,
+        title: 'Players do not understand this question yet',
+        explanation:
+            'Only {0} answer correctly. Most players are guessing or have not learned this material.',
+        tip: 'Reteach the basic concept, then check whether the question wording is clear for this grade.',
+        className:
+            'border-red-500/40 bg-red-50 dark:border-red-500/30 dark:bg-red-500/10',
+        iconClassName: 'text-red-600 dark:text-red-400',
+    },
+    insufficient: {
+        icon: Hourglass,
+        title: 'Not enough data yet',
+        explanation:
+            'Only {0} answers have a recorded choice. The analysis needs at least {1}.',
+        tip: 'Use this question in more games to get a reliable picture.',
+        className: 'border-border bg-muted/40',
+        iconClassName: 'text-muted-foreground',
+    },
+};
+
+function choiceLetter(type: Props['question']['type'], index: number): string {
+    if (type === 'true_false') {
+        return index === 1 ? tr('True') : tr('False');
+    }
+    return String.fromCharCode(65 + index);
+}
+
+function ChoiceStats({
+    type,
+    choices,
+    totals,
+    understanding,
+}: {
+    type: Props['question']['type'];
+    choices: ChoiceStat[];
+    totals: { recorded: number; unrecorded: number };
+    understanding: Understanding;
+}) {
+    const rows =
+        type === 'true_false'
+            ? [...choices].sort((a, b) => b.index - a.index)
+            : choices;
+    const topWrong = understanding.top_wrong?.index ?? null;
+
+    return (
+        <div data-testid="question-choice-stats">
+            <Panel
+                title={tr('Answer distribution')}
+                description={tr(
+                    'How often each option was picked by players (EduFunHub analysis).',
+                )}
+                icon={ChartBarBig}
+            >
+                {totals.recorded === 0 ? (
+                    <EmptyState
+                        icon={ChartBarBig}
+                        title={tr('No recorded choices yet')}
+                        description={tr(
+                            'Choices are recorded for answers given after this feature was enabled.',
+                        )}
+                    />
+                ) : (
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
+                        <div className="flex min-w-0 flex-col gap-3">
+                            <ul className="flex flex-col gap-3">
+                                {rows.map((choice) => {
+                                    const isTopWrong =
+                                        !choice.is_correct &&
+                                        choice.index === topWrong &&
+                                        understanding.level !== 'insufficient';
+                                    return (
+                                        <li
+                                            key={choice.index}
+                                            data-choice={choice.index}
+                                            data-correct={choice.is_correct}
+                                            className="flex min-w-0 flex-col gap-1.5"
+                                        >
+                                            <div className="flex min-w-0 items-start justify-between gap-3 text-sm">
+                                                <span className="flex min-w-0 items-start gap-2">
+                                                    <span
+                                                        className={cn(
+                                                            'flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full px-1.5 text-xs font-bold',
+                                                            choice.is_correct
+                                                                ? 'bg-emerald-500 text-white'
+                                                                : isTopWrong
+                                                                  ? 'bg-amber-500 text-white'
+                                                                  : 'bg-muted text-muted-foreground',
+                                                        )}
+                                                    >
+                                                        {choice.is_correct ? (
+                                                            <CircleCheck
+                                                                className="size-4"
+                                                                aria-label={tr(
+                                                                    'Correct answer',
+                                                                )}
+                                                            />
+                                                        ) : type ===
+                                                          'true_false' ? (
+                                                            choiceLetter(
+                                                                type,
+                                                                choice.index,
+                                                            ).charAt(0)
+                                                        ) : (
+                                                            choiceLetter(
+                                                                type,
+                                                                choice.index,
+                                                            )
+                                                        )}
+                                                    </span>
+                                                    <span className="min-w-0 font-medium break-words text-foreground">
+                                                        {type === 'true_false'
+                                                            ? choiceLetter(
+                                                                  type,
+                                                                  choice.index,
+                                                              )
+                                                            : choice.text}
+                                                        {choice.is_correct && (
+                                                            <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
+                                                                {tr(
+                                                                    'Correct answer',
+                                                                )}
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </span>
+                                                <span className="shrink-0 text-right text-xs text-muted-foreground tabular-nums">
+                                                    <span className="font-semibold text-foreground">
+                                                        {formatPercent(
+                                                            choice.percent,
+                                                        )}
+                                                    </span>{' '}
+                                                    ·{' '}
+                                                    {formatNumber(choice.count)}
+                                                </span>
+                                            </div>
+                                            <div
+                                                className="h-2.5 w-full overflow-hidden rounded-full bg-muted"
+                                                role="progressbar"
+                                                aria-valuemin={0}
+                                                aria-valuemax={100}
+                                                aria-valuenow={
+                                                    choice.percent ?? 0
+                                                }
+                                            >
+                                                <div
+                                                    className={cn(
+                                                        'h-full rounded-full',
+                                                        choice.is_correct
+                                                            ? 'bg-emerald-500 dark:bg-emerald-400'
+                                                            : isTopWrong
+                                                              ? 'bg-amber-500 dark:bg-amber-400'
+                                                              : 'bg-slate-400 dark:bg-slate-500',
+                                                    )}
+                                                    style={{
+                                                        width: `${choice.percent ?? 0}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                            <p className="text-xs text-muted-foreground">
+                                {tr(
+                                    'Based on {0} answers with a recorded choice.',
+                                    [formatNumber(totals.recorded)],
+                                )}
+                                {totals.unrecorded > 0 &&
+                                    ` ${tr('{0} older answers were recorded before choices were tracked and are not included.', [formatNumber(totals.unrecorded)])}`}
+                            </p>
+                        </div>
+                        <UnderstandingCard
+                            type={type}
+                            understanding={understanding}
+                        />
+                    </div>
+                )}
+            </Panel>
+        </div>
+    );
+}
+
+function UnderstandingCard({
+    type,
+    understanding,
+}: {
+    type: Props['question']['type'];
+    understanding: Understanding;
+}) {
+    const meta = UNDERSTANDING[understanding.level];
+    const wrongLabel = understanding.top_wrong
+        ? choiceLetter(type, understanding.top_wrong.index)
+        : '';
+    const explanation =
+        understanding.level === 'insufficient'
+            ? tr(meta.explanation, [
+                  understanding.recorded,
+                  understanding.min_recorded,
+              ])
+            : understanding.level === 'misconception'
+              ? tr(meta.explanation, [
+                    formatPercent(understanding.top_wrong?.percent),
+                    wrongLabel,
+                ])
+              : tr(meta.explanation, [
+                    formatPercent(understanding.correct_rate),
+                ]);
+    const tip =
+        understanding.level === 'misconception'
+            ? tr(meta.tip, [wrongLabel])
+            : tr(meta.tip);
+
+    return (
+        <aside
+            data-testid="question-understanding"
+            data-level={understanding.level}
+            className={cn(
+                'flex min-w-0 flex-col gap-3 rounded-2xl border p-4',
+                meta.className,
+            )}
+        >
+            <div className="flex items-start gap-3">
+                <meta.icon
+                    className={cn('mt-0.5 size-6 shrink-0', meta.iconClassName)}
+                    aria-hidden
+                />
+                <div className="flex min-w-0 flex-col gap-0.5">
+                    <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                        {tr('Understanding analysis')}
+                    </span>
+                    <h4 className="font-semibold text-foreground">
+                        {tr(meta.title)}
+                    </h4>
+                </div>
+            </div>
+            <p className="text-sm text-foreground/90">{explanation}</p>
+            <p className="flex items-start gap-2 rounded-xl bg-background/70 px-3 py-2 text-sm text-foreground dark:bg-background/40">
+                <Lightbulb
+                    className="mt-0.5 size-4 shrink-0 text-amber-500"
+                    aria-hidden
+                />
+                <span>
+                    <span className="font-semibold">
+                        {tr('Teaching tip')}:{' '}
+                    </span>
+                    {tip}
+                </span>
+            </p>
+            <p className="text-xs text-muted-foreground">
+                {tr(
+                    'EduFunHub analysis result based on recorded answer choices.',
+                )}
+            </p>
+        </aside>
+    );
+}

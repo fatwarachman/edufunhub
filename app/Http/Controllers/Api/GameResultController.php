@@ -87,7 +87,10 @@ class GameResultController extends Controller
      * Correct answers to teacher questions lock in the compensation rate for the
      * player's grade at that moment.
      *
-     * @param  list<array{key: string, correct: bool}>  $answers
+     * The picked option (original bank index) is kept only when it exists on
+     * that question: options for multiple choice, 0/1 for true/false.
+     *
+     * @param  list<array{key: string, correct: bool, choice?: ?int}>  $answers
      */
     private function recordAnswers(GameHistory $history, array $answers): void
     {
@@ -95,7 +98,7 @@ class GameResultController extends Controller
             return;
         }
 
-        $questions = Question::query()->whereIn('key', array_column($answers, 'key'))->get(['id', 'key', 'source', 'created_by'])->keyBy('key');
+        $questions = Question::query()->whereIn('key', array_column($answers, 'key'))->get(['id', 'key', 'type', 'options', 'source', 'created_by'])->keyBy('key');
         $rate = null;
 
         foreach ($answers as $answer) {
@@ -116,6 +119,7 @@ class GameResultController extends Controller
                 'game_history_id' => $history->id,
                 'game_key' => $history->game_key,
                 'correct' => (bool) $answer['correct'],
+                'choice' => $this->validChoice($question, $answer['choice'] ?? null),
                 'compensation' => $compensation,
             ]);
 
@@ -124,6 +128,18 @@ class GameResultController extends Controller
                 'times_correct' => $answer['correct'] ? 1 : 0,
             ]);
         }
+    }
+
+    private function validChoice(Question $question, mixed $choice): ?int
+    {
+        if (! is_int($choice) && ! (is_string($choice) && ctype_digit($choice))) {
+            return null;
+        }
+
+        $choice = (int) $choice;
+        $count = $question->type === Question::TYPE_TRUE_FALSE ? 2 : count($question->options ?? []);
+
+        return $choice >= 0 && $choice < $count ? $choice : null;
     }
 
     /**

@@ -30,7 +30,7 @@ class QuestionController extends Controller
      */
     public function index(Request $request): Response
     {
-        $filters = $this->normalizeFilters($request->only(['search', 'game', 'band', 'subject', 'type', 'status', 'sort', 'source', 'bonus', 'author']));
+        $filters = $this->normalizeFilters($request->only(['search', 'game', 'band', 'level', 'subject', 'type', 'status', 'sort', 'source', 'bonus', 'author']));
         $subject = $filters['subject'] ?? null;
         $showList = in_array($subject, [...Subject::keys(), 'all'], true) || filled($filters['search'] ?? null) || filled($filters['source'] ?? null) || filled($filters['bonus'] ?? null);
         $bySource = Question::query()->selectRaw('source, COUNT(*) as total, SUM(CASE WHEN is_active THEN 0 ELSE 1 END) as inactive')->groupBy('source')->get()->toBase()->keyBy('source');
@@ -183,6 +183,7 @@ class QuestionController extends Controller
                 ->orWhere('key', $search)))
             ->when(in_array($filters['game'] ?? null, Question::GAMES, true), fn (Builder $q) => $q->whereJsonContains('games', $filters['game']))
             ->when(isset($filters['band']) && $filters['band'] !== '' && array_key_exists((int) $filters['band'], Question::BANDS), fn (Builder $q) => $q->where('band', (int) $filters['band']))
+            ->when(isset($filters['level']) && array_key_exists((int) $filters['level'], Question::LEVELS), fn (Builder $q) => $q->where('level', (int) $filters['level']))
             ->when(in_array($filters['subject'] ?? null, Subject::keys(), true), fn (Builder $q) => $q->where('subject', $filters['subject']))
             ->when(in_array($filters['type'] ?? null, Question::TYPES, true), fn (Builder $q) => $q->where('type', $filters['type']))
             ->tap(fn (Builder $q) => $this->applyCreator($q, $filters['source'] ?? null))
@@ -204,6 +205,7 @@ class QuestionController extends Controller
             ->when(($filters['sort'] ?? null) === 'hardest', fn (Builder $q) => $q->where('times_answered', '>', 0)->orderByRaw('times_correct * 1.0 / times_answered asc'))
             ->when(($filters['sort'] ?? null) === 'most_answered', fn (Builder $q) => $q->orderByDesc('times_answered'))
             ->orderBy('band')
+            ->orderBy('level')
             ->orderBy('id');
 
         // AI-created questions are reviewed in one go: show all of them on one page.
@@ -213,7 +215,7 @@ class QuestionController extends Controller
             ->paginate($perPage)
             ->withQueryString()
             ->through(fn (Question $question): array => [
-                ...$question->only(['id', 'key', 'type', 'band', 'grades', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
+                ...$question->only(['id', 'key', 'type', 'band', 'grades', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
                 'author' => $question->author?->name,
                 'success_rate' => $question->successRate(),
             ]);
@@ -250,7 +252,7 @@ class QuestionController extends Controller
 
         return Inertia::render('admin/questions/show', [
             'question' => [
-                ...$question->only(['id', 'key', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
+                ...$question->only(['id', 'key', 'type', 'band', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
                 'created_at' => $question->created_at?->toIso8601String(),
                 'updated_at' => $question->updated_at?->toIso8601String(),
                 'author' => $question->author ? [
@@ -270,7 +272,7 @@ class QuestionController extends Controller
     {
         return Inertia::render('admin/questions/form', [
             'question' => [
-                ...$question->only(['id', 'key', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'points', 'times_answered', 'times_correct']),
+                ...$question->only(['id', 'key', 'type', 'band', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'points', 'times_answered', 'times_correct']),
                 'success_rate' => $question->successRate(),
             ],
             ...$this->options(),
@@ -340,6 +342,7 @@ class QuestionController extends Controller
             'types' => Question::TYPES,
             'perCorrect' => PointRules::current()['per_correct'],
             'maxPoints' => Question::MAX_POINTS,
+            'levels' => collect(Question::LEVELS)->map(fn (int $multiplier, int $level): array => ['value' => $level, 'multiplier' => $multiplier])->values(),
             'bands' => collect(Question::BANDS)->map(fn (array $range, int $band): array => ['value' => $band, 'min' => $range[0], 'max' => $range[1]])->values(),
         ];
     }

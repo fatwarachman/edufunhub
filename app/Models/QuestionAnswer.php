@@ -10,12 +10,12 @@ class QuestionAnswer extends Model
     public const UPDATED_AT = null;
 
     /** @var list<string> */
-    protected $fillable = ['question_id', 'game_history_id', 'game_key', 'correct', 'compensation'];
+    protected $fillable = ['question_id', 'game_history_id', 'game_key', 'correct', 'choice', 'compensation'];
 
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['correct' => 'boolean', 'compensation' => 'integer'];
+        return ['correct' => 'boolean', 'choice' => 'integer', 'compensation' => 'integer'];
     }
 
     /** @return BelongsTo<Question, $this> */
