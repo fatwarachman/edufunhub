@@ -34,6 +34,16 @@ class OnlinePlayers
     }
 
     /**
+     * Small payload for the live counter poll: no ids, names or other PII.
+     *
+     * @return array{count: int, source: string}
+     */
+    public function summary(): array
+    {
+        return ['count' => $this->count(), 'source' => $this->source()];
+    }
+
+    /**
      * One page of online players for the viewer, the viewer first.
      *
      * @return LengthAwarePaginator<int, array<string, mixed>>

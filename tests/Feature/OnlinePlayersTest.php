@@ -3,6 +3,7 @@
 use App\Models\Friendship;
 use App\Models\User;
 use App\Services\Chat\ChatServiceClient;
+use App\Services\OnlinePlayers;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
@@ -33,6 +34,22 @@ function fakeOnline(array $ids): void
 {
     Http::fake([
         'chat.test/internal/online' => Http::response(['users' => $ids]),
+        'chat.test/*' => Http::response(['delivered' => 1]),
+    ]);
+}
+
+/**
+ * Fake the chat service with a live id list the test can change later
+ * (Http::fake stubs stack, so a second fakeOnline() would never be hit).
+ *
+ * @param  list<int>  $ids
+ */
+function fakeOnlineLive(array &$ids): void
+{
+    Http::fake([
+        'chat.test/internal/online' => function () use (&$ids) {
+            return Http::response(['users' => $ids]);
+        },
         'chat.test/*' => Http::response(['delivered' => 1]),
     ]);
 }
@@ -81,6 +98,112 @@ describe('dashboard counter', function (): void {
 
         $this->actingAs($me)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
             ->loadDeferredProps('online', fn (Assert $reload) => $reload->where('onlineCount', 2)));
+    });
+});
+
+describe('live refresh', function (): void {
+    it('returns only the count and source from the poll endpoint', function (): void {
+        [$me, $other] = [onlinePlayer('Ana'), onlinePlayer('Budi')];
+        fakeOnline([$me->id, $other->id]);
+
+        $this->actingAs($me)->getJson(route('players.online.count'))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertExactJson(['count' => 2, 'source' => 'live']);
+    });
+
+    it('serves a fresh count once the online cache expires', function (): void {
+        [$me, $other, $third] = [onlinePlayer('Ana'), onlinePlayer('Budi'), onlinePlayer('Cici')];
+        $live = [$me->id];
+        fakeOnlineLive($live);
+        $this->actingAs($me)->getJson(route('players.online.count'))->assertJsonPath('count', 1);
+
+        $live = [$me->id, $other->id, $third->id];
+        $this->getJson(route('players.online.count'))->assertJsonPath('count', 1);
+
+        $this->travel(OnlinePlayers::CACHE_SECONDS + 1)->seconds();
+        $this->getJson(route('players.online.count'))->assertJsonPath('count', 3);
+    });
+
+    it('re-evaluates the deferred dashboard counter on a partial reload', function (): void {
+        [$me, $other] = [onlinePlayer('Ana'), onlinePlayer('Budi')];
+        $live = [$me->id];
+        fakeOnlineLive($live);
+
+        $this->actingAs($me)->get(route('dashboard'))->assertInertia(function (Assert $page) use ($me, $other, &$live): void {
+            $page->loadDeferredProps('online', fn (Assert $reload) => $reload->where('onlineCount', 1));
+
+            $live = [$me->id, $other->id];
+            $this->travel(OnlinePlayers::CACHE_SECONDS + 1)->seconds();
+
+            $page->reloadOnly('onlineCount', fn (Assert $reload) => $reload->where('onlineCount', 2)->missing('history'));
+        });
+    });
+
+    it('refreshes the online page total and list with a partial reload on the same page', function (): void {
+        $me = onlinePlayer('Ana');
+        $live = collect(range(1, 25))->map(fn (int $i): int => onlinePlayer("P{$i}")->id)->push($me->id)->all();
+        fakeOnlineLive($live);
+
+        $this->actingAs($me)->get(route('players.online', ['page' => 2]))->assertInertia(function (Assert $page) use (&$live): void {
+            $page->where('pagination.total', 26)->has('players', 2);
+
+            $live[] = onlinePlayer('Zed')->id;
+            $this->travel(OnlinePlayers::CACHE_SECONDS + 1)->seconds();
+
+            $page->reloadOnly(['players', 'pagination', 'source'], fn (Assert $reload) => $reload
+                ->where('pagination.total', 27)
+                ->where('pagination.current_page', 2)
+                ->has('players', 3)
+                ->missing('players.0.email'));
+        });
+    });
+
+    it('falls back to the last page when the list shrinks below the current page', function (): void {
+        $me = onlinePlayer('Ana');
+        fakeOnline([$me->id]);
+
+        $this->actingAs($me)->get(route('players.online', ['page' => 3]))->assertInertia(fn (Assert $page) => $page
+            ->where('pagination.current_page', 1)
+            ->has('players', 1));
+    });
+
+    it('uses the recent-activity fallback for the poll endpoint', function (): void {
+        config(['chat-service.secret' => '']);
+        $me = onlinePlayer('Ana');
+        $me->forceFill(['last_seen_at' => now()])->save();
+        onlinePlayer('Budi')->forceFill(['last_seen_at' => now()->subHour()])->save();
+
+        $this->actingAs($me)->getJson(route('players.online.count'))->assertExactJson(['count' => 1, 'source' => 'recent']);
+    });
+
+    it('blocks guests and disabled accounts from the poll endpoint', function (): void {
+        fakeOnline([]);
+        $this->getJson(route('players.online.count'))->assertUnauthorized();
+        $this->get(route('players.online.count'))->assertRedirect(route('login'));
+
+        $disabled = onlinePlayer('Dodi', ['disabled_at' => now()]);
+        $this->actingAs($disabled)->getJson(route('players.online.count'))->assertForbidden();
+    });
+
+    it('rate limits the poll endpoint per user', function (): void {
+        $me = onlinePlayer('Ana');
+        fakeOnline([$me->id]);
+
+        foreach (range(1, 30) as $i) {
+            $this->actingAs($me)->getJson(route('players.online.count'))->assertOk();
+        }
+        $this->actingAs($me)->getJson(route('players.online.count'))->assertTooManyRequests();
+    });
+
+    it('polls only while the tab is visible', function (): void {
+        $hook = file_get_contents(resource_path('js/hooks/use-visible-interval.ts'));
+        $dashboard = file_get_contents(resource_path('js/pages/user/dashboard.tsx'));
+        $online = file_get_contents(resource_path('js/pages/players/online.tsx'));
+
+        expect($hook)->toContain('document.hidden')->toContain('visibilitychange')
+            ->and($dashboard)->toContain('useVisibleInterval(')->toContain("'/players/online/count'")
+            ->and($online)->toContain('useVisibleInterval(')->toContain("only: ['players', 'pagination', 'source']");
     });
 });
 

@@ -16,6 +16,7 @@ import { NavButton } from '@/components/site-nav';
 import { Vault, type VaultItem } from '@/components/vault';
 import { useFreshOnHistory } from '@/hooks/use-fresh-on-history';
 import { useTranslations } from '@/hooks/use-translations';
+import { useVisibleInterval } from '@/hooks/use-visible-interval';
 import PlayerLayout from '@/layouts/player-layout';
 import { gameIcon } from '@/lib/games';
 import { gradeLabel, hasGrade } from '@/lib/grade';
@@ -540,6 +541,9 @@ export default function Dashboard({
     );
 }
 
+/** How often the online counter refreshes; matches the server cache TTL. */
+const ONLINE_REFRESH_MS = 15_000;
+
 /** Live "players online" counter; opens the online players list. */
 function OnlineNowCard({
     count,
@@ -549,6 +553,32 @@ function OnlineNowCard({
     number: Intl.NumberFormat;
 }) {
     const { t } = useTranslations();
+    const [liveCount, setLiveCount] = useState<number | null>(null);
+    const shown = liveCount ?? count ?? 0;
+
+    useVisibleInterval(async () => {
+        try {
+            const response = await fetch('/players/online/count', {
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+            if ([401, 403, 419].includes(response.status)) {
+                return false;
+            }
+            if (!response.ok) {
+                return;
+            }
+            const body = (await response.json()) as { count?: unknown };
+            if (typeof body.count === 'number' && body.count >= 0) {
+                setLiveCount(body.count);
+            }
+        } catch {
+            // Offline for a moment: keep the last number, retry next tick.
+        }
+    }, ONLINE_REFRESH_MS);
 
     return (
         <Link
@@ -583,10 +613,11 @@ function OnlineNowCard({
                     <span
                         className="truncate text-xl font-bold tabular-nums"
                         data-testid="dash-online-count"
+                        title={t('playerDash.online.autoRefresh')}
                     >
                         {t('playerDash.online.count', {
-                            count: count ?? 0,
-                            formatted: number.format(count ?? 0),
+                            count: shown,
+                            formatted: number.format(shown),
                         })}
                     </span>
                 </Deferred>
