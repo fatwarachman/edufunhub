@@ -204,6 +204,10 @@ class GameResultController extends Controller
             return __('turbo_trivia.history_name', [], $locale);
         }
 
+        if ($gameKey === 'block-battle') {
+            return __('block_battle.history_name', [], $locale);
+        }
+
         if ($gameKey === 'crossword') {
             return __('crossword.history_name', ['level' => substr($mission, strlen('level-'))], $locale);
         }

@@ -1,7 +1,7 @@
 # Standar game multiplayer dan poin
 
 **Status:** Accepted (2026-10-04)
-Berlaku untuk semua game baru. Game lama yang sudah memakai standar ini: Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang, Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini, Lantai Runtuh, Peti Emas Misteri, Order Rush TKJ, Turbo Trivia.
+Berlaku untuk semua game baru. Game lama yang sudah memakai standar ini: Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang, Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini, Lantai Runtuh, Peti Emas Misteri, Order Rush TKJ, Turbo Trivia, Tetris Kuis / Block Battle.
 
 ## 1. Undangan (PIN + link)
 
@@ -97,6 +97,7 @@ Pemain tidak perlu membuka game dulu: kartu **Masuk ke permainan dengan PIN** (p
 | Peti Emas Misteri | 5 | benar × 10, maks. 40 jawaban (+20 juara emas) | 4150 |
 | Order Rush TKJ | 5 | modul benar × 10, maks. 40 (+20 juara) | 4150 |
 | Turbo Trivia | 5 | benar × 10, maks. 15 soal (+20 juara 1) | 1650 |
+| Tetris Kuis / Block Battle | 5 | benar × 10, maks. 40 jawaban dibayar (+20 juara 1 / benteng menang) | 4150 |
 
 ### Ular Tangga (`internal/snakes`)
 
@@ -341,6 +342,90 @@ Kontrak WebSocket `GET /game-ws/turbo-trivia?token=…&locale=id|en`:
 | server → semua | `race_event` | `finish`, `left` (ticker) |
 | server → klien | `podium_result` | `{podium[3], ranking[], you}` |
 | server → klien | `error` | `{code, for}` → `room.errors.*` |
+
+### Block Battle / Tetris Kuis (`internal/blockbattle`)
+
+Game balok kuis kelas untuk 1–50 murid (BATTLE minimal 2). Dua layar:
+proyektor (`/arena/block-battle/{pin}`, token `block-battle-host`, tidak ikut
+bermain) dan HP murid (`/play/block-battle/{pin}`, token `block-battle`). QR
+`/games/block-battle/qr/{pin}` membuka kontroler; `?pin=` dan link undangan
+standar `/games/block-battle/join/{pin}` juga.
+
+- **Goroutine per ruang + tick 20 Hz** (`Config.Tick` 50 ms): gravitasi, lock
+  delay, timer soal, jendela hadiah, monster. Papan pribadi (`board`) dikirim
+  maks. 1×/tick bila berubah; proyektor menerima `boards` / `fortress` 5 Hz.
+- **Fisika papan pribadi** (`board.go`, `field.go`, murni dan teruji): 10×20 +
+  2 baris spawn tersembunyi, 7-bag, rotasi SRS dengan kick sederhana (x 0, −1,
+  +1, −2, +2, lalu naik 1 baris). Gravitasi 1000 ms/baris, −100 ms tiap menit,
+  min. 250 ms; `PENALTY` membuatnya 2× lebih cepat. Lock delay 500 ms, di-reset
+  gerakan maks. 15×. Input `left right rotate rotate_ccw soft hard`, maks. 30
+  input/detik per pemain (sisanya dibuang diam-diam).
+- **Soal:** aliran soal per pemain (`questions.NewFor("block-battle", kelas
+  terendah)`, mapel dari `SubjectPicker`). 15 detik (20 detik bila ada kelas
+  0–2), jeda 2 detik. Waktu habis = salah. Jawaban < 300 ms ditolak `too_early`.
+- **BATTLE:** clear 1/2/3/4 baris kirim 0/1/2/4 baris garbage (baris `G`
+  penuh dengan satu lubang bersama per serangan). Garbage antre (`pending`) dan
+  naik saat bidak korban berikutnya terkunci; baris yang di-clear pada kunci itu
+  membatalkan antrean dulu. Benar → `reward_choice`: `I_PIECE` (bidak berikut
+  I) atau `ATTACK` (2 baris, +1 bila target `EXPOSED`); 6 detik tanpa pilihan =
+  `ATTACK`. Salah → `PENALTY` + `EXPOSED` 5 detik. Target: pemain exposed dulu,
+  lalu acak (tidak pernah diri sendiri). KO saat bidak baru tidak muat; kredit
+  KO ke penyerang terakhir ≤ 5 detik; peringkat = sisa hidup + 1. Selesai saat
+  ≤ 1 hidup, waktu habis (3/5/7/10 menit, default 5) atau host `end_game`;
+  yang masih hidup diurutkan baris lalu skor.
+- **WORDS (Kata & Rumus):** sel membawa glyph. Konten `WORDS_ID` / `WORDS_EN`
+  (kamus bawaan Go, kata 3–5 huruf) atau `MATH` (target 2..18, `d op d` atau
+  `d op d op d` dihitung kiri ke kanan, op `+ - x`). Setiap kunci memindai baris
+  kiri→kanan; baris cocok MELEDAK walau belum penuh: skor `panjang × 10 × combo`
+  (maks. ×5), target baru. Baris penuh tetap hilang (+5). Benar → bidak berikut I
+  bertuliskan target; salah → `PENALTY`. Tanpa garbage. Top-out = KO.
+- **FORTRESS (Benteng Co-op):** satu dinding 12×16 dengan 3 baris dasar `#`
+  berlubang. Benar → masuk antrean giliran (sekali); kepala antrean mendapat
+  `your_turn` 10 detik untuk menaruh satu bidak tambalan (gravitasi 700 ms,
+  timeout = hard drop). Baris tidak pernah hilang; baris penuh menjadi ARMORED
+  (sel butuh 2 pukulan) dan menembak meriam: monster −10 HP (HP 100). Monster
+  memukul tiap 7 detik (6 detik setelah 2 menit, 5 detik setelah 4 menit) di
+  kolom acak, menghancurkan 1–3 sel teratas. `strength` = sel terisi + 3 ×
+  baris armored − lubang. Kalah bila strength ≤ 0 / dinding kosong; menang bila
+  HP monster habis atau waktu habis dengan strength > 0. Salah → jeda 3 detik.
+- **Hasil:** `event_id` `bb-{user}-room-{nanos}`, misi `room`, maks. 50
+  pemain, `points.Cap(40) = 12150`, poin = jumlah `Worth()` maks. 40 jawaban
+  benar (+20 juara 1 / tim benteng menang), keluar di tengah =
+  `points.Abandoned`. `match.level` = menit, `players[].score` = skor,
+  `survival_ms` = lama papan hidup, `accuracy` = benar / dijawab.
+
+Kontrak WebSocket `GET /game-ws/block-battle?token=…&locale=id|en`:
+
+| Arah | Pesan | Isi |
+| --- | --- | --- |
+| klien → server | `create_room`, `start_game`, `end_game` | host saja |
+| klien → server | `configure` | host, lobi, `{mode: BATTLE\|WORDS\|FORTRESS, minutes: 3\|5\|7\|10, content: WORDS_ID\|WORDS_EN\|MATH}` (sebagian boleh) |
+| klien → server | `set_subject` | host, `{subject}` |
+| klien → server | `join_room` | `{room_code, player_id, avatar}` |
+| klien → server | `input` | `{action: left\|right\|rotate\|rotate_ccw\|soft\|hard}` |
+| klien → server | `submit_answer` | `{qid, choice_index}` |
+| klien → server | `claim_reward` | `{reward: I_PIECE\|ATTACK}` (BATTLE) |
+| klien → server | `leave_room`, `sync`, `locale`, `ping` | |
+| server → klien | `state_sync` | `{phase: NONE\|LOBBY\|COUNTDOWN\|PLAYING\|GAME_OVER, role, pin, mode, minutes, content, modes, durations, contents, subject, host, players[], min_players, max_players, countdown_ms?, remaining_ms?, you?{user_id, alive, rank}, boards?, fortress?, podium?, ranking?, result?, team?}` |
+| server → HP | `board` | `{cells, glyphs?, piece{type, cells[[x,y]], glyphs?}\|null, ghost, next[3]{type, glyphs?}, pending, lines, score, combo, level, gravity_ms, fx[], fx_ms{}, alive, rank, target?{kind: word\|math, text}}` |
+| server → proyektor | `boards` (5 Hz) | `{remaining_ms, alive, boards[{id, c, g?, alive, rank, lines, score, pending, fx, kos}]}` |
+| server → semua | `fortress` (5 Hz) | `{cols: 12, rows: 16, cells, armored[], strength, max_strength, monster{hp, max, next_hit_ms}, queue[{id,name}], turn{user, until_ms, piece, ghost}\|null, remaining_ms}` |
+| server → HP | `question` | `{qid, text, options[4], subject, worth, time_limit_ms, remaining_ms}` (tanpa kunci) |
+| server → HP | `answer_result` | `{qid, correct, correct_index, hint?, timeout?, reward_choice?, reward_ms?, penalty_ms?, queue_position?}` |
+| server → HP | `reward_result` | `{reward, target?{id,name}, lines?}` |
+| server → proyektor + 2 pemain | `attack` | `{from, to, lines, kind: line_clear\|quiz, exposed}` |
+| server → semua | `ko` | `{user, by?, rank, alive}` |
+| server → proyektor + pemain | `word` | `{user, word, points, combo}` |
+| server → HP | `your_turn` | `{until_ms}` (FORTRESS) |
+| server → semua | `monster_hit` | `{col, destroyed, strength}` (FORTRESS) |
+| server → klien | `podium_result` | `{podium[3], ranking[{user_id,name,rank,character,score,lines,kos,correct,wrong,accuracy,alive_ms,left}], you?{rank,won,points,score,correct,wrong,accuracy}, team?{won, reason: monster_defeated\|time_up\|wall_broken\|stopped}}` |
+| server → klien | `error` | `{code, for}` → `room.errors.*` (baru: `invalid_input`, `invalid_reward`, `no_reward`, `knocked_out`) |
+
+Encoding papan: baris dari atas (baris 0) ke bawah, `cols × rows` karakter;
+`.` kosong, `I J L O S T Z` warna bidak, `G` garbage, `#` dasar benteng.
+`c` di `boards` sudah memuat bidak jatuh. `glyphs`/`g` sama panjang, spasi =
+tanpa glyph. Koordinat `[x, y]` dari kiri/atas, baris spawn tersembunyi tidak
+dikirim.
 
 ## 3. Poin vs saldo toko
 

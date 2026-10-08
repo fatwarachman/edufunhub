@@ -164,7 +164,7 @@ func Use(b *Bank) {
 // builtin is the bundled bank used before the first sync and as a fallback.
 var builtin = func() *Bank {
 	items := []Item{}
-	both := []string{"flag-quest", "sky-quiz", "quiz-duel", "knowledge-train", "snakes-and-ladders", "market-math", "number-garden", "explore-indonesia", "mini-lab", "floor-drop", "economy-heist", "turbo-trivia"}
+	both := []string{"flag-quest", "sky-quiz", "quiz-duel", "knowledge-train", "snakes-and-ladders", "market-math", "number-garden", "explore-indonesia", "mini-lab", "floor-drop", "economy-heist", "turbo-trivia", "block-battle"}
 	for band, list := range choiceBank {
 		for i, q := range list {
 			items = append(items, Item{Key: fmt.Sprintf("mc-%d-%d", band, i), Type: TypeChoice, Band: band, Subject: q.subject, Prompt: q.prompt, Options: q.options, Answer: q.answer, Hint: q.hint, Games: both})

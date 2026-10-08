@@ -77,6 +77,10 @@ class RoomPinLookup
             return route('games.turbo-trivia.play', ['pin' => $pin], absolute: false);
         }
 
+        if ($game['key'] === 'block-battle') {
+            return route('games.block-battle.play', ['pin' => $pin], absolute: false);
+        }
+
         return route($game['route'], ['pin' => $pin], absolute: false);
     }
 }
