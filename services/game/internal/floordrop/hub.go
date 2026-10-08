@@ -144,6 +144,12 @@ func (h *Hub) Leave(c *Client) error { return h.send(c, "leave", command{}) }
 // Start begins or restarts the game (host only).
 func (h *Hub) Start(c *Client) error { return h.send(c, "start", command{}) }
 
+// SetSettings picks the game length in minutes and the player limit before
+// the game (host only); 0 keeps the current value.
+func (h *Hub) SetSettings(c *Client, minutes, limit int) error {
+	return h.send(c, "settings", command{minutes: minutes, limit: limit})
+}
+
 // SetSubject picks the question subject before the game (host only).
 func (h *Hub) SetSubject(c *Client, subject string) error {
 	return h.send(c, "subject", command{subject: subject})

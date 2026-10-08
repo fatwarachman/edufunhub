@@ -1,14 +1,14 @@
 // Package floordrop is the authoritative referee of Floor Drop, a trivia
 // battle royale for 2 to 100 players per room.
 //
-// A host (teacher screen) opens a room and shares the 6 digit PIN or the
-// invite link; students join from their own devices. Every round shows one
-// question with up to four answer tiles and a strict countdown. When the
-// time is up the correct tile stays and the wrong tiles drop: every player
-// who answered wrong or not at all is eliminated and becomes a spectator.
-// The answer window shrinks by 10% each round. The game ends when one
-// player is left, when everyone left fails in the same round (ranked by the
-// fastest submission of that round) or after MaxRounds.
+// A host (teacher screen) opens a room, picks the subject, the game length
+// and the player limit, and shares the 6 digit PIN or the invite link;
+// students join from their own devices. Every player stands on their own
+// floor tile. Each round shows one question with up to four answers and a
+// countdown. A wrong (or missing) answer cracks the player's floor; after
+// Lives cracks the floor breaks and the player falls out and becomes a
+// spectator. Questions keep coming until the chosen duration is over, one
+// player is left standing, everyone has fallen, or MaxRounds is reached.
 //
 // Concurrency: each room runs in its own goroutine and owns its state; the
 // WebSocket goroutines talk to it through a command channel. The answer gate
@@ -40,9 +40,39 @@ const (
 
 	MinPlayers = 2
 	MaxPlayers = 100
-	MaxRounds  = 20
-	Options    = 4
+	// MaxRounds bounds one game (and its point cap); the duration usually
+	// ends it first.
+	MaxRounds = 60
+	Options   = 4
+	// Lives is how many wrong answers a floor takes before it breaks.
+	Lives = 3
+	// DefaultMinutes is the game length until the host picks another.
+	DefaultMinutes = 5
 )
+
+// Durations are the game lengths (minutes) the host can choose.
+var Durations = []int{3, 5, 10, 15}
+
+// PlayerLimits are the room sizes the host can choose.
+var PlayerLimits = []int{10, 20, 30, 50, 100}
+
+func validDuration(m int) bool {
+	for _, d := range Durations {
+		if d == m {
+			return true
+		}
+	}
+	return false
+}
+
+func validLimit(n int) bool {
+	for _, l := range PlayerLimits {
+		if l == n {
+			return true
+		}
+	}
+	return false
+}
 
 // MaxPoints is the highest award of one game (Laravel validates the same cap).
 var MaxPoints = points.Cap(MaxRounds)
@@ -75,6 +105,8 @@ var (
 	ErrEliminated = errors.New("eliminated")
 	ErrClosed     = errors.New("room_closed")
 	ErrBusy       = errors.New("busy")
+	ErrDuration   = errors.New("invalid_duration")
+	ErrLimit      = errors.New("invalid_player_limit")
 )
 
 // Config holds the timings. Tests shorten them; production uses Defaults.
@@ -87,7 +119,9 @@ type Config struct {
 	MinTime   time.Duration
 	DecayPct  int
 
-	ReadyTime   time.Duration // "get ready" before round 1
+	ReadyTime time.Duration // "get ready" before round 1
+	// Minute is one minute of the host's chosen game length (tests shrink it).
+	Minute      time.Duration
 	LockTime    time.Duration // answers frozen, before the drop
 	RevealTime  time.Duration // floor drop animation
 	SummaryTime time.Duration // survivors between rounds
@@ -114,10 +148,11 @@ type Config struct {
 	Commands int
 }
 
-// Defaults are the production timings.
+// Defaults are the production timings. The answer window stays the same
+// every round (DecayPct 100): the game length is set by the host instead.
 var Defaults = Config{
-	BaseTime: 10 * time.Second, YoungTime: 15 * time.Second, MinTime: 4 * time.Second, DecayPct: 90,
-	ReadyTime: 3 * time.Second, LockTime: 800 * time.Millisecond, RevealTime: 3 * time.Second, SummaryTime: 2500 * time.Millisecond,
+	BaseTime: 12 * time.Second, YoungTime: 18 * time.Second, MinTime: 6 * time.Second, DecayPct: 100,
+	ReadyTime: 3 * time.Second, Minute: time.Minute, LockTime: 800 * time.Millisecond, RevealTime: 3 * time.Second, SummaryTime: 2500 * time.Millisecond,
 	Grace: 5 * time.Second, LobbyDrop: time.Minute,
 	MinAnswer: 300 * time.Millisecond, Tick: 50 * time.Millisecond, Progress: 250 * time.Millisecond,
 	Idle: 30 * time.Minute, Empty: 3 * time.Minute,

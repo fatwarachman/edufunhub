@@ -4,6 +4,7 @@ use App\Models\GameHistory;
 use App\Models\GameMatch;
 use App\Models\User;
 use App\Services\GameServiceSigner;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function (): void {
@@ -14,7 +15,7 @@ beforeEach(function (): void {
 /**
  * @param  array<string, mixed>  $payload
  */
-function postFloorResult(array $payload): Illuminate\Testing\TestResponse
+function postFloorResult(array $payload): TestResponse
 {
     $body = json_encode($payload);
     $timestamp = (string) now()->getTimestamp();
@@ -144,7 +145,7 @@ it('rejects invalid floor drop results', function (array $override): void {
         'completed_at' => now()->toIso8601String(),
     ], $override))->assertUnprocessable();
 })->with([
-    'points above cap' => [['points' => 2151]],
+    'points above cap' => [['points' => 18151]],
     'wrong event id' => [['event_id' => 'fd-1-duel-1']],
     'wrong mission' => [['mission' => 'duel']],
     'more than 100 players' => [['match' => [...floorMatch([]), 'players' => array_fill(0, 101, ['name' => 'X', 'grade' => 4, 'rank' => 1, 'score' => 0, 'correct' => 0, 'wrong' => 0])]]],

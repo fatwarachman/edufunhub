@@ -1,6 +1,7 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
 import { DigitalClock } from '@/components/digital-clock';
+import { FloorStage, Lives } from '@/components/floor-drop/floor-stage';
 import { GameFinale, podiumStandings } from '@/components/game-finale';
 import {
     ConnectionBadge,
@@ -18,7 +19,6 @@ import { PlayerAvatar } from '@/components/player-avatar';
 import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
-    type FloorPlayer,
     type FloorRanking,
     type FloorRole,
     type FloorState,
@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { Head, router } from '@inertiajs/react';
 import {
     Check,
+    Clock3,
     Coins,
     Copy,
     Crown,
@@ -97,6 +98,41 @@ function useRemaining(state: FloorState): number {
         return 0;
     }
     return Math.max(0, (state.remaining_ms ?? 0) - (now - state.receivedAt));
+}
+
+/** Time left in the whole game (host-chosen length), counting down. */
+function useGameLeft(state: FloorState): number | null {
+    const playing =
+        state.round > 0 &&
+        !['NONE', 'LOBBY', 'GAME_OVER'].includes(state.phase);
+    const now = useNow(playing && state.ends_at !== undefined);
+    if (!playing || state.ends_at === undefined) {
+        return null;
+    }
+    return Math.max(0, state.ends_at - now);
+}
+
+function clockText(ms: number): string {
+    const total = Math.ceil(ms / 1000);
+    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
+function GameClock({ state }: { state: FloorState }) {
+    const { t } = useTranslations();
+    const left = useGameLeft(state);
+    if (left === null) {
+        return null;
+    }
+    return (
+        <span
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-white px-3 font-display text-sm font-black tabular-nums"
+            data-testid="fd-game-clock"
+            aria-label={t('floorDrop.gameLeft', { time: clockText(left) })}
+        >
+            <Clock3 className="size-4" aria-hidden="true" />
+            {clockText(left)}
+        </span>
+    );
 }
 
 function seconds(ms: number): number {
@@ -482,9 +518,7 @@ function StatusLine({ state }: { state: FloorState }) {
         text =
             state.round === 0
                 ? t('floorDrop.getReady')
-                : t('floorDrop.nextFaster', {
-                      seconds: seconds(state.next_time_limit ?? 0),
-                  });
+                : t('floorDrop.nextQuestion');
     }
     return (
         <p
@@ -562,8 +596,11 @@ function HostScreen({
                 </span>
             </div>
             {state.phase !== 'LOBBY' && state.phase !== 'GAME_OVER' && (
-                <span className="font-display text-sm font-black">
-                    {t('floorDrop.round', { round: Math.max(1, state.round) })}{' '}
+                <span className="flex flex-wrap items-center gap-2 font-display text-sm font-black">
+                    <GameClock state={state} />
+                    {t('floorDrop.round', {
+                        round: Math.max(1, state.round),
+                    })}{' '}
                     · {t('floorDrop.alive', { count: state.alive })}
                 </span>
             )}
@@ -618,6 +655,14 @@ function HostScreen({
                         }}
                         disabled={!online}
                         compact
+                    />
+                    <HostSettings
+                        state={state}
+                        disabled={!online}
+                        players={active.length}
+                        onChange={(settings) =>
+                            act({ t: 'set_settings', ...settings })
+                        }
                     />
                     {error && <RoomError code={error} />}
                     <div className="flex flex-wrap justify-center gap-2">
@@ -765,9 +810,88 @@ function HostScreen({
                 </div>
             )}
             {state.round > 0 && <StatusLine state={state} />}
-            <Undecided state={state} />
+            <Panel className="flex flex-col gap-3 !p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-black">
+                    <span>{t('floorDrop.alive', { count: state.alive })}</span>
+                    <span className="text-slate-600">
+                        {t('floorDrop.eliminatedNow', {
+                            count: state.players.filter((p) => !p.alive).length,
+                        })}
+                    </span>
+                </div>
+                <FloorStage state={state} />
+            </Panel>
             {error && <RoomError code={error} />}
             <EndGameButton onConfirm={() => act({ t: 'leave_room' })} />
+        </div>
+    );
+}
+
+/** Game length and player limit the host picks before starting. */
+function HostSettings({
+    state,
+    disabled,
+    players,
+    onChange,
+}: {
+    state: FloorState;
+    disabled: boolean;
+    players: number;
+    onChange: (settings: { minutes?: number; player_limit?: number }) => void;
+}) {
+    const { t } = useTranslations();
+    const durations = state.durations ?? [3, 5, 10, 15];
+    const limits = state.player_limits ?? [10, 20, 30, 50, 100];
+    const choice = (active: boolean) =>
+        cn(
+            'min-h-11 min-w-12 rounded-xl border-2 border-[#1f2a44] px-3 text-sm font-black tabular-nums disabled:cursor-not-allowed disabled:opacity-40',
+            active
+                ? 'bg-[#1f2a44] text-white shadow-[2px_2px_0px_#FF9E44]'
+                : 'bg-white hover:bg-[#FFF176]',
+        );
+
+    return (
+        <div className="flex flex-col gap-3" data-testid="fd-settings">
+            <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-xs font-black text-slate-500 uppercase">
+                    {t('floorDrop.duration')}
+                </legend>
+                <div className="flex flex-wrap gap-1.5">
+                    {durations.map((minutes) => (
+                        <button
+                            key={minutes}
+                            type="button"
+                            disabled={disabled}
+                            aria-pressed={state.minutes === minutes}
+                            onClick={() => onChange({ minutes })}
+                            className={choice(state.minutes === minutes)}
+                            data-testid={`fd-duration-${minutes}`}
+                        >
+                            {t('floorDrop.minutes', { count: minutes })}
+                        </button>
+                    ))}
+                </div>
+            </fieldset>
+            <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-xs font-black text-slate-500 uppercase">
+                    {t('floorDrop.playerLimit')}
+                </legend>
+                <div className="flex flex-wrap gap-1.5">
+                    {limits.map((limit) => (
+                        <button
+                            key={limit}
+                            type="button"
+                            disabled={disabled || limit < players}
+                            aria-pressed={state.max_players === limit}
+                            onClick={() => onChange({ player_limit: limit })}
+                            className={choice(state.max_players === limit)}
+                            data-testid={`fd-limit-${limit}`}
+                        >
+                            {limit}
+                        </button>
+                    ))}
+                </div>
+            </fieldset>
         </div>
     );
 }
@@ -960,56 +1084,6 @@ function HostTile({
     );
 }
 
-/** Survivors who have not picked a tile yet (host screen, during a round). */
-function Undecided({ state }: { state: FloorState }) {
-    const { t } = useTranslations();
-    const alive = state.players.filter((p) => p.alive && !p.left);
-    const out = state.players.filter((p) => !p.alive);
-    return (
-        <Panel className="flex flex-col gap-3 !p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-black">
-                <span>{t('floorDrop.alive', { count: alive.length })}</span>
-                <span className="text-slate-600">
-                    {t('floorDrop.eliminatedNow', { count: out.length })}
-                </span>
-            </div>
-            <ul className="flex flex-wrap gap-1.5" data-testid="fd-survivors">
-                {alive.map((p) => (
-                    <SurvivorChip key={p.user_id} player={p} />
-                ))}
-                {out.map((p) => (
-                    <SurvivorChip key={p.user_id} player={p} />
-                ))}
-            </ul>
-        </Panel>
-    );
-}
-
-function SurvivorChip({ player }: { player: FloorPlayer }) {
-    return (
-        <li
-            className="fd-avatar inline-flex max-w-40 items-center gap-1.5 rounded-full border-2 border-[#1f2a44] bg-white py-0.5 pr-2.5 pl-0.5"
-            data-out={!player.alive}
-            title={player.name}
-        >
-            <span className="size-7 shrink-0">
-                <PlayerAvatar
-                    character={player.character}
-                    seat={player.user_id}
-                    userId={player.user_id}
-                />
-            </span>
-            <span className="truncate text-xs font-black">{player.name}</span>
-            {!player.online && player.alive && (
-                <WifiOff
-                    className="size-3.5 shrink-0 text-[#AD1457]"
-                    aria-hidden="true"
-                />
-            )}
-        </li>
-    );
-}
-
 function Podium({ state }: { state: FloorState }) {
     const { t } = useTranslations();
     const podium = state.podium ?? [];
@@ -1184,8 +1258,11 @@ function PlayerScreen({
                 </span>
             </div>
             {state.phase !== 'LOBBY' && state.phase !== 'GAME_OVER' && (
-                <span className="font-display text-sm font-black">
-                    {t('floorDrop.round', { round: Math.max(1, state.round) })}{' '}
+                <span className="flex flex-wrap items-center gap-2 font-display text-sm font-black">
+                    <GameClock state={state} />
+                    {t('floorDrop.round', {
+                        round: Math.max(1, state.round),
+                    })}{' '}
                     · {t('floorDrop.alive', { count: state.alive })}
                 </span>
             )}
@@ -1299,6 +1376,19 @@ function PlayerScreen({
                     </div>
                 ) : (
                     <>
+                        {you && !out && (
+                            <div
+                                className="flex items-center justify-center gap-2 text-sm font-black"
+                                data-testid="fd-your-lives"
+                            >
+                                {t('floorDrop.yourFloor')}
+                                <Lives
+                                    lives={you.lives ?? state.lives_max ?? 3}
+                                    max={state.lives_max ?? 3}
+                                    size="lg"
+                                />
+                            </div>
+                        )}
                         <TimerBar state={state} />
                         <h2
                             className="text-center font-display text-xl leading-snug font-black sm:text-2xl"
@@ -1394,18 +1484,26 @@ function PlayerScreen({
                           : state.phase === 'REVEAL_DROP'
                             ? state.sudden_death
                                 ? t('floorDrop.suddenDeath')
-                                : t('floorDrop.youSurvived')
+                                : you &&
+                                    state.cracked_user_ids?.includes(
+                                        you.user_id,
+                                    )
+                                  ? t('floorDrop.youCracked', {
+                                        count: you.lives ?? 0,
+                                    })
+                                  : t('floorDrop.youSurvived')
                             : state.phase === 'LOCK_ANSWERS'
                               ? t('floorDrop.locked')
-                              : t('floorDrop.nextFaster', {
-                                    seconds: seconds(
-                                        state.next_time_limit ?? 0,
-                                    ),
-                                })}
+                              : t('floorDrop.nextQuestion')}
                 </p>
             )}
 
             {out && <EliminatedOverlay state={state} />}
+            {!remainingReady && (
+                <Panel className="!p-3">
+                    <FloorStage state={state} you={you?.user_id} compact />
+                </Panel>
+            )}
             {status === 'reconnecting' && (
                 <p
                     role="alert"

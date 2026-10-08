@@ -33,6 +33,8 @@ export interface FloorPlayer {
     left: boolean;
     /** Tile the player stands on (shown after answers lock). */
     choice?: number;
+    /** Wrong answers the player's floor can still take. */
+    lives?: number;
 }
 
 export interface FloorRanking {
@@ -46,6 +48,7 @@ export interface FloorRanking {
     rounds: number;
     out_round: number;
     reason: string;
+    lives?: number;
 }
 
 export interface FloorResult {
@@ -66,6 +69,7 @@ export interface FloorYou {
     reason: string;
     answered: boolean;
     choice?: number;
+    lives?: number;
 }
 
 export interface FloorState {
@@ -92,7 +96,18 @@ export interface FloorState {
     tiles?: number[];
     correct_index?: number;
     eliminated_user_ids?: number[];
+    /** Players whose floor cracked (lost a life) this round. */
+    cracked_user_ids?: number[];
     sudden_death?: boolean;
+    lives_max?: number;
+    /** Game length chosen by the host (minutes) and the options. */
+    minutes?: number;
+    durations?: number[];
+    player_limits?: number[];
+    /** Time left in the game when the snapshot or event arrived. */
+    ends_ms?: number;
+    /** Local clock time (ms) the game ends, derived from ends_ms. */
+    ends_at?: number;
     hint?: string;
     you?: FloorYou;
     podium?: FloorRanking[];
@@ -111,7 +126,29 @@ const EMPTY: FloorState = {
     max_players: 100,
     round: 0,
     receivedAt: 0,
+    lives_max: 3,
 };
+
+/** Applies the server's lives map ({user_id: lives}) to players and you. */
+function withLives(
+    state: FloorState,
+    lives: Record<string, number> | undefined,
+): Pick<FloorState, 'players' | 'you'> {
+    if (!lives) {
+        return { players: state.players, you: state.you };
+    }
+    return {
+        players: state.players.map((p) =>
+            lives[String(p.user_id)] === undefined
+                ? p
+                : { ...p, lives: lives[String(p.user_id)] },
+        ),
+        you:
+            state.you && lives[String(state.you.user_id)] !== undefined
+                ? { ...state.you, lives: lives[String(state.you.user_id)] }
+                : state.you,
+    };
+}
 
 type Action =
     | { type: 'state'; msg: Record<string, unknown> }
@@ -137,7 +174,22 @@ function markOut(
     );
 }
 
+/** Turns the server's relative ends_ms into a local end time. */
 function reduce(state: FloorState, action: Action): FloorState {
+    const next = reduceMessage(state, action);
+    const endsMs = (action.msg as { ends_ms?: unknown }).ends_ms;
+    if (typeof endsMs === 'number') {
+        return { ...next, ends_at: Date.now() + endsMs };
+    }
+    if (next.phase === 'LOBBY' || next.phase === 'GAME_OVER') {
+        return { ...next, ends_at: undefined };
+    }
+    return next.ends_at === undefined && state.ends_at !== undefined
+        ? { ...next, ends_at: state.ends_at }
+        : next;
+}
+
+function reduceMessage(state: FloorState, action: Action): FloorState {
     const msg = action.msg;
     const now = Date.now();
     if (action.type === 'state') {
@@ -160,10 +212,12 @@ function reduce(state: FloorState, action: Action): FloorState {
                 question: msg.question as FloorState['question'],
                 options: msg.options as string[],
                 alive: msg.alive as number,
+                ends_ms: msg.ends_ms as number | undefined,
                 answered: 0,
                 tiles: undefined,
                 correct_index: undefined,
                 eliminated_user_ids: undefined,
+                cracked_user_ids: undefined,
                 sudden_death: undefined,
                 hint: undefined,
                 players: state.players.map((p) => ({
@@ -209,8 +263,14 @@ function reduce(state: FloorState, action: Action): FloorState {
         case 'tile_drop': {
             const ids = (msg.eliminated_user_ids ?? []) as number[];
             const youOut = state.you && ids.includes(state.you.user_id);
+            const lived = withLives(
+                state,
+                msg.lives as Record<string, number> | undefined,
+            );
+            state = { ...state, ...lived };
             return {
                 ...state,
+                cracked_user_ids: (msg.cracked_user_ids ?? []) as number[],
                 phase: 'REVEAL_DROP',
                 receivedAt: now,
                 correct_index: msg.correct_index as number,
@@ -241,6 +301,7 @@ function reduce(state: FloorState, action: Action): FloorState {
                 receivedAt: now,
                 alive: msg.survivors as number,
                 next_time_limit: msg.next_time_limit as number,
+                ends_ms: msg.ends_ms as number | undefined,
             };
         case 'player_eliminated': {
             const ids = (msg.user_ids ?? []) as number[];

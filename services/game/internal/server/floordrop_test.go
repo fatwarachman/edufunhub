@@ -129,44 +129,41 @@ func TestFloorDropWebSocketGame(t *testing.T) {
 		p.send(map[string]any{"t": "join_room", "pin": pin})
 		p.until("state_sync", func(m map[string]any) bool { return m["pin"] == pin })
 	}
-	// A player cannot start the game; the host can.
+	// A player cannot start the game or change settings; the host can.
 	a.send(map[string]any{"t": "start_game"})
 	if e := a.until("error", nil); e["code"] != "host_only" {
 		t.Fatalf("player start: %v", e)
 	}
+	host.send(map[string]any{"t": "set_settings", "minutes": 7})
+	if e := host.until("error", nil); e["code"] != "invalid_duration" {
+		t.Fatalf("odd duration: %v", e)
+	}
+	host.send(map[string]any{"t": "set_settings", "minutes": 3, "player_limit": 10})
+	host.until("state_sync", func(m map[string]any) bool { return m["minutes"] == float64(3) && m["max_players"] == float64(10) })
 	host.send(map[string]any{"t": "start_game"})
 
-	q := a.until("question_start", nil)
-	b.until("question_start", nil)
-	roundID := q["round_id"]
-	if _, leaked := q["correct_index"]; leaked {
-		t.Fatal("question_start leaked the answer")
+	// Every round A answers option 1 and B stays silent. Three silent rounds
+	// break B's floor; A either keeps answering right or falls in the same
+	// round having answered, so A always ranks first.
+	var drop map[string]any
+	for round := 1; round <= floordrop.Lives; round++ {
+		q := a.until("question_start", nil)
+		if _, leaked := q["correct_index"]; leaked {
+			t.Fatal("question_start leaked the answer")
+		}
+		a.send(map[string]any{"t": "submit_answer", "round_id": q["round_id"], "choice_index": 1})
+		a.until("answer_ack", nil)
+		drop = host.until("tile_drop", nil)
+		lives := drop["lives"].(map[string]any)
+		if lives["2"] != float64(floordrop.Lives-round) {
+			t.Fatalf("round %d: B lives %v", round, lives)
+		}
 	}
-	// Learn the answer only from the referee's reveal: B answers option 0,
-	// A answers option 1. Exactly one of them can be right, or both wrong.
-	a.send(map[string]any{"t": "submit_answer", "round_id": roundID, "choice_index": 1})
-	a.until("answer_ack", nil)
-	b.send(map[string]any{"t": "submit_answer", "round_id": roundID, "choice_index": 0})
-	b.until("answer_ack", nil)
-	drop := host.until("tile_drop", nil)
-	correct := int(drop["correct_index"].(float64))
 	over := host.until("podium_result", nil)
 	ranking := over["ranking"].([]any)
 	first := int64(ranking[0].(map[string]any)["user_id"].(float64))
-	switch correct {
-	case 1:
-		if first != 1 {
-			t.Fatalf("A answered right but ranked %v", ranking)
-		}
-	case 0:
-		if first != 2 {
-			t.Fatalf("B answered right but ranked %v", ranking)
-		}
-	default:
-		// Sudden death: both wrong, A answered first.
-		if first != 1 || drop["sudden_death"] != true {
-			t.Fatalf("sudden death ranking %v (drop %v)", ranking, drop)
-		}
+	if first != 1 {
+		t.Fatalf("A must rank first: %v (last drop %v)", ranking, drop)
 	}
 	deadline := time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {

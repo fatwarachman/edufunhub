@@ -15,6 +15,7 @@ func fastConfig() Config {
 	c := Defaults
 	c.BaseTime, c.YoungTime, c.MinTime = 400*time.Millisecond, 400*time.Millisecond, 150*time.Millisecond
 	c.ReadyTime, c.LockTime, c.RevealTime, c.SummaryTime = 60*time.Millisecond, 30*time.Millisecond, 40*time.Millisecond, 30*time.Millisecond
+	c.Minute = time.Hour
 	c.Grace, c.LobbyDrop = 120*time.Millisecond, 200*time.Millisecond
 	c.MinAnswer = 0
 	c.Tick, c.Progress = 10*time.Millisecond, 20*time.Millisecond
@@ -94,6 +95,21 @@ func (h *harness) waitQuestion(after int) roundInfo {
 
 func wrong(answer int) int { return (answer + 1) % Options }
 
+// play answers one round: right[i] says whether kid i answers correctly;
+// kids past len(right) stay silent. Returns the round number.
+func (h *harness) play(after int, right ...bool) int {
+	h.t.Helper()
+	q := h.waitQuestion(after)
+	for i, ok := range right {
+		choice := q.answer
+		if !ok {
+			choice = wrong(q.answer)
+		}
+		_ = h.hub.Answer(h.kids[i], q.id, choice, time.Now())
+	}
+	return q.number
+}
+
 func drain(c *Client) []Message {
 	var out []Message
 	for {
@@ -161,12 +177,23 @@ func TestStateMachineAndElimination(t *testing.T) {
 	if err := h.hub.Answer(h.host, q.id, 0, at); err != ErrPlayerOnly {
 		t.Fatalf("host answer: %v", err)
 	}
+	// One mistake only cracks the floor: everyone is still standing.
+	h.waitFor("first reveal", func(r *Room) bool { return r.phase == PhaseReveal && r.round.Number == 1 })
+	lives := h.inspect(func(r *Room) any {
+		return [4]int{r.byID[1].lives, r.byID[2].lives, r.byID[3].lives, r.aliveCount()}
+	}).([4]int)
+	if lives != [4]int{Lives, Lives - 1, Lives - 1, 3} {
+		t.Fatalf("after one mistake lives/alive %v", lives)
+	}
+	// Two more rounds of the same: the third mistake breaks the floor.
+	after := h.play(1, true, false)
+	h.play(after, true, false)
 	h.waitFor("game over", func(r *Room) bool { return r.phase == PhaseOver })
 	var kinds []string
 	for _, m := range drain(h.host) {
 		kinds = append(kinds, m["t"].(string))
 	}
-	want := []string{"question_start", "lock_answers", "tile_drop", "podium_result"}
+	want := []string{"question_start", "lock_answers", "tile_drop", "question_start", "tile_drop", "question_start", "tile_drop", "podium_result"}
 	idx := 0
 	for _, k := range kinds {
 		if idx < len(want) && k == want[idx] {
@@ -195,7 +222,7 @@ func TestStateMachineAndElimination(t *testing.T) {
 		if r.GameKey != GameKey || r.Match == nil || len(r.Match.Players) != 3 || r.Points > MaxPoints {
 			t.Fatalf("bad result %+v", r)
 		}
-		if r.UserID == 1 && (r.Correct != 1 || r.Points != Award(r.Correct*10, true)) {
+		if r.UserID == 1 && (r.Correct != 3 || r.Points != Award(r.Correct*10, true)) {
 			t.Fatalf("winner result %+v", r)
 		}
 	}
@@ -206,28 +233,32 @@ func TestSuddenDeathRanksFastestSubmission(t *testing.T) {
 	if err := h.hub.Start(h.host); err != nil {
 		t.Fatal(err)
 	}
-	q := h.waitQuestion(0)
-	// Everyone fails: P3 answers first, then P1, P2 never answers.
-	_ = h.hub.Answer(h.kids[2], q.id, wrong(q.answer), time.Now())
-	time.Sleep(15 * time.Millisecond)
-	_ = h.hub.Answer(h.kids[0], q.id, wrong(q.answer), time.Now())
+	after := 0
+	for round := 0; round < Lives; round++ {
+		q := h.waitQuestion(after)
+		after = q.number
+		// Everyone fails: P3 answers first, then P1, P2 never answers.
+		_ = h.hub.Answer(h.kids[2], q.id, wrong(q.answer), time.Now())
+		time.Sleep(15 * time.Millisecond)
+		_ = h.hub.Answer(h.kids[0], q.id, wrong(q.answer), time.Now())
+	}
 	h.waitFor("game over", func(r *Room) bool { return r.phase == PhaseOver })
 	got := h.inspect(func(r *Room) any {
 		order := make([]int64, len(r.ranking))
 		for i, p := range r.ranking {
 			order[i] = p.ID()
 		}
-		return []any{order, r.round.SuddenDeath}
+		return []any{order, r.round.SuddenDeath, r.round.Number}
 	}).([]any)
 	order := got[0].([]int64)
-	if order[0] != 3 || order[1] != 1 || order[2] != 2 || !got[1].(bool) {
-		t.Fatalf("sudden death order %v (sudden %v)", order, got[1])
+	if order[0] != 3 || order[1] != 1 || order[2] != 2 || !got[1].(bool) || got[2].(int) != Lives {
+		t.Fatalf("sudden death order %v (sudden %v, rounds %v)", order, got[1], got[2])
 	}
 }
 
 func TestTimerDecaysEachRound(t *testing.T) {
 	cfg := fastConfig()
-	cfg.BaseTime, cfg.YoungTime, cfg.MinTime = 300*time.Millisecond, 300*time.Millisecond, 200*time.Millisecond
+	cfg.BaseTime, cfg.YoungTime, cfg.MinTime, cfg.DecayPct = 300*time.Millisecond, 300*time.Millisecond, 200*time.Millisecond, 90
 	h := newHarness(t, cfg, 2)
 	if err := h.hub.Start(h.host); err != nil {
 		t.Fatal(err)
@@ -252,6 +283,74 @@ func TestTimerDecaysEachRound(t *testing.T) {
 	}
 }
 
+func TestDefaultsKeepTheAnswerWindow(t *testing.T) {
+	if Defaults.NextLimit(Defaults.BaseTime) != Defaults.BaseTime {
+		t.Fatal("production answer window must not shrink every round")
+	}
+}
+
+func TestManyQuestionsUntilTheDurationEnds(t *testing.T) {
+	cfg := fastConfig()
+	cfg.Minute = 400 * time.Millisecond
+	h := newHarness(t, cfg, 2)
+	if err := h.hub.SetSettings(h.host, 3, 0); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.hub.Start(h.host); err != nil {
+		t.Fatal(err)
+	}
+	after := 0
+	for {
+		done := h.inspect(func(r *Room) any { return r.phase == PhaseOver }).(bool)
+		if done {
+			break
+		}
+		ok := h.inspect(func(r *Room) any { return r.phase == PhaseQuestion && r.round.Number > after }).(bool)
+		if !ok {
+			time.Sleep(3 * time.Millisecond)
+			continue
+		}
+		after = h.play(after, true, true)
+	}
+	got := h.inspect(func(r *Room) any { return []int{r.round.Number, r.aliveCount()} }).([]int)
+	if got[0] < 3 || got[1] != 2 {
+		t.Fatalf("a timed game must ask many questions and keep correct players standing: rounds=%d alive=%d", got[0], got[1])
+	}
+	for _, r := range h.hub.TakeResults() {
+		if r.Correct != got[0] {
+			t.Fatalf("result %+v, want %d correct", r, got[0])
+		}
+	}
+}
+
+func TestHostSettingsAreValidated(t *testing.T) {
+	h := newHarness(t, fastConfig(), 3)
+	if err := h.hub.SetSettings(h.kids[0], 5, 0); err != ErrHostOnly {
+		t.Fatalf("player settings: %v", err)
+	}
+	if err := h.hub.SetSettings(h.host, 7, 0); err != ErrDuration {
+		t.Fatalf("odd duration: %v", err)
+	}
+	if err := h.hub.SetSettings(h.host, 0, 25); err != ErrLimit {
+		t.Fatalf("odd limit: %v", err)
+	}
+	if err := h.hub.SetSettings(h.host, 10, 10); err != nil {
+		t.Fatal(err)
+	}
+	got := h.inspect(func(r *Room) any { return [2]int{r.minutes, r.limit} }).([2]int)
+	if got != [2]int{10, 10} {
+		t.Fatalf("settings %v", got)
+	}
+	for i := 4; i <= 10; i++ {
+		if err := h.hub.Join(NewClient(claims(int64(i), 4), false, "id", 8), h.pin); err != nil {
+			t.Fatalf("join %d: %v", i, err)
+		}
+	}
+	if err := h.hub.Join(NewClient(claims(11, 4), false, "id", 8), h.pin); err != ErrFull {
+		t.Fatalf("join beyond the host's limit: %v", err)
+	}
+}
+
 func TestLateAnswerIsRejectedByServerClock(t *testing.T) {
 	h := newHarness(t, fastConfig(), 2)
 	if err := h.hub.Start(h.host); err != nil {
@@ -270,11 +369,11 @@ func TestLateAnswerIsRejectedByServerClock(t *testing.T) {
 func TestEliminatedPlayerBecomesSpectator(t *testing.T) {
 	h := newHarness(t, fastConfig(), 3)
 	_ = h.hub.Start(h.host)
-	q := h.waitQuestion(0)
-	_ = h.hub.Answer(h.kids[0], q.id, q.answer, time.Now())
-	_ = h.hub.Answer(h.kids[1], q.id, q.answer, time.Now())
-	_ = h.hub.Answer(h.kids[2], q.id, wrong(q.answer), time.Now())
-	q2 := h.waitQuestion(1)
+	after := 0
+	for i := 0; i < Lives; i++ {
+		after = h.play(after, true, true, false)
+	}
+	q2 := h.waitQuestion(after)
 	if err := h.hub.Answer(h.kids[2], q2.id, q2.answer, time.Now()); err != ErrEliminated {
 		t.Fatalf("spectator answer: %v", err)
 	}
@@ -416,8 +515,8 @@ func TestHundredPlayersTickVariance(t *testing.T) {
 		t.Fatalf("tick variance too high: %+v", stats)
 	}
 	alive := h.inspect(func(r *Room) any { return r.aliveCount() }).(int)
-	if alive != MaxPlayers/2 {
-		t.Fatalf("alive %d after half failed", alive)
+	if alive != MaxPlayers {
+		t.Fatalf("alive %d: one mistake only cracks the floor", alive)
 	}
 }
 

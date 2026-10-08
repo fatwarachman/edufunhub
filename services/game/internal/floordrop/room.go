@@ -24,7 +24,9 @@ type Player struct {
 	offlineAt time.Time
 	left      bool
 
-	alive    bool
+	alive bool
+	// lives is how many more wrong answers the floor takes (Lives at start).
+	lives    int
 	outRound int // round of elimination (0 = still standing)
 	outAt    time.Time
 	reason   string // wrong, timeout, disconnected, left
@@ -51,15 +53,17 @@ func (p *Player) ID() int64 { return p.Claims.Subject }
 
 // RoundState is the question being played.
 type RoundState struct {
-	ID          int64
-	Number      int
-	Question    questions.Question
-	Limit       time.Duration
-	Start       time.Time
-	Deadline    time.Time
-	Answered    int
-	Tiles       [Options]int
-	Eliminated  []int64
+	ID         int64
+	Number     int
+	Question   questions.Question
+	Limit      time.Duration
+	Start      time.Time
+	Deadline   time.Time
+	Answered   int
+	Tiles      [Options]int
+	Eliminated []int64
+	// Cracked lists players whose floor cracked this round (lost a life).
+	Cracked     []int64
 	SuddenDeath bool
 }
 
@@ -95,6 +99,8 @@ type command struct {
 	round   int64
 	choice  int
 	subject string
+	minutes int
+	limit   int
 	at      time.Time
 	fn      func(r *Room) any
 	reply   chan reply
@@ -124,17 +130,22 @@ type Room struct {
 
 	phase   string
 	subject string
-	round   RoundState
-	limit   time.Duration
-	wakeAt  time.Time
-	started time.Time
-	ended   time.Time
-	grade   int
-	gen     *questions.Generator
-	rng     *rand.Rand
-	nextID  int64
-	gate    gate
-	ranking []*Player
+	// minutes is the game length chosen by the host; endsAt is when the
+	// running game stops asking questions. limit caps the players.
+	minutes     int
+	limit       int
+	endsAt      time.Time
+	round       RoundState
+	answerLimit time.Duration
+	wakeAt      time.Time
+	started     time.Time
+	ended       time.Time
+	grade       int
+	gen         *questions.Generator
+	rng         *rand.Rand
+	nextID      int64
+	gate        gate
+	ranking     []*Player
 
 	dirtyLobby    bool
 	dirtyProgress bool
@@ -156,6 +167,8 @@ func newRoom(h *Hub, pin string, host *Client, seed uint64, now time.Time) *Room
 		hostClaims: host.Claims,
 		byID:       map[int64]*Player{},
 		phase:      PhaseLobby,
+		minutes:    DefaultMinutes,
+		limit:      MaxPlayers,
 		rng:        rand.New(rand.NewPCG(seed, seed^0xf100d209)),
 		nextID:     int64(seed%1000) * 1000,
 		touched:    now,
@@ -255,6 +268,8 @@ func (r *Room) handle(cmd command, now time.Time) {
 		res.err = r.start(cmd.c, now)
 	case "subject":
 		res.err = r.setSubject(cmd.c, cmd.subject, now)
+	case "settings":
+		res.err = r.setSettings(cmd.c, cmd.minutes, cmd.limit, now)
 	case "answer":
 		res.err = r.answer(cmd.c, cmd.round, cmd.choice, cmd.at, now)
 	case "sync":
@@ -308,11 +323,11 @@ func (r *Room) join(c *Client, now time.Time) error {
 	if r.phase != PhaseLobby {
 		return ErrStarted
 	}
-	if r.active() >= MaxPlayers {
+	if r.active() >= r.limit {
 		return ErrFull
 	}
 	r.joined++
-	p := &Player{Claims: c.Claims, client: c, order: r.joined, online: true, alive: true, choice: -1}
+	p := &Player{Claims: c.Claims, client: c, order: r.joined, online: true, alive: true, lives: Lives, choice: -1}
 	r.players = append(r.players, p)
 	r.byID[c.ID()] = p
 	r.hub.setPlayer(c.ID(), r)
@@ -394,6 +409,33 @@ func (r *Room) setSubject(c *Client, subject string, now time.Time) error {
 	return nil
 }
 
+// setSettings changes the game length (minutes) and the player limit
+// before the game (host only). A limit below the players already in the
+// room is refused.
+func (r *Room) setSettings(c *Client, minutes, limit int, now time.Time) error {
+	if !c.Host {
+		return ErrHostOnly
+	}
+	if r.phase != PhaseLobby && r.phase != PhaseOver {
+		return ErrPhase
+	}
+	if minutes != 0 {
+		if !validDuration(minutes) {
+			return ErrDuration
+		}
+		r.minutes = minutes
+	}
+	if limit != 0 {
+		if !validLimit(limit) || limit < r.active() {
+			return ErrLimit
+		}
+		r.limit = limit
+	}
+	r.dirtyLobby = true
+	r.sendState(c, now)
+	return nil
+}
+
 // --- game flow ------------------------------------------------------------
 
 func (r *Room) start(c *Client, now time.Time) error {
@@ -418,19 +460,21 @@ func (r *Room) start(c *Client, now time.Time) error {
 	if len(r.players) < MinPlayers {
 		return ErrPlayers
 	}
-	grade := r.players[0].Claims.Grade
+	grade, level := r.players[0].Claims.Grade, points.Level(r.players[0].Claims.Level)
 	ids := make([]int64, 0, len(r.players))
 	for _, p := range r.players {
 		grade = min(grade, p.Claims.Grade)
 		ids = append(ids, p.ID())
-		*p = Player{Claims: p.Claims, client: p.client, order: p.order, online: true, alive: true, choice: -1}
+		*p = Player{Claims: p.Claims, client: p.client, order: p.order, online: true, alive: true, lives: Lives, choice: -1}
+		level = min(level, points.Level(p.Claims.Level))
 	}
 	r.grade = grade
-	r.gen = questions.NewFor(GameKey, grade, r.rng.Uint64()).For(r.subject, ids...)
-	r.limit = r.cfg.FirstLimit(grade)
+	r.gen = questions.NewFor(GameKey, grade, r.rng.Uint64()).For(r.subject, ids...).AtLevel(level)
+	r.answerLimit = r.cfg.FirstLimit(grade)
 	r.round = RoundState{}
 	r.ranking = nil
 	r.started, r.ended = now, time.Time{}
+	r.endsAt = now.Add(r.cfg.ReadyTime + time.Duration(r.minutes)*r.cfg.Minute)
 	// Round 0 summary is the "get ready" screen before the first question.
 	r.phase, r.wakeAt = PhaseSummary, now.Add(r.cfg.ReadyTime)
 	r.dirtyLobby = false
@@ -472,11 +516,11 @@ func (r *Room) aliveCount() int {
 // ask starts the next question (QUESTION_ACTIVE).
 func (r *Room) ask(now time.Time) {
 	if r.round.Number > 0 {
-		r.limit = r.cfg.NextLimit(r.limit)
+		r.answerLimit = r.cfg.NextLimit(r.answerLimit)
 	}
 	r.nextID++
 	q := questions.Trim(r.gen.Choice(), Options, r.rng)
-	r.round = RoundState{ID: r.nextID, Number: r.round.Number + 1, Question: q, Limit: r.limit, Start: now, Deadline: now.Add(r.limit)}
+	r.round = RoundState{ID: r.nextID, Number: r.round.Number + 1, Question: q, Limit: r.answerLimit, Start: now, Deadline: now.Add(r.answerLimit)}
 	for _, p := range r.players {
 		p.choice, p.answered, p.answerMs = -1, false, 0
 	}
@@ -486,8 +530,9 @@ func (r *Room) ask(now time.Time) {
 	r.broadcast(func(locale string) Message {
 		return Message{
 			"t": "question_start", "round_id": r.round.ID, "round": r.round.Number,
-			"time_limit": r.limit.Milliseconds(), "remaining_ms": r.limit.Milliseconds(),
+			"time_limit": r.answerLimit.Milliseconds(), "remaining_ms": r.answerLimit.Milliseconds(),
 			"question": r.questionView(locale), "options": r.optionsView(locale), "alive": alive,
+			"ends_ms": max(0, r.endsAt.Sub(now).Milliseconds()),
 		}
 	})
 }
@@ -543,14 +588,14 @@ func (r *Room) lock(now time.Time) {
 	r.broadcast(func(string) Message { return msg })
 }
 
-// drop resolves the round (REVEAL_DROP): wrong tiles collapse and every
-// standing player who answered wrong or not at all is eliminated. When
-// nobody answered correctly the round is sudden death: everyone still
-// standing drops and the fastest submission ranks first.
+// drop resolves the round (REVEAL_DROP): every standing player who
+// answered wrong or not at all cracks their floor and loses a life; a floor
+// with no lives left breaks and the player falls out. When the last players
+// standing all fall in the same round, the fastest submission ranks first.
 func (r *Room) drop(now time.Time) {
 	q := r.round.Question
 	standing := r.alive()
-	var fallen []*Player
+	var fallen, cracked []*Player
 	survivors := 0
 	for _, p := range standing {
 		p.rounds++
@@ -561,11 +606,17 @@ func (r *Room) drop(now time.Time) {
 		}
 		right := p.answered && p.choice == q.Answer
 		if q.FromBank {
-			p.answers = append(p.answers, questions.Answer{Key: q.Key, Correct: right})
+			p.answers = append(p.answers, questions.Answer{Key: q.Key, Correct: right, Choice: q.Picked(p.answered, p.choice)})
 		}
 		if right {
 			p.correct++
 			p.earned += q.Worth()
+			survivors++
+			continue
+		}
+		p.lives = max(0, p.lives-1)
+		if p.lives > 0 {
+			cracked = append(cracked, p)
 			survivors++
 		} else {
 			fallen = append(fallen, p)
@@ -578,10 +629,16 @@ func (r *Room) drop(now time.Time) {
 		ids[i] = p.ID()
 	}
 	r.round.Eliminated = ids
+	crackedIDs := make([]int64, len(cracked))
+	for i, p := range cracked {
+		crackedIDs[i] = p.ID()
+	}
+	r.round.Cracked = crackedIDs
 	r.phase, r.wakeAt = PhaseReveal, now.Add(r.cfg.RevealTime)
 	msg := Message{
 		"t": "tile_drop", "round_id": r.round.ID, "round": r.round.Number, "correct_index": q.Answer,
-		"eliminated_user_ids": ids, "survivors": r.aliveCount(), "sudden_death": r.round.SuddenDeath,
+		"eliminated_user_ids": ids, "cracked_user_ids": crackedIDs, "lives": r.livesView(),
+		"survivors": r.aliveCount(), "sudden_death": r.round.SuddenDeath,
 		"tiles": r.round.Tiles[:len(q.Options)],
 	}
 	r.broadcast(func(locale string) Message {
@@ -591,6 +648,20 @@ func (r *Room) drop(now time.Time) {
 		}
 		return out
 	})
+}
+
+// livesView maps every player (by id) to their remaining lives.
+func (r *Room) livesView() map[string]int {
+	out := make(map[string]int, len(r.players))
+	for _, p := range r.players {
+		out[fmt.Sprint(p.ID())] = p.lives
+	}
+	return out
+}
+
+// timeUp reports whether the host's game length is over.
+func (r *Room) timeUp(now time.Time) bool {
+	return !r.endsAt.IsZero() && !now.Before(r.endsAt)
 }
 
 func (r *Room) eliminateQuiet(fallen []*Player, now time.Time) {
@@ -622,7 +693,7 @@ func (r *Room) eliminate(fallen []*Player, reason string, now time.Time) {
 			continue
 		}
 		p.alive, p.outRound, p.outAt, p.reason = false, max(1, r.round.Number), now, reason
-		p.outAnswered, p.outMs = false, 0
+		p.outAnswered, p.outMs, p.lives = false, 0, 0
 		ids = append(ids, p.ID())
 	}
 	if len(ids) == 0 {
@@ -642,8 +713,8 @@ func (r *Room) eliminate(fallen []*Player, reason string, now time.Time) {
 
 func (r *Room) summary(now time.Time) {
 	r.phase, r.wakeAt = PhaseSummary, now.Add(r.cfg.SummaryTime)
-	next := r.cfg.NextLimit(r.limit)
-	msg := Message{"t": "round_summary", "round": r.round.Number, "survivors": r.aliveCount(), "next_time_limit": next.Milliseconds()}
+	next := r.cfg.NextLimit(r.answerLimit)
+	msg := Message{"t": "round_summary", "round": r.round.Number, "survivors": r.aliveCount(), "next_time_limit": next.Milliseconds(), "ends_ms": max(0, r.endsAt.Sub(now).Milliseconds())}
 	r.broadcast(func(string) Message { return msg })
 }
 
@@ -684,6 +755,9 @@ func rank(players []*Player) []*Player {
 		if a.alive {
 			if a.correct != b.correct {
 				return a.correct > b.correct
+			}
+			if a.lives != b.lives {
+				return a.lives > b.lives
 			}
 			if a.totalMs != b.totalMs {
 				return a.totalMs < b.totalMs
@@ -741,7 +815,7 @@ func (r *Room) podium(now time.Time) []Message {
 		out[i] = Message{
 			"user_id": p.ID(), "name": p.Claims.Name, "rank": p.rank, "character": character(p.Claims),
 			"survival_ms": r.survival(p, now).Milliseconds(), "accuracy": accuracy(p),
-			"correct": p.correct, "rounds": p.rounds, "out_round": p.outRound, "reason": p.reason,
+			"correct": p.correct, "rounds": p.rounds, "out_round": p.outRound, "reason": p.reason, "lives": p.lives,
 		}
 	}
 	return out
@@ -847,7 +921,7 @@ func (r *Room) tick(now time.Time) {
 		case PhaseLock:
 			r.drop(now)
 		case PhaseReveal:
-			if r.aliveCount() <= 1 || r.round.Number >= MaxRounds {
+			if r.aliveCount() <= 1 || r.round.Number >= MaxRounds || r.timeUp(now) {
 				r.finish(now)
 			} else {
 				r.summary(now)
@@ -986,6 +1060,7 @@ func (r *Room) sendState(c *Client, now time.Time) {
 		view := Message{
 			"user_id": p.ID(), "name": p.Claims.Name, "grade": p.Claims.Grade, "character": character(p.Claims),
 			"online": p.online, "alive": p.alive, "out_round": p.outRound, "reason": p.reason, "left": p.left,
+			"lives": p.lives,
 		}
 		if r.revealed() && p.answered {
 			view["choice"] = p.choice
@@ -999,12 +1074,16 @@ func (r *Room) sendState(c *Client, now time.Time) {
 		"t": "state_sync", "pin": r.Pin, "phase": r.phase, "role": role, "subject": subjectOrMix(r.subject),
 		"host":    Message{"user_id": r.hostClaims.Subject, "name": r.hostClaims.Name, "online": r.hostOnline},
 		"players": players, "alive": r.aliveCount(), "answered": answered,
-		"min_players": MinPlayers, "max_players": MaxPlayers, "max_rounds": MaxRounds,
-		"round": r.round.Number,
+		"min_players": MinPlayers, "max_players": r.limit, "max_rounds": MaxRounds,
+		"round": r.round.Number, "lives_max": Lives,
+		"minutes": r.minutes, "durations": Durations, "player_limits": PlayerLimits,
+	}
+	if !r.endsAt.IsZero() && r.phase != PhaseLobby && r.phase != PhaseOver {
+		msg["ends_ms"] = max(0, r.endsAt.Sub(now).Milliseconds())
 	}
 	if !c.Host {
 		if p := r.byID[c.ID()]; p != nil {
-			you := Message{"user_id": p.ID(), "alive": p.alive, "out_round": p.outRound, "reason": p.reason, "answered": p.answered}
+			you := Message{"user_id": p.ID(), "alive": p.alive, "out_round": p.outRound, "reason": p.reason, "answered": p.answered, "lives": p.lives}
 			if p.answered {
 				you["choice"] = p.choice
 			}
@@ -1016,7 +1095,7 @@ func (r *Room) sendState(c *Client, now time.Time) {
 		if r.round.Number == 0 {
 			msg["ready_ms"] = max(0, r.wakeAt.Sub(now).Milliseconds())
 		} else {
-			msg["next_time_limit"] = r.cfg.NextLimit(r.limit).Milliseconds()
+			msg["next_time_limit"] = r.cfg.NextLimit(r.answerLimit).Milliseconds()
 		}
 	case PhaseQuestion, PhaseLock, PhaseReveal:
 		msg["round_id"] = r.round.ID
@@ -1030,6 +1109,7 @@ func (r *Room) sendState(c *Client, now time.Time) {
 		if r.phase == PhaseReveal {
 			msg["correct_index"] = r.round.Question.Answer
 			msg["eliminated_user_ids"] = r.round.Eliminated
+			msg["cracked_user_ids"] = r.round.Cracked
 			msg["sudden_death"] = r.round.SuddenDeath
 		}
 	case PhaseOver:
