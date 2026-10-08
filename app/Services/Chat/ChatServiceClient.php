@@ -62,6 +62,42 @@ class ChatServiceClient
         }
     }
 
+    /**
+     * Ids of every player with an open chat socket, or null when the chat
+     * service is not configured or unreachable.
+     *
+     * @return list<int>|null
+     */
+    public function onlineUserIds(): ?array
+    {
+        if (! $this->isConfigured()) {
+            return null;
+        }
+
+        $timestamp = (string) now()->getTimestamp();
+
+        try {
+            $response = Http::timeout((float) config('chat-service.timeout'))
+                ->withHeaders([
+                    'X-Chat-Timestamp' => $timestamp,
+                    'X-Chat-Signature' => hash_hmac('sha256', $timestamp.'.', $this->secret()),
+                ])
+                ->acceptJson()
+                ->get((string) config('chat-service.online_url'));
+        } catch (Throwable $exception) {
+            Log::warning('chat online lookup failed', ['error' => $exception->getMessage()]);
+
+            return null;
+        }
+
+        $users = $response->successful() ? $response->json('users') : null;
+        if (! is_array($users)) {
+            return null;
+        }
+
+        return array_values(array_unique(array_filter(array_map('intval', $users), fn (int $id): bool => $id > 0)));
+    }
+
     private function secret(): string
     {
         return (string) config('chat-service.secret');

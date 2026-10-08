@@ -1,4 +1,5 @@
 import { Google } from '@/components/brand-icons';
+import { GradeCard } from '@/components/grade-card';
 import InputError from '@/components/input-error';
 import PlayerCharacter, {
     type CharacterData,
@@ -167,6 +168,10 @@ export default function Profile({
                 </div>
                 <div className="flex min-w-0 flex-col gap-6">
                     <PlayerDetailsCard details={player} />
+                    <GradeCard
+                        grade={player.grade}
+                        questionLevel={player.question_level}
+                    />
                     <section className={CARD} data-testid="profile-info">
                         <h2 className="flex items-center gap-2 text-xl font-bold">
                             <CalendarDays className="size-5" aria-hidden />
@@ -180,7 +185,7 @@ export default function Profile({
                             </InfoRow>
                             <InfoRow label={t('questionLevel.label')}>
                                 <Link
-                                    href="/dashboard#grade"
+                                    href="#grade"
                                     className="link"
                                     data-testid="profile-level"
                                 >

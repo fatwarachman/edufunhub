@@ -183,6 +183,17 @@ class PlayerPortal
             ];
         }
 
+        $ids = collect($boards)->flatMap(fn (array $board): array => array_column($board['entries'], 'userId'))->unique()->values()->all();
+        $relations = app(FriendService::class)->relationsFor($viewer, $ids);
+
+        foreach ($boards as $period => $board) {
+            $boards[$period]['entries'] = array_map(fn (array $entry): array => [
+                ...$entry,
+                'relation' => $relations[$entry['userId']]['relation'] ?? 'none',
+                'friendshipId' => $relations[$entry['userId']]['friendship_id'] ?? null,
+            ], $board['entries']);
+        }
+
         return $boards;
     }
 

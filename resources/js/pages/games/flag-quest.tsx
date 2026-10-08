@@ -991,7 +991,7 @@ export default function FlagQuest({
                             <>
                                 <p>{t('flagQuest.state.gradeRequired')}</p>
                                 <NavButton
-                                    href="/dashboard#grade"
+                                    href="/profile#grade"
                                     icon={GraduationCap}
                                     label={t('flagQuest.state.setGrade')}
                                     variant="primary"
