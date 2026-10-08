@@ -41,3 +41,12 @@ test('the users table defaults to Indonesian', function () {
 
     expect(DB::table('users')->where('id', $id)->value('locale'))->toBe('id');
 });
+
+test('register google info box uses readable ink on a light tint', function () {
+    $source = file_get_contents(resource_path('js/pages/auth/register.tsx'));
+
+    expect($source)->toContain('data-testid="register-google-why"')
+        ->toContain('bg-[#e8f8ee]')
+        ->toContain('text-[#151b2e]')
+        ->not->toContain('bg-muted/40 p-3 text-xs text-muted-foreground');
+});
