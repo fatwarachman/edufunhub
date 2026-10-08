@@ -335,6 +335,7 @@
         "portal": "Portal",
         "games": "Games",
         "dashboard": "Home",
+        "brandHome": "edufunhub.com, open Home",
         "character": "Character",
         "logout": "Log out",
         "home": "Home",
@@ -2370,7 +2371,8 @@
             "count_one": "{{formatted}} player",
             "count_other": "{{formatted}} players",
             "open": "See the list of players online now",
-            "loading": "Loading online players…"
+            "loading": "Loading online players…",
+            "autoRefresh": "Updates automatically every 15 seconds"
         }
     },
     "abilityPage": {
@@ -2707,6 +2709,7 @@
         "friend": "Friend",
         "pages": "Online players pages",
         "prev": "Previous",
-        "next": "Next"
+        "next": "Next",
+        "autoRefresh": "The list updates automatically every 15 seconds."
     }
 }

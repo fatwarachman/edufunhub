@@ -75,8 +75,8 @@ test('completing details unlocks games', function (): void {
     $this->actingAs($user)->get(route('portal'))->assertInertia(fn (Assert $page) => $page->where('player.detailsComplete', true));
 });
 
-test('guests can still try the public demos', function (string $path): void {
-    $this->get($path)->assertOk();
+test('guests cannot open the former public demos', function (string $path): void {
+    $this->get($path)->assertRedirect(route('login'));
 })->with(['/games/sky-quiz', '/games/snakes-and-ladders']);
 
 test('players without details can still reach portal dashboard and character pages', function (string $path): void {

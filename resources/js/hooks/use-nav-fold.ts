@@ -3,6 +3,37 @@ import { type RefObject, useLayoutEffect } from 'react';
 /** Breathing room kept between the brand and the first nav button. */
 const BRAND_GAP = 12;
 
+/** Phones: compact headers always show only the bell and the Menu button. */
+const PHONE_QUERY = '(max-width: 767px)';
+
+function isPhone(): boolean {
+    return Boolean(window.matchMedia?.(PHONE_QUERY).matches);
+}
+
+/**
+ * Header clock date tiers, longest first: "Kamis, 8 Oktober 2026",
+ * "Kamis, 8 Okt", "Kam, 8 Okt", then the time only.
+ */
+export const CLOCK_TIERS = ['full', 'medium', 'short', 'time'] as const;
+
+/**
+ * Phones only: a slimmer time badge first, then no badge at all when even
+ * that would slide under the bell or menu button.
+ */
+export const CLOCK_TIGHT_TIER = 'tight';
+export const CLOCK_HIDDEN_TIER = 'hidden';
+
+/** Header clocks next to the brand (outside the nav). */
+function clocks(row: HTMLElement): HTMLElement[] {
+    return Array.from(row.querySelectorAll<HTMLElement>('.edu-clock'));
+}
+
+function setClockTier(row: HTMLElement, tier: string): void {
+    for (const clock of clocks(row)) {
+        clock.dataset.tier = tier;
+    }
+}
+
 /** Labelled nav buttons that can fold to an icon (not those inside panels). */
 const FOLDABLE =
     '.edu-nav-btn:not(.edu-nav-btn--icon):not(.edu-nav-btn--block):has(> .edu-nav-label)';
@@ -71,7 +102,7 @@ function crowded(nav: HTMLElement): boolean {
         .map((item) => item.getBoundingClientRect());
     const brands = Array.from(
         row.querySelectorAll<HTMLElement>(
-            '.edu-game-brand, .auth-brand, .edu-brand-wordmark, h1',
+            '.edu-game-brand, .auth-brand, .edu-brand-wordmark, h1, .edu-clock',
         ),
     )
         .filter((brand) => !nav.contains(brand) && brand.offsetParent !== null)
@@ -222,10 +253,34 @@ export function useNavFold(navRef: RefObject<HTMLElement | null>): void {
                 button.classList.remove('edu-nav-btn--morph');
             }
 
+            const row = headerRow(nav) ?? nav;
             nav.removeAttribute('data-collapsed');
             for (const button of buttons) {
                 button.removeAttribute('data-folded');
             }
+            /*
+             * Phones never fold: the whole nav lives in the Menu panel and
+             * the clock shows the time only.
+             */
+            if (isPhone()) {
+                setClockTier(row, 'time');
+                if (collapsible) {
+                    nav.setAttribute('data-collapsed', '');
+                }
+                /*
+                 * Narrow phones (e.g. 360px with the wordmark and tagline):
+                 * the time badge gives way instead of sliding under the bell.
+                 */
+                if (crowded(nav)) {
+                    setClockTier(row, CLOCK_TIGHT_TIER);
+                }
+                if (crowded(nav)) {
+                    setClockTier(row, CLOCK_HIDDEN_TIER);
+                }
+                nav.setAttribute('data-fitted', '');
+                return;
+            }
+            setClockTier(row, 'full');
             /* Fold from the right; the pinned button folds last. */
             const pinned = readPinned();
             const order = [...buttons].reverse();
@@ -241,8 +296,26 @@ export function useNavFold(navRef: RefObject<HTMLElement | null>): void {
                 }
                 button.setAttribute('data-folded', '');
             }
+            /*
+             * Labels are all icons and it still does not fit: the clock
+             * steps down its date tiers before the nav collapses into the
+             * Menu button.
+             */
+            for (const tier of CLOCK_TIERS.slice(1)) {
+                if (!crowded(nav)) {
+                    break;
+                }
+                setClockTier(row, tier);
+            }
             if (collapsible && crowded(nav)) {
                 nav.setAttribute('data-collapsed', '');
+                /* The Menu button frees room: take back the longest date that fits. */
+                for (const tier of CLOCK_TIERS) {
+                    setClockTier(row, tier);
+                    if (!crowded(nav)) {
+                        break;
+                    }
+                }
             }
             nav.setAttribute('data-fitted', '');
 
@@ -314,6 +387,22 @@ export function useNavFold(navRef: RefObject<HTMLElement | null>): void {
         const observer = new ResizeObserver(schedule);
         observer.observe(headerRow(nav) ?? nav);
         observer.observe(document.documentElement);
+        /*
+         * Web fonts load after mount (Inertia <Head> adds the stylesheet), so
+         * the brand changes width without the row resizing: re-fit on that.
+         */
+        const brandObserver = new ResizeObserver(() => {
+            nav.removeAttribute('data-fitted');
+            schedule();
+        });
+        (headerRow(nav) ?? nav)
+            .querySelectorAll<HTMLElement>('.auth-brand, .edu-game-brand h1')
+            .forEach((brand) => brandObserver.observe(brand));
+        const onFontsLoaded = () => {
+            nav.removeAttribute('data-fitted');
+            schedule();
+        };
+        document.fonts?.addEventListener?.('loadingdone', onFontsLoaded);
         const content = new MutationObserver(() => {
             nav.removeAttribute('data-fitted');
             schedule();
@@ -323,6 +412,19 @@ export function useNavFold(navRef: RefObject<HTMLElement | null>): void {
             subtree: true,
             characterData: true,
         });
+        /*
+         * The clock mounts after hydration (and swaps its date at midnight):
+         * re-fit on added/removed nodes in the header row only, never on the
+         * per-second text ticks, so the layout does not jitter.
+         */
+        const rowContent = new MutationObserver(() => {
+            nav.removeAttribute('data-fitted');
+            schedule();
+        });
+        const row = headerRow(nav);
+        if (row) {
+            rowContent.observe(row, { childList: true, subtree: true });
+        }
         document.fonts?.ready.then(() => {
             nav.removeAttribute('data-fitted');
             schedule();
@@ -332,7 +434,10 @@ export function useNavFold(navRef: RefObject<HTMLElement | null>): void {
             cancelAnimationFrame(frame);
             nav.removeEventListener('click', onPress);
             observer.disconnect();
+            brandObserver.disconnect();
+            document.fonts?.removeEventListener?.('loadingdone', onFontsLoaded);
             content.disconnect();
+            rowContent.disconnect();
         };
     }, [navRef]);
 }

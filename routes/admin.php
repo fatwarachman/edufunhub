@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\LeaderboardController;
 use App\Http\Controllers\Admin\MatchHistoryController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PlayerNotificationController;
+use App\Http\Controllers\Admin\PlayerSchoolGradeController;
 use App\Http\Controllers\Admin\PlayingTimeController;
 use App\Http\Controllers\Admin\PointRulesController;
 use App\Http\Controllers\Admin\QuestionController;
@@ -57,6 +58,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
         Route::resource('users', UserController::class);
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::patch('/users/{user}/teacher', [UserController::class, 'toggleTeacher'])->middleware(EnsureSuperadmin::class)->name('users.teacher');
+        Route::patch('/users/{user}/player-details', [PlayerSchoolGradeController::class, 'update'])->middleware([EnsureSuperadmin::class, 'throttle:30,1,users.player-details'])->name('users.player-details');
         Route::post('/impersonate/{user}', [ImpersonationController::class, 'impersonate'])->whereNumber('user')->middleware('throttle:20,1,impersonate')->name('impersonate');
 
         // Roles CRUD

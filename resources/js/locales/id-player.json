@@ -334,6 +334,7 @@
         "portal": "Portal",
         "games": "Game",
         "dashboard": "Beranda",
+        "brandHome": "edufunhub.com, buka Beranda",
         "character": "Karakter",
         "logout": "Keluar",
         "home": "Beranda",
@@ -2369,7 +2370,8 @@
             "count_one": "{{formatted}} pemain",
             "count_other": "{{formatted}} pemain",
             "open": "Lihat daftar pemain yang sedang online",
-            "loading": "Memuat jumlah pemain online…"
+            "loading": "Memuat jumlah pemain online…",
+            "autoRefresh": "Diperbarui otomatis setiap 15 detik"
         }
     },
     "abilityPage": {
@@ -2706,6 +2708,7 @@
         "friend": "Teman",
         "pages": "Halaman daftar pemain online",
         "prev": "Sebelumnya",
-        "next": "Berikutnya"
+        "next": "Berikutnya",
+        "autoRefresh": "Daftar diperbarui otomatis setiap 15 detik."
     }
 }

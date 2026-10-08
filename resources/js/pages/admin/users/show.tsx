@@ -8,7 +8,11 @@ import {
     type ActivityProperties,
     activitySummary,
 } from '@/components/admin/activity-entry';
-import { type Paginated, SimplePagination } from '@/components/admin/admin-kit';
+import {
+    FlashMessages,
+    type Paginated,
+    SimplePagination,
+} from '@/components/admin/admin-kit';
 import {
     axisTick,
     chartTooltipStyle,
@@ -30,12 +34,17 @@ import {
     useSubjectLabel,
 } from '@/components/admin/game-stats';
 import { MatchCard, type MatchRow } from '@/components/admin/match-history';
+import {
+    adminGradeLabel,
+    PlayerSchoolGradeDialog,
+} from '@/components/admin/player-school-grade-dialog';
 import { BadgeMedal, type BadgeProgress } from '@/components/badges';
 import PlayerCharacter from '@/components/player-character';
 import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLocale, tr } from '@/lib/admin-i18n';
 import { type CharacterLook } from '@/lib/character/draw-character';
+import { hasGrade } from '@/lib/grade';
 import { cn } from '@/lib/utils';
 import { Deferred, Head, Link, router } from '@inertiajs/react';
 import {
@@ -107,6 +116,9 @@ interface UserDetail {
         birth_date: string | null;
         age: number | null;
         school_name: string | null;
+        school_city: string | null;
+        school_level: string | null;
+        school_npsn: string | null;
         color: string | null;
         accessory: string | null;
     } | null;
@@ -127,6 +139,7 @@ interface PlayRow {
 
 interface Props {
     user: UserDetail;
+    viewerIsSuperadmin: boolean;
     badges: {
         stats: Record<string, number>;
         badges: (BadgeProgress & { name: string; description: string })[];
@@ -342,10 +355,11 @@ export default function ShowUser(props: Props) {
         tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, [scrollRequest]);
     const [confirmDelete, setConfirmDelete] = useState(false);
+    const [editingSchool, setEditingSchool] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const suspended = user.status === 'suspended';
     const completeness = [
-        profile?.grade,
+        hasGrade(profile?.grade),
         profile?.birth_date,
         profile?.school_name,
         user.email_verified_at,
@@ -362,6 +376,8 @@ export default function ShowUser(props: Props) {
                     <ArrowLeft className="size-4" />
                     {tr('Back to users')}
                 </Link>
+
+                <FlashMessages />
 
                 {/* Identity card */}
                 <section className="relative overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
@@ -595,10 +611,25 @@ export default function ShowUser(props: Props) {
                             title={tr('Learner profile')}
                             icon={UserRound}
                             actions={
-                                <span className="text-xs text-muted-foreground">
-                                    {completeness}
-                                    {tr('/4 complete')}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">
+                                        {completeness}
+                                        {tr('/4 complete')}
+                                    </span>
+                                    {props.viewerIsSuperadmin && profile && (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setEditingSchool(true)
+                                            }
+                                            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                            data-testid="user-edit-school-grade"
+                                        >
+                                            <Edit className="size-4" />
+                                            {tr('Edit')}
+                                        </button>
+                                    )}
+                                </div>
                             }
                         >
                             <dl className="flex flex-col gap-3 text-sm">
@@ -606,8 +637,8 @@ export default function ShowUser(props: Props) {
                                     icon={GraduationCap}
                                     label={tr('Grade')}
                                     value={
-                                        profile?.grade
-                                            ? `Grade ${profile.grade}`
+                                        hasGrade(profile?.grade)
+                                            ? adminGradeLabel(profile.grade)
                                             : null
                                     }
                                 />
@@ -623,7 +654,16 @@ export default function ShowUser(props: Props) {
                                 <Fact
                                     icon={School}
                                     label={tr('Last school')}
-                                    value={profile?.school_name}
+                                    value={
+                                        profile?.school_name
+                                            ? [
+                                                  profile.school_name,
+                                                  profile.school_city,
+                                              ]
+                                                  .filter(Boolean)
+                                                  .join(' · ')
+                                            : null
+                                    }
                                 />
                             </dl>
                         </Panel>
@@ -1168,6 +1208,15 @@ export default function ShowUser(props: Props) {
                     </div>
                 </section>
             </div>
+
+            {editingSchool && profile && (
+                <PlayerSchoolGradeDialog
+                    userId={user.id}
+                    profile={profile}
+                    open={editingSchool}
+                    onClose={() => setEditingSchool(false)}
+                />
+            )}
 
             {confirmDelete && (
                 <div

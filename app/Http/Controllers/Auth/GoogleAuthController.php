@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\ConnectedAccount;
 use App\Models\User;
+use App\Services\GameReturnUrl;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +41,7 @@ class GoogleAuthController extends Controller
         }
     }
 
-    public function callback(Request $request): RedirectResponse
+    public function callback(Request $request, GameReturnUrl $returnUrl): RedirectResponse
     {
         if (! self::enabled()) {
             return $this->failure('Google sign-in is not available. Please use email and password.');
@@ -117,11 +118,13 @@ class GoogleAuthController extends Controller
             return $this->failure('Two-factor authentication is enabled. Please sign in with email and password.');
         }
 
+        $intended = $request->session()->pull('url.intended');
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
-        $request->session()->forget('url.intended');
 
-        return redirect()->route('portal');
+        $gamePath = $returnUrl->pull($request, is_string($intended) ? $intended : null);
+
+        return $gamePath !== null ? redirect($gamePath) : redirect()->route('portal');
     }
 
     private function failure(string $message): RedirectResponse

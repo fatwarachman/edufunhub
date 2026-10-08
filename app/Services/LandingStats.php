@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\CharacterItem;
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\PointLedger;
 use App\Models\Question;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -17,12 +19,20 @@ use Illuminate\Support\Str;
  * player and school leaderboards. Only public-safe fields leave this class
  * (nickname or first name, school, grade, points); staff accounts
  * (superadmins, admin roles) and disabled or deleted users are excluded.
+ *
+ * Freshness: the snapshot lives CACHE_SECONDS (60 s) and the landing pages
+ * refetch every 60 s while visible, so a figure is at most ~2 minutes old.
+ * A short TTL is used instead of busting on every write: game results land
+ * many times per second at peak and would otherwise rebuild the aggregates
+ * on nearly every landing request.
  */
 class LandingStats
 {
     public const CACHE_KEY = 'landing.stats';
 
-    public const CACHE_SECONDS = 300;
+    public const CACHE_SECONDS = 60;
+
+    public const SHOP_FEATURED_LIMIT = 4;
 
     public const LEADERBOARD_LIMIT = 10;
 
@@ -33,7 +43,9 @@ class LandingStats
 
     /**
      * @return array{
-     *     stats: array{players: int, schools: int, games: int, plays: int, answers: int, questions: int},
+     *     stats: array{players: int, schools: int, games: int, categories: int, plays: int, answers: int, questions: int, teachers: int, teacherQuestions: int, shopItems: int},
+     *     catalog: list<array{key: string, url: string, category: string, minPlayers: int, maxPlayers: int}>,
+     *     shop: list<array{name: string, slot: string, price: int}>,
      *     leaderboards: array{week: list<array{rank: int, name: string, school: ?string, grade: ?int, points: int}>, all: list<array{rank: int, name: string, school: ?string, grade: ?int, points: int}>},
      *     podium: list<array{rank: int, name: string, school: ?string, grade: ?int, points: int}>,
      *     schools: list<array{rank: int, name: string, players: int, points: int}>,
@@ -52,16 +64,23 @@ class LandingStats
     private function build(): array
     {
         $allTime = $this->leaderboard(null);
+        $catalog = $this->catalog();
 
         return [
             'stats' => [
                 'players' => $this->eligibleUsers()->count(),
                 'schools' => $this->schoolCount(),
-                'games' => app(GameAnalytics::class)->catalogGames()->count(),
+                'games' => count($catalog),
+                'categories' => collect($catalog)->pluck('category')->unique()->count(),
                 'plays' => $this->histories()->count(),
                 'answers' => (int) $this->histories()->selectRaw('COALESCE(SUM(correct), 0) + COALESCE(SUM(wrong), 0) as answers')->value('answers'),
                 'questions' => Question::query()->active()->count(),
+                'teachers' => $this->eligibleUsers()->whereHas('roles', fn (Builder $query) => $query->where('slug', Role::TEACHER))->count(),
+                'teacherQuestions' => Question::query()->active()->whereIn('source', Question::TEACHER_SOURCES)->count(),
+                'shopItems' => CharacterItem::query()->active()->where('price', '>', 0)->count(),
             ],
+            'catalog' => $catalog,
+            'shop' => $this->featuredShopItems(),
             'leaderboards' => [
                 'week' => $this->leaderboard(7),
                 'all' => $allTime,
@@ -76,6 +95,49 @@ class LandingStats
                 ->all(),
             'generatedAt' => now()->toIso8601String(),
         ];
+    }
+
+    /**
+     * Playable games straight from config/game-catalog.php, in catalog order.
+     *
+     * @return list<array{key: string, url: string, category: string, minPlayers: int, maxPlayers: int}>
+     */
+    private function catalog(): array
+    {
+        return collect(config('game-catalog.categories'))
+            ->flatMap(fn (array $category): array => collect($category['games'])->map(fn (array $game): array => [
+                'key' => (string) $game['key'],
+                'url' => route($game['route'], absolute: false),
+                'category' => (string) $category['key'],
+                'minPlayers' => (int) ($game['min_players'] ?? 1),
+                'maxPlayers' => (int) ($game['max_players'] ?? 1),
+            ])->all())
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Most valuable active items of the character shop (name, slot, price only).
+     *
+     * @return list<array{name: string, slot: string, price: int}>
+     */
+    private function featuredShopItems(): array
+    {
+        return CharacterItem::query()
+            ->active()
+            ->where('price', '>', 0)
+            ->orderByDesc('price')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->limit(self::SHOP_FEATURED_LIMIT)
+            ->get(['name_id', 'slot', 'price'])
+            ->map(fn (CharacterItem $item): array => [
+                'name' => Str::limit(Str::squish($item->name_id), 40, ''),
+                'slot' => $item->slot,
+                'price' => $item->price,
+            ])
+            ->values()
+            ->all();
     }
 
     /** @return Builder<User> */

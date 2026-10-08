@@ -128,7 +128,10 @@ export default function Register({
                                         <InputError message={errors.google} />
                                     </div>
                                 )}
-                                <p className="flex items-start gap-2 rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                                <p
+                                    className="flex items-start gap-2 rounded-xl border-2 border-[#151b2e] bg-[#e8f8ee] p-3 text-xs leading-relaxed font-medium text-[#151b2e]"
+                                    data-testid="register-google-why"
+                                >
                                     <ShieldCheck
                                         className="mt-0.5 size-4 shrink-0 text-green-600"
                                         aria-hidden="true"

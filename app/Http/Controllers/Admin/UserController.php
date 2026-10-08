@@ -156,11 +156,15 @@ class UserController extends Controller
                     'birth_date' => $user->playerProfile->birth_date?->toDateString(),
                     'age' => $user->playerProfile->age,
                     'school_name' => $user->playerProfile->school_name,
+                    'school_city' => $user->playerProfile->school_city,
+                    'school_level' => $user->playerProfile->school_level,
+                    'school_npsn' => $user->playerProfile->school_npsn,
                     'color' => $user->playerProfile->color,
                     'accessory' => $user->playerProfile->accessory,
                 ] : null,
             ],
             ...$analytics->userDetail($user),
+            'viewerIsSuperadmin' => (bool) request()->user()?->is_superadmin,
             'activityLog' => $analytics->activityFor($user),
             'badges' => collect($badges->summary($user))
                 ->map(fn ($value, string $key) => $key === 'badges'

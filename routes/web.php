@@ -80,6 +80,7 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::patch('/profile', [ProfileController::class, 'update'])->middleware('throttle:profile')->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'password'])->middleware('throttle:profile-password')->name('profile.password');
     Route::get('/players/online', OnlinePlayersController::class)->middleware('throttle:60,1,players.online')->name('players.online');
+    Route::get('/players/online/count', [OnlinePlayersController::class, 'count'])->middleware('throttle:30,1,players.online.count')->name('players.online.count');
     Route::get('/players/{user}', PlayerPageController::class)->whereNumber('user')->middleware('throttle:60,1,players.show')->name('players.show');
     Route::patch('/player-details', [PlayerDetailsController::class, 'update'])->name('player-details.update');
     Route::post('/screen-time/beat', [ScreenTimeController::class, 'beat'])->middleware('throttle:10,1,screen-time.beat')->name('screen-time.beat');
@@ -153,6 +154,9 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::get('/play/block-battle/{pin?}', [BlockBattleController::class, 'play'])->where('pin', '[0-9]{6}')->middleware(RecordGameAccess::class.':block-battle')->name('games.block-battle.play');
         Route::get('/games/{game}/join/{pin}', GameInviteController::class)->where(['game' => '[a-z-]+', 'pin' => '[0-9]{6}'])->name('games.join');
         Route::post('/games/snakes-and-ladders/token', [SnakesAndLaddersController::class, 'token'])->middleware('throttle:30,1,games.snakes-and-ladders.token')->name('games.snakes-and-ladders.token');
+        Route::get('/games/snakes-and-ladders', [SnakesAndLaddersController::class, 'show'])->middleware(RecordGameAccess::class.':snakes-and-ladders')->name('games.snakes-and-ladders');
+        Route::get('/games/sky-quiz', [SkyQuizController::class, 'show'])->middleware(RecordGameAccess::class.':sky-quiz')->name('games.sky-quiz');
+        Route::post('/games/sky-quiz/token', [SkyQuizController::class, 'token'])->middleware('throttle:30,1,games.sky-quiz.token')->name('games.sky-quiz.token');
     });
 });
 
@@ -173,17 +177,6 @@ Route::inertia('/terms', 'legal/terms')->name('legal.terms');
 
 // 3. Games Arena & EduFun Games
 Route::get('/gamelist', GameListController::class)->name('gamelist');
-
-// Guests may try the demos; signed-in players must complete their details first.
-Route::middleware(EnsurePlayerDetailsComplete::class)->group(function (): void {
-    Route::get('/games/snakes-and-ladders', [SnakesAndLaddersController::class, 'show'])->middleware(RecordGameAccess::class.':snakes-and-ladders')->name('games.snakes-and-ladders');
-
-    Route::get('/games/sky-quiz', [SkyQuizController::class, 'show'])->middleware(RecordGameAccess::class.':sky-quiz')->name('games.sky-quiz');
-});
-
-Route::post('/games/sky-quiz/token', [SkyQuizController::class, 'token'])
-    ->middleware(['auth', EnsurePlayerIsActive::class, EnsurePlayerDetailsComplete::class, 'throttle:30,1,games.sky-quiz.token'])
-    ->name('games.sky-quiz.token');
 
 // ── Auth Routes ──────────────────────────────────────────────
 Route::middleware('guest')->group(function (): void {

@@ -383,6 +383,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
 .econ-grid{margin-top:40px;display:grid;gap:16px}
 @media(min-width:640px){.econ-grid{grid-template-columns:1fr 1fr}}
 @media(min-width:1024px){.econ-grid{grid-template-columns:repeat(4,1fr)}}
+.econ-grid[hidden],.econ-card[hidden]{display:none}
 .econ-card{border:3px solid var(--ink);border-radius:var(--r-xl);padding:20px;background:white;box-shadow:5px 5px 0 var(--ink);transition:transform .2s}
 .econ-card:hover{transform:translateY(-4px)}
 .econ-card .top{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:700;text-transform:uppercase}
@@ -531,72 +532,77 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         <div class="nav-dropdown-menu">
           <a href="/gamelist" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:var(--yellow)"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5" fill="currentColor"/><circle cx="15" cy="12" r="1.5" fill="currentColor"/></svg></div>
-            <div><div class="dd-label">Semua Game</div><div class="dd-desc">Daftar lengkap game edukatif</div></div>
+            <div><div class="dd-label">Semua Game</div><div class="dd-desc">Daftar lengkap game edukatif<span data-live-stat="games" data-live-template=" · {n} game"></span></div></div>
           </a>
           <div class="nav-dropdown-group">Petualangan</div>
           <a href="/games/flag-quest" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#d4f5ec"><svg viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-2 4 2 4H5"/></svg></div>
-            <div><div class="dd-label">Misi Bendera</div><div class="dd-desc">Jelajah peta & kuis tiap pos</div></div>
+            <div><div class="dd-label">Misi Bendera</div><div class="dd-desc">Jelajah peta & kuis tiap pos<span data-game-players="flag-quest"></span></div></div>
           </a>
           <div class="nav-dropdown-group">Kuis edukasi</div>
           <a href="/games/sky-quiz" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#e3dbf9"><svg viewBox="0 0 24 24"><path d="M3 12l7-7 11 7-11 7-7-7z"/><path d="M10 5v14"/></svg></div>
-            <div><div class="dd-label">Sukhoi Sky Quiz</div><div class="dd-desc">Terbang & tembak jawaban</div></div>
+            <div><div class="dd-label">Sukhoi Sky Quiz</div><div class="dd-desc">Terbang & tembak jawaban<span data-game-players="sky-quiz"></span></div></div>
           </a>
           <a href="/games/quiz-duel" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#ffd6e0"><svg viewBox="0 0 24 24"><path d="M4 4l10 10M14 4L4 14"/><path d="M15 15l5 5M9 15l-5 5"/></svg></div>
-            <div><div class="dd-label">Duel Kuis Kelas</div><div class="dd-desc">Adu cepat 1 lawan 1</div></div>
+            <div><div class="dd-label">Duel Kuis Kelas</div><div class="dd-desc">Adu cepat 1 lawan 1<span data-game-players="quiz-duel"></span></div></div>
           </a>
           <a href="/games/floor-drop" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#dbeafe"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></div>
-            <div><div class="dd-label">Lantai Runtuh</div><div class="dd-desc">Battle royale kuis 100 pemain</div></div>
+            <div><div class="dd-label">Lantai Runtuh</div><div class="dd-desc">Battle royale kuis<span data-game-players="floor-drop"></span></div></div>
           </a>
           <a href="/games/economy-heist" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#ffe08a"><svg viewBox="0 0 24 24"><rect x="3" y="10" width="18" height="10" rx="2"/><path d="M3 12a9 6 0 0 1 18 0"/><rect x="10" y="12" width="4" height="4" rx="1"/></svg></div>
-            <div><div class="dd-label">Peti Emas Misteri</div><div class="dd-desc">Buka peti, curi &amp; tukar emas</div></div>
+            <div><div class="dd-label">Peti Emas Misteri</div><div class="dd-desc">Buka peti, curi &amp; tukar emas<span data-game-players="economy-heist"></span></div></div>
           </a>
           <a href="/games/order-rush" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#99f6e4"><svg viewBox="0 0 24 24"><path d="M4 9a2 2 0 0 1-2-2V5h6v2a2 2 0 0 1-2 2Z"/><path d="M3 5V3M7 5V3M19 15V6.5a3.5 3.5 0 0 0-7 0v11a3.5 3.5 0 0 1-7 0V9"/><path d="M17 21v-2M21 21v-2M22 19h-6v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2Z"/></svg></div>
-            <div><div class="dd-label">Order Rush TKJ</div><div class="dd-desc">Balapan urutan kabel &amp; protokol</div></div>
+            <div><div class="dd-label">Order Rush TKJ</div><div class="dd-desc">Balapan urutan kabel &amp; protokol<span data-game-players="order-rush"></span></div></div>
           </a>
           <a href="/games/turbo-trivia" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#fecdd3"><svg viewBox="0 0 24 24"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2M19 18v2"/></svg></div>
-            <div><div class="dd-label">Turbo Trivia</div><div class="dd-desc">Balap gokart kuis di proyektor</div></div>
+            <div><div class="dd-label">Turbo Trivia</div><div class="dd-desc">Balap gokart kuis di proyektor<span data-game-players="turbo-trivia"></span></div></div>
           </a>
           <a href="/games/block-battle" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#fde68a"><svg viewBox="0 0 24 24"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg></div>
-            <div><div class="dd-label">Tetris Kuis</div><div class="dd-desc">Adu balok &amp; kuis di proyektor</div></div>
+            <div><div class="dd-label">Tetris Kuis</div><div class="dd-desc">Adu balok &amp; kuis di proyektor<span data-game-players="block-battle"></span></div></div>
+          </a>
+          <div class="nav-dropdown-group">Asah otak</div>
+          <a href="/games/crossword" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></div>
+            <div><div class="dd-label">Teka-Teki Silang</div><div class="dd-desc">Isi kotak dengan jawaban kuis<span data-game-players="crossword"></span></div></div>
           </a>
           <div class="nav-dropdown-group">Arkade edukasi</div>
           <a href="/games/knowledge-train" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#c9f5e5"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12M9 21l-2-4M15 21l2-4"/></svg></div>
-            <div><div class="dd-label">Kereta Pengetahuan</div><div class="dd-desc">Pilih rel jawaban benar</div></div>
+            <div><div class="dd-label">Kereta Pengetahuan</div><div class="dd-desc">Pilih rel jawaban benar<span data-game-players="knowledge-train"></span></div></div>
           </a>
           <a href="/games/port-sorter" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#ccfbf1"><svg viewBox="0 0 24 24"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3M12 12V8"/></svg></div>
-            <div><div class="dd-label">Pilah Port &amp; Protokol</div><div class="dd-desc">Pilah paket ke keranjang protokol</div></div>
+            <div><div class="dd-label">Pilah Port &amp; Protokol</div><div class="dd-desc">Pilah paket ke keranjang protokol<span data-game-players="port-sorter"></span></div></div>
           </a>
           <div class="nav-dropdown-group">Jelajah &amp; eksperimen</div>
           <a href="/games/market-math" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#ffedd5"><svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h9.6a1 1 0 0 0 1-.8L21 7H6"/></svg></div>
-            <div><div class="dd-label">Pasar Matematika</div><div class="dd-desc">Belanja sambil berhitung</div></div>
+            <div><div class="dd-label">Pasar Matematika</div><div class="dd-desc">Belanja sambil berhitung<span data-game-players="market-math"></span></div></div>
           </a>
           <a href="/games/number-garden" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#dcfce7"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3"/><path d="M12 12v10M8 18c2 0 4-1 4-3M16 16c-2 0-4-1-4-3"/></svg></div>
-            <div><div class="dd-label">Taman Angka &amp; Huruf</div><div class="dd-desc">Hitung bunga &amp; tebak huruf</div></div>
+            <div><div class="dd-label">Taman Angka &amp; Huruf</div><div class="dd-desc">Hitung bunga &amp; tebak huruf<span data-game-players="number-garden"></span></div></div>
           </a>
           <a href="/games/explore-indonesia" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#ffe4e6"><svg viewBox="0 0 24 24"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg></div>
-            <div><div class="dd-label">Jelajah Indonesia</div><div class="dd-desc">Provinsi, budaya &amp; ibu kota</div></div>
+            <div><div class="dd-label">Jelajah Indonesia</div><div class="dd-desc">Provinsi, budaya &amp; ibu kota<span data-game-players="explore-indonesia"></span></div></div>
           </a>
           <a href="/games/mini-lab" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#ede9fe"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4 20a1 1 0 0 0 1 1.5h14A1 1 0 0 0 20 20l-6-11V3"/></svg></div>
-            <div><div class="dd-label">Lab Mini</div><div class="dd-desc">Percobaan sains mini</div></div>
+            <div><div class="dd-label">Lab Mini</div><div class="dd-desc">Percobaan sains mini<span data-game-players="mini-lab"></span></div></div>
           </a>
           <div class="nav-dropdown-group">Permainan papan</div>
           <a href="/games/snakes-and-ladders" class="nav-dropdown-item">
             <div class="nav-dropdown-icon" style="background:#fff3b0"><svg viewBox="0 0 24 24"><path d="M4 20 Q8 4 12 12 Q16 20 20 4" stroke-linecap="round"/></svg></div>
-            <div><div class="dd-label">Ular Tangga</div><div class="dd-desc">Board game kuis 2–4 pemain</div></div>
+            <div><div class="dd-label">Ular Tangga</div><div class="dd-desc">Board game kuis<span data-game-players="snakes-and-ladders"></span></div></div>
           </a>
         </div>
       </div>
@@ -633,6 +639,8 @@ button{cursor:pointer;font:inherit;border:0;background:0}
     <a href="/games/order-rush" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Order Rush TKJ</a>
     <a href="/games/turbo-trivia" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Turbo Trivia</a>
     <a href="/games/block-battle" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Tetris Kuis</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Asah otak</div>
+    <a href="/games/crossword" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Teka-Teki Silang</a>
     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Arkade edukasi</div>
     <a href="/games/knowledge-train" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Kereta Pengetahuan</a>
     <a href="/games/port-sorter" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Pilah Port &amp; Protokol</a>
@@ -730,7 +738,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
     <div class="modes-header">
       <div class="overline">Mode Permainan</div>
       <h2>Bukan Cuma Kuis Biasa — Ini Game Sungguhan</h2>
-      <p>Enam mode permainan berbeda, masing-masing dirancang untuk gaya belajar yang unik.</p>
+      <p>Beragam mode permainan<span data-live-stat="games" data-live-template=" ({n} game)"></span>, masing-masing dirancang untuk gaya belajar yang unik.</p>
     </div>
 
     <div class="modes-list">
@@ -921,12 +929,12 @@ button{cursor:pointer;font:inherit;border:0;background:0}
       <p>Daftarkan sekolah tempat kamu menuntut ilmu saat ini. Setiap poin yang kamu menangkan di arena game langsung mendongkrak posisi sekolahmu di papan peringkat nasional!</p>
     </div>
     <div class="proof-stats live-stats" id="live-stats" data-testid="landing-live-stats" hidden aria-live="polite">
-      <div class="stat-card"><div class="num" data-stat="players">0</div><div class="label">Pemain terdaftar</div></div>
-      <div class="stat-card"><div class="num" data-stat="schools">0</div><div class="label">Sekolah bergabung</div></div>
-      <div class="stat-card"><div class="num" data-stat="games">0</div><div class="label">Game tersedia</div></div>
-      <div class="stat-card"><div class="num" data-stat="plays">0</div><div class="label">Permainan dimainkan</div></div>
-      <div class="stat-card"><div class="num" data-stat="answers">0</div><div class="label">Soal dijawab</div></div>
-      <div class="stat-card"><div class="num" data-stat="questions">0</div><div class="label">Soal di bank soal</div></div>
+      <div class="stat-card"><div class="num" data-stat="players">—</div><div class="label">Pemain terdaftar</div></div>
+      <div class="stat-card"><div class="num" data-stat="schools">—</div><div class="label">Sekolah bergabung</div></div>
+      <div class="stat-card"><div class="num" data-stat="games">—</div><div class="label">Game tersedia</div></div>
+      <div class="stat-card"><div class="num" data-stat="plays">—</div><div class="label">Permainan dimainkan</div></div>
+      <div class="stat-card"><div class="num" data-stat="answers">—</div><div class="label">Soal dijawab</div></div>
+      <div class="stat-card"><div class="num" data-stat="questions">—</div><div class="label">Soal di bank soal</div></div>
     </div>
     <div class="live-board" id="live-players" data-testid="landing-player-board" hidden>
       <div class="live-board-head">
@@ -942,91 +950,12 @@ button{cursor:pointer;font:inherit;border:0;background:0}
     </div>
     <h3 class="lb-subhead" id="lb-schools-title" hidden>Peringkat Sekolah</h3>
     <div class="lb-list" id="lb-schools" data-testid="landing-school-board">
-      <div class="lb-item">
-        <div class="lb-left">
-          <div class="lb-rank">#1</div>
-          <div class="lb-info">
-            <h3>Sekolah Menengah Bintang Prestasi</h3>
-            <div class="meta">
-              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Gugus Cendekia</span>
-              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>240 Siswa</span>
-            </div>
-          </div>
-        </div>
-        <div class="lb-points">
-          <div class="val">942.150</div>
-          <div class="sub">✦ POIN AKUMULASI</div>
-        </div>
-      </div>
-      <div class="lb-item">
-        <div class="lb-left">
-          <div class="lb-rank">#2</div>
-          <div class="lb-info">
-            <h3>Pusat Belajar Tunas Bangsa Mandiri</h3>
-            <div class="meta">
-              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Gugus Juara</span>
-              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>225 Siswa</span>
-            </div>
-          </div>
-        </div>
-        <div class="lb-points">
-          <div class="val">918.400</div>
-          <div class="sub">✦ POIN AKUMULASI</div>
-        </div>
-      </div>
-      <div class="lb-item">
-        <div class="lb-left">
-          <div class="lb-rank">#3</div>
-          <div class="lb-info">
-            <h3>Akademi Muda Generasi Maju</h3>
-            <div class="meta">
-              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Gugus Inovatif</span>
-              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>210 Siswa</span>
-            </div>
-          </div>
-        </div>
-        <div class="lb-points">
-          <div class="val">899.700</div>
-          <div class="sub">✦ POIN AKUMULASI</div>
-        </div>
-      </div>
-      <div class="lb-item">
-        <div class="lb-left">
-          <div class="lb-rank">#4</div>
-          <div class="lb-info">
-            <h3>Lembaga Pendidikan Surya Utama</h3>
-            <div class="meta">
-              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Gugus Pelopor</span>
-              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>190 Siswa</span>
-            </div>
-          </div>
-        </div>
-        <div class="lb-points">
-          <div class="val">782.300</div>
-          <div class="sub">✦ POIN AKUMULASI</div>
-        </div>
-      </div>
-      <div class="lb-item">
-        <div class="lb-left">
-          <div class="lb-rank">#5</div>
-          <div class="lb-info">
-            <h3>Sekolah Harapan Insan Madani</h3>
-            <div class="meta">
-              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Gugus Cemerlang</span>
-              <span style="display:flex;align-items:center;gap:4px"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>175 Siswa</span>
-            </div>
-          </div>
-        </div>
-        <div class="lb-points">
-          <div class="val">745.900</div>
-          <div class="sub">✦ POIN AKUMULASI</div>
-        </div>
-      </div>
+      <p class="lb-empty" id="lb-schools-status">Memuat peringkat sekolah…</p>
     </div>
     <p class="lb-updated" id="lb-updated" hidden></p>
     <div class="lb-notice">
       <h4>🏫 Ingin Mendaftarkan Institusi atau Komunitas Belajarmu?</h4>
-      <p>Daftarkan sekolah atau komunitasmu dan bergabunglah dengan ribuan lembaga di seluruh Indonesia yang telah merasakan manfaat EduFunHub.</p>
+      <p>Daftarkan sekolah atau komunitasmu dan bergabunglah bersama sekolah<span data-live-stat="schools" data-live-template=" ({n} sekolah saat ini)"></span> yang sudah bermain di EduFunHub.</p>
     </div>
     <div class="lb-cards">
       <div class="lb-card">
@@ -1072,11 +1001,11 @@ button{cursor:pointer;font:inherit;border:0;background:0}
       <h2>Dandani Karaktermu dengan <span class="highlight">Poin Akumulasi Misi!</span></h2>
       <p>Setiap poin yang kamu kumpulkan dari kuis, duel, dan game bisa ditukar dengan item eksklusif di toko virtual EduFunHub. Prestasi belajar = kekayaan digital!</p>
     </div>
-    <div class="econ-grid">
-      <div class="econ-card">
+    <div class="econ-grid" data-testid="landing-shop" hidden>
+      <div class="econ-card" data-shop-item="0">
         <div class="top">
-          <span class="rarity" style="background:#c0392b">LEGENDARY</span>
-          <span class="type">Avatar Skin</span>
+          <span class="rarity" style="background:#c0392b" data-shop-slot>Item</span>
+          <span class="type">Item Shop</span>
         </div>
         <div class="visual" style="background:linear-gradient(135deg,#1a1a2e,#16213e)">
           <svg viewBox="0 0 80 80" width="64" height="64" stroke="#F5A623" stroke-width="2" fill="none">
@@ -1095,20 +1024,20 @@ button{cursor:pointer;font:inherit;border:0;background:0}
             <path d="M38 12 L40 8 L42 12"/>
           </svg>
         </div>
-        <h3>Kostum Cyber Mecha</h3>
-        <p class="desc">Tampil futuristik dengan armor robot canggih eksklusif di arena!</p>
+        <h3 data-shop-name>—</h3>
+        <p class="desc">Item asli di toko karakter, ditukar dengan poin hasil bermain.</p>
         <div class="price">
           <span class="coins">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            1.200 Poin
+            <span data-shop-price>—</span>&nbsp;Poin
           </span>
           <span class="buy">Tukar</span>
         </div>
       </div>
-      <div class="econ-card">
+      <div class="econ-card" data-shop-item="1">
         <div class="top">
-          <span class="rarity" style="background:#6C5CE7">EPIC</span>
-          <span class="type">Aksesoris Efek</span>
+          <span class="rarity" style="background:#6C5CE7" data-shop-slot>Item</span>
+          <span class="type">Item Shop</span>
         </div>
         <div class="visual" style="background:linear-gradient(135deg,#1a0533,#2d1b69)">
           <svg viewBox="0 0 80 80" width="64" height="64" stroke="#FFD93D" stroke-width="2" fill="none">
@@ -1120,20 +1049,20 @@ button{cursor:pointer;font:inherit;border:0;background:0}
             <circle cx="40" cy="30" r="6" fill="#FFD93D" fill-opacity=".4"/>
           </svg>
         </div>
-        <h3>Sayap Phoenix Emas</h3>
-        <p class="desc">Efek sayap legendaris yang bersinar saat kamu tampil di arena!</p>
+        <h3 data-shop-name>—</h3>
+        <p class="desc">Item asli di toko karakter, ditukar dengan poin hasil bermain.</p>
         <div class="price">
           <span class="coins">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            850 Poin
+            <span data-shop-price>—</span>&nbsp;Poin
           </span>
           <span class="buy">Tukar</span>
         </div>
       </div>
-      <div class="econ-card">
+      <div class="econ-card" data-shop-item="2">
         <div class="top">
-          <span class="rarity" style="background:#1AAB8A">RARE</span>
-          <span class="type">Item Tempur</span>
+          <span class="rarity" style="background:#1AAB8A" data-shop-slot>Item</span>
+          <span class="type">Item Shop</span>
         </div>
         <div class="visual" style="background:linear-gradient(135deg,#002211,#004422)">
           <svg viewBox="0 0 80 80" width="64" height="64" stroke="#1AAB8A" stroke-width="2" fill="none">
@@ -1146,20 +1075,20 @@ button{cursor:pointer;font:inherit;border:0;background:0}
             <circle cx="40" cy="35" r="4" fill="#1AAB8A" fill-opacity=".4"/>
           </svg>
         </div>
-        <h3>Potion 2x Poin Booster</h3>
-        <p class="desc">Gunakan saat duel untuk menggandakan setiap poin yang kamu menangkan!</p>
+        <h3 data-shop-name>—</h3>
+        <p class="desc">Item asli di toko karakter, ditukar dengan poin hasil bermain.</p>
         <div class="price">
           <span class="coins">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            300 Poin
+            <span data-shop-price>—</span>&nbsp;Poin
           </span>
           <span class="buy">Tukar</span>
         </div>
       </div>
-      <div class="econ-card">
+      <div class="econ-card" data-shop-item="3">
         <div class="top">
-          <span class="rarity" style="background:#E85D75">EXCLUSIVE</span>
-          <span class="type">Gelar Profil</span>
+          <span class="rarity" style="background:#E85D75" data-shop-slot>Item</span>
+          <span class="type">Item Shop</span>
         </div>
         <div class="visual" style="background:linear-gradient(135deg,#2d0010,#5c0020)">
           <svg viewBox="0 0 80 80" width="64" height="64" stroke="#E85D75" stroke-width="2" fill="none">
@@ -1170,12 +1099,12 @@ button{cursor:pointer;font:inherit;border:0;background:0}
             <circle cx="40" cy="35" r="6" fill="#E85D75" fill-opacity=".3"/>
           </svg>
         </div>
-        <h3>Badge Cendekiawan Sejati</h3>
-        <p class="desc">Gelar eksklusif yang tampil di profil dan papan leaderboard nasional!</p>
+        <h3 data-shop-name>—</h3>
+        <p class="desc">Item asli di toko karakter, ditukar dengan poin hasil bermain.</p>
         <div class="price">
           <span class="coins">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            500 Poin
+            <span data-shop-price>—</span>&nbsp;Poin
           </span>
           <span class="buy">Tukar</span>
         </div>
@@ -1242,7 +1171,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
           </div>
           <div class="check">
             <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-            <span>Kuis interaktif kilat live di depan ratusan peserta</span>
+            <span>Kuis interaktif kilat live bersama banyak peserta<span data-live-stat="maxPlayers" data-live-template=" (hingga {n} per ruang)"></span></span>
           </div>
           <div class="check">
             <span class="check-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
@@ -1273,7 +1202,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
               <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </div>
             <h4>Monetisasi Soal &amp; Penghasilan Tambahan</h4>
-            <p>Soal yang dibuat diakses ribuan peserta, menghasilkan poin royalti untuk ditukar hadiah.</p>
+            <p>Soal yang dibuat dimainkan peserta di semua game, menghasilkan poin royalti untuk ditukar hadiah.</p>
           </div>
           <div class="tr-perk">
             <div class="perk-icon" style="background:var(--amber)">
@@ -1287,7 +1216,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
               <svg viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87V15.13a1 1 0 01-1.447.9L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             </div>
             <h4>Ruang Kelas Live Interaktif</h4>
-            <p>Buka sesi live dan ajak ratusan peserta bermain &amp; belajar bersama secara real-time.</p>
+            <p>Buka sesi live dan ajak satu kelas bermain &amp; belajar bersama secara real-time.</p>
           </div>
           <div class="tr-perk">
             <div class="perk-icon" style="background:var(--coral)">
@@ -1298,12 +1227,13 @@ button{cursor:pointer;font:inherit;border:0;background:0}
           </div>
         </div>
         <div class="tr-sim">
-          <div class="tr-sim-avatar">BA</div>
-          <div style="flex:1">
-            <div style="font-family:var(--display-font);font-weight:700;font-size:13px">Bu Anita S.Pd</div>
-            <div style="font-size:11px;color:rgba(21,27,46,.5)">Guru Fisika · 128 soal aktif</div>
+          <div class="tr-sim-avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24" stroke="white" stroke-width="2.5" fill="none" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
           </div>
-          <span class="income">+ Rp 350.000</span>
+          <div style="flex:1" data-testid="landing-teacher-stats">
+            <div style="font-family:var(--display-font);font-weight:700;font-size:13px">Guru di EduFunHub</div>
+            <div style="font-size:11px;color:rgba(21,27,46,.5)"><span data-live-stat="teachers" data-live-zero data-live-template="{n} guru">—</span> · <span data-live-stat="teacherQuestions" data-live-zero data-live-template="{n} soal buatan guru aktif">—</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1381,7 +1311,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
         Kisah Sukses Komunitas
       </span>
       <h2>Cerita Mereka yang Belajar Jadi <span class="highlight">Lebih Menyenangkan</span></h2>
-      <p>Lebih dari 500 pelajar dan guru telah merasakan manfaat EduFunHub dalam perjalanan belajar mereka.</p>
+      <p>Pelajar dan guru<span data-live-stat="players" data-live-template=" (kini {n} pemain terdaftar)"></span> telah merasakan manfaat EduFunHub dalam perjalanan belajar mereka.</p>
     </div>
     <div class="testi-grid">
       <div class="testi-card">
@@ -1505,7 +1435,7 @@ button{cursor:pointer;font:inherit;border:0;background:0}
             <span>Bagaimana cara guru mendapatkan penghasilan tambahan?</span>
             <span class="faq-q-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M6 9l6 6 6-6"/></svg></span>
           </button>
-          <div class="faq-a"><div class="faq-a-inner"><p>Guru dan dosen dapat merancang paket soal kreatif dan berkualitas di Quiz Studio. Setiap kali paket soal dimainkan dan diapresiasi oleh ribuan pelajar, pembuat soal akan menerima royalti koin dan insentif finansial yang dapat dicairkan secara transparan.</p></div></div>
+          <div class="faq-a"><div class="faq-a-inner"><p>Guru dan dosen dapat merancang paket soal kreatif dan berkualitas di Quiz Studio. Setiap kali paket soal dimainkan dan diapresiasi oleh pelajar, pembuat soal akan menerima royalti koin dan insentif finansial yang dapat dicairkan secara transparan.</p></div></div>
         </div>
       </div>
     </div>
@@ -1644,7 +1574,8 @@ document.querySelectorAll('a[href^="#"]').forEach(function(a) {
 });
 </script>
 <script>
-// Live community numbers and leaderboards from /landing/stats. Static markup stays when the request fails.
+// Live community numbers, leaderboards, catalog and shop from /landing/stats. Refreshed every 60 s while the tab is
+// visible. Without data every figure stays a neutral '—' or empty: the page never shows invented numbers.
 (function () {
   var URL_STATS = '/landing/stats';
   var section = document.getElementById('leaderboard');
@@ -1657,6 +1588,8 @@ document.querySelectorAll('a[href^="#"]').forEach(function(a) {
   var data = null;
   var period = 'week';
   var lastFetch = 0;
+  var REFRESH_MS = 60000;
+  var SLOT_LABELS = { hat: 'Topi', face: 'Wajah', outfit: 'Kostum', back: 'Punggung', weapon: 'Senjata', offhand: 'Perisai' };
   var counted = false;
   var schoolIcon = '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg>';
   var gradeIcon = '<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>';
@@ -1775,12 +1708,57 @@ document.querySelectorAll('a[href^="#"]').forEach(function(a) {
     });
   }
 
+  function maxPlayers(catalog) {
+    return (catalog || []).reduce(function (max, game) { return Math.max(max, Number(game.maxPlayers) || 0); }, 0);
+  }
+
+  function playersLabel(game) {
+    var min = Number(game.minPlayers) || 1;
+    var max = Number(game.maxPlayers) || min;
+    if (max <= 1) return ' · main sendiri';
+    return ' · ' + numberFormat.format(min) + '–' + numberFormat.format(max) + ' pemain';
+  }
+
+  // Inline figures elsewhere on the page: data-live-stat="key" + optional data-live-template="... {n} ...".
+  function renderInline() {
+    var values = Object.assign({}, data.stats, { maxPlayers: maxPlayers(data.catalog) });
+    document.querySelectorAll('[data-live-stat]').forEach(function (node) {
+      var value = Number(values[node.getAttribute('data-live-stat')]);
+      if (!isFinite(value) || value < 0 || (value === 0 && !node.hasAttribute('data-live-zero'))) return;
+      var template = node.getAttribute('data-live-template') || '{n}';
+      node.textContent = template.replace('{n}', numberFormat.format(value));
+    });
+    var byKey = {};
+    (data.catalog || []).forEach(function (game) { byKey[game.key] = game; });
+    document.querySelectorAll('[data-game-players]').forEach(function (node) {
+      var game = byKey[node.getAttribute('data-game-players')];
+      node.textContent = game ? playersLabel(game) : '';
+    });
+  }
+
+  function renderShop() {
+    var grid = document.querySelector('[data-testid="landing-shop"]');
+    var items = data.shop || [];
+    if (!grid) return;
+    grid.hidden = items.length === 0;
+    grid.querySelectorAll('[data-shop-item]').forEach(function (card) {
+      var item = items[Number(card.getAttribute('data-shop-item'))];
+      card.hidden = !item;
+      if (!item) return;
+      card.querySelector('[data-shop-name]').textContent = item.name;
+      card.querySelector('[data-shop-slot]').textContent = SLOT_LABELS[item.slot] || 'Item';
+      card.querySelector('[data-shop-price]').textContent = numberFormat.format(item.price);
+    });
+  }
+
   function render() {
     statsBox.hidden = false;
     playersBox.hidden = false;
     renderStats(false);
     renderPlayers();
     renderSchools();
+    renderInline();
+    renderShop();
     var updated = document.getElementById('lb-updated');
     if (data.generatedAt) {
       updated.textContent = 'Data langsung · diperbarui ' + new Date(data.generatedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -1799,7 +1777,11 @@ document.querySelectorAll('a[href^="#"]').forEach(function(a) {
         if (firstLoad && !(json.leaderboards.week || []).length && (json.leaderboards.all || []).length) period = 'all';
         render();
       })
-      .catch(function () { /* keep static content */ });
+      .catch(function () {
+        // Neutral text only; never fall back to invented figures.
+        var status = document.getElementById('lb-schools-status');
+        if (status && data === null) status.textContent = 'Peringkat sekolah belum dapat dimuat. Coba muat ulang halaman.';
+      });
   }
 
   playersBox.querySelectorAll('.lb-tab').forEach(function (tab) {
@@ -1813,12 +1795,20 @@ document.querySelectorAll('a[href^="#"]').forEach(function(a) {
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(function (items) {
       if (!items.some(function (i) { return i.isIntersecting; })) return;
-      var stale = Date.now() - lastFetch > 60000;
+      var stale = Date.now() - lastFetch > REFRESH_MS;
       (stale ? load() : initial).then(function () {
         if (data && !counted) { counted = true; renderStats(true); }
       });
     }, { threshold: 0.15 }).observe(section);
   }
+
+  // Keep figures fresh while the tab is visible (1 request/min, well under the 60/min throttle).
+  window.setInterval(function () {
+    if (document.visibilityState === 'visible' && Date.now() - lastFetch >= REFRESH_MS) load();
+  }, REFRESH_MS);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && Date.now() - lastFetch >= REFRESH_MS) load();
+  });
 })();
 </script>
 

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Services\GameReturnUrl;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +27,8 @@ class EnsurePlayerDetailsComplete
         if ($request->expectsJson()) {
             return response()->json(['message' => $message, 'code' => 'player_details_required'], 403);
         }
+
+        app(GameReturnUrl::class)->remember($request);
 
         return redirect()->route('portal')->with('player_details_required', $message);
     }

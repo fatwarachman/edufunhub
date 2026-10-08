@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\OnlinePlayers;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,7 +16,11 @@ class OnlinePlayersController extends Controller
 {
     public function __invoke(Request $request, OnlinePlayers $online): Response
     {
-        $players = $online->page($request->user(), max(1, $request->integer('page', 1)));
+        $page = max(1, $request->integer('page', 1));
+        $players = $online->page($request->user(), $page);
+        if ($page > $players->lastPage()) {
+            $players = $online->page($request->user(), $players->lastPage());
+        }
 
         return Inertia::render('players/online', [
             'players' => $players->items(),
@@ -28,5 +33,11 @@ class OnlinePlayersController extends Controller
             ],
             'source' => $online->source(),
         ]);
+    }
+
+    /** Live counter for the dashboard card, polled every few seconds. */
+    public function count(OnlinePlayers $online): JsonResponse
+    {
+        return response()->json($online->summary())->header('Cache-Control', 'no-store, private');
     }
 }

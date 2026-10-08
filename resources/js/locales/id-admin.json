@@ -1633,5 +1633,10 @@
     "Show the analysis of {0}": "Tampilkan analisa {0}",
     "Not scored": "Tidak dinilai",
     "Showing an older analysis from {0}.": "Menampilkan analisa lama dari {0}.",
-    "Show the latest": "Tampilkan yang terbaru"
+    "Show the latest": "Tampilkan yang terbaru",
+    "Edit grade and school": "Ubah kelas dan sekolah",
+    "A school picked from the official list fills in its name, city and level automatically.": "Sekolah yang dipilih dari daftar resmi otomatis mengisi nama, kota, dan jenjangnya.",
+    "This account has no learner profile yet.": "Akun ini belum punya profil pelajar.",
+    "Grade and school updated.": "Kelas dan sekolah diperbarui.",
+    "Updated learner grade and school": "Mengubah kelas dan sekolah pelajar"
 }

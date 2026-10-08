@@ -1,11 +1,12 @@
 import { PlayerAvatar } from '@/components/player-avatar';
 import { BackButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
+import { useVisibleInterval } from '@/hooks/use-visible-interval';
 import PlayerLayout from '@/layouts/player-layout';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { gradeLabel, hasGrade } from '@/lib/grade';
 import { cn } from '@/lib/utils';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
 
 interface OnlinePlayer {
@@ -32,6 +33,9 @@ interface OnlinePlayersProps {
 
 const INK = 'border-[2.5px] border-[#151b2e]';
 
+/** How often the list refreshes; matches the server cache TTL. */
+const REFRESH_MS = 15_000;
+
 /** Players online right now; each avatar opens the player page. */
 export default function OnlinePlayers({
     players,
@@ -40,6 +44,17 @@ export default function OnlinePlayers({
 }: OnlinePlayersProps) {
     const { t, i18n } = useTranslations();
     const number = new Intl.NumberFormat(i18n.language);
+
+    useVisibleInterval(
+        () =>
+            new Promise<void>((resolve) => {
+                router.reload({
+                    only: ['players', 'pagination', 'source'],
+                    onFinish: () => resolve(),
+                });
+            }),
+        REFRESH_MS,
+    );
 
     return (
         <PlayerLayout title={t('onlinePlayers.title')}>
@@ -69,6 +84,12 @@ export default function OnlinePlayers({
                         })}
                         {source === 'recent' &&
                             ` · ${t('onlinePlayers.recentNote')}`}
+                    </p>
+                    <p
+                        className="text-xs text-[#151b2e]/70"
+                        data-testid="online-players-auto-refresh"
+                    >
+                        {t('onlinePlayers.autoRefresh')}
                     </p>
                 </div>
             </div>

@@ -1,3 +1,4 @@
+import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
@@ -51,7 +52,7 @@ export function LegalDocument({ document }: { document: LegalDocumentKey }) {
                 />
             </Head>
 
-            <header className="sticky top-0 z-40 border-b-4 border-[#1f2a44] bg-[#FFF9E6]/95 backdrop-blur-md">
+            <header className="sticky top-0 z-40 border-b-4 border-[#1f2a44] bg-[#FFF9E6]">
                 <div className="mx-auto flex min-h-20 items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
                     <div className="flex min-w-0 items-center gap-3">
                         <BackButton
@@ -60,10 +61,7 @@ export function LegalDocument({ document }: { document: LegalDocumentKey }) {
                             iconOnly
                             external
                         />
-                        <span className="truncate font-display text-xl font-black text-[#1f2a44] sm:text-2xl">
-                            edu<span className="text-[#FF9E44]">funhub</span>
-                            .com
-                        </span>
+                        <BrandLink hideWordmarkOnPhone />
                         <DigitalClock />
                     </div>
                     <SiteNav compact />

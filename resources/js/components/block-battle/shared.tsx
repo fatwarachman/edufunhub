@@ -1,3 +1,4 @@
+import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { ResponsiveTable } from '@/components/responsive-table';
@@ -201,8 +202,8 @@ export function BlockShell({
         >
             <Head title={`${title} — EduFunHub`} />
             <header
-                className="sticky top-0 z-30 border-b-4 border-[#1f2a44] backdrop-blur-md"
-                style={{ background: `${BG}f2` }}
+                className="sticky top-0 z-30 border-b-4 border-[#1f2a44]"
+                style={{ background: BG }}
             >
                 <div
                     className={cn(
@@ -216,6 +217,7 @@ export function BlockShell({
                             label={t('nav.backToPortal')}
                             iconOnly
                         />
+                        <BrandLink variant="mark" />
                         <span
                             className="hidden size-10 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] text-white shadow-[2px_2px_0px_#1f2a44] sm:grid"
                             style={{ background: ACCENT }}
