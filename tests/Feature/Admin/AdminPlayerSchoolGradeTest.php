@@ -229,3 +229,12 @@ test('the user detail page shares school fields and the viewer role', function (
     $this->actingAs($admin)->get("/admin/users/{$player->id}")->assertInertia(fn (Assert $page) => $page
         ->where('viewerIsSuperadmin', false));
 });
+
+it('renders searchable select popovers inside an open dialog so they can be typed in and clicked', function (): void {
+    $select = file_get_contents(resource_path('js/components/searchable-select.tsx'));
+    $popover = file_get_contents(resource_path('js/components/ui/popover.tsx'));
+
+    expect($select)->toContain("closest<HTMLElement>(\n                            '[role=\"dialog\"]',")
+        ->toContain('container={container}')
+        ->and($popover)->toContain('<PopoverPrimitive.Portal container={container ?? undefined}>');
+});

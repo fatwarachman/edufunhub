@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 
 export interface SearchableSelectOption {
     value: string;
@@ -81,6 +81,14 @@ export function SearchableSelect({
 }) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
+    const anchorRef = useRef<HTMLDivElement>(null);
+    /*
+     * Inside a modal dialog the popover must render within the dialog:
+     * a modal makes everything outside it inert (no pointer events, focus
+     * trapped), so a body-level popover could neither be typed in nor
+     * clicked. Resolved when the popover opens.
+     */
+    const [container, setContainer] = useState<HTMLElement | null>(null);
     const selected =
         options.find((option) => option.value === value) ??
         (value ? { value, label: selectedLabel ?? value } : undefined);
@@ -95,6 +103,13 @@ export function SearchableSelect({
         <Popover
             open={open && !disabled}
             onOpenChange={(next) => {
+                if (next) {
+                    setContainer(
+                        anchorRef.current?.closest<HTMLElement>(
+                            '[role="dialog"]',
+                        ) ?? null,
+                    );
+                }
                 setOpen(next);
                 if (!next && remote && search !== '') {
                     setSearch('');
@@ -102,7 +117,7 @@ export function SearchableSelect({
                 }
             }}
         >
-            <div className="relative">
+            <div className="relative" ref={anchorRef}>
                 {name && <input type="hidden" name={name} value={value} />}
                 {leadingIcon && (
                     <span className="pointer-events-none absolute top-1/2 left-3 z-10 flex -translate-y-1/2 items-center">
@@ -154,6 +169,7 @@ export function SearchableSelect({
                 </span>
             </div>
             <PopoverContent
+                container={container}
                 align="start"
                 collisionPadding={8}
                 className={cn(
