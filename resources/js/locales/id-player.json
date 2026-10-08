@@ -41,7 +41,7 @@
         "gradePlaceholder": "Pilih kelas",
         "gradeOption": "Kelas {{grade}}",
         "gradeSave": "Simpan kelas",
-        "gradeSaved": "Kelas tersimpan.",
+        "gradeSaved": "Kelas dan level soal tersimpan.",
         "gradeMissing": "Kelas belum diatur",
         "gradeBands": {
             "sd": "SD",
@@ -80,7 +80,8 @@
         "shareWaRoom": "Bagikan via WhatsApp",
         "shareWaGame": "Bagikan game",
         "shareWaRoomText": "🎮 Ayo main {{game}} bareng di EduFunHub!\nKode PIN: {{pin}}\nLink gabung: {{url}}\nEduFunHub — Portal Edukasi Seru!",
-        "shareWaGameText": "🏆 Coba game {{game}} di EduFunHub!\nLink: {{url}}\nEduFunHub — Portal Edukasi Seru!"
+        "shareWaGameText": "🏆 Coba game {{game}} di EduFunHub!\nLink: {{url}}\nEduFunHub — Portal Edukasi Seru!",
+        "gradeAndLevel": "Kelas & level soal"
     },
     "flagQuest": {
         "title": "Misi Bendera",
@@ -207,7 +208,7 @@
             "passed": "Tantangan berhasil!",
             "failed": "Belum berhasil",
             "passedNote": "Gerbang terbuka. Lanjutkan perjalananmu!",
-            "failedNote": "Istirahat sebentar lalu coba lagi.",
+            "failedNote": "Progres pos ini tersimpan. Istirahat sebentar lalu lanjutkan dari checkpoint terakhir.",
             "continue": "Lanjutkan",
             "back": "Kembali",
             "close": "Tutup",
@@ -222,7 +223,8 @@
             "openingQuestion": "Membuka pertanyaan…",
             "answerToMove": "Dadu {{roll}}. Jawab benar untuk maju {{roll}} petak!",
             "climbed": "Naik tangga dari {{from}} ke {{to}}!",
-            "slid": "Turun ular dari {{from}} ke {{to}}."
+            "slid": "Turun ular dari {{from}} ke {{to}}.",
+            "resumed": "Lanjut dari checkpoint terakhir, progresmu tersimpan"
         },
         "complete": {
             "title": "Bendera berkibar!",
@@ -351,7 +353,11 @@
         "feedback": "Kirim masukan",
         "ability": "Analisa kemampuan",
         "registerFree": "Daftar gratis",
-        "profile": "Profil"
+        "profile": "Profil",
+        "friends": "Teman",
+        "social": "Sosial",
+        "account": "Akun",
+        "withCount": "{{label}} ({{count}} baru)"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -1360,17 +1366,17 @@
     },
     "floorDrop": {
         "title": "Lantai Runtuh",
-        "tagline": "Battle royale kuis: jawab benar atau lantaimu runtuh!",
+        "tagline": "Semua berdiri di lantai masing-masing. Salah 3 kali, lantaimu pecah!",
         "chooseRole": "Pilih peranmu",
         "hostTitle": "Layar Host",
-        "hostBody": "Untuk guru atau layar kelas. Buat ruangan, bagikan PIN, lalu tonton lantai runtuh.",
+        "hostBody": "Untuk guru atau layar kelas. Pilih pelajaran, durasi, dan jumlah pemain, bagikan PIN, lalu tonton lantai pecah.",
         "playerTitle": "Pemain",
         "playerBody": "Masuk dengan PIN dari host dan jawab dari HP atau laptopmu.",
         "openHost": "Buka layar host",
         "openPlayer": "Masuk sebagai pemain",
         "switchRole": "Ganti peran",
         "createRoom": "Buat ruangan",
-        "rules": "Setiap ronde ada 4 ubin jawaban. Ubin salah runtuh, pemain yang salah atau tidak menjawab tersingkir. Waktu berkurang 10% tiap ronde. Terakhir bertahan menang!",
+        "rules": "Semua pemain berdiri di lantainya masing-masing dan menjawab soal demi soal sampai waktu permainan habis. Setiap jawaban salah atau tidak menjawab membuat lantai retak (1 nyawa hilang). Salah 3 kali, lantai pecah dan pemain gugur. Bertahan paling lama dengan jawaban benar terbanyak menang!",
         "hostIntro": "Kamu jadi host. Pemain bergabung dari perangkat masing-masing (2–100 pemain).",
         "playerIntro": "Halo {{name}}! Masukkan PIN dari layar host untuk bergabung.",
         "joined": "Pemain bergabung",
@@ -1386,15 +1392,15 @@
         "answered": "{{answered}}/{{alive}} menjawab",
         "secondsLeft": "{{seconds}} dtk",
         "locked": "Jawaban dikunci!",
-        "dropping": "Lantai runtuh…",
+        "dropping": "Lantai retak…",
         "survivors": "{{count}} pemain bertahan",
         "nextFaster": "Ronde berikutnya: {{seconds}} detik",
-        "suddenDeath": "Semua salah! Peringkat ditentukan jawaban tercepat.",
+        "suddenDeath": "Semua lantai pecah! Peringkat ditentukan jawaban tercepat.",
         "youSurvived": "Kamu bertahan!",
         "youFell": "Kamu jatuh!",
         "reasons": {
-            "wrong": "Jawaban salah",
-            "timeout": "Waktu habis",
+            "wrong": "Salah 3 kali, lantai pecah",
+            "timeout": "Lantai pecah, waktu habis",
             "disconnected": "Koneksi terputus",
             "left": "Keluar dari permainan"
         },
@@ -1420,12 +1426,21 @@
         "roomClosed": "Ruangan ditutup oleh host.",
         "hostOffline": "Layar host terputus",
         "playersCount": "{{count}} pemain",
-        "eliminatedNow": "{{count}} tersingkir",
+        "eliminatedNow": "{{count}} gugur",
         "you": "Kamu",
         "connectionLost": "Koneksi terputus. Menyambung ulang dalam 5 detik agar tidak tersingkir…",
         "endGame": "Akhiri permainan",
         "endNow": "Ya, akhiri sekarang",
-        "endConfirm": "Pemain dapat poin sesuai capaian."
+        "endConfirm": "Pemain dapat poin sesuai capaian.",
+        "duration": "Durasi permainan",
+        "minutes": "{{count}} menit",
+        "playerLimit": "Jumlah pemain maksimal",
+        "gameLeft": "Sisa waktu permainan {{time}}",
+        "stageLabel": "Lantai para pemain",
+        "livesLeft": "Sisa {{count}} dari {{max}} nyawa",
+        "yourFloor": "Lantaimu",
+        "youCracked": "Lantaimu retak! Sisa nyawa {{count}}.",
+        "nextQuestion": "Soal berikutnya segera…"
     },
     "economyHeist": {
         "title": "Peti Emas Misteri",
@@ -2100,7 +2115,7 @@
             "progress": "Perkembangan sejak analisa sebelumnya",
             "more": "Lihat saran & detail",
             "less": "Sembunyikan detail",
-            "note": "Analisa ini dibuat oleh AI dari hasil permainanmu.",
+            "note": "Analisa ini dibuat oleh tim EduFunHub dari hasil permainanmu.",
             "shareBtn": "Bagikan Analisa",
             "shareCopied": "Disalin!",
             "shareTitle": "Hasil Analisa EduFunHub",
@@ -2124,7 +2139,20 @@
         "cardTitle": "Hasil analisa",
         "emptyTitle": "Analisa belum tersedia",
         "emptyBody": "Terus bermain game di EduFunHub. Hasil analisa kemampuanmu akan muncul di sini setelah dibuat oleh tim EduFunHub.",
-        "emptyCta": "Main game"
+        "emptyCta": "Main game",
+        "progress": {
+            "title": "Perkembangan",
+            "empty": "Ini analisa pertamamu. Perkembangan akan terlihat setelah analisa berikutnya dibuat oleh tim EduFunHub.",
+            "average": "Rata-rata nilai",
+            "since": "dibanding {{date}}",
+            "new": "Baru",
+            "notScored": "Tidak dinilai",
+            "same": "Tetap",
+            "gained": "Kemajuan baru",
+            "history": "Riwayat analisa",
+            "shown": "(ditampilkan)",
+            "historyNote": "Angka di kanan adalah rata-rata nilai semua mapel pada hasil analisa EduFunHub tersebut."
+        }
     },
     "feedback": {
         "title": "Kirim Masukan",
@@ -2235,7 +2263,9 @@
             "allGames": "Semua Game",
             "clickToView": "Klik untuk lihat peringkat",
             "modalClose": "Tutup",
-            "rank": "Peringkat"
+            "rank": "Peringkat",
+            "playersLabel": "Pemain berpoin",
+            "viewRanking": "Lihat peringkat"
         }
     },
     "finale": {
@@ -2327,5 +2357,76 @@
             "saved": "Kata sandi berhasil diganti.",
             "submit": "Simpan kata sandi"
         }
+    },
+    "questionLevel": {
+        "label": "Level soal",
+        "levels": {
+            "easy": "Mudah",
+            "medium": "Sedang",
+            "expert": "Expert"
+        },
+        "multiplier": "Poin ×{{times}}",
+        "note": "Pilih sesuai kemampuanmu, bukan hanya kelas. Soal sedang memberi poin 2 kali lipat, soal expert 3 kali lipat. Di game bersama, level terendah pemain yang dipakai."
+    },
+    "friends": {
+        "title": "Teman",
+        "intro": "Tambah teman, lihat siapa yang sedang online, lalu ajak main atau chat.",
+        "tabs": {
+            "friends": "Teman",
+            "requests": "Permintaan",
+            "add": "Tambah teman"
+        },
+        "empty": {
+            "title": "Belum ada teman",
+            "body": "Cari teman sekelas atau teman bermain dengan nama atau nama panggilannya.",
+            "cta": "Cari teman"
+        },
+        "onlineSummary": "{{online}} online dari {{total}} teman",
+        "filter": "Saring teman",
+        "filters": {
+            "all": "Semua",
+            "online": "Online"
+        },
+        "noneOnline": "Belum ada teman yang online.",
+        "status": {
+            "online": "Online sekarang",
+            "offline": "Offline",
+            "minutesAgo": "Terakhir aktif {{count}} menit lalu",
+            "hoursAgo": "Terakhir aktif {{count}} jam lalu",
+            "daysAgo": "Terakhir aktif {{count}} hari lalu"
+        },
+        "actions": {
+            "chat": "Chat",
+            "remove": "Hapus teman",
+            "removeConfirm": "Ya, hapus",
+            "keep": "Batal",
+            "accept": "Terima",
+            "decline": "Tolak",
+            "cancel": "Batalkan",
+            "add": "Tambah"
+        },
+        "incoming": "Permintaan masuk",
+        "outgoing": "Permintaan terkirim",
+        "noIncoming": "Tidak ada permintaan masuk.",
+        "noOutgoing": "Tidak ada permintaan yang menunggu.",
+        "searchLabel": "Cari pemain",
+        "searchPlaceholder": "Ketik nama atau nama panggilan…",
+        "searchHint": "Minimal 2 huruf.",
+        "searchEmpty": "Pemain tidak ditemukan.",
+        "relation": {
+            "friends": "Berteman",
+            "sent": "Terkirim"
+        }
+    },
+    "friendNotice": {
+        "request": "ingin berteman denganmu",
+        "accepted": "menerima permintaan pertemananmu",
+        "requestTitle": "Permintaan pertemanan",
+        "acceptedTitle": "Sekarang berteman!",
+        "accept": "Terima",
+        "decline": "Tolak",
+        "view": "Lihat teman",
+        "later": "Nanti",
+        "close": "Tutup"
     }
 }
