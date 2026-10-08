@@ -158,3 +158,19 @@ it('keeps true or false questions out of the train', function (): void {
         'is_active' => true,
     ])->assertSessionHasErrors(['games' => __('questions.choice_only_games')]);
 });
+
+it('keeps the train page fitted to the viewport with an announced question board', function (): void {
+    $page = (string) file_get_contents(resource_path('js/pages/games/knowledge-train.tsx'));
+    $styles = (string) file_get_contents(resource_path('css/knowledge-train.css'));
+
+    expect($page)
+        ->toContain("import '../../../css/knowledge-train.css';")
+        ->toContain('h-dvh')
+        ->toMatch('/data-testid="train-question"\s+aria-live="polite"/')
+        ->toContain('data-testid="train-question-text"')
+        ->toContain('data-testid="train-canvas"')
+        ->toContain('data-testid="train-hud"')
+        ->and($styles)
+        ->toContain('@keyframes kt-board-float')
+        ->toContain('prefers-reduced-motion: reduce');
+});

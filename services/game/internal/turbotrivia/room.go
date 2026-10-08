@@ -452,15 +452,16 @@ func (r *Room) start(c *Client, now time.Time) error {
 	if len(r.karts) < MinPlayers {
 		return ErrPlayers
 	}
-	grade := r.karts[0].Claims.Grade
+	grade, level := r.karts[0].Claims.Grade, points.Level(r.karts[0].Claims.Level)
 	ids := make([]int64, 0, len(r.karts))
 	for _, k := range r.karts {
 		grade = min(grade, k.Claims.Grade)
+		level = min(level, points.Level(k.Claims.Level))
 		ids = append(ids, k.ID())
 		*k = Kart{Claims: k.Claims, Avatar: k.Avatar, client: k.client, order: k.order, online: true, choice: -1}
 	}
 	r.grade = grade
-	r.gen = questions.NewFor(GameKey, grade, r.rng.Uint64()).For(r.subject, ids...)
+	r.gen = questions.NewFor(GameKey, grade, r.rng.Uint64()).For(r.subject, ids...).AtLevel(level)
 	r.lapKm = r.cfg.LapLength(r.total, grade)
 	r.q, r.asked = QuestionState{}, 0
 	r.bananas, r.missiles, r.feed, r.ranking = nil, nil, nil, nil
@@ -541,7 +542,7 @@ func (r *Room) answer(c *Client, qid int64, choice int, at, now time.Time) error
 	q := r.q.Question
 	right := choice == q.Answer
 	if q.FromBank {
-		k.answers = append(k.answers, questions.Answer{Key: q.Key, Correct: right})
+		k.answers = append(k.answers, questions.Answer{Key: q.Key, Correct: right, Choice: q.Original(choice)})
 	}
 	msg := Message{"t": "answer_result", "qid": qid, "correct": right}
 	if right {

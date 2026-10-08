@@ -5,6 +5,7 @@ return [
     'accessory_invalid' => 'Choose a supported accessory.',
     'nickname_invalid' => 'Nickname must be text with at most 40 characters.',
     'field_prohibited' => 'This field cannot be changed.',
+    'level_invalid' => 'Choose a question level: easy, medium or expert.',
     'grade_invalid' => 'Choose kindergarten (TK) or a grade from 1 to 12.',
     'grade_required' => 'Set your grade on the dashboard first.',
     'birth_date_required' => 'Enter your date of birth.',

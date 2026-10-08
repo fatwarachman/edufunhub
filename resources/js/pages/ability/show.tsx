@@ -1,4 +1,9 @@
 import { AbilityCard, type PlayerAbility } from '@/components/ability-card';
+import {
+    type AbilityHistoryPoint,
+    type AbilityProgress,
+    AbilityProgressSection,
+} from '@/components/ability-progress';
 import { NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
@@ -13,10 +18,16 @@ import { BrainCircuit, ChevronLeft, Gamepad2, Hourglass } from 'lucide-react';
 export default function AbilityShow({
     ability,
     ownerName,
+    progress = null,
+    history = [],
 }: {
     /** Null on the player's own page until an analysis has finished. */
     ability: PlayerAbility | null;
     ownerName: string;
+    /** Comparison with the previous analysis; owner only, null for the first. */
+    progress?: AbilityProgress | null;
+    /** Owner's finished analyses (dates + average); empty for other viewers. */
+    history?: AbilityHistoryPoint[];
 }) {
     const { t } = useTranslations();
 
@@ -90,6 +101,10 @@ export default function AbilityShow({
                         testId="ability-page-play"
                     />
                 </section>
+            )}
+
+            {ability && history.length > 0 && (
+                <AbilityProgressSection progress={progress} history={history} />
             )}
 
             {ability && (

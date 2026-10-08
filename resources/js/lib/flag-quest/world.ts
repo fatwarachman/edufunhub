@@ -64,6 +64,8 @@ export interface ChallengeState {
     correct: number;
     wrong: number;
     passed: boolean;
+    /** True when this attempt continues a failed one (progress kept). */
+    resumed?: boolean;
     deadline_ms?: number;
     ends_ms?: number;
     question?: { prompt: string; subject: string; options: string[] };

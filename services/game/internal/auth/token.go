@@ -25,9 +25,12 @@ const MaxCharacterBytes = 2048
 
 // Claims describe the authenticated player and the game they may start.
 type Claims struct {
-	Subject   int64  `json:"sub"`
-	Name      string `json:"name"`
-	Grade     int    `json:"grade"`
+	Subject int64  `json:"sub"`
+	Name    string `json:"name"`
+	Grade   int    `json:"grade"`
+	// Level is the player's chosen question level (1 easy, 2 medium,
+	// 3 expert; 0 = easy). Harder levels pay more per correct answer.
+	Level     int    `json:"level,omitempty"`
 	Color     string `json:"color"`
 	Accessory string `json:"accessory"`
 	// Character is the portal avatar look (colour, gender, skin, hair, shop
@@ -84,6 +87,9 @@ func Verify(token string, secret []byte, game string, now time.Time) (Claims, er
 		return claims, ErrClaims
 	}
 	claims.Name = name
+	if claims.Level < 0 || claims.Level > 3 {
+		claims.Level = 0
+	}
 	if len(claims.Character) > MaxCharacterBytes || (len(claims.Character) > 0 && claims.Character[0] != '{') {
 		claims.Character = nil
 	}

@@ -161,7 +161,7 @@ it('rejects forged or out-of-range order rush results', function (array $overrid
     postRushResult(rushResult($user, $override))->assertUnprocessable();
     expect(GameHistory::query()->count())->toBe(0);
 })->with([
-    'points above cap' => [['points' => 4151]],
+    'points above cap' => [['points' => 12151]],
     'foreign event id' => [['event_id' => 'eh-1-room-1']],
     'too many slots' => [['sequence_stats' => [['set' => 'x', 'category' => 'X', 'attempts' => 1, 'solved' => 0, 'wrong' => 1, 'total_ms' => 0, 'slot_errors' => array_fill(0, 25, 1)]]]],
     'negative attempts' => [['sequence_stats' => [['set' => 'x', 'category' => 'X', 'attempts' => -1, 'solved' => 0, 'wrong' => 0, 'total_ms' => 0, 'slot_errors' => []]]]],

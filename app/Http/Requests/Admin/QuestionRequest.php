@@ -39,6 +39,7 @@ class QuestionRequest extends FormRequest
         return [
             'type' => ['required', Rule::in(Question::TYPES)],
             'band' => ['required', 'integer', 'between:0,3'],
+            'level' => ['sometimes', 'integer', Rule::in(array_keys(Question::LEVELS))],
             'subject' => ['required', Rule::in($this->allowedSubjects())],
             'prompt_id' => ['required', 'string', 'min:3', 'max:500'],
             'prompt_en' => ['nullable', 'string', 'max:500'],

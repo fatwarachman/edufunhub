@@ -15,6 +15,12 @@ const (
 	// it also pays participation (stops create/leave farming).
 	MinAnswersForAbandon = 3
 
+	// Question levels: easy pays the normal value, medium twice, expert
+	// three times.
+	LevelEasy   = 1
+	LevelMedium = 2
+	LevelExpert = 3
+
 	// Upper bounds of the admin settings; award caps are derived from them.
 	MaxPerQuestion   = 100
 	MaxBonus         = 100
@@ -68,6 +74,25 @@ func Question(own int) int {
 	return Current().PerCorrect
 }
 
+// Level clamps a question level to 1..3 (0 and unknown values are easy).
+func Level(level int) int {
+	if level < LevelEasy || level > LevelExpert {
+		return LevelEasy
+	}
+	return level
+}
+
+// Worth is what one correct answer to a question of the given level is
+// worth: the question's own points (or PerCorrect) times the level (easy x1,
+// medium x2, expert x3).
+func Worth(own, level int) int {
+	return Question(own) * Level(level)
+}
+
+// MaxWorth is the highest value of one correct answer (bonus question at
+// expert level).
+const MaxWorth = MaxPerQuestion * LevelExpert
+
 // Outcome adds the win or draw bonus to the points earned from answers.
 func Outcome(earned int, won, draw bool) int {
 	r := Current()
@@ -80,9 +105,9 @@ func Outcome(earned int, won, draw bool) int {
 	return earned
 }
 
-// Cap is the most a game with n questions can award (all bonus questions,
-// a win, participation). Laravel validates results against the same bound.
-func Cap(n int) int { return n*MaxPerQuestion + MaxBonus + MaxParticipation }
+// Cap is the most a game with n questions can award (all expert bonus
+// questions, a win, participation). Laravel validates results against the same bound.
+func Cap(n int) int { return n*MaxWorth + MaxBonus + MaxParticipation }
 
 // Finished returns the award for a completed game: participation plus what
 // the player achieved, capped at max.

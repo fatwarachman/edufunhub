@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Deferred, Link, usePage } from '@inertiajs/react';
 import {
     ChevronLeft,
+    ChevronRight,
     Crown,
     Gamepad2,
     type LucideIcon,
@@ -747,7 +748,9 @@ function GamesPanel({
     const { t, i18n } = useTranslations();
     const initialGame = useQueryParam('game');
     const [selectedGame, setSelectedGame] = useState<string | null>(
-        games.some((g) => g.key === initialGame) ? (initialGame as string) : null,
+        games.some((g) => g.key === initialGame)
+            ? (initialGame as string)
+            : null,
     );
 
     const sortedGames = useMemo(
@@ -758,13 +761,10 @@ function GamesPanel({
         [games, t, i18n.language],
     );
 
-    const openModal = useCallback(
-        (key: string) => {
-            setSelectedGame(key);
-            writeParams({ game: key });
-        },
-        [],
-    );
+    const openModal = useCallback((key: string) => {
+        setSelectedGame(key);
+        writeParams({ game: key });
+    }, []);
 
     const closeModal = useCallback(() => {
         setSelectedGame(null);
@@ -777,7 +777,7 @@ function GamesPanel({
     if (!boards) {
         return (
             <section
-                className={cn(CARD, 'mx-auto w-full max-w-3xl')}
+                className={cn(CARD, 'w-full')}
                 aria-labelledby="lb-games-title"
                 data-testid="lb-games"
             >
@@ -792,7 +792,7 @@ function GamesPanel({
     return (
         <>
             <section
-                className={cn(CARD, 'mx-auto w-full max-w-3xl')}
+                className={cn(CARD, 'w-full')}
                 aria-labelledby="lb-games-title"
                 data-testid="lb-games"
             >
@@ -803,78 +803,92 @@ function GamesPanel({
                     {t('leaderboardPage.games.intro')}
                 </p>
                 {sortedGames.length === 0 ? (
-                    <EmptyNote>
-                        {t('leaderboardPage.games.empty')}
-                    </EmptyNote>
+                    <EmptyNote>{t('leaderboardPage.games.empty')}</EmptyNote>
                 ) : (
                     <ul
-                        className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                        className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                         aria-label={t('leaderboardPage.games.allGames')}
+                        data-testid="lb-games-grid"
                     >
                         {sortedGames.map((game) => {
                             const board = boards.find(
                                 (b) => b.key === game.key,
                             );
                             return (
-                                <li key={game.key}>
+                                <li key={game.key} className="flex min-w-0">
                                     <button
                                         type="button"
                                         onClick={() => openModal(game.key)}
                                         data-testid={`lb-game-card-${game.key}`}
+                                        aria-label={`${t(game.titleKey)}, ${t('leaderboardPage.games.viewRanking')}`}
                                         className={cn(
-                                            'flex w-full min-w-0 items-center gap-3 rounded-xl border-2 bg-white px-3 py-3 text-left transition-colors hover:bg-[#fff0cf] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7]',
+                                            'group flex w-full min-w-0 flex-col gap-3 rounded-2xl border-2 bg-white p-3 text-left shadow-[0_3px_0_#151b2e] transition-[transform,background-color,box-shadow] hover:-translate-y-0.5 hover:bg-[#fff8e6] hover:shadow-[0_5px_0_#151b2e] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7] active:translate-y-0.5 active:shadow-[0_1px_0_#151b2e] motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-4',
                                             INK,
                                         )}
                                     >
-                                        <span
-                                            className={cn(
-                                                'grid size-10 shrink-0 place-items-center rounded-xl border-2',
-                                                INK,
-                                                'bg-[#fff4d6]',
-                                            )}
-                                            style={
-                                                game.accent
-                                                    ? {
-                                                          background: `${game.accent}18`,
-                                                      }
-                                                    : undefined
-                                            }
-                                        >
-                                            {createElement(
-                                                game.icon
-                                                    ? gameIcon(game.icon)
-                                                    : Gamepad2,
-                                                {
-                                                    className: 'size-5',
-                                                    style: {
-                                                        color: game.accent,
+                                        <span className="flex min-w-0 items-start gap-3">
+                                            <span
+                                                className={cn(
+                                                    'grid size-11 shrink-0 place-items-center rounded-xl border-2',
+                                                    INK,
+                                                    'bg-[#fff4d6]',
+                                                )}
+                                                style={
+                                                    game.accent
+                                                        ? {
+                                                              background: `${game.accent}18`,
+                                                          }
+                                                        : undefined
+                                                }
+                                            >
+                                                {createElement(
+                                                    game.icon
+                                                        ? gameIcon(game.icon)
+                                                        : Gamepad2,
+                                                    {
+                                                        className: 'size-6',
+                                                        style: {
+                                                            color: game.accent,
+                                                        },
+                                                        'aria-hidden': true,
                                                     },
-                                                    'aria-hidden': true,
-                                                },
-                                            )}
-                                        </span>
-                                        <span className="min-w-0 flex-1">
-                                            <span className="block truncate text-sm font-bold">
+                                                )}
+                                            </span>
+                                            <span
+                                                className="line-clamp-2 min-w-0 flex-1 self-center text-base leading-snug font-bold break-words text-[#151b2e]"
+                                                data-testid="lb-game-card-title"
+                                            >
                                                 {t(game.titleKey)}
                                             </span>
-                                            {board && (
-                                                <span className="block text-xs text-[#151b2e]/60">
+                                        </span>
+                                        <span className="mt-auto flex min-w-0 items-center justify-between gap-2 border-t-2 border-dashed border-[#151b2e]/15 pt-2">
+                                            <span className="flex min-w-0 items-center gap-1.5 text-xs text-[#151b2e]/80">
+                                                <Users
+                                                    className="size-4 shrink-0"
+                                                    aria-hidden
+                                                />
+                                                <span className="min-w-0 truncate">
                                                     {t(
-                                                        'leaderboardPage.games.players',
-                                                        {
-                                                            formatted:
-                                                                number.format(
-                                                                    board.players,
-                                                                ),
-                                                        },
+                                                        'leaderboardPage.games.playersLabel',
                                                     )}
                                                 </span>
-                                            )}
-                                        </span>
-                                        <span className="shrink-0 text-[10px] font-semibold text-[#151b2e]/50">
-                                            {t(
-                                                'leaderboardPage.games.clickToView',
-                                            )}
+                                                <span className="shrink-0 text-sm font-bold text-[#151b2e] tabular-nums">
+                                                    {number.format(
+                                                        board?.players ?? 0,
+                                                    )}
+                                                </span>
+                                            </span>
+                                            <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-[#ffd93d] px-2 py-1 text-xs font-bold text-[#151b2e] transition-colors group-hover:bg-[#ffc800]">
+                                                <span className="sr-only sm:not-sr-only">
+                                                    {t(
+                                                        'leaderboardPage.games.viewRanking',
+                                                    )}
+                                                </span>
+                                                <ChevronRight
+                                                    className="size-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                                                    aria-hidden
+                                                />
+                                            </span>
                                         </span>
                                     </button>
                                 </li>

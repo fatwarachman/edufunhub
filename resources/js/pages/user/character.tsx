@@ -4,6 +4,7 @@ import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
 import { BackButton } from '@/components/site-nav';
+import { useFreshOnHistory } from '@/hooks/use-fresh-on-history';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { type AdSponsor, trackAd } from '@/lib/ads';
@@ -139,8 +140,28 @@ export default function Character({
 
     const wear = (s: ItemSlot, id: number | null) => {
         setTrying(null);
-        form.setData('equipped', { ...form.data.equipped, [s]: id });
+        form.setData((current) => ({
+            ...current,
+            equipped: { ...current.equipped, [s]: id },
+        }));
     };
+
+    /** Tapping the item you wear takes it off (also in the All tab). */
+    const toggleWear = (item: ShopItem) =>
+        wear(
+            item.slot,
+            form.data.equipped[item.slot] === item.id ? null : item.id,
+        );
+
+    useFreshOnHistory(['character', 'equipped', 'owned', 'balance'], (page) => {
+        const fresh = page.props as unknown as Props;
+        const next = Object.fromEntries(
+            options.slots.map((s) => [s, fresh.equipped[s] ?? null]),
+        ) as Record<ItemSlot, number | null>;
+        setTrying(null);
+        form.setDefaults('equipped', next);
+        form.setData('equipped', next);
+    });
 
     const save = () =>
         form.patch('/character', {
@@ -454,7 +475,7 @@ export default function Character({
                                         testId={`shop-item-${item.key}`}
                                         onSelect={() =>
                                             has
-                                                ? wear(item.slot, item.id)
+                                                ? toggleWear(item)
                                                 : setTrying(item)
                                         }
                                         preview={

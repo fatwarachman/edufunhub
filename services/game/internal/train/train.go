@@ -161,7 +161,7 @@ func (s *Session) Start(now time.Time) Message {
 	defer s.mu.Unlock()
 	s.LastSeen = now
 	s.seed++
-	s.gen = questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject)
+	s.gen = questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject).AtLevel(s.Claims.Level)
 	s.phase = PhaseQuestion
 	s.round, s.lives, s.wagons, s.streak, s.score, s.earned, s.correct, s.wrong = 0, Lives, 0, 0, 0, 0, 0, 0
 	s.started = now
@@ -274,7 +274,7 @@ func (s *Session) resolve(kind string, lane, gained int, now time.Time) (Message
 	s.lives = max(0, s.lives)
 	s.history = append(s.history, kind == FeedbackCorrect)
 	if s.question.FromBank {
-		s.answers = append(s.answers, questions.Answer{Key: s.question.Key, Correct: kind == FeedbackCorrect})
+		s.answers = append(s.answers, questions.Answer{Key: s.question.Key, Correct: kind == FeedbackCorrect, Choice: s.question.Original(lane)})
 	}
 	s.round++
 	var res *Result

@@ -12,8 +12,10 @@ import {
     PlayerDetailsCard,
     type PlayerDetails,
 } from '@/components/player-details-card';
+import { QuestionLevelPicker } from '@/components/question-level-picker';
 import { NavButton } from '@/components/site-nav';
 import { Vault, type VaultItem } from '@/components/vault';
+import { useFreshOnHistory } from '@/hooks/use-fresh-on-history';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { gameIcon } from '@/lib/games';
@@ -117,6 +119,7 @@ interface DashboardProps {
     points: number;
     vault: VaultItem[];
     grade: number | null;
+    questionLevel: number;
     playerDetails: PlayerDetails;
     character: CharacterData;
     categories: {
@@ -230,6 +233,7 @@ export default function Dashboard({
     points,
     vault,
     grade,
+    questionLevel,
     playerDetails,
     character,
     categories,
@@ -244,6 +248,7 @@ export default function Dashboard({
 }: DashboardProps) {
     const { t, i18n } = useTranslations();
     const { auth } = usePage<SharedData>().props;
+    useFreshOnHistory(['character', 'vault', 'points']);
     const number = useMemo(
         () => new Intl.NumberFormat(i18n.language),
         [i18n.language],
@@ -475,7 +480,7 @@ export default function Dashboard({
                         {t('playerDash.settings')}
                     </h2>
                     <PlayerDetailsCard details={playerDetails} />
-                    <GradeCard grade={grade} />
+                    <GradeCard grade={grade} questionLevel={questionLevel} />
                     <InstallAppCard />
                 </aside>
             </div>
@@ -1397,10 +1402,17 @@ function PageLink({
     );
 }
 
-function GradeCard({ grade }: { grade: number | null }) {
+function GradeCard({
+    grade,
+    questionLevel,
+}: {
+    grade: number | null;
+    questionLevel: number;
+}) {
     const { t } = useTranslations();
-    const form = useForm<{ grade: string }>({
+    const form = useForm<{ grade: string; question_level: number }>({
         grade: hasGrade(grade) ? String(grade) : '',
+        question_level: questionLevel,
     });
     return (
         <section
@@ -1409,7 +1421,7 @@ function GradeCard({ grade }: { grade: number | null }) {
         >
             <h2 className="flex items-center gap-2 text-xl font-bold">
                 <GraduationCap className="size-5" aria-hidden />
-                {t('player.grade')}
+                {t('player.gradeAndLevel')}
             </h2>
             <p className="text-sm text-muted-foreground">
                 {t('player.gradeNote')}
@@ -1450,6 +1462,11 @@ function GradeCard({ grade }: { grade: number | null }) {
                     ))}
                 </select>
                 <InputError message={form.errors.grade} />
+                <QuestionLevelPicker
+                    value={form.data.question_level}
+                    onChange={(level) => form.setData('question_level', level)}
+                />
+                <InputError message={form.errors.question_level} />
                 {form.recentlySuccessful && (
                     <p
                         role="status"

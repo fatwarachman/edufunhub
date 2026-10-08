@@ -75,7 +75,9 @@ export default function ChallengeDialog({
 
     const fb = challenge.feedback;
     const progress =
-        challenge.kind === 'math_sprint' || challenge.kind === 'snakes_ladders'
+        challenge.kind === 'math_sprint' ||
+        challenge.kind === 'snakes_ladders' ||
+        challenge.resumed
             ? t('flagQuest.challenge.progressTarget', {
                   correct: challenge.correct,
                   needed: challenge.needed,
@@ -88,6 +90,14 @@ export default function ChallengeDialog({
 
     const questionView = challenge.question ? (
         <section className="flex flex-col gap-3">
+            {challenge.resumed && challenge.step === 0 && (
+                <p
+                    className="fq-pill self-start !bg-[#dff7ea] text-xs"
+                    data-testid="fq-resumed"
+                >
+                    {t('flagQuest.challenge.resumed')}
+                </p>
+            )}
             <p className="text-xs font-bold text-[#6c5ce7] uppercase">
                 {subjectName(challenge.question.subject)}
             </p>

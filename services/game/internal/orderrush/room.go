@@ -538,7 +538,7 @@ func (r *Room) submit(c *Client, questionID string, order []string, at, now time
 	st.Solved++
 	st.TotalMs += elapsed.Milliseconds()
 	if p.solved <= MaxScoredModules {
-		p.earned += points.Question(0)
+		p.earned += points.Worth(0, p.Claims.Level)
 	}
 	msg["is_correct"], msg["error_slot_index"], msg["earned_score"] = true, -1, earned
 	msg["speed_bonus"], msg["streak"], msg["score"], msg["step"] = bonus, acc.Streak, acc.Score, p.solved

@@ -57,6 +57,9 @@ type Session struct {
 	active   *challenge.Challenge
 	settled  bool
 	cooldown map[int]time.Time
+	// saved keeps the progress of a failed station: the retry continues from
+	// that checkpoint instead of starting the station over.
+	saved    map[int]challenge.Progress
 	correct  int
 	earned   int
 	wrong    int
@@ -98,6 +101,7 @@ func (s *Session) startMission(id string, now time.Time) error {
 	s.lastMove = now
 	s.active = nil
 	s.cooldown = map[int]time.Time{}
+	s.saved = map[int]challenge.Progress{}
 	s.correct, s.earned, s.wrong, s.failures = 0, 0, 0, 0
 	s.answers = nil
 	s.started = now
@@ -105,6 +109,32 @@ func (s *Session) startMission(id string, now time.Time) error {
 	s.completed = false
 	s.result = nil
 	return nil
+}
+
+// CarryFrom keeps the mission progress of an older session of the same
+// player (cleared gates, saved station progress, position), so a new token
+// (renamed player, new grade) never sends them back to the first mission.
+// A running challenge is not carried over.
+func (s *Session) CarryFrom(old *Session) {
+	if old == nil || old == s {
+		return
+	}
+	old.mu.Lock()
+	defer old.mu.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if old.completed {
+		return
+	}
+	s.world, s.mission, s.subject = old.world, old.mission, old.subject
+	s.x, s.y = old.x, old.y
+	s.cooldown, s.saved = old.cooldown, old.saved
+	s.correct, s.earned, s.wrong, s.failures = old.correct, old.earned, old.wrong, old.failures
+	s.answers = old.answers
+	s.started = old.started
+	if a := old.active; a != nil && a.Phase != challenge.PhaseDone {
+		s.saved[a.Checkpoint] = a.Saved()
+	}
 }
 
 // SetLocale changes the language of question texts.
@@ -194,8 +224,12 @@ func (s *Session) Interact(now time.Time) Message {
 			return Message{"t": "error", "code": "cooldown", "retry_ms": until.Sub(now).Milliseconds()}
 		}
 		s.seed++
-		gen := questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject)
-		s.active = challenge.Start(cp.Kind, cp.ID, s.mission.Difficulty, gen, now)
+		gen := questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject).AtLevel(s.Claims.Level)
+		if saved, ok := s.saved[cp.ID]; ok {
+			s.active = challenge.Resume(cp.Kind, cp.ID, s.mission.Difficulty, gen, saved, now)
+		} else {
+			s.active = challenge.Start(cp.Kind, cp.ID, s.mission.Difficulty, gen, now)
+		}
 		s.loggedFromActive = 0
 		s.settled = false
 		return s.challengeLocked(nil)
@@ -275,6 +309,7 @@ func (s *Session) Leave(now time.Time) Message {
 	if c.Phase != challenge.PhaseDone {
 		s.failures++
 		s.cooldown[c.Checkpoint] = now.Add(RetryCooldown)
+		s.saved[c.Checkpoint] = c.Saved()
 	}
 	return Message{"t": "gates", "checkpoints": s.world.Checkpoints, "stats": s.statsLocked()}
 }
@@ -354,10 +389,12 @@ func (s *Session) settle(now time.Time) {
 	s.settled = true
 	if c.Passed {
 		s.world.Checkpoints[c.Checkpoint].Cleared = true
+		delete(s.saved, c.Checkpoint)
 		return
 	}
 	s.failures++
 	s.cooldown[c.Checkpoint] = now.Add(RetryCooldown)
+	s.saved[c.Checkpoint] = c.Saved()
 }
 
 func (s *Session) challengeLocked(fb *challenge.Feedback) Message {
@@ -367,7 +404,7 @@ func (s *Session) challengeLocked(fb *challenge.Feedback) Message {
 	msg := Message{
 		"t": "challenge", "checkpoint": c.Checkpoint, "kind": c.Kind, "phase": c.Phase,
 		"step": c.Step, "total": c.Rules.Total, "needed": c.Rules.Needed,
-		"correct": c.Correct, "wrong": c.Wrong, "passed": c.Passed,
+		"correct": c.Correct, "wrong": c.Wrong, "passed": c.Passed, "resumed": c.Resumed,
 	}
 	if c.Kind == challenge.SnakesLadders {
 		jumps := make([][2]int, 0, len(challenge.Jumps))

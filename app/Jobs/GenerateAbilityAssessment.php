@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\UserAbilityAssessment;
+use App\Services\AbilityComparison;
 use App\Services\Ai\AbilityAnalyzer;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -13,7 +14,9 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Runs one AI ability analysis and stores the result (or a readable error).
+ * Runs one AI ability analysis and stores the result (or a readable error)
+ * on its own row: earlier analyses are never changed, so they stay available
+ * for comparison.
  */
 class GenerateAbilityAssessment implements ShouldQueue
 {
@@ -29,7 +32,7 @@ class GenerateAbilityAssessment implements ShouldQueue
         $this->onQueue('low');
     }
 
-    public function handle(AbilityAnalyzer $analyzer): void
+    public function handle(AbilityAnalyzer $analyzer, AbilityComparison $comparison): void
     {
         $assessment = $this->assessment->fresh();
         if ($assessment === null || $assessment->status !== UserAbilityAssessment::PENDING) {
@@ -37,7 +40,7 @@ class GenerateAbilityAssessment implements ShouldQueue
         }
 
         try {
-            $assessment->markDone($analyzer->analyze($assessment));
+            $assessment->markDone($comparison->fillProgress($assessment, $analyzer->analyze($assessment)));
         } catch (Throwable $exception) {
             report($exception);
             $assessment->markFailed(self::readable($exception));

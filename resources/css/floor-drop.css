@@ -101,7 +101,108 @@
     }
 }
 
+/* Every player's own floor slab: cracks grow with each wrong answer. */
+.fd-floor {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 4.5rem;
+    height: 0.9rem;
+    margin-top: -0.35rem;
+    border: 2px solid #1f2a44;
+    border-radius: 0.5rem;
+    background: linear-gradient(180deg, #ffe08a 0%, #f5a623 100%);
+    box-shadow: 0 3px 0 #1f2a44;
+    overflow: hidden;
+}
+
+.fd-floor::before,
+.fd-floor::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+/* One crack, then two. */
+.fd-floor::before {
+    background: linear-gradient(
+        115deg,
+        transparent 44%,
+        #1f2a44 45%,
+        #1f2a44 49%,
+        transparent 50%
+    );
+}
+
+.fd-floor::after {
+    background:
+        linear-gradient(
+            65deg,
+            transparent 22%,
+            #1f2a44 23%,
+            #1f2a44 26%,
+            transparent 27%
+        ),
+        linear-gradient(
+            150deg,
+            transparent 70%,
+            #1f2a44 71%,
+            #1f2a44 74%,
+            transparent 75%
+        );
+}
+
+.fd-floor[data-cracks='1']::before,
+.fd-floor[data-cracks='2']::before,
+.fd-floor[data-cracks='2']::after {
+    opacity: 1;
+}
+
+.fd-floor[data-cracks='2'] {
+    background: linear-gradient(180deg, #ffc9a8 0%, #e8794a 100%);
+}
+
+/* Broken floor: the slab is gone, the player dropped out. */
+.fd-floor[data-cracks='3'] {
+    background: transparent;
+    border-style: dashed;
+    border-color: #1f2a44;
+    opacity: 0.35;
+    box-shadow: none;
+}
+
+.fd-spot[data-alive='false'] .fd-spot-avatar {
+    filter: grayscale(1);
+    opacity: 0.35;
+}
+
+.fd-spot[data-you='true'] .fd-spot-avatar {
+    outline: 3px solid #2563eb;
+    outline-offset: 2px;
+    border-radius: 9999px;
+}
+
+.fd-spot[data-cracking='true'] .fd-floor {
+    animation: fd-shake 0.25s linear 3;
+}
+
+.fd-spot[data-falling='true'] .fd-spot-avatar {
+    animation: fd-fall 0.9s cubic-bezier(0.55, 0, 0.85, 0.35) forwards;
+}
+
+.fd-spot[data-falling='true'] .fd-floor {
+    animation: fd-drop 0.9s cubic-bezier(0.55, 0, 0.85, 0.35) forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
+    .fd-spot[data-cracking='true'] .fd-floor,
+    .fd-spot[data-falling='true'] .fd-floor,
+    .fd-spot[data-falling='true'] .fd-spot-avatar {
+        animation: none;
+    }
+
     .fd-tile[data-state='dropped'],
     .fd-tile[data-state='dropped'] .fd-crowd > *,
     .fd-tile[data-state='locked'],

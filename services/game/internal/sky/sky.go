@@ -117,6 +117,7 @@ type Session struct {
 	subject   string
 	question  questions.Question
 	removed   map[int]bool
+	picked    *int // original bank option the jet flew into this round
 	roundAt   time.Time
 	started   time.Time
 	lastHit   time.Time
@@ -169,7 +170,7 @@ func (s *Session) Start(now time.Time) Message {
 	defer s.mu.Unlock()
 	s.LastSeen = now
 	s.seed++
-	s.gen = questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject)
+	s.gen = questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject).AtLevel(s.Claims.Level)
 	s.phase = PhaseQuestion
 	s.round, s.shields, s.score, s.earned, s.correct, s.wrong = 0, Shields, 0, 0, 0, 0
 	s.started = now
@@ -245,6 +246,7 @@ func (s *Session) Touch(option int, now time.Time) (Message, *Result, error) {
 	if err := s.checkOption(option, now, MinTouch); err != nil {
 		return nil, nil, err
 	}
+	s.picked = s.question.Original(option)
 	if option == s.question.Answer {
 		s.correct++
 		s.score += ScoreCorrect
@@ -368,8 +370,9 @@ func (s *Session) resolve(kind string, score, damage int, now time.Time) (Messag
 	s.shields = max(0, s.shields-damage)
 	s.history = append(s.history, kind == FeedbackCorrect)
 	if s.question.FromBank {
-		s.answers = append(s.answers, questions.Answer{Key: s.question.Key, Correct: kind == FeedbackCorrect})
+		s.answers = append(s.answers, questions.Answer{Key: s.question.Key, Correct: kind == FeedbackCorrect, Choice: s.picked})
 	}
+	s.picked = nil
 	s.round++
 	var res *Result
 	if s.shields == 0 || s.round >= Rounds {

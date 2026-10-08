@@ -170,7 +170,7 @@ it('caps room quiz game points and event ids', function (string $game, array $ov
         'completed_at' => now()->toIso8601String(),
     ], $override))->assertUnprocessable();
 })->with(['market-math', 'number-garden', 'explore-indonesia', 'mini-lab'])->with([
-    'points above cap' => [['points' => 951]],
+    'points above cap' => [['points' => 2551]],
     'foreign event id' => [['event_id' => 'cw-1-level-1']],
     'unknown mission' => [['mission' => 'level-1']],
 ]);

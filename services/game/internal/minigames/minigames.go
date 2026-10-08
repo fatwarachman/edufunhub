@@ -225,9 +225,10 @@ func Award(earned int, won bool) int {
 // Start begins (or restarts) the game. Only the host may start.
 func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 	return h.rooms.Start(uid, now, func(r *room) error {
-		grade := r.Seats[0].Claims.Grade
+		grade, level := r.Seats[0].Claims.Grade, points.Level(r.Seats[0].Claims.Level)
 		for _, s := range r.Seats {
 			grade = min(grade, s.Claims.Grade)
+			level = min(level, points.Level(s.Claims.Level))
 			s.Data = player{choice: -1}
 		}
 		h.seed++
@@ -235,7 +236,7 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 			step: StepCountdown, grade: grade, stepAt: now, started: now,
 			roundTime: r.AnswerTime(h.Spec.RoundTime(grade)),
 			rng:       rand.New(rand.NewPCG(h.seed, h.seed^0x6a09e667f3bcc909)),
-			bank:      questions.NewFor(h.Spec.Key, grade, h.seed).For("", r.Humans()...),
+			bank:      questions.NewFor(h.Spec.Key, grade, h.seed).For("", r.Humans()...).AtLevel(level),
 			seen:      map[string]bool{},
 		}
 		return nil
@@ -348,7 +349,7 @@ func reveal(r *room, now time.Time) {
 		}
 		p.history = append(p.history, right)
 		if g.current.Question.FromBank {
-			p.answers = append(p.answers, questions.Answer{Key: g.current.Question.Key, Correct: right})
+			p.answers = append(p.answers, questions.Answer{Key: g.current.Question.Key, Correct: right, Choice: g.current.Question.Picked(p.answered, p.choice)})
 		}
 	}
 	g.round++

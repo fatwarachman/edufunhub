@@ -266,6 +266,7 @@ func (h *Hub) dequeueLocked(uid int64) {
 func (h *Hub) startLocked(a, b auth.Claims, subject string, bot bool, now time.Time) *match {
 	h.seed++
 	grade := min(a.Grade, b.Grade)
+	level := min(points.Level(a.Level), points.Level(b.Level))
 	humans := []int64{a.Subject}
 	if !bot {
 		humans = append(humans, b.Subject)
@@ -273,7 +274,7 @@ func (h *Hub) startLocked(a, b auth.Claims, subject string, bot bool, now time.T
 	m := &match{
 		id:      fmt.Sprintf("%d", now.UnixNano()),
 		subject: questions.NormSubject(subject),
-		gen:     questions.NewFor(GameKey, grade, h.seed).For(subject, humans...),
+		gen:     questions.NewFor(GameKey, grade, h.seed).For(subject, humans...).AtLevel(level),
 		rng:     rand.New(rand.NewPCG(h.seed, h.seed^0x5bd1e995)),
 		grade:   grade,
 		phase:   PhaseCountdown,
@@ -382,7 +383,7 @@ func (m *match) reveal(now time.Time) {
 		right := p.answered && p.choice == m.question.Answer
 		p.history = append(p.history, right)
 		if m.question.FromBank && !p.bot {
-			p.answers = append(p.answers, questions.Answer{Key: m.question.Key, Correct: right})
+			p.answers = append(p.answers, questions.Answer{Key: m.question.Key, Correct: right, Choice: m.question.Picked(p.answered, p.choice)})
 		}
 	}
 	m.round++

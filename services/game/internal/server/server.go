@@ -204,7 +204,9 @@ func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
 	s.conns[claims.Subject] = current
 	sess, ok := s.sessions[claims.Subject]
 	if !ok || sess.Claims.Grade != claims.Grade || sess.Claims.Name != claims.Name {
-		sess = session.New(claims, r.URL.Query().Get("locale"), s.cfg.Now())
+		fresh := session.New(claims, r.URL.Query().Get("locale"), s.cfg.Now())
+		fresh.CarryFrom(sess)
+		sess = fresh
 		s.sessions[claims.Subject] = sess
 	} else {
 		sess.SetLocale(r.URL.Query().Get("locale"))
@@ -327,13 +329,19 @@ func (s *Server) post(body []byte) error {
 	return nil
 }
 
+// FlagQuestKeep is how long an offline Flag Quest mission is kept.
+const FlagQuestKeep = 24 * time.Hour
+
 // Prune drops sessions idle longer than ttl.
 func (s *Server) Prune(ttl time.Duration) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	cutoff := s.cfg.Now().Add(-ttl)
+	// Flag Quest keeps mission progress (cleared gates, checkpoints) for a
+	// day, so coming back later continues the mission instead of restarting.
+	missionCutoff := s.cfg.Now().Add(-FlagQuestKeep)
 	for id, sess := range s.sessions {
-		if _, online := s.conns[id]; !online && sess.LastSeen.Before(cutoff) {
+		if _, online := s.conns[id]; !online && sess.LastSeen.Before(missionCutoff) {
 			delete(s.sessions, id)
 		}
 	}

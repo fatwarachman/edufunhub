@@ -8,6 +8,7 @@ use App\Models\Subject;
 use App\Services\Chat\ChatService;
 use App\Services\Chat\ChatServiceClient;
 use App\Services\FeatureService;
+use App\Services\FriendService;
 use App\Services\GameSounds;
 use App\Services\PlayerNotifications;
 use App\Services\PlayerPortal;
@@ -106,6 +107,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'unreadNotifications' => fn (): int => $user ? app(PlayerNotifications::class)->unreadCount($user) : 0,
             'unreadChats' => fn (): int => $user ? app(ChatService::class)->unreadTotal($user) : 0,
+            'pendingFriends' => fn (): int => $user ? app(FriendService::class)->pendingCount($user) : 0,
             'chatLive' => fn (): ?array => $user && app(ChatServiceClient::class)->isConfigured()
                 ? ['wsUrl' => (string) config('chat-service.public_ws_url')]
                 : null,

@@ -49,6 +49,13 @@ export const BAND_LABELS: Record<number, string> = {
     3: 'Grade 10–12',
 };
 
+/** Question levels within a grade (points multiplier x1 / x2 / x3). */
+export const QUESTION_LEVEL_LABELS: Record<number, string> = {
+    1: 'Easy',
+    2: 'Medium',
+    3: 'Expert',
+};
+
 export function gameLabel(key: string): string {
     return GAME_LABELS[key] ?? key;
 }

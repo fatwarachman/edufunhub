@@ -40,6 +40,7 @@ import {
     WifiOff,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import '../../../css/knowledge-train.css';
 
 interface TrainPlayer {
     name: string;
@@ -87,6 +88,14 @@ interface Run {
     sent: boolean;
     sleepers: number;
     flash: { kind: 'correct' | 'wrong'; life: number } | null;
+}
+
+/** Shrinks the signboard font as the question gets longer so it always wraps fully. */
+function questionSize(text: string): string {
+    if (text.length > 160) return 'text-sm sm:text-base';
+    if (text.length > 110) return 'text-base sm:text-lg';
+    if (text.length > 60) return 'text-lg sm:text-xl';
+    return 'text-xl sm:text-2xl';
 }
 
 function wrapText(
@@ -448,9 +457,12 @@ export default function KnowledgeTrain({
     const showOverlay = !playing;
 
     return (
-        <div className="min-h-dvh bg-[#eef9f1] text-[#20364a]">
+        <div
+            className="kt-page flex h-dvh flex-col overflow-hidden bg-[#eef9f1] text-[#20364a]"
+            data-testid="train-page"
+        >
             <Head title={`${t('train.title')} — EduFunHub`} />
-            <header className="flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
+            <header className="kt-header flex shrink-0 items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
                 <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                     <BackButton
                         href="/portal"
@@ -466,203 +478,273 @@ export default function KnowledgeTrain({
                 <SiteNav compact className="shrink-0" />
             </header>
 
-            <main className="flex w-full flex-col gap-3 p-3 sm:p-5 lg:px-8">
-                <GameAdStrip />
-                <div className="flex flex-wrap items-center gap-2 text-sm font-bold">
-                    <span
-                        className="inline-flex min-h-11 min-w-0 items-center gap-2 rounded-xl border-2 border-[#20364a] bg-white px-3"
-                        data-testid="train-player"
-                    >
-                        <span className="-my-1 size-9 shrink-0">
-                            <PlayerAvatar
-                                character={player.character}
-                                userId={myId}
-                            />
-                        </span>
-                        <span className="truncate">
-                            {player.name} • {gradeLabel}
-                        </span>
-                    </span>
-                    <span className="inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-[#20364a] bg-[#ffd93d] px-3">
-                        <Coins className="size-4" />
-                        {t('train.points', { count: points + earned })}
-                    </span>
-                    {connection.status && (
+            <main
+                className="kt-main flex min-h-0 w-full flex-1 flex-col gap-2 overflow-y-auto p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:gap-3 sm:p-4 lg:px-8"
+                data-testid="train-main"
+            >
+                <GameAdStrip className="shrink-0" />
+                <div className="kt-bars flex shrink-0 flex-col gap-2 sm:gap-3">
+                    <div className="kt-toolbar flex shrink-0 flex-wrap items-center gap-2 text-sm font-bold">
                         <span
-                            className={cn(
-                                'inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-[#20364a] px-3 text-xs',
-                                online ? 'bg-[#c9f5e5]' : 'bg-[#ffe1e1]',
-                            )}
-                            data-testid="train-connection"
-                            data-status={connection.status}
+                            className="inline-flex min-h-11 min-w-0 items-center gap-2 rounded-xl border-2 border-[#20364a] bg-white px-3"
+                            data-testid="train-player"
                         >
-                            {online ? (
-                                <Wifi className="size-4" />
-                            ) : (
-                                <WifiOff className="size-4" />
-                            )}
-                            <span className="sr-only sm:not-sr-only">
-                                {t(`train.connection.${connection.status}`)}
+                            <span className="-my-1 size-9 shrink-0">
+                                <PlayerAvatar
+                                    character={player.character}
+                                    userId={myId}
+                                />
+                            </span>
+                            <span className="truncate">
+                                {player.name} • {gradeLabel}
                             </span>
                         </span>
-                    )}
-                    <div className="ml-auto flex gap-2">
-                        {phase === 'question' && (
+                        <span className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border-2 border-[#20364a] bg-[#ffd93d] px-3 whitespace-nowrap">
+                            <Coins className="size-4" />
+                            {t('train.points', { count: points + earned })}
+                        </span>
+                        {connection.status && (
+                            <span
+                                className={cn(
+                                    'inline-flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-[#20364a] px-3 text-xs',
+                                    online ? 'bg-[#c9f5e5]' : 'bg-[#ffe1e1]',
+                                )}
+                                data-testid="train-connection"
+                                data-status={connection.status}
+                            >
+                                {online ? (
+                                    <Wifi className="size-4" />
+                                ) : (
+                                    <WifiOff className="size-4" />
+                                )}
+                                <span className="sr-only sm:not-sr-only">
+                                    {t(`train.connection.${connection.status}`)}
+                                </span>
+                            </span>
+                        )}
+                        <div className="ml-auto flex gap-2">
+                            {phase === 'question' && (
+                                <button
+                                    type="button"
+                                    onClick={togglePause}
+                                    className="inline-flex size-11 items-center justify-center rounded-xl border-2 border-[#20364a] bg-white"
+                                    aria-label={t(
+                                        paused ? 'train.resume' : 'train.pause',
+                                    )}
+                                    data-testid="train-pause"
+                                >
+                                    {paused ? (
+                                        <Play className="size-5" />
+                                    ) : (
+                                        <Pause className="size-5" />
+                                    )}
+                                </button>
+                            )}
                             <button
                                 type="button"
-                                onClick={togglePause}
+                                onClick={toggleMuted}
                                 className="inline-flex size-11 items-center justify-center rounded-xl border-2 border-[#20364a] bg-white"
                                 aria-label={t(
-                                    paused ? 'train.resume' : 'train.pause',
+                                    muted ? 'sky.unmute' : 'sky.mute',
                                 )}
-                                data-testid="train-pause"
                             >
-                                {paused ? (
-                                    <Play className="size-5" />
+                                {muted ? (
+                                    <VolumeX className="size-5" />
                                 ) : (
-                                    <Pause className="size-5" />
+                                    <Volume2 className="size-5" />
                                 )}
                             </button>
-                        )}
-                        <button
-                            type="button"
-                            onClick={toggleMuted}
-                            className="inline-flex size-11 items-center justify-center rounded-xl border-2 border-[#20364a] bg-white"
-                            aria-label={t(muted ? 'sky.unmute' : 'sky.mute')}
-                        >
-                            {muted ? (
-                                <VolumeX className="size-5" />
-                            ) : (
-                                <Volume2 className="size-5" />
-                            )}
-                        </button>
+                        </div>
                     </div>
-                </div>
 
-                <div
-                    className="grid grid-cols-2 gap-2 text-sm font-bold sm:grid-cols-4"
-                    data-testid="train-hud"
-                >
-                    <Stat>
-                        {t('train.round', {
-                            round: Math.min(
-                                (state?.round ?? 0) +
-                                    (phase === 'question' ? 1 : 0),
+                    <div
+                        className="kt-hud grid shrink-0 grid-cols-4 gap-1.5 text-xs font-bold sm:gap-2 sm:text-sm"
+                        data-testid="train-hud"
+                    >
+                        <Stat>
+                            {t('train.round', {
+                                round: Math.min(
+                                    (state?.round ?? 0) +
+                                        (phase === 'question' ? 1 : 0),
+                                    total,
+                                ),
                                 total,
-                            ),
-                            total,
-                        })}
-                    </Stat>
-                    <Stat>
-                        {t('train.score', { score: state?.score ?? 0 })}
-                    </Stat>
-                    <Stat>
-                        <span className="flex items-center gap-0.5">
-                            {Array.from({ length: maxLives }, (_, i) => (
-                                <Heart
-                                    key={i}
-                                    className={cn(
-                                        'size-4',
-                                        i < lives
-                                            ? 'fill-[#ff6584] text-[#ff6584]'
-                                            : 'text-[#20364a]/30',
-                                    )}
-                                />
-                            ))}
-                        </span>
-                        <span className="sr-only">
-                            {t('train.lives', { lives, max: maxLives })}
-                        </span>
-                    </Stat>
-                    <Stat>
-                        {t('train.wagons', { count: state?.wagons ?? 0 })}
-                        {(state?.streak ?? 0) > 1 && (
-                            <span className="text-[#ff6584]">
-                                {' '}
-                                · {t('train.streak', { count: state?.streak })}
+                            })}
+                        </Stat>
+                        <Stat>
+                            {t('train.score', { score: state?.score ?? 0 })}
+                        </Stat>
+                        <Stat>
+                            <span className="flex items-center gap-0.5">
+                                {Array.from({ length: maxLives }, (_, i) => (
+                                    <Heart
+                                        key={i}
+                                        className={cn(
+                                            'size-4',
+                                            i < lives
+                                                ? 'fill-[#ff6584] text-[#ff6584]'
+                                                : 'text-[#20364a]/30',
+                                        )}
+                                    />
+                                ))}
                             </span>
-                        )}
-                    </Stat>
+                            <span className="sr-only">
+                                {t('train.lives', { lives, max: maxLives })}
+                            </span>
+                        </Stat>
+                        <Stat>
+                            {t('train.wagons', { count: state?.wagons ?? 0 })}
+                            {(state?.streak ?? 0) > 1 && (
+                                <span className="text-[#ff6584]">
+                                    {' '}
+                                    ·{' '}
+                                    {t('train.streak', {
+                                        count: state?.streak,
+                                    })}
+                                </span>
+                            )}
+                        </Stat>
+                    </div>
                 </div>
 
                 {state?.phase === 'question' && state.subject_fallback && (
                     <SubjectFallbackNote subject={state.subject} />
                 )}
                 <div
-                    className="min-h-14 rounded-2xl border-2 border-[#20364a] bg-white px-4 py-3 text-center"
-                    data-testid="train-question"
+                    className="flex min-h-[220px] flex-1 flex-col items-center gap-0"
+                    data-testid="train-stage"
                 >
-                    <p className="font-display text-lg leading-snug font-bold sm:text-xl">
-                        {state?.question?.text ?? t('train.hint')}
-                    </p>
-                    {message && (
-                        <p
-                            className="mt-1 text-sm font-bold text-[#4d6b80]"
-                            aria-live="polite"
-                            data-testid="train-message"
-                        >
-                            {message}
-                        </p>
-                    )}
-                </div>
-
-                <div className="relative overflow-hidden rounded-3xl border-2 border-[#20364a] shadow-[4px_4px_0_#20364a]">
-                    <canvas
-                        ref={canvas}
-                        width={WIDTH}
-                        height={HEIGHT}
-                        className="block aspect-[4/3] w-full touch-none select-none"
-                        aria-label={t('train.canvasLabel')}
-                        onPointerDown={onPointerDown}
-                        onPointerUp={onPointerUp}
-                        data-testid="train-canvas"
-                    />
-                    {state?.question && playing && (
-                        <ul className="sr-only">
-                            {state.question.options.map((text, lane) => (
-                                <li key={lane}>
-                                    {t('train.laneLabel', {
-                                        lane: lane + 1,
-                                        text,
-                                    })}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                    {showOverlay && (
-                        <Overlay
-                            state={state}
-                            player={player}
-                            online={online}
-                            serviceReady={serviceReady}
-                            status={connection.status}
-                            onStart={() =>
-                                connection.send({ t: 'start', subject })
-                            }
-                            onResume={togglePause}
-                            subject={subject}
-                            onSubject={setSubject}
+                    <div
+                        className="kt-board relative z-10 w-full max-w-3xl shrink-0 px-1"
+                        data-testid="train-question"
+                        aria-live="polite"
+                        aria-atomic="true"
+                    >
+                        <div className="kt-board__frame rounded-2xl border-2 border-[#20364a] p-1.5 shadow-[3px_4px_0_#20364a]">
+                            <div className="rounded-xl border-2 border-[#5a3d22]/40 bg-[#fff4d6] px-3 py-2 text-center sm:px-4 sm:py-2.5">
+                                <p
+                                    className={cn(
+                                        'font-display leading-snug font-bold text-balance break-words',
+                                        questionSize(
+                                            state?.question?.text ??
+                                                t('train.hint'),
+                                        ),
+                                    )}
+                                    data-testid="train-question-text"
+                                >
+                                    {state?.question?.text ?? t('train.hint')}
+                                </p>
+                                {message && (
+                                    <p
+                                        className="mt-0.5 text-xs font-bold text-[#4d6b80] sm:text-sm"
+                                        data-testid="train-message"
+                                    >
+                                        {message}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        <span
+                            className="kt-board__post left-[18%]"
+                            aria-hidden
                         />
-                    )}
-                </div>
+                        <span
+                            className="kt-board__post right-[18%]"
+                            aria-hidden
+                        />
+                    </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:hidden">
-                    <button
-                        type="button"
-                        onClick={() => move(-1)}
-                        className="inline-flex min-h-14 items-center justify-center rounded-2xl border-2 border-[#20364a] bg-white"
-                        aria-label={t('train.left')}
+                    <div
+                        className="[container-type:size] mt-3 flex min-h-0 w-full flex-1 items-start justify-center max-sm:[container-type:inline-size] max-sm:flex-none"
+                        data-testid="train-canvas-box"
                     >
-                        <ChevronLeft className="size-8" />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => move(1)}
-                        className="inline-flex min-h-14 items-center justify-center rounded-2xl border-2 border-[#20364a] bg-white"
-                        aria-label={t('train.right')}
-                    >
-                        <ChevronRight className="size-8" />
-                    </button>
+                        <div
+                            className="relative aspect-[4/3] w-[min(100cqw,calc(100cqh*4/3))] overflow-hidden rounded-3xl border-2 border-[#20364a] shadow-[4px_4px_0_#20364a]"
+                            data-testid="train-canvas-frame"
+                        >
+                            <canvas
+                                ref={canvas}
+                                width={WIDTH}
+                                height={HEIGHT}
+                                className="block size-full touch-none select-none"
+                                aria-label={t('train.canvasLabel')}
+                                onPointerDown={onPointerDown}
+                                onPointerUp={onPointerUp}
+                                data-testid="train-canvas"
+                            />
+                            {state?.question && playing && (
+                                <ul
+                                    className="pointer-events-none absolute inset-x-1.5 top-1.5 z-10 grid grid-cols-3 gap-1 sm:inset-x-3 sm:top-3 sm:gap-2"
+                                    data-testid="train-options"
+                                >
+                                    {state.question.options.map(
+                                        (text, lane) => (
+                                            <li key={lane} className="min-w-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setLane(lane)
+                                                    }
+                                                    className="pointer-events-auto flex min-h-9 w-full items-center justify-center rounded-xl border-2 border-[#20364a] px-1 py-1 text-center text-xs leading-tight font-bold break-words text-[#20364a] shadow-[2px_2px_0_#20364a] sm:text-sm md:text-base"
+                                                    style={{
+                                                        backgroundColor:
+                                                            SIGN_COLORS[lane],
+                                                    }}
+                                                    aria-label={t(
+                                                        'train.laneLabel',
+                                                        {
+                                                            lane: lane + 1,
+                                                            text,
+                                                        },
+                                                    )}
+                                                    data-testid={`train-option-${lane}`}
+                                                >
+                                                    {text}
+                                                </button>
+                                            </li>
+                                        ),
+                                    )}
+                                </ul>
+                            )}
+                            {showOverlay && (
+                                <Overlay
+                                    state={state}
+                                    player={player}
+                                    online={online}
+                                    serviceReady={serviceReady}
+                                    status={connection.status}
+                                    onStart={() => {
+                                        setMessage('');
+                                        connection.send({
+                                            t: 'start',
+                                            subject,
+                                        });
+                                    }}
+                                    onResume={togglePause}
+                                    subject={subject}
+                                    onSubject={setSubject}
+                                />
+                            )}
+                        </div>
+                    </div>
+                    <div className="kt-arrows mt-2 grid w-full shrink-0 grid-cols-2 gap-3 sm:hidden">
+                        <button
+                            type="button"
+                            onClick={() => move(-1)}
+                            className="inline-flex min-h-12 items-center justify-center rounded-2xl border-2 border-[#20364a] bg-white"
+                            aria-label={t('train.left')}
+                        >
+                            <ChevronLeft className="size-8" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => move(1)}
+                            className="inline-flex min-h-12 items-center justify-center rounded-2xl border-2 border-[#20364a] bg-white"
+                            aria-label={t('train.right')}
+                        >
+                            <ChevronRight className="size-8" />
+                        </button>
+                    </div>
                 </div>
             </main>
             <GameFinale
@@ -682,7 +764,7 @@ export default function KnowledgeTrain({
 
 function Stat({ children }: { children: React.ReactNode }) {
     return (
-        <span className="flex min-h-11 items-center justify-center gap-1 rounded-xl border-2 border-[#20364a] bg-white px-3 text-center">
+        <span className="kt-stat flex min-h-10 min-w-0 items-center justify-center gap-1 rounded-xl border-2 border-[#20364a] bg-white px-1.5 text-center sm:min-h-11 sm:px-3">
             {children}
         </span>
     );

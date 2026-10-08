@@ -41,7 +41,7 @@ it('links the signed-in header to the ability analysis page', function (): void 
     $english = json_decode(file_get_contents(resource_path('js/locales/en-player.json')), true);
 
     expect($source)->toContain("href: '/ability'")
-        ->and($source)->toContain('testId="nav-ability"')
+        ->and($source)->toContain("testId: 'nav-ability'")
         ->and($indonesian['nav']['ability'])->toBe('Analisa kemampuan')
         ->and($english['nav']['ability'])->toBe('Ability analysis');
 });
@@ -120,4 +120,33 @@ it('shows an Active badge on active questions in the bank list and detail page',
     expect($index)->toContain('data-testid="question-active-badge"')
         ->and($index)->toMatch("/question\.is_active \? \(\s*<Badge tone=\"success\">/")
         ->and($show)->toMatch("/question\.is_active \? \(\s*<Chip className=\"gap-1 bg-emerald-100/");
+});
+
+it('folds header buttons before they slide over the brand', function (): void {
+    $hook = file_get_contents(resource_path('js/hooks/use-nav-fold.ts'));
+
+    expect($hook)->toContain('const BRAND_GAP = 12;')
+        ->and($hook)->toContain('item.left < brand.right + BRAND_GAP')
+        ->and($hook)->toContain('navBox.left < rowBox.left - 1');
+});
+
+it('gives a tapped folded button its label and folds the nearest labelled one instead', function (): void {
+    $hook = file_get_contents(resource_path('js/hooks/use-nav-fold.ts'));
+    $css = file_get_contents(resource_path('css/edu-nav.css'));
+
+    expect($hook)->toContain("const PINNED_KEY = 'edu-nav-pinned';")
+        ->and($hook)->toContain("closest<HTMLElement>('.edu-nav-btn[data-folded]')")
+        ->and($hook)->toContain('order.push(...order.splice(pinnedIndex, 1));')
+        ->and($hook)->toContain('function morph(')
+        ->and($hook)->toContain("fill: 'forwards'")
+        ->and($hook)->toContain('reducedMotion()')
+        ->and($css)->toContain('.edu-nav-bar .edu-nav-btn--morph');
+});
+
+it('ignores wide page content and badges sticking out of buttons when deciding to fold the header', function (): void {
+    $hook = file_get_contents(resource_path('js/hooks/use-nav-fold.ts'));
+
+    expect($hook)->not->toContain('page.scrollWidth > page.clientWidth')
+        ->and($hook)->not->toContain('nav.scrollWidth > nav.clientWidth')
+        ->and($hook)->toContain('if (row.scrollWidth > row.clientWidth + 1) {');
 });

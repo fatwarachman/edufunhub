@@ -3,6 +3,7 @@ import {
     fieldClass,
     gameLabel,
     Panel,
+    QUESTION_LEVEL_LABELS,
     useSubjectLabel,
 } from '@/components/admin/game-stats';
 import {
@@ -55,6 +56,7 @@ export default function GenerateQuestions({
         subjects: [] as string[],
         grades: [] as number[],
         per_combination: 5,
+        level: 1,
         games: [...games],
         activate: false,
     });
@@ -251,6 +253,22 @@ export default function GenerateQuestions({
                                 />
                                 <InputError message={errors.per_combination} />
                             </label>
+                            <ChipGroup
+                                label={tr('Question level')}
+                                error={(errors as Record<string, string>).level}
+                            >
+                                {[1, 2, 3].map((level) => (
+                                    <Chip
+                                        key={level}
+                                        selected={data.level === level}
+                                        onClick={() => setData('level', level)}
+                                        testId={`gen-level-${level}`}
+                                    >
+                                        {tr(QUESTION_LEVEL_LABELS[level])} ×
+                                        {level}
+                                    </Chip>
+                                ))}
+                            </ChipGroup>
                             <ChipGroup
                                 label={tr('Use in games')}
                                 error={errors.games}

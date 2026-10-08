@@ -19,6 +19,13 @@ use TypeError;
 class QuestionGenerator
 {
     /** @var array<string, string> */
+    /** How hard each question level should be within its grade. */
+    private const LEVEL_GUIDE = [
+        Question::LEVEL_EASY => 'easy: basic recall and simple facts most students of this grade already know.',
+        Question::LEVEL_MEDIUM => 'medium: needs understanding or one reasoning step, still within this grade curriculum.',
+        Question::LEVEL_EXPERT => 'expert: challenging for this grade, multi-step reasoning or deeper knowledge, still fair for strong students of this grade.',
+    ];
+
     public function __construct(private OpenAiCompatibleClient $client, private AiSettings $settings) {}
 
     /**
@@ -39,7 +46,7 @@ class QuestionGenerator
                 return ['created' => $created, 'skipped' => $skipped, 'stopped' => true];
             }
             $want = min(QuestionGeneration::BATCH, $count - $created);
-            $items = $this->ask($provider, $generation->model, $subject, $grade, $want);
+            $items = $this->ask($provider, $generation->model, $subject, $grade, $want, Question::normalizeLevel($generation->level));
             if ($items === []) {
                 break;
             }
@@ -60,6 +67,7 @@ class QuestionGenerator
                     'subject' => $subject,
                     'band' => Question::bandForGrades([$grade]),
                     'grades' => [$grade],
+                    'level' => Question::normalizeLevel($generation->level),
                     'games' => $generation->games,
                     'is_active' => $generation->activate,
                     'source' => Question::SOURCE_AI,
@@ -81,7 +89,7 @@ class QuestionGenerator
     }
 
     /** @return list<mixed> */
-    private function ask(string $provider, string $model, string $subject, int $grade, int $count): array
+    private function ask(string $provider, string $model, string $subject, int $grade, int $count, int $level = Question::LEVEL_EASY): array
     {
         $avoid = Question::query()
             ->where('subject', $subject)
@@ -94,6 +102,7 @@ class QuestionGenerator
 
         $gradeLabel = $grade === Question::KINDERGARTEN ? 'TK (kindergarten, age 4-6)' : "kelas {$grade} (grade {$grade})";
         $prompt = "Write {$count} new multiple choice questions.\nSubject: ".Subject::aiDescription($subject)."\nGrade: {$gradeLabel}\n"
+            .'Difficulty: '.self::LEVEL_GUIDE[$level]."\n"
             .($avoid !== '' ? "Avoid these existing questions:\n{$avoid}\n" : '');
 
         try {

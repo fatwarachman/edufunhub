@@ -30,6 +30,8 @@ type Item struct {
 	Games   []string `json:"games"`
 	// Points overrides the per-correct award (bonus questions); 0 = default.
 	Points int `json:"points"`
+	// Level is the difficulty: 1 easy, 2 medium, 3 expert (0 = easy).
+	Level int `json:"level"`
 }
 
 // ForGame reports whether the item is distributed to game ("" matches every item).
@@ -101,6 +103,8 @@ func Validate(items []Item) error {
 			return fmt.Errorf("%s: unknown type %q", it.Key, it.Type)
 		case it.Points < 0 || it.Points > points.MaxPerQuestion:
 			return fmt.Errorf("%s: points out of range", it.Key)
+		case it.Level < 0 || it.Level > points.LevelExpert:
+			return fmt.Errorf("%s: level out of range", it.Key)
 		}
 		seen[it.Key] = true
 	}
@@ -185,4 +189,7 @@ func Builtin() *Bank { return builtin }
 type Answer struct {
 	Key     string `json:"key"`
 	Correct bool   `json:"correct"`
+	// Choice is the original bank option index the player picked; nil for
+	// timeouts or when the pick cannot be attributed.
+	Choice *int `json:"choice,omitempty"`
 }

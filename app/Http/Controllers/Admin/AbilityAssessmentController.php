@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreAbilityAssessmentRequest;
 use App\Jobs\GenerateAbilityAssessment;
 use App\Models\User;
 use App\Models\UserAbilityAssessment;
+use App\Services\AbilityComparison;
 use App\Services\Ai\AbilityProfileBuilder;
 use App\Services\Ai\AiSettings;
 use App\Services\PlayerAbility;
@@ -19,7 +20,7 @@ use Illuminate\Http\RedirectResponse;
 class AbilityAssessmentController extends Controller
 {
     /** Assessments listed on the user page (latest first). */
-    public const HISTORY = 6;
+    public const HISTORY = AbilityComparison::HISTORY;
 
     public function store(StoreAbilityAssessmentRequest $request, User $user, AiSettings $settings, AbilityProfileBuilder $builder): RedirectResponse
     {
@@ -50,8 +51,11 @@ class AbilityAssessmentController extends Controller
     }
 
     /**
-     * Deferred prop of the user page: latest analyses and, before the first
-     * one, a preview of the data the model would receive.
+     * Deferred prop of the user page: the analysis history (every run keeps
+     * its own row), the comparison of the latest finished analysis with the
+     * one before it and, before the first one, a preview of the model input.
+     * The input snapshot is only sent for the latest and the latest finished
+     * analysis to keep the payload small.
      *
      * @return array<string, mixed>
      */
@@ -59,13 +63,19 @@ class AbilityAssessmentController extends Controller
     {
         UserAbilityAssessment::failStale($user->id);
 
-        $assessments = UserAbilityAssessment::query()
+        $rows = UserAbilityAssessment::query()
             ->with('requester:id,name')
             ->where('user_id', $user->id)
             ->latest('created_at')
             ->latest('id')
             ->limit(self::HISTORY)
-            ->get()
+            ->get();
+
+        $finished = $rows->where('status', UserAbilityAssessment::DONE)->values();
+        $withInput = array_filter([$rows->first()?->id, $finished->first()?->id]);
+        $comparison = app(AbilityComparison::class);
+
+        $assessments = $rows
             ->map(fn (UserAbilityAssessment $assessment): array => [
                 'id' => $assessment->id,
                 'status' => $assessment->status,
@@ -75,7 +85,8 @@ class AbilityAssessmentController extends Controller
                 'updated_at' => $assessment->updated_at?->toIso8601String(),
                 'error' => $assessment->error,
                 'result' => $assessment->result,
-                'input' => $assessment->input_snapshot,
+                'average' => $assessment->status === UserAbilityAssessment::DONE ? AbilityComparison::average(AbilityComparison::scores($assessment->result)) : null,
+                'input' => in_array($assessment->id, $withInput, true) ? $assessment->input_snapshot : null,
             ]);
 
         return [
@@ -84,6 +95,8 @@ class AbilityAssessmentController extends Controller
             'model' => $settings->model(),
             'running' => $assessments->contains('status', UserAbilityAssessment::PENDING),
             'items' => $assessments->values()->all(),
+            'total' => UserAbilityAssessment::query()->where('user_id', $user->id)->count(),
+            'comparison' => $finished->count() >= 2 ? $comparison->compare($finished[0], $finished[1]) : null,
             'preview' => $assessments->isEmpty() ? $builder->build($user) : null,
             'share' => self::share($user),
         ];

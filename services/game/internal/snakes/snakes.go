@@ -359,13 +359,14 @@ func (h *Hub) onLeave(r *room, seat int, now time.Time) {
 // Start begins (or restarts) the game. Only the host may start.
 func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 	return h.rooms.Start(uid, now, func(r *room) error {
-		grade := r.Seats[0].Claims.Grade
+		grade, level := r.Seats[0].Claims.Grade, points.Level(r.Seats[0].Claims.Level)
 		for _, s := range r.Seats {
 			grade = min(grade, s.Claims.Grade)
+			level = min(level, points.Level(s.Claims.Level))
 			s.Data = player{position: 1}
 		}
 		h.seed++
-		gen := questions.NewFor(GameKey, grade, h.seed).For(r.Subject, r.Humans()...)
+		gen := questions.NewFor(GameKey, grade, h.seed).For(r.Subject, r.Humans()...).AtLevel(level)
 		r.Game = game{gen: gen, grade: grade, subject: r.Subject, winner: -1, first: -1, minutes: r.Game.minutes, started: now, answer: r.AnswerTime(AnswerTime)}
 		beginTurn(r, now)
 		return nil
@@ -491,7 +492,7 @@ func judge(r *room, option int, now time.Time) {
 		p.wrong++
 	}
 	if g.question.FromBank && !s.Local {
-		p.answers = append(p.answers, questions.Answer{Key: g.question.Key, Correct: g.right})
+		p.answers = append(p.answers, questions.Answer{Key: g.question.Key, Correct: g.right, Choice: g.question.Original(option)})
 	}
 	g.step, g.stepAt = StepReveal, now
 	r.Touch(now)

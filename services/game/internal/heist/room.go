@@ -438,7 +438,7 @@ func (r *Room) start(c *Client, now time.Time) error {
 
 // prepare gives a player their own question stream at their own grade.
 func (r *Room) prepare(p *Player, now time.Time) {
-	p.gen = questions.NewFor(GameKey, p.Claims.Grade, r.rng.Uint64()).For(r.subject, p.ID())
+	p.gen = questions.NewFor(GameKey, p.Claims.Grade, r.rng.Uint64()).For(r.subject, p.ID()).AtLevel(p.Claims.Level)
 	r.ask(p, now)
 }
 
@@ -489,7 +489,7 @@ func (r *Room) answer(c *Client, questionID string, choice int, at, now time.Tim
 	q := p.question
 	right := choice == q.Answer
 	if q.FromBank {
-		p.answers = append(p.answers, questions.Answer{Key: q.Key, Correct: right})
+		p.answers = append(p.answers, questions.Answer{Key: q.Key, Correct: right, Choice: q.Original(choice)})
 	}
 	msg := Message{"t": "answer_result", "question_id": questionID, "correct": right, "choice": choice, "correct_index": q.Answer, "hint": q.Hint.Get(c.Locale())}
 	if right {

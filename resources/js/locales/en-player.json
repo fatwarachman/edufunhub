@@ -41,7 +41,7 @@
         "gradePlaceholder": "Choose grade",
         "gradeOption": "Grade {{grade}}",
         "gradeSave": "Save grade",
-        "gradeSaved": "Grade saved.",
+        "gradeSaved": "Grade and question level saved.",
         "gradeMissing": "Grade not set",
         "gradeBands": {
             "sd": "Primary",
@@ -81,7 +81,8 @@
         "shareWaRoom": "Share via WhatsApp",
         "shareWaGame": "Share game",
         "shareWaRoomText": "🎮 Let's play {{game}} together on EduFunHub!\nPIN Code: {{pin}}\nJoin link: {{url}}\nEduFunHub — Portal Edukasi Seru!",
-        "shareWaGameText": "🏆 Try {{game}} on EduFunHub!\nLink: {{url}}\nEduFunHub — Portal Edukasi Seru!"
+        "shareWaGameText": "🏆 Try {{game}} on EduFunHub!\nLink: {{url}}\nEduFunHub — Portal Edukasi Seru!",
+        "gradeAndLevel": "Grade & question level"
     },
     "flagQuest": {
         "title": "Flag Quest",
@@ -208,7 +209,7 @@
             "passed": "Challenge cleared!",
             "failed": "Not yet",
             "passedNote": "The gate is open. Keep going!",
-            "failedNote": "Take a short break and try again.",
+            "failedNote": "Progress at this station is saved. Take a short break, then continue from your last checkpoint.",
             "continue": "Continue",
             "back": "Back",
             "close": "Close",
@@ -223,7 +224,8 @@
             "openingQuestion": "Opening the question…",
             "answerToMove": "You rolled {{roll}}. Answer correctly to move {{roll}} squares!",
             "climbed": "Climbed a ladder from {{from}} to {{to}}!",
-            "slid": "Slid down a snake from {{from}} to {{to}}."
+            "slid": "Slid down a snake from {{from}} to {{to}}.",
+            "resumed": "Continuing from your last checkpoint, progress kept"
         },
         "complete": {
             "title": "Flag raised!",
@@ -352,7 +354,11 @@
         "feedback": "Send feedback",
         "ability": "Ability analysis",
         "registerFree": "Sign up free",
-        "profile": "Profile"
+        "profile": "Profile",
+        "friends": "Friends",
+        "social": "Social",
+        "account": "Account",
+        "withCount": "{{label}} ({{count}} new)"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -1361,17 +1367,17 @@
     },
     "floorDrop": {
         "title": "Floor Drop",
-        "tagline": "Trivia battle royale: answer right or your floor drops!",
+        "tagline": "Everyone stands on their own floor. Three wrong answers and yours breaks!",
         "chooseRole": "Choose your role",
         "hostTitle": "Host screen",
-        "hostBody": "For teachers or a classroom screen. Open a room, share the PIN and watch the floor drop.",
+        "hostBody": "For teachers or a classroom screen. Pick the subject, game length and player limit, share the PIN, then watch the floors break.",
         "playerTitle": "Player",
         "playerBody": "Join with the PIN from the host and answer on your phone or laptop.",
         "openHost": "Open host screen",
         "openPlayer": "Join as player",
         "switchRole": "Switch role",
         "createRoom": "Create room",
-        "rules": "Each round has 4 answer tiles. Wrong tiles drop and players who answered wrong or not at all are out. Time shrinks 10% every round. Last one standing wins!",
+        "rules": "Every player stands on their own floor and answers question after question until the game time runs out. Each wrong or missed answer cracks the floor (one life lost). Three mistakes break the floor and the player is out. Stay standing with the most correct answers to win!",
         "hostIntro": "You are the host. Players join from their own devices (2–100 players).",
         "playerIntro": "Hi {{name}}! Enter the PIN from the host screen to join.",
         "joined": "Players joined",
@@ -1387,15 +1393,15 @@
         "answered": "{{answered}}/{{alive}} answered",
         "secondsLeft": "{{seconds}}s",
         "locked": "Answers locked!",
-        "dropping": "The floor is dropping…",
+        "dropping": "Floors cracking…",
         "survivors": "{{count}} players still standing",
         "nextFaster": "Next round: {{seconds}} seconds",
-        "suddenDeath": "Everyone missed! Ranked by fastest answer.",
+        "suddenDeath": "Every floor broke! Ranking goes to the fastest answers.",
         "youSurvived": "You survived!",
         "youFell": "You dropped!",
         "reasons": {
-            "wrong": "Wrong answer",
-            "timeout": "Time ran out",
+            "wrong": "Three mistakes, floor broke",
+            "timeout": "Floor broke, time ran out",
             "disconnected": "Connection lost",
             "left": "Left the game"
         },
@@ -1426,7 +1432,16 @@
         "connectionLost": "Connection lost. Reconnect within 5 seconds to stay in…",
         "endGame": "End game",
         "endNow": "Yes, end now",
-        "endConfirm": "Players keep the points they earned."
+        "endConfirm": "Players keep the points they earned.",
+        "duration": "Game length",
+        "minutes": "{{count}} min",
+        "playerLimit": "Maximum players",
+        "gameLeft": "Game time left {{time}}",
+        "stageLabel": "Players' floors",
+        "livesLeft": "{{count}} of {{max}} lives left",
+        "yourFloor": "Your floor",
+        "youCracked": "Your floor cracked! {{count}} lives left.",
+        "nextQuestion": "Next question coming…"
     },
     "economyHeist": {
         "title": "Economy Heist",
@@ -2101,7 +2116,7 @@
             "progress": "Progress since the previous analysis",
             "more": "Show tips & details",
             "less": "Hide details",
-            "note": "This analysis is written by AI from your game results.",
+            "note": "This analysis is made by the EduFunHub team from your game results.",
             "shareBtn": "Share Analysis",
             "shareCopied": "Copied!",
             "shareTitle": "EduFunHub Analysis Result",
@@ -2125,7 +2140,20 @@
         "cardTitle": "Analysis result",
         "emptyTitle": "No analysis yet",
         "emptyBody": "Keep playing games on EduFunHub. Your ability analysis will appear here once the EduFunHub team creates it.",
-        "emptyCta": "Play games"
+        "emptyCta": "Play games",
+        "progress": {
+            "title": "Progress",
+            "empty": "This is your first analysis. Your progress will show once the EduFunHub team makes the next one.",
+            "average": "Average score",
+            "since": "compared with {{date}}",
+            "new": "New",
+            "notScored": "Not scored",
+            "same": "Same",
+            "gained": "New progress",
+            "history": "Analysis history",
+            "shown": "(shown)",
+            "historyNote": "The number on the right is the average score of all subjects in that EduFunHub analysis."
+        }
     },
     "feedback": {
         "title": "Send Feedback",
@@ -2236,7 +2264,9 @@
             "allGames": "All Games",
             "clickToView": "Click to view leaderboard",
             "modalClose": "Close",
-            "rank": "Rank"
+            "rank": "Rank",
+            "playersLabel": "Players with points",
+            "viewRanking": "View ranking"
         }
     },
     "finale": {
@@ -2328,5 +2358,76 @@
             "saved": "Password changed.",
             "submit": "Save password"
         }
+    },
+    "questionLevel": {
+        "label": "Question level",
+        "levels": {
+            "easy": "Easy",
+            "medium": "Medium",
+            "expert": "Expert"
+        },
+        "multiplier": "Points ×{{times}}",
+        "note": "Pick what fits your skill, not only your grade. Medium questions pay twice the points, expert questions three times. In shared games the lowest level at the table is used."
+    },
+    "friends": {
+        "title": "Friends",
+        "intro": "Add friends, see who is online, then invite them to play or chat.",
+        "tabs": {
+            "friends": "Friends",
+            "requests": "Requests",
+            "add": "Add friend"
+        },
+        "empty": {
+            "title": "No friends yet",
+            "body": "Find classmates or playmates by their name or nickname.",
+            "cta": "Find friends"
+        },
+        "onlineSummary": "{{online}} online out of {{total}} friends",
+        "filter": "Filter friends",
+        "filters": {
+            "all": "All",
+            "online": "Online"
+        },
+        "noneOnline": "No friends are online right now.",
+        "status": {
+            "online": "Online now",
+            "offline": "Offline",
+            "minutesAgo": "Last active {{count}} min ago",
+            "hoursAgo": "Last active {{count}} h ago",
+            "daysAgo": "Last active {{count}} days ago"
+        },
+        "actions": {
+            "chat": "Chat",
+            "remove": "Remove friend",
+            "removeConfirm": "Yes, remove",
+            "keep": "Cancel",
+            "accept": "Accept",
+            "decline": "Decline",
+            "cancel": "Cancel",
+            "add": "Add"
+        },
+        "incoming": "Incoming requests",
+        "outgoing": "Sent requests",
+        "noIncoming": "No incoming requests.",
+        "noOutgoing": "No requests waiting.",
+        "searchLabel": "Search players",
+        "searchPlaceholder": "Type a name or nickname…",
+        "searchHint": "At least 2 letters.",
+        "searchEmpty": "No players found.",
+        "relation": {
+            "friends": "Friends",
+            "sent": "Sent"
+        }
+    },
+    "friendNotice": {
+        "request": "wants to be your friend",
+        "accepted": "accepted your friend request",
+        "requestTitle": "Friend request",
+        "acceptedTitle": "Friends now!",
+        "accept": "Accept",
+        "decline": "Decline",
+        "view": "See friends",
+        "later": "Later",
+        "close": "Close"
     }
 }

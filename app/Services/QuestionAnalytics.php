@@ -2,10 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\GameHistory;
 use App\Models\Question;
 use App\Models\QuestionAnswer;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -14,6 +13,12 @@ use Illuminate\Support\Collection;
  */
 class QuestionAnalytics
 {
+    /** Fewer recorded choices than this give an "insufficient" understanding level. */
+    public const MIN_RECORDED_CHOICES = 10;
+
+    /** A single wrong option chosen by at least this share (%) signals a misconception. */
+    public const MISCONCEPTION_SHARE = 30;
+
     /**
      * @return array<string, mixed>
      */
@@ -26,6 +31,7 @@ class QuestionAnalytics
                 'question_answers.id',
                 'question_answers.game_key',
                 'question_answers.correct',
+                'question_answers.choice',
                 'question_answers.created_at',
                 'game_histories.user_id',
                 'game_histories.grade',
@@ -71,6 +77,74 @@ class QuestionAnalytics
                 'answered_at' => $a->created_at?->toIso8601String(),
             ])->all(),
             'siblings' => $this->siblings($question),
+            ...$this->choices($question, $answers),
+        ];
+    }
+
+    /**
+     * Answer distribution per original option and the understanding level
+     * derived from it (rule based, computed here).
+     *
+     * @param  Collection<int, QuestionAnswer>  $answers
+     * @return array{choices: list<array{index: int, text: ?string, text_en: ?string, is_correct: bool, count: int, percent: ?float}>, choice_totals: array{recorded: int, unrecorded: int}, understanding: array<string, mixed>}
+     */
+    private function choices(Question $question, Collection $answers): array
+    {
+        $options = $question->type === Question::TYPE_TRUE_FALSE
+            ? [['id' => null, 'en' => null], ['id' => null, 'en' => null]]
+            : array_values($question->options ?? []);
+        $recorded = $answers->filter(fn ($a): bool => $a->choice !== null && $a->choice < count($options));
+        $counts = $recorded->countBy(fn ($a): int => (int) $a->choice);
+        $total = $recorded->count();
+
+        $choices = collect($options)->map(fn (array $option, int $index): array => [
+            'index' => $index,
+            'text' => $option['id'] ?? null,
+            'text_en' => $option['en'] ?? null,
+            'is_correct' => $index === (int) $question->answer,
+            'count' => (int) $counts->get($index, 0),
+            'percent' => $this->percent((int) $counts->get($index, 0), $total),
+        ])->values()->all();
+
+        return [
+            'choices' => $choices,
+            'choice_totals' => ['recorded' => $total, 'unrecorded' => $answers->count() - $total],
+            'understanding' => $this->understanding($choices, $total),
+        ];
+    }
+
+    /**
+     * Understanding level: understood (>= 75% correct), misconception (one
+     * wrong option >= 30% or more popular than the correct one), partial
+     * (50-74%), not_understood (< 50%), insufficient (< 10 recorded).
+     *
+     * @param  list<array{index: int, is_correct: bool, count: int, percent: ?float}>  $choices
+     * @return array{level: string, reason: string, recorded: int, correct_rate: ?float, top_wrong: ?array{index: int, count: int, percent: ?float}, min_recorded: int}
+     */
+    private function understanding(array $choices, int $recorded): array
+    {
+        $correct = collect($choices)->firstWhere('is_correct', true);
+        $correctCount = $correct['count'] ?? 0;
+        $rate = $this->percent($correctCount, $recorded);
+        $wrong = collect($choices)->where('is_correct', false)->where('count', '>', 0)->sortByDesc('count')->first();
+        $topWrong = $wrong ? ['index' => $wrong['index'], 'count' => $wrong['count'], 'percent' => $wrong['percent']] : null;
+
+        [$level, $reason] = match (true) {
+            $recorded < self::MIN_RECORDED_CHOICES => ['insufficient', 'too_few_answers'],
+            $rate >= 75 => ['understood', 'mostly_correct'],
+            $topWrong !== null && $topWrong['count'] > $correctCount => ['misconception', 'wrong_beats_correct'],
+            $topWrong !== null && $topWrong['percent'] >= self::MISCONCEPTION_SHARE => ['misconception', 'dominant_wrong_option'],
+            $rate >= 50 => ['partial', 'mixed_results'],
+            default => ['not_understood', 'mostly_wrong'],
+        };
+
+        return [
+            'level' => $level,
+            'reason' => $reason,
+            'recorded' => $recorded,
+            'correct_rate' => $rate,
+            'top_wrong' => $level === 'insufficient' ? null : $topWrong,
+            'min_recorded' => self::MIN_RECORDED_CHOICES,
         ];
     }
 
@@ -86,7 +160,7 @@ class QuestionAnalytics
             return [];
         }
 
-        $people = \App\Models\User::query()
+        $people = User::query()
             ->withTrashed()
             ->with('playerProfile:id,user_id,nickname,grade,school_name')
             ->whereIn('id', $users->keys())

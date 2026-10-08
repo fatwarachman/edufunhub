@@ -22,6 +22,8 @@ type floorInbound struct {
 	Choice  *int   `json:"choice_index"`
 	Subject string `json:"subject"`
 	Locale  string `json:"locale"`
+	Minutes int    `json:"minutes"`
+	Limit   int    `json:"player_limit"`
 }
 
 // RunFloorDrop reports Floor Drop results. Rooms drive their own timers.
@@ -127,6 +129,8 @@ func (s *Server) serveFloorDrop(w http.ResponseWriter, r *http.Request) {
 			err = s.floor.Start(client)
 		case "set_subject":
 			err = s.floor.SetSubject(client, in.Subject)
+		case "set_settings":
+			err = s.floor.SetSettings(client, in.Minutes, in.Limit)
 		case "submit_answer":
 			if in.Choice == nil {
 				err = floordrop.ErrOption

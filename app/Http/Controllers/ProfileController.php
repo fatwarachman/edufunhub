@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateProfileAccountRequest;
 use App\Http\Requests\UpdateProfilePasswordRequest;
 use App\Models\PasswordHistory;
+use App\Models\Question;
 use App\Models\User;
 use App\Services\PlayerPortal;
 use Illuminate\Http\RedirectResponse;
@@ -44,6 +45,7 @@ class ProfileController extends Controller
             'player' => [
                 'nickname' => $profile?->nickname,
                 'grade' => $profile?->grade,
+                'question_level' => Question::normalizeLevel($profile?->question_level),
                 'birth_date' => $profile?->birth_date?->toDateString(),
                 'age' => $profile?->age,
                 'school_name' => $profile?->school_name,

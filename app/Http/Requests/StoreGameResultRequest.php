@@ -12,8 +12,9 @@ class StoreGameResultRequest extends FormRequest
     /**
      * Result shape per Go-refereed game: event id pattern, missions and the
      * highest point award the referee can produce. Caps mirror Go's
-     * points.Cap(n) = n questions x 100 (bonus max) + 100 (win max) + 50
-     * (participation max), plus each game's own fixed bonuses.
+     * points.Cap(n) = n questions x 300 (bonus max 100 at expert level x3)
+     * + 100 (win max) + 50 (participation max), plus each game's own fixed
+     * bonuses.
      *
      * Room games may also raise the seat and level limits of the match
      * summary (`max_players`, `max_level`; default 8 and 10).
@@ -21,21 +22,21 @@ class StoreGameResultRequest extends FormRequest
      * @var array<string, array{event_id: string, missions: list<string>, max_points: int, max_players?: int, max_level?: int}>
      */
     public const GAMES = [
-        'flag-quest' => ['event_id' => '/^fq-[0-9]+-[a-z]+-[0-9]+$/', 'missions' => ['lakeside', 'forest', 'summit'], 'max_points' => 3300],
-        'sky-quiz' => ['event_id' => '/^sq-[0-9]+-sky-[0-9]+$/', 'missions' => ['sky'], 'max_points' => 1190],
-        'quiz-duel' => ['event_id' => '/^qd-[0-9]+-duel-[0-9]+$/', 'missions' => ['duel'], 'max_points' => 650],
-        'knowledge-train' => ['event_id' => '/^kt-[0-9]+-train-[0-9]+$/', 'missions' => ['train'], 'max_points' => 1190],
-        'port-sorter' => ['event_id' => '/^ps-[0-9]+-sort-[0-9]+$/', 'missions' => ['sort'], 'max_points' => 3190],
-        'snakes-and-ladders' => ['event_id' => '/^sl-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 3250],
-        'crossword' => ['event_id' => '/^cw-[0-9]+-level-[0-9]+$/', 'missions' => ['level-1', 'level-2', 'level-3', 'level-4'], 'max_points' => 1415],
-        'market-math' => ['event_id' => '/^mm-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 950],
-        'number-garden' => ['event_id' => '/^ng-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 950],
-        'explore-indonesia' => ['event_id' => '/^ei-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 950],
-        'mini-lab' => ['event_id' => '/^ml-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 950],
-        'floor-drop' => ['event_id' => '/^fd-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 2150, 'max_players' => 100, 'max_level' => 20],
-        'economy-heist' => ['event_id' => '/^eh-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 4150, 'max_players' => 60],
-        'order-rush' => ['event_id' => '/^or-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 4150, 'max_players' => 60, 'max_level' => 20],
-        'turbo-trivia' => ['event_id' => '/^tt-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 1650, 'max_players' => 40, 'max_level' => 15],
+        'flag-quest' => ['event_id' => '/^fq-[0-9]+-[a-z]+-[0-9]+$/', 'missions' => ['lakeside', 'forest', 'summit'], 'max_points' => 9300],
+        'sky-quiz' => ['event_id' => '/^sq-[0-9]+-sky-[0-9]+$/', 'missions' => ['sky'], 'max_points' => 3190],
+        'quiz-duel' => ['event_id' => '/^qd-[0-9]+-duel-[0-9]+$/', 'missions' => ['duel'], 'max_points' => 1650],
+        'knowledge-train' => ['event_id' => '/^kt-[0-9]+-train-[0-9]+$/', 'missions' => ['train'], 'max_points' => 3190],
+        'port-sorter' => ['event_id' => '/^ps-[0-9]+-sort-[0-9]+$/', 'missions' => ['sort'], 'max_points' => 9190],
+        'snakes-and-ladders' => ['event_id' => '/^sl-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 9250],
+        'crossword' => ['event_id' => '/^cw-[0-9]+-level-[0-9]+$/', 'missions' => ['level-1', 'level-2', 'level-3', 'level-4'], 'max_points' => 3615],
+        'market-math' => ['event_id' => '/^mm-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 2550],
+        'number-garden' => ['event_id' => '/^ng-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 2550],
+        'explore-indonesia' => ['event_id' => '/^ei-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 2550],
+        'mini-lab' => ['event_id' => '/^ml-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 2550],
+        'floor-drop' => ['event_id' => '/^fd-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 18150, 'max_players' => 100, 'max_level' => 60],
+        'economy-heist' => ['event_id' => '/^eh-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 12150, 'max_players' => 60],
+        'order-rush' => ['event_id' => '/^or-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 12150, 'max_players' => 60, 'max_level' => 20],
+        'turbo-trivia' => ['event_id' => '/^tt-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 4650, 'max_players' => 40, 'max_level' => 15],
     ];
 
     public function authorize(): bool
@@ -67,6 +68,7 @@ class StoreGameResultRequest extends FormRequest
             'answers' => ['sometimes', 'nullable', 'array', 'max:100'],
             'answers.*.key' => ['required', 'string', 'max:40'],
             'answers.*.correct' => ['required', 'boolean'],
+            'answers.*.choice' => ['sometimes', 'nullable', 'integer', 'between:0,5'],
             'match' => ['sometimes', 'nullable', 'array'],
             'match.key' => ['required_with:match', 'string', 'max:80'],
             'match.mode' => ['required_with:match', 'string', 'in:'.implode(',', GameMatch::MODES)],
