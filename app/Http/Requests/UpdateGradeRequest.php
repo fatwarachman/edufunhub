@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Models\PlayerProfile;
+use App\Models\Question;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateGradeRequest extends FormRequest
 {
@@ -17,6 +19,7 @@ class UpdateGradeRequest extends FormRequest
     {
         return [
             'grade' => ['required', 'integer', 'between:'.PlayerProfile::MIN_GRADE.','.PlayerProfile::MAX_GRADE],
+            'question_level' => ['sometimes', 'integer', Rule::in(array_keys(Question::LEVELS))],
         ];
     }
 
@@ -27,6 +30,8 @@ class UpdateGradeRequest extends FormRequest
             'grade.required' => __('character.grade_invalid'),
             'grade.integer' => __('character.grade_invalid'),
             'grade.between' => __('character.grade_invalid'),
+            'question_level.integer' => __('character.level_invalid'),
+            'question_level.in' => __('character.level_invalid'),
         ];
     }
 }

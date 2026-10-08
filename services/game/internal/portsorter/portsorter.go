@@ -360,7 +360,7 @@ func (s *Session) finish(now time.Time) *Result {
 		GameKey:     GameKey,
 		Mission:     Mission,
 		Grade:       s.Claims.Grade,
-		Points:      Award(s.correct, s.round, s.lives),
+		Points:      AwardAt(s.correct, s.round, s.lives, s.Claims.Level),
 		Correct:     s.correct,
 		Wrong:       s.wrong,
 		Seconds:     int(now.Sub(s.started).Seconds()),
@@ -374,8 +374,12 @@ func Passed(correct int) bool { return correct*100 > PassPercent*Packets }
 
 // Award converts a run into portal points: every sorted packet is worth one
 // normal question, plus finish and flawless bonuses.
-func Award(correct, rounds, lives int) int {
-	achieved := correct * points.Question(0)
+func Award(correct, rounds, lives int) int { return AwardAt(correct, rounds, lives, points.LevelEasy) }
+
+// AwardAt is Award for a player's question level (medium x2, expert x3 per
+// sorted packet).
+func AwardAt(correct, rounds, lives, level int) int {
+	achieved := correct * points.Worth(0, level)
 	if rounds >= Packets && lives > 0 {
 		achieved += PointsFinish
 		if correct == Packets {

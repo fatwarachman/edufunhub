@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Question;
 use App\Models\User;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -20,7 +21,7 @@ class GameServiceSigner
     }
 
     /**
-     * @param  array{name: string, grade: int, color: string, accessory: string, character?: array<string, mixed>}  $player
+     * @param  array{name: string, grade: int, level?: int, color: string, accessory: string, character?: array<string, mixed>}  $player
      */
     public function issueToken(User $user, string $game, array $player): string
     {
@@ -28,6 +29,7 @@ class GameServiceSigner
             'sub' => $user->id,
             'name' => $player['name'],
             'grade' => $player['grade'],
+            'level' => Question::normalizeLevel($player['level'] ?? $user->playerProfile?->question_level),
             'color' => $player['color'],
             'accessory' => $player['accessory'],
             'character' => $player['character'] ?? null,

@@ -2,6 +2,7 @@ import { AiBadge } from '@/components/admin/admin-kit';
 import {
     BAND_LABELS,
     EmptyState,
+    QUESTION_LEVEL_LABELS,
     fieldClass,
     formatNumber,
     formatPercent,
@@ -32,6 +33,7 @@ import {
     CircleCheck,
     Coins,
     Gamepad2,
+    Gauge,
     GraduationCap,
     Landmark,
     Languages,
@@ -68,6 +70,7 @@ interface QuestionRow {
     key: string;
     type: 'choice' | 'true_false';
     band: number;
+    level?: number;
     subject: string;
     prompt_id: string;
     prompt_en: string | null;
@@ -96,6 +99,7 @@ interface Filters {
     search?: string;
     game?: string;
     band?: string;
+    level?: string;
     subject?: string;
     type?: string;
     status?: string;
@@ -591,6 +595,29 @@ function QuestionList({
                 ))}
             </div>
 
+            <div
+                className="flex flex-wrap items-center gap-2"
+                role="group"
+                aria-label={tr('Question level')}
+                data-testid="questions-level-filter"
+            >
+                <GradeTab
+                    active={!filters.level}
+                    onClick={() => apply({ level: undefined })}
+                >
+                    {tr('All levels')}
+                </GradeTab>
+                {[1, 2, 3].map((level) => (
+                    <GradeTab
+                        key={level}
+                        active={filters.level === String(level)}
+                        onClick={() => apply({ level: String(level) })}
+                    >
+                        {tr(QUESTION_LEVEL_LABELS[level])} ×{level}
+                    </GradeTab>
+                ))}
+            </div>
+
             {sourceCounts && (
                 <div className="flex min-w-0 flex-col gap-1.5">
                     <span
@@ -908,6 +935,9 @@ function QuestionList({
                                             <SourceBadge
                                                 source={question.source}
                                                 author={question.author}
+                                            />
+                                            <QuestionLevelBadge
+                                                level={question.level ?? 1}
                                             />
                                             {(question.points ?? 0) > 0 && (
                                                 <Badge tone="amber">
@@ -1381,6 +1411,32 @@ function Badge({
             )}
         >
             {children}
+        </span>
+    );
+}
+
+/** Coloured question level chip (easy / medium / expert, with its points multiplier). */
+function QuestionLevelBadge({ level }: { level: number }) {
+    const value = [1, 2, 3].includes(level) ? level : 1;
+
+    return (
+        <span
+            className={cn(
+                'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-semibold',
+                value === 1 &&
+                    'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300',
+                value === 2 &&
+                    'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-300',
+                value === 3 &&
+                    'border-rose-300 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-300',
+            )}
+            data-testid="question-level-badge"
+            data-level={value}
+            title={tr('Question level')}
+        >
+            <Gauge className="size-3" aria-hidden="true" />
+            {tr(QUESTION_LEVEL_LABELS[value])}
+            <span className="tabular-nums opacity-80">×{value}</span>
         </span>
     );
 }

@@ -15,7 +15,7 @@ class PlayerProfile extends Model
     use HasFactory;
 
     /** @var list<string> */
-    protected $fillable = ['color', 'accessory', 'nickname', 'grade', 'birth_date', 'school_name', 'school_city', 'gender', 'skin', 'hair_color', 'equipped'];
+    protected $fillable = ['color', 'accessory', 'nickname', 'grade', 'question_level', 'birth_date', 'school_name', 'school_city', 'gender', 'skin', 'hair_color', 'equipped'];
 
     public const COLORS = ['amber', 'coral', 'teal', 'violet'];
 
@@ -44,7 +44,7 @@ class PlayerProfile extends Model
     protected $appends = ['age'];
 
     /** @var array<string, mixed> */
-    protected $attributes = ['color' => 'amber', 'accessory' => 'none', 'gender' => 'boy', 'skin' => 'light', 'hair_color' => 'brown'];
+    protected $attributes = ['question_level' => 1, 'color' => 'amber', 'accessory' => 'none', 'gender' => 'boy', 'skin' => 'light', 'hair_color' => 'brown'];
 
     /**
      * Drawable character: base look, equipped shop items and nickname.
@@ -76,7 +76,7 @@ class PlayerProfile extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['grade' => 'integer', 'birth_date' => 'immutable_date:Y-m-d', 'equipped' => 'array'];
+        return ['grade' => 'integer', 'question_level' => 'integer', 'birth_date' => 'immutable_date:Y-m-d', 'equipped' => 'array'];
     }
 
     /** @return BelongsTo<User, $this> */

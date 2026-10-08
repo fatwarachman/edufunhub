@@ -61,6 +61,7 @@ class QuestionGenerationController extends Controller
                 'model' => (string) $settings->model(),
                 'subjects' => array_values($data['subjects']),
                 'grades' => array_values(array_map('intval', $data['grades'])),
+                'level' => Question::normalizeLevel($data['level'] ?? Question::LEVEL_EASY),
                 'per_combination' => $data['per_combination'],
                 'games' => array_values($data['games']),
                 'activate' => $data['activate'],

@@ -34,6 +34,7 @@ class GenerateQuestionsRequest extends FormRequest
             'grades' => ['required', 'array', 'min:1'],
             'grades.*' => ['required', 'integer', 'distinct', Rule::in(Question::GRADES)],
             'per_combination' => ['required', 'integer', 'between:1,'.QuestionGeneration::MAX_PER_COMBINATION],
+            'level' => ['sometimes', 'integer', Rule::in(array_keys(Question::LEVELS))],
             'games' => ['required', 'array', 'min:1'],
             'games.*' => ['required', 'distinct', Rule::in(Question::GAMES)],
             'activate' => ['boolean'],

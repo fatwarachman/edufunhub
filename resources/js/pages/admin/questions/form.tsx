@@ -1,5 +1,6 @@
 import {
     BAND_LABELS,
+    QUESTION_LEVEL_LABELS,
     fieldClass,
     formatNumber,
     formatPercent,
@@ -25,6 +26,7 @@ interface QuestionData {
     key: string;
     type: 'choice' | 'true_false';
     band: number;
+    level: number;
     subject: string;
     prompt_id: string;
     prompt_en: string | null;
@@ -46,6 +48,7 @@ interface FormProps {
     choiceOnlyGames: string[];
     subjects: string[];
     bands: { value: number; min: number; max: number }[];
+    levels: { value: number; multiplier: number }[];
     perCorrect: number;
     maxPoints: number;
 }
@@ -61,6 +64,7 @@ export default function QuestionForm({
     choiceOnlyGames,
     subjects,
     bands,
+    levels,
     perCorrect,
     maxPoints,
 }: FormProps) {
@@ -70,6 +74,7 @@ export default function QuestionForm({
     const form = useForm({
         type: question?.type ?? 'choice',
         band: question?.band ?? 0,
+        level: question?.level ?? 1,
         subject: question?.subject ?? defaultSubject ?? subjects[0],
         prompt_id: question?.prompt_id ?? '',
         prompt_en: question?.prompt_en ?? '',
@@ -190,6 +195,10 @@ export default function QuestionForm({
                                 {subjectLabel(data.subject)}
                                 {' · '}
                                 {tr(BAND_LABELS[data.band])}
+                                {' · '}
+                                {tr(
+                                    QUESTION_LEVEL_LABELS[data.level] ?? 'Easy',
+                                )}
                             </span>
                         </div>
                         {editing && (
@@ -221,7 +230,7 @@ export default function QuestionForm({
                         'Which players and games receive this question.',
                     )}
                 >
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <Field label={tr('Question type')} error={errors.type}>
                             <div
                                 className="inline-flex rounded-lg border border-input p-1"
@@ -265,6 +274,31 @@ export default function QuestionForm({
                                 {bands.map((band) => (
                                     <option key={band.value} value={band.value}>
                                         {tr(BAND_LABELS[band.value])}
+                                    </option>
+                                ))}
+                            </select>
+                        </Field>
+                        <Field
+                            label={tr('Question level')}
+                            htmlFor="level"
+                            error={errorFor('level')}
+                        >
+                            <select
+                                id="level"
+                                value={data.level}
+                                onChange={(e) =>
+                                    setData('level', Number(e.target.value))
+                                }
+                                className={cn(fieldClass, 'w-full')}
+                                data-testid="question-level"
+                            >
+                                {levels.map((level) => (
+                                    <option
+                                        key={level.value}
+                                        value={level.value}
+                                    >
+                                        {tr(QUESTION_LEVEL_LABELS[level.value])}{' '}
+                                        (×{level.multiplier})
                                     </option>
                                 ))}
                             </select>

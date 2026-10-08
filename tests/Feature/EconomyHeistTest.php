@@ -175,7 +175,7 @@ it('rejects invalid economy heist results', function (array $override): void {
 
     postHeistResult(heistResult($user, $override))->assertUnprocessable();
 })->with([
-    'points above cap' => [['points' => 4151]],
+    'points above cap' => [['points' => 12151]],
     'negative points' => [['points' => -1]],
     'wrong event id' => [['event_id' => 'eh-1-duel-1']],
     'floor drop prefix' => [['event_id' => 'fd-1-room-1']],

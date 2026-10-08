@@ -150,7 +150,7 @@ test('duplicate or tampered results never change points', function (): void {
 
     reportPortalResult($this, $user, ['event_id' => $eventId, 'points' => 90])->assertCreated();
     reportPortalResult($this, $user, ['event_id' => $eventId, 'points' => 90])->assertOk();
-    reportPortalResult($this, $user, ['points' => 5000])->assertUnprocessable();
+    reportPortalResult($this, $user, ['points' => 9301])->assertUnprocessable();
 
     expect((int) $user->pointLedgers()->sum('points'))->toBe(90);
     $this->assertDatabaseCount('game_histories', 1);

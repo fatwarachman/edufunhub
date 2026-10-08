@@ -5,21 +5,21 @@ import "testing"
 // Laravel's StoreGameResultRequest::GAMES uses these caps; keep them equal.
 func TestCapsMatchLaravel(t *testing.T) {
 	cases := map[string][2]int{
-		"flag-quest":         {3*40 + 30 + Cap(30), 3300},
-		"sky-quiz":           {Cap(10) + 40, 1190},
-		"quiz-duel":          {Cap(5), 650},
-		"knowledge-train":    {Cap(10) + 40, 1190},
-		"snakes-and-ladders": {Cap(30) + 100, 3250},
-		"crossword":          {Cap(11) + 5*11*3, 1415},
-		"market-math":        {Cap(8), 950},
-		"number-garden":      {Cap(8), 950},
-		"explore-indonesia":  {Cap(8), 950},
-		"mini-lab":           {Cap(8), 950},
-		"floor-drop":         {Cap(20), 2150},
-		"economy-heist":      {Cap(40), 4150},
-		"order-rush":         {Cap(40), 4150},
-		"port-sorter":        {Cap(30) + 40, 3190},
-		"turbo-trivia":       {Cap(15), 1650},
+		"flag-quest":         {3*40 + 30 + Cap(30), 9300},
+		"sky-quiz":           {Cap(10) + 40, 3190},
+		"quiz-duel":          {Cap(5), 1650},
+		"knowledge-train":    {Cap(10) + 40, 3190},
+		"snakes-and-ladders": {Cap(30) + 100, 9250},
+		"crossword":          {Cap(11) + 5*11*3, 3615},
+		"market-math":        {Cap(8), 2550},
+		"number-garden":      {Cap(8), 2550},
+		"explore-indonesia":  {Cap(8), 2550},
+		"mini-lab":           {Cap(8), 2550},
+		"floor-drop":         {Cap(60), 18150},
+		"economy-heist":      {Cap(40), 12150},
+		"order-rush":         {Cap(40), 12150},
+		"port-sorter":        {Cap(30) + 40, 9190},
+		"turbo-trivia":       {Cap(15), 4650},
 	}
 	for game, c := range cases {
 		if c[0] != c[1] {

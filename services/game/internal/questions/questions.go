@@ -37,10 +37,49 @@ type Question struct {
 	// Points is what a correct answer earns (admin bonus questions are worth
 	// more; 0 means the standard per-correct value).
 	Points int
+	// Level is the difficulty (1 easy, 2 medium, 3 expert); it multiplies
+	// the points of a correct answer.
+	Level int
+	// Order maps each displayed option index to its index in the original
+	// bank item (filled by shuffle and Trim; nil means identity).
+	Order []int
 }
 
-// Worth returns the portal points of a correct answer to q.
-func (q Question) Worth() int { return points.Question(q.Points) }
+// Original returns the original bank option index of the displayed option
+// the player picked, or nil when it cannot be attributed (generated math,
+// out of range).
+func (q Question) Original(displayed int) *int {
+	if !q.FromBank || displayed < 0 || displayed >= len(q.Options) {
+		return nil
+	}
+	i := displayed
+	if displayed < len(q.Order) {
+		i = q.Order[displayed]
+	}
+	return &i
+}
+
+// Picked is Original for an answered round; nil when the player did not answer.
+func (q Question) Picked(answered bool, displayed int) *int {
+	if !answered {
+		return nil
+	}
+	return q.Original(displayed)
+}
+
+// TruthChoice returns the original option index of a true/false pick
+// (0 = false, 1 = true), matching the bank's answer encoding.
+func TruthChoice(value bool) *int {
+	i := 0
+	if value {
+		i = 1
+	}
+	return &i
+}
+
+// Worth returns the portal points of a correct answer to q: its base value
+// times its level (easy x1, medium x2, expert x3).
+func (q Question) Worth() int { return points.Worth(q.Points, q.Level) }
 
 // Band maps a school grade (0 = kindergarten, 1-12) to a band index 0..3.
 func Band(grade int) int {
@@ -181,7 +220,10 @@ type Generator struct {
 	Subject string
 	// Players whose history steers the order: questions they have not seen
 	// (or saw longest ago) come first, so every game starts differently.
-	Players  []int64
+	Players []int64
+	// Level is the chosen difficulty (1 easy, 2 medium, 3 expert). Bank
+	// questions of that level come first; generated arithmetic gets harder.
+	Level    int
 	Rand     *rand.Rand
 	used     map[string]bool
 	fellBack bool
@@ -196,6 +238,14 @@ func New(grade int, seed uint64) *Generator {
 func NewFor(game string, grade int, seed uint64) *Generator {
 	return &Generator{Grade: grade, Game: game, Rand: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), used: map[string]bool{}}
 }
+
+// AtLevel sets the difficulty (1 easy, 2 medium, 3 expert).
+func (g *Generator) AtLevel(level int) *Generator {
+	g.Level = points.Level(level)
+	return g
+}
+
+func (g *Generator) level() int { return points.Level(g.Level) }
 
 // For narrows the generator to a subject and the players at the table.
 func (g *Generator) For(subject string, players ...int64) *Generator {
@@ -221,7 +271,7 @@ func (g *Generator) items(kind string) []Item {
 	}
 	for _, pool := range pools {
 		if out := bySubject(pool, g.Subject); len(out) > 0 {
-			return out
+			return g.byLevel(out)
 		}
 	}
 	if g.Subject == "" || g.Subject == "math" {
@@ -230,10 +280,29 @@ func (g *Generator) items(kind string) []Item {
 	g.fellBack = true
 	for _, pool := range pools {
 		if len(pool) > 0 {
-			return pool
+			return g.byLevel(pool)
 		}
 	}
 	return nil
+}
+
+// byLevel keeps the items of the generator's level. When the pool has none
+// of that level, the nearest level is used (questions keep their own level,
+// so the points always match the question actually asked).
+func (g *Generator) byLevel(items []Item) []Item {
+	want := g.level()
+	for _, dist := range []int{0, 1, 2} {
+		out := make([]Item, 0, len(items))
+		for _, it := range items {
+			if d := points.Level(it.Level) - want; d == dist || d == -dist {
+				out = append(out, it)
+			}
+		}
+		if len(out) > 0 {
+			return out
+		}
+	}
+	return items
 }
 
 // bySubject keeps the items of one subject ("" keeps every item).
@@ -310,6 +379,9 @@ func (g *Generator) BankChoice(subjects ...string) (Question, bool) {
 			items = append(items, it)
 		}
 	}
+	if len(items) > 0 {
+		items = g.byLevel(items)
+	}
 	best, bestAge, found := Item{}, int64(0), false
 	for _, i := range g.Rand.Perm(len(items)) {
 		it := items[i]
@@ -329,7 +401,7 @@ func (g *Generator) BankChoice(subjects ...string) (Question, bool) {
 	}
 	g.used[best.Key] = true
 	History.Mark(g.Players, best.Key)
-	q := Question{Key: best.Key, Subject: best.Subject, Prompt: best.Prompt, Hint: best.Hint, Options: append([]Text(nil), best.Options...), Answer: best.Answer, FromBank: true, Points: best.Points}
+	q := Question{Key: best.Key, Subject: best.Subject, Prompt: best.Prompt, Hint: best.Hint, Options: append([]Text(nil), best.Options...), Answer: best.Answer, FromBank: true, Points: best.Points, Level: points.Level(best.Level)}
 	g.shuffle(&q)
 	return q, true
 }
@@ -346,7 +418,7 @@ func containsString(list []string, s string) bool {
 // Choice returns a multiple choice question: bank question or generated arithmetic.
 func (g *Generator) Choice() Question {
 	if it, ok := g.pick(g.items(TypeChoice)); ok {
-		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true, Points: it.Points}
+		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level)}
 		g.shuffle(&q)
 		return q
 	}
@@ -368,7 +440,7 @@ func (g *Generator) Choice() Question {
 			options = append(options, cand)
 		}
 	}
-	q := Question{Key: fmt.Sprintf("math-%d%s%d", a, op, b), Subject: "math", Prompt: same(fmt.Sprintf("%d %s %d = ?", a, op, b)), Answer: 0}
+	q := Question{Key: fmt.Sprintf("math-%d%s%d", a, op, b), Subject: "math", Prompt: same(fmt.Sprintf("%d %s %d = ?", a, op, b)), Answer: 0, Level: g.level()}
 	for _, o := range options {
 		q.Options = append(q.Options, same(fmt.Sprint(o)))
 	}
@@ -380,30 +452,32 @@ func (g *Generator) Choice() Question {
 // TrueFalse returns a statement question.
 func (g *Generator) TrueFalse() Question {
 	if it, ok := g.pick(g.items(TypeTrueFalse)); ok {
-		return Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Answer: it.Answer, FromBank: true, Points: it.Points}
+		return Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level)}
 	}
 	a, b, op, ans := g.arithmetic()
 	shown, truth := ans, 1
 	if g.Rand.IntN(2) == 0 {
 		shown, truth = ans+1+g.Rand.IntN(3), 0
 	}
-	return Question{Key: fmt.Sprintf("tfm-%d%s%d", a, op, b), Subject: "math", Prompt: same(fmt.Sprintf("%d %s %d = %d", a, op, b, shown)), Answer: truth}
+	return Question{Key: fmt.Sprintf("tfm-%d%s%d", a, op, b), Subject: "math", Prompt: same(fmt.Sprintf("%d %s %d = %d", a, op, b, shown)), Answer: truth, Level: g.level()}
 }
 
 // Arithmetic returns an open numeric question for the math sprint.
 func (g *Generator) Arithmetic() Question {
 	a, b, op, ans := g.arithmetic()
-	return Question{Key: "sprint", Subject: "math", Prompt: same(fmt.Sprintf("%d %s %d = ?", a, op, b)), Answer: ans}
+	return Question{Key: "sprint", Subject: "math", Prompt: same(fmt.Sprintf("%d %s %d = ?", a, op, b)), Answer: ans, Level: g.level()}
 }
 
-func (g *Generator) bank() int { return Band(g.Grade) }
+// bank is the arithmetic band: the grade's band, one band harder for
+// medium and two for expert (capped at the highest band).
+func (g *Generator) bank() int { return min(3, Band(g.Grade)+g.level()-1) }
 
 func (g *Generator) arithmetic() (int, int, string, int) {
 	r := g.Rand
 	switch g.bank() {
 	case 0:
 		a, b := 1+r.IntN(20), 1+r.IntN(10)
-		if r.IntN(2) == 0 || g.Grade == 1 {
+		if r.IntN(2) == 0 || (g.Grade == 1 && g.level() == points.LevelEasy) {
 			return a, b, "+", a + b
 		}
 		if a < b {
@@ -454,14 +528,34 @@ func (g *Generator) arithmetic() (int, int, string, int) {
 }
 
 func (g *Generator) shuffle(q *Question) {
-	correct := q.Options[q.Answer]
-	g.Rand.Shuffle(len(q.Options), func(i, j int) { q.Options[i], q.Options[j] = q.Options[j], q.Options[i] })
-	for i, o := range q.Options {
-		if o == correct {
+	order := q.origins()
+	g.Rand.Shuffle(len(q.Options), func(i, j int) {
+		q.Options[i], q.Options[j] = q.Options[j], q.Options[i]
+		order[i], order[j] = order[j], order[i]
+	})
+	answer := q.Answer
+	if q.Order != nil {
+		answer = q.Order[q.Answer]
+	}
+	q.Order = order
+	for i, o := range order {
+		if o == answer {
 			q.Answer = i
 			return
 		}
 	}
+}
+
+// origins returns a copy of the displayed->original mapping (identity when unset).
+func (q Question) origins() []int {
+	order := make([]int, len(q.Options))
+	for i := range order {
+		order[i] = i
+		if i < len(q.Order) {
+			order[i] = q.Order[i]
+		}
+	}
+	return order
 }
 
 // Trim keeps the correct answer and up to n-1 random distractors, shuffled.
@@ -479,10 +573,13 @@ func Trim(q Question, n int, r *rand.Rand) Question {
 		}
 	}
 	r.Shuffle(len(keep), func(a, b int) { keep[a], keep[b] = keep[b], keep[a] })
+	origins := q.origins()
 	out := q
 	out.Options = make([]Text, 0, n)
+	out.Order = make([]int, 0, n)
 	for idx, i := range keep {
 		out.Options = append(out.Options, q.Options[i])
+		out.Order = append(out.Order, origins[i])
 		if i == q.Answer {
 			out.Answer = idx
 		}

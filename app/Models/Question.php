@@ -43,6 +43,16 @@ class Question extends Model
     /** Grade band labels (band index => grade range). */
     public const BANDS = [0 => [1, 3], 1 => [4, 6], 2 => [7, 9], 3 => [10, 12]];
 
+    /** Question levels within a grade: easy, medium, expert. */
+    public const LEVEL_EASY = 1;
+
+    public const LEVEL_MEDIUM = 2;
+
+    public const LEVEL_EXPERT = 3;
+
+    /** Level => points multiplier (expert pays three times the normal value). */
+    public const LEVELS = [self::LEVEL_EASY => 1, self::LEVEL_MEDIUM => 2, self::LEVEL_EXPERT => 3];
+
     /** Grade 0 is kindergarten (TK); 1-12 are school grades. */
     public const KINDERGARTEN = 0;
 
@@ -53,7 +63,7 @@ class Question extends Model
 
     /** @var list<string> */
     protected $fillable = [
-        'key', 'type', 'band', 'grades', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer',
+        'key', 'type', 'band', 'grades', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer',
         'hint_id', 'hint_en', 'games', 'is_active', 'source', 'created_by', 'updated_by', 'points', 'generation_id',
     ];
 
@@ -62,6 +72,7 @@ class Question extends Model
     {
         return [
             'band' => 'integer',
+            'level' => 'integer',
             'answer' => 'integer',
             'points' => 'integer',
             'options' => 'array',
@@ -165,7 +176,16 @@ class Question extends Model
             'hint' => ['id' => $this->hint_id ?? '', 'en' => $this->hint_en ?? ''],
             'games' => array_values($this->games ?? []),
             'points' => $this->points ?? 0,
+            'level' => self::normalizeLevel($this->level),
         ];
+    }
+
+    /** Clamps a level to 1..3 (unknown values are easy). */
+    public static function normalizeLevel(mixed $level): int
+    {
+        $level = (int) $level;
+
+        return array_key_exists($level, self::LEVELS) ? $level : self::LEVEL_EASY;
     }
 
     /** Whether the AI generator wrote this question. */
@@ -174,9 +194,9 @@ class Question extends Model
         return $this->source === self::SOURCE_AI;
     }
 
-    /** What a correct answer earns: the bonus value or the standard rule. */
+    /** What a correct answer earns: the bonus value or the standard rule, times the level multiplier. */
     public function worth(): int
     {
-        return $this->points ?: PointRules::current()['per_correct'];
+        return ($this->points ?: PointRules::current()['per_correct']) * self::LEVELS[self::normalizeLevel($this->level)];
     }
 }

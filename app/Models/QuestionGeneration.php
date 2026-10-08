@@ -20,7 +20,7 @@ class QuestionGeneration extends Model
     public const BATCH = 5;
 
     protected $fillable = [
-        'requested_by', 'model', 'subjects', 'grades', 'per_combination', 'games', 'activate',
+        'requested_by', 'model', 'subjects', 'grades', 'level', 'per_combination', 'games', 'activate',
         'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error', 'cancelled_at', 'finished_at',
     ];
 
@@ -33,6 +33,7 @@ class QuestionGeneration extends Model
             'games' => 'array',
             'activate' => 'boolean',
             'per_combination' => 'integer',
+            'level' => 'integer',
             'total_jobs' => 'integer',
             'done_jobs' => 'integer',
             'created_count' => 'integer',
@@ -118,7 +119,7 @@ class QuestionGeneration extends Model
     public function toProgressPayload(): array
     {
         return [
-            ...$this->only(['id', 'model', 'subjects', 'grades', 'per_combination', 'activate', 'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error']),
+            ...$this->only(['id', 'model', 'subjects', 'grades', 'level', 'per_combination', 'activate', 'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error']),
             'cancelled_at' => $this->cancelled_at?->toIso8601String(),
             'requested_by' => $this->requester?->name,
             'created_at' => $this->created_at?->toIso8601String(),

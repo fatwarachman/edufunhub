@@ -10,6 +10,7 @@ import {
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { gradeLabel, hasGrade } from '@/lib/grade';
+import { questionLevelKey } from '@/lib/question-levels';
 import { Link, useForm } from '@inertiajs/react';
 import {
     CalendarDays,
@@ -44,6 +45,7 @@ interface ProfileProps {
     player: PlayerDetails & {
         nickname: string | null;
         grade: number | null;
+        question_level: number;
         age: number | null;
         character: CharacterData | null;
     };
@@ -175,6 +177,17 @@ export default function Profile({
                                 {hasGrade(player.grade)
                                     ? gradeLabel(t, player.grade as number)
                                     : '—'}
+                            </InfoRow>
+                            <InfoRow label={t('questionLevel.label')}>
+                                <Link
+                                    href="/dashboard#grade"
+                                    className="link"
+                                    data-testid="profile-level"
+                                >
+                                    {t(
+                                        `questionLevel.levels.${questionLevelKey(player.question_level)}`,
+                                    )}
+                                </Link>
                             </InfoRow>
                             <InfoRow label={t('profile.info.age')}>
                                 {player.age !== null

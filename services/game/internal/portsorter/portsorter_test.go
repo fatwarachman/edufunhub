@@ -301,7 +301,7 @@ func TestParseReadsTheLaravelPayload(t *testing.T) {
 }
 
 func TestMaxPointsMatchesLaravelCap(t *testing.T) {
-	if MaxPoints != 3190 {
-		t.Fatalf("MaxPoints %d, StoreGameResultRequest expects 3190", MaxPoints)
+	if MaxPoints != 9190 {
+		t.Fatalf("MaxPoints %d, StoreGameResultRequest expects 9190", MaxPoints)
 	}
 }

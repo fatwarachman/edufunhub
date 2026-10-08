@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
+use App\Models\Question;
 use App\Services\CharacterShop;
 use App\Services\PlayerAbility;
 use App\Services\PlayerBadges;
@@ -27,6 +28,7 @@ class UserDashboardController extends Controller
             'character' => $profile->character(),
             'vault' => $shop->vault($user, $user->locale === 'en' ? 'en' : 'id'),
             'grade' => $profile->grade,
+            'questionLevel' => Question::normalizeLevel($profile->question_level),
             'playerDetails' => [
                 'birth_date' => $profile->birth_date?->toDateString(),
                 'school_name' => $profile->school_name,
