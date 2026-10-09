@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Models\GameAccess;
 use App\Models\GameHistory;
 use App\Models\ImpersonationLog;
 use App\Models\Module;
@@ -62,6 +63,20 @@ class UserController extends Controller
         $users = $query->paginate(20)->withQueryString();
         $earned = $badges->earnedFor($users->getCollection()->pluck('id')->all());
         $users->getCollection()->each(fn (User $user) => $user->setAttribute('badges', $earned[$user->id] ?? []));
+
+        // When viewing online users, attach the game they last opened (within the online window).
+        if ($request->activity === 'online') {
+            $onlineThreshold = now()->subMinutes(User::ONLINE_MINUTES);
+            $recentGames = GameAccess::query()
+                ->select('user_id', 'game_key', 'accessed_at')
+                ->whereIn('user_id', $users->getCollection()->pluck('id'))
+                ->where('accessed_at', '>=', $onlineThreshold)
+                ->get()
+                ->groupBy('user_id')
+                ->map(fn ($accesses) => $accesses->sortByDesc('accessed_at')->first()?->game_key);
+
+            $users->getCollection()->each(fn (User $user) => $user->setAttribute('current_game', $recentGames[$user->id] ?? null));
+        }
 
         return Inertia::render('admin/users/index', [
             'users' => $users,
