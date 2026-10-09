@@ -12,7 +12,6 @@ import { cn } from '@/lib/utils';
 import { type GameMenuGame, type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import {
-    ChefHat,
     ChevronDown,
     Coins,
     Flame,
@@ -24,7 +23,7 @@ import {
     type LucideIcon,
     PaintBucket,
     Play,
-    Router,
+    Rocket,
     Search,
     SearchX,
     Sparkles,
@@ -36,11 +35,9 @@ import { type ReactNode, useMemo, useState, useSyncExternalStore } from 'react';
 
 /** Games announced as coming soon (classroom multiplayer and IT knowledge). */
 const UPCOMING: { key: string; icon: LucideIcon; accent: string }[] = [
-    { key: 'monsterCafe', icon: ChefHat, accent: 'bg-[#FF9E44]' },
     { key: 'saboteurLab', icon: FlaskConical, accent: 'bg-[#7ED957]' },
     { key: 'bossDefense', icon: Swords, accent: 'bg-[#8C7CF0]' },
     { key: 'pixelPainter', icon: PaintBucket, accent: 'bg-[#4FC3F7]' },
-    { key: 'osiPingPong', icon: Router, accent: 'bg-[#F9A8D4]' },
 ];
 
 type GameView = 'grid' | 'list';
@@ -108,10 +105,19 @@ interface GamePopularity {
     popularRank: number | null;
 }
 
+interface NewGame {
+    key: string;
+    /** Release date (Y-m-d) from the game catalog. */
+    releasedAt: string;
+}
+
 interface GameListProps {
     /** Plays and dense "most played" rank per game key (public counts only). */
     popularity?: Record<string, GamePopularity>;
     popularityDays?: number;
+    /** Games released in the last `newGameDays` days, newest first. */
+    newGames?: NewGame[];
+    newGameDays?: number;
 }
 
 /** Pseudo filter: every game ordered by plays (most played first). */
@@ -120,6 +126,8 @@ const HOT = 'hot';
 export default function GameList({
     popularity = {},
     popularityDays = 30,
+    newGames = [],
+    newGameDays = 3,
 }: GameListProps) {
     const { t, i18n } = useTranslations();
     const { props, url: pageUrl } = usePage<SharedData>();
@@ -201,6 +209,28 @@ export default function GameList({
             ),
         [categories],
     );
+    /** Newest releases, resolved against the live catalog (unknown keys are dropped). */
+    const latest = useMemo(() => {
+        const byKey = new Map(
+            categories.flatMap((category) =>
+                category.games.map((game) => [game.key, game] as const),
+            ),
+        );
+        return newGames.flatMap(({ key, releasedAt }) => {
+            const game = byKey.get(key);
+            return game ? [{ game, releasedAt }] : [];
+        });
+    }, [categories, newGames]);
+    const dateFormat = useMemo(
+        () =>
+            new Intl.DateTimeFormat(i18n.language, {
+                day: 'numeric',
+                month: 'long',
+                timeZone: 'UTC',
+            }),
+        [i18n.language],
+    );
+    const showLatest = filter === 'all' && !searching && latest.length > 0;
     const shown =
         filter === HOT
             ? hottest.length > 0
@@ -564,6 +594,97 @@ export default function GameList({
                 </div>
 
                 <div className="mt-10 flex flex-col gap-12">
+                    {showLatest && (
+                        <section
+                            aria-labelledby="category-latest"
+                            data-testid="gamelist-latest"
+                            className="rounded-3xl border-3 border-[#1f2a44] bg-[#E6FFF4] p-4 shadow-[5px_5px_0px_#1f2a44] sm:p-6"
+                        >
+                            <h2
+                                id="category-latest"
+                                className="flex flex-wrap items-center gap-3 font-display text-2xl font-black text-[#1f2a44]"
+                            >
+                                <Rocket
+                                    className="size-6 shrink-0 text-[#16a34a]"
+                                    aria-hidden
+                                />
+                                {t('gameList.latest.title')}
+                                <span className="rounded-full border-2 border-[#1f2a44] bg-white px-2.5 py-0.5 text-sm">
+                                    {latest.length}
+                                </span>
+                            </h2>
+                            <p className="mt-2 mb-5 text-sm font-bold text-slate-600">
+                                {t('gameList.latest.intro', {
+                                    count: newGameDays,
+                                })}
+                            </p>
+                            <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                {latest.map(({ game, releasedAt }) => {
+                                    const Icon = gameIcon(game.icon);
+                                    return (
+                                        <li
+                                            key={game.key}
+                                            className="flex min-w-0 flex-col gap-3 rounded-2xl border-3 border-[#1f2a44] bg-white p-4 shadow-[3px_3px_0px_#1f2a44]"
+                                            data-testid={`gamelist-latest-${game.key}`}
+                                        >
+                                            <div className="flex min-w-0 items-start gap-3">
+                                                <span
+                                                    className="flex size-12 shrink-0 items-center justify-center rounded-xl border-2 border-[#1f2a44] text-white shadow-[2px_2px_0px_#1f2a44]"
+                                                    style={{
+                                                        background: game.accent,
+                                                    }}
+                                                >
+                                                    <Icon
+                                                        className="size-6 stroke-[2.5]"
+                                                        aria-hidden
+                                                    />
+                                                </span>
+                                                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                                                    <h3 className="font-display text-lg leading-tight font-black break-words text-[#1f2a44]">
+                                                        {t(game.titleKey)}
+                                                    </h3>
+                                                    <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                                                        <span className="inline-flex items-center rounded-full border-2 border-[#1f2a44] bg-[#16a34a] px-2 py-0.5 text-[11px] font-black tracking-wide text-white uppercase">
+                                                            {t(
+                                                                'gameList.latest.badge',
+                                                            )}
+                                                        </span>
+                                                        <span
+                                                            className="text-xs font-bold text-slate-600"
+                                                            data-testid={`gamelist-latest-date-${game.key}`}
+                                                        >
+                                                            {t(
+                                                                'gameList.latest.released',
+                                                                {
+                                                                    date: dateFormat.format(
+                                                                        new Date(
+                                                                            `${releasedAt}T00:00:00Z`,
+                                                                        ),
+                                                                    ),
+                                                                },
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {game.descriptionKey && (
+                                                <p className="line-clamp-2 text-sm font-semibold text-slate-600">
+                                                    {t(game.descriptionKey)}
+                                                </p>
+                                            )}
+                                            <div className="mt-auto flex min-w-0 items-center gap-2">
+                                                <div className="min-w-0 flex-1">
+                                                    {playButton(game)}
+                                                </div>
+                                                {shareButton(game)}
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </section>
+                    )}
+
                     {shown.length === 0 && (
                         <div
                             className="mx-auto flex w-full max-w-xl flex-col items-center rounded-3xl border-3 border-dashed border-[#1f2a44] bg-white px-5 py-10 text-center"
