@@ -216,6 +216,10 @@ class GameResultController extends Controller
             return __('monster_cafe.history_name', [], $locale);
         }
 
+        if ($gameKey === 'snake') {
+            return __('snake.history_name', [], $locale);
+        }
+
         if ($gameKey === 'crossword') {
             return __('crossword.history_name', ['level' => substr($mission, strlen('level-'))], $locale);
         }

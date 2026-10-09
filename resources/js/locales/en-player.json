@@ -126,6 +126,7 @@
         "board": "Board games",
         "quiz": "Educational quizzes",
         "snakes": "Educational Snakes and Ladders",
+        "snake": "Main Ular",
         "sky": "Sukhoi Sky Quiz",
         "adventure": "Adventure",
         "flagQuest": "Flag Quest",
@@ -401,7 +402,8 @@
             "portSorter": "Sort network packets into the right bin before they drop! Topics and bins are set by teachers: ports & protocols, services and more.",
             "turboTrivia": "A quiz kart race on the classroom projector! Answer right for Nitro, drop Banana Peels, fire Missiles at first place and call Lightning.",
             "blockBattle": "A block battle on the classroom projector! Answer right for an I piece or an attack, clear lines, build words & equations, or build a fortress together against a monster.",
-            "monsterCafe": "Cook in a monster restaurant for 1–40 players! Answer quizzes to earn ingredients, build burgers & pizzas before the monsters get angry, shoo rats and throw pies at friends."
+            "monsterCafe": "Cook in a monster restaurant for 1–40 players! Answer quizzes to earn ingredients, build burgers & pizzas before the monsters get angry, shoo rats and throw pies at friends.",
+            "snake": "Educational tail-cut snake game! Answer quiz questions correctly to cut your tail and win. Play solo, in a Shared Arena or in Split Arenas."
         },
         "detailsFirst": "Complete details first",
         "detailsNoticeTitle": "Complete your participant details first!",
@@ -3057,5 +3059,137 @@
                 }
             }
         }
+    },
+    "snake": {
+        "title": "Main Ular",
+        "eyebrow": "QUIZ ARENA · TAIL CUT",
+        "subtitle": "Eat the right answer. Cut your tail to nothing.",
+        "back": "Back",
+        "unmute": "Unmute sponsor audio",
+        "mute": "Mute sponsor audio",
+        "unavailable": "The arena is not available yet. Learn how to play while you wait.",
+        "intro": "Hi {{name}}! Play alone or invite up to 3 friends.",
+        "rules": "Your snake starts with a 15-segment tail. The question shows in the panel and options A–D lie on the grid as food. Eat the right answer: the tail loses 3 segments. Wrong or too slow: it grows 4. No tail left = you win!",
+        "soloHint": "Start alone to practise, or share the PIN so friends can join (up to 4 players).",
+        "modeLabel": "Game mode",
+        "modes": {
+            "shared": {
+                "title": "Shared Arena",
+                "body": "Every snake on one grid racing for the same question. Hitting an opponent's body costs a life."
+            },
+            "split": {
+                "title": "Split Arenas",
+                "body": "Each player has an own grid and own questions. Correct answers send junk attacks to opponents."
+            }
+        },
+        "arena": "Snake arena",
+        "boardLabel": "Snake game grid",
+        "opponentBoard": "{{name}}'s grid",
+        "gameLeft": "{{time}} left",
+        "getReady": "Get ready…",
+        "out": "Your snake is out. Watch until the end!",
+        "controlsHint": "Controls: arrow keys or W A S D. On phones: swipe on the grid or use the arrow pad.",
+        "steer": "Steer to the right answer",
+        "waiting": "Waiting…",
+        "seconds": "{{count}} s",
+        "question": "Eat the right answer",
+        "options": "Answer options on the grid",
+        "preparing": "Preparing the question…",
+        "tailLeft": "Tail left: {{count}} segments",
+        "cleared": "{{percent}}% cut",
+        "gauge": "Tail cut progress",
+        "players": "Players",
+        "tail": "Tail length",
+        "lives": "Lives",
+        "score": "Question points",
+        "dpad": "Arrow pad",
+        "dir": {
+            "up": "Up",
+            "down": "Down",
+            "left": "Left",
+            "right": "Right"
+        },
+        "feedback": {
+            "correctYou": "Correct ({{label}})! Tail cut by {{cut}}.",
+            "correct": "{{name}} was right ({{label}}) and cut the tail.",
+            "wrongYou": "Wrong ({{label}})! Tail grows by {{grow}}.",
+            "wrong": "{{name}} ate a wrong answer ({{label}}).",
+            "timeout": "Time's up! Tail grows by {{grow}}.",
+            "crashYou": "Crash! You lost a life.",
+            "crash": "{{name}} crashed!",
+            "attack": {
+                "tail": "You were attacked: tail +2 segments!",
+                "block": "You were attacked: obstacle blocks for 10 seconds!"
+            }
+        },
+        "previousQuestion": "Last question: {{prompt}}",
+        "answer": "Answer: {{answer}}",
+        "hint": "Hint: {{hint}}",
+        "stopped": "Game stopped",
+        "won": "You win!",
+        "cleared_win": "Tail cleared — you're the champion!",
+        "noWinner": "Every snake is out",
+        "finished": "Game over",
+        "points": "+{{points}} account points",
+        "playAgain": "Play again",
+        "howTo": {
+            "title": "How to play",
+            "step": "Step {{step}}/{{total}}",
+            "previous": "Previous",
+            "next": "Next",
+            "pause": "Pause",
+            "replay": "Replay",
+            "video": "Download video (ID)",
+            "pdf": "Download slides (ID)",
+            "demoPin": "Sample PIN",
+            "demoWinner": "Tail cleared — Champion!",
+            "demoQuestion": "What is 7 × 8?",
+            "demoOptions": [
+                "54",
+                "56",
+                "63",
+                "48"
+            ],
+            "demo": {
+                "room": "CREATE A ROOM & PICK A MODE",
+                "read": "READ THE QUESTION",
+                "cut": "CORRECT ANSWER",
+                "grow": "WRONG OR TOO SLOW",
+                "junk": "JUNK ATTACK",
+                "win": "STAGE CLEAR"
+            },
+            "badge": {
+                "cut": "Correct! Tail −3",
+                "grow": "Wrong! Tail +4",
+                "junk": "Opponent answered right: obstacle blocks appear!"
+            },
+            "scenes": {
+                "room": {
+                    "title": "Create a room, pick a mode",
+                    "body": "Play alone or share the PIN with friends (up to 4). The host picks Shared Arena or Split Arenas, the subject and the answer time."
+                },
+                "read": {
+                    "title": "Read the question, find the food",
+                    "body": "The question shows in the panel. Options A, B, C, D lie on the grid as coloured food. Steer with arrows, WASD, swipes or the arrow pad."
+                },
+                "cut": {
+                    "title": "Eat the right answer",
+                    "body": "Your tail loses 3 segments and you earn question points. The next question appears at once. In Shared Arena the fastest correct bite wins the question."
+                },
+                "grow": {
+                    "title": "Wrong or too slow? The tail grows",
+                    "body": "A wrong answer or a timeout adds 4 segments and the grid gets crowded. Hitting a wall, yourself or another snake costs one of 3 lives."
+                },
+                "junk": {
+                    "title": "Junk attack (Split Arenas)",
+                    "body": "In Split Arenas every correct answer attacks the leading opponent: their tail grows 2 segments or obstacle blocks appear for 10 seconds."
+                },
+                "win": {
+                    "title": "Clear your tail, become champion",
+                    "body": "The first player with no tail left wins. If every opponent is out the last snake wins; when time runs out the shortest tail wins. Account points are set by the server."
+                }
+            }
+        },
+        "soloOut": "Game over — tail not cleared yet. Try again!"
     }
 }
