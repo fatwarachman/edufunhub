@@ -56,6 +56,7 @@ export interface AdminUser extends User {
     ads_disabled?: boolean;
     badges?: import('@/components/badges').EarnedBadge[];
     disabled_at?: string | null;
+    current_game?: string | null;
 }
 
 export interface PaginatedData<T> {

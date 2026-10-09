@@ -1,4 +1,5 @@
 import { BadgeChips } from '@/components/badges';
+import { gameLabel } from '@/components/admin/game-stats';
 import { OnlineDot } from '@/components/online-dot';
 import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
@@ -18,6 +19,8 @@ import {
     ChevronRight,
     Edit,
     Eye,
+    Gamepad2,
+    Globe,
     Loader2,
     LogIn,
     Mail,
@@ -703,6 +706,37 @@ export default function UsersIndex({
                                     </span>
                                 ),
                             },
+                            ...(filters.activity === 'online'
+                                ? [
+                                      {
+                                          key: 'current_activity' as const,
+                                          header: tr('Current activity'),
+                                          summary: true,
+                                          cellClassName:
+                                              'whitespace-nowrap',
+                                          cell: (user: AdminUser) =>
+                                              user.current_game ? (
+                                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                                      <Gamepad2
+                                                          className="size-3"
+                                                          aria-hidden="true"
+                                                      />
+                                                      {gameLabel(
+                                                          user.current_game,
+                                                      )}
+                                                  </span>
+                                              ) : (
+                                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                                                      <Globe
+                                                          className="size-3"
+                                                          aria-hidden="true"
+                                                      />
+                                                      {tr('Browsing portal')}
+                                                  </span>
+                                              ),
+                                      },
+                                  ]
+                                : []),
                             {
                                 key: 'joined',
                                 header: (
