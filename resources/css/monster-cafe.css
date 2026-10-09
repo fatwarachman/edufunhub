@@ -1,0 +1,214 @@
+/* Monster Café: kitchen pad, order tickets, oven, rat and pie splat. */
+
+.mc-press {
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+    touch-action: manipulation;
+}
+
+.mc-press:not(:disabled):active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 #1f2a44;
+}
+
+.mc-bar {
+    transition:
+        width 0.25s linear,
+        background-color 0.3s ease;
+}
+
+.mc-board-row {
+    transition:
+        transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+        background-color 0.3s ease;
+    will-change: transform;
+}
+
+.mc-coins {
+    font-variant-numeric: tabular-nums;
+}
+
+.mc-coins[data-flash='up'] {
+    animation: mc-flash-up 0.8s ease-out;
+}
+
+.mc-coins[data-flash='down'] {
+    animation: mc-flash-down 0.8s ease-out;
+}
+
+.mc-pop {
+    animation: mc-pop 0.3s ease-out;
+}
+
+.mc-shake {
+    animation: mc-shake 0.4s ease-in-out;
+}
+
+.mc-ticket {
+    animation: mc-slide-in 0.35s ease-out;
+}
+
+.mc-ticket.mc-angry {
+    animation: mc-shake 0.6s ease-in-out infinite;
+}
+
+.mc-threat {
+    animation: mc-pulse 0.6s ease-in-out infinite;
+}
+
+.mc-glow {
+    animation: mc-pulse 1.2s ease-in-out infinite;
+}
+
+.mc-blink {
+    animation: mc-blink 0.8s steps(2, start) infinite;
+}
+
+.mc-cooking {
+    animation: mc-bob 0.9s ease-in-out infinite;
+}
+
+.mc-ready {
+    animation: mc-pop 0.5s ease-out;
+}
+
+.mc-rat {
+    animation: mc-slide-up 0.25s ease-out;
+}
+
+/* Pie hit: the kitchen blurs for the whole duration; the splat obscures it too. */
+.mc-kitchen {
+    transition: filter 0.15s ease;
+}
+
+.mc-kitchen.mc-blurred {
+    filter: blur(7px) saturate(0.7);
+}
+
+.mc-splat {
+    animation: mc-splat-in 0.25s ease-out;
+}
+
+@keyframes mc-pop {
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes mc-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-3px);
+    }
+    75% {
+        transform: translateX(3px);
+    }
+}
+
+@keyframes mc-slide-in {
+    from {
+        transform: translateY(-8px);
+        opacity: 0;
+    }
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+@keyframes mc-slide-up {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: none;
+    }
+}
+
+@keyframes mc-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.06);
+    }
+}
+
+@keyframes mc-blink {
+    to {
+        visibility: hidden;
+    }
+}
+
+@keyframes mc-bob {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+@keyframes mc-splat-in {
+    from {
+        transform: scale(0.4);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes mc-flash-up {
+    0% {
+        color: #15803d;
+    }
+    100% {
+        color: inherit;
+    }
+}
+
+@keyframes mc-flash-down {
+    0% {
+        color: #be123c;
+    }
+    100% {
+        color: inherit;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mc-press,
+    .mc-bar,
+    .mc-board-row,
+    .mc-kitchen {
+        transition: none;
+    }
+
+    .mc-coins[data-flash],
+    .mc-pop,
+    .mc-shake,
+    .mc-ticket,
+    .mc-ticket.mc-angry,
+    .mc-threat,
+    .mc-glow,
+    .mc-blink,
+    .mc-cooking,
+    .mc-ready,
+    .mc-rat,
+    .mc-splat {
+        animation: none;
+    }
+}
