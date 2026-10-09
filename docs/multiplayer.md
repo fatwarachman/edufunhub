@@ -1,7 +1,7 @@
 # Standar game multiplayer dan poin
 
 **Status:** Accepted (2026-10-04)
-Berlaku untuk semua game baru. Game lama yang sudah memakai standar ini: Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang, Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini, Lantai Runtuh, Peti Emas Misteri, Order Rush TKJ, Turbo Trivia, Tetris Kuis / Block Battle.
+Berlaku untuk semua game baru. Game lama yang sudah memakai standar ini: Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang, Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini, Lantai Runtuh, Peti Emas Misteri, Order Rush TKJ, Turbo Trivia, Tetris Kuis / Block Battle, Monster Café.
 
 ## 1. Undangan (PIN + link)
 
@@ -98,6 +98,7 @@ Pemain tidak perlu membuka game dulu: kartu **Masuk ke permainan dengan PIN** (p
 | Order Rush TKJ | 5 | modul benar × 10, maks. 40 (+20 juara) | 4150 |
 | Turbo Trivia | 5 | benar × 10, maks. 15 soal (+20 juara 1) | 1650 |
 | Tetris Kuis / Block Battle | 5 | benar × 10, maks. 40 jawaban dibayar (+20 juara 1 / benteng menang) | 4150 |
+| Monster Café | 5 | benar × 10, maks. 40 jawaban dibayar (+20 juara 1 koin) | `points.Cap(40)` = 12150 |
 
 ### Ular Tangga (`internal/snakes`)
 
@@ -426,6 +427,70 @@ Encoding papan: baris dari atas (baris 0) ke bawah, `cols × rows` karakter;
 `c` di `boards` sudah memuat bidak jatuh. `glyphs`/`g` sama panjang, spasi =
 tanpa glyph. Koordinat `[x, y]` dari kiri/atas, baris spawn tersembunyi tidak
 dikirim.
+
+### Monster Café (`internal/monstercafe`)
+
+Kuis memasak mandiri untuk 1–40 pemain per ruangan (solo boleh). Pola sama
+dengan Peti Emas Misteri: satu goroutine per ruangan, koneksi hanya mengirim
+intent lewat channel perintah, semua timer (oven, kesabaran, tikus, pesanan
+baru, jam permainan) berjalan di ticker ruangan; host memakai token terpisah
+(`monster-cafe-host`), pemain `monster-cafe`.
+
+- **Durasi (host, lobby):** `configure{minutes}` 3/5/7 menit (bawaan 5);
+  `set_subject{subject}`; `end_game` kapan saja. Peringkat: koin terbanyak,
+  lalu sajian terbanyak, lalu sajian terakhir lebih awal.
+- **Soal:** `questions.NewFor("monster-cafe", kelas terendah di meja)` per
+  pemain. `request_ingredient{ingredient}` mengirim satu soal untuk bahan itu
+  (permintaan baru mengganti soal tertunda). Jawaban < 300 ms → `too_early`;
+  salah → cooldown 2 detik (`cooldown`), tanpa bahan; benar → bahan masuk
+  nampan (maks. 8).
+- **Resep:** Burger = `BUN, PATTY` + k dari `CHEESE/LETTUCE/TOMATO/SAUCE`;
+  Pizza = `DOUGH, SAUCE` + k dari `CHEESE/MUSHROOM/PEPPERONI/OLIVE`. k = 1
+  untuk 2 pesanan pertama, lalu 1–2, setelah 3 menit 1–3.
+- **Monster:** `SLIME CYCLOPS VAMPIRE YETI DRAGON GHOST`, maks. 2 pesanan
+  aktif per pemain; pesanan baru datang 3 detik setelah satu pergi. Kesabaran
+  15 dtk + 18 dtk × panjang resep (× 1,3 bila kelas terendah 0–2). Mood
+  `HAPPY` > 50%, `IMPATIENT` 20–50%, `ANGRY` < 20%. Habis → `order_failed`
+  `ANGRY`, streak 0.
+- **Dapur:** `plate_add` (piring maks. 6), `plate_clear`, `cook` (3 dtk →
+  `READY`, 5 dtk kemudian `BURNT`/gosong), `take_out`, `discard`. Jenis
+  sajian: ada BUN → BURGER, ada DOUGH → PIZZA, selain itu MESS.
+- **Saji:** `serve{order_id}` — isi sama (multiset) dan jenis cocok → 100
+  koin + tip s.d. 50 (linear sisa kesabaran), streak +1. Salah → `WRONG_DISH`,
+  sajian hilang, pesanan kehilangan 30% kesabaran total, streak 0.
+- **Tikus:** tiap 20–35 dtk (nampan tidak kosong) muncul mengincar satu bahan;
+  mencuri setelah 3 dtk kecuali `shoo_rat{rat_id}`.
+- **Pie:** tiap 2 sajian beruntun = 1 PIE (maks. 2). `throw_pie{target_player_id?}`
+  (kosong → pemimpin selain diri sendiri). Target menerima `pie_hit` 2 dtk
+  (blur visual saja; server tidak memblokir input). Tanpa lawan → `no_target`.
+- **Hasil:** benar × `Worth()` maks. 40 jawaban dibayar, +20 juara 1;
+  `points.Finished` / `points.Abandoned`; `event_id` `mc-{user}-room-{nanos}`,
+  misi `room`, maks. 40 pemain, `match.level` = menit, `players[].score` =
+  koin, `accuracy` = benar / dijawab.
+
+Kontrak WebSocket `GET /game-ws/monster-cafe?token=…&locale=id|en`:
+
+| Arah | Pesan | Isi |
+| --- | --- | --- |
+| klien → server | `create_room`, `start_game`, `end_game` | host saja |
+| klien → server | `configure` / `set_subject` | host, `{minutes}` / `{subject}` |
+| klien → server | `join_room` | `{room_code, player_id, avatar}` |
+| klien → server | `request_ingredient`, `plate_add` | `{ingredient}` |
+| klien → server | `submit_answer` | `{question_id, answer_index}` |
+| klien → server | `plate_clear`, `cook`, `take_out`, `discard` | |
+| klien → server | `serve` / `shoo_rat` / `throw_pie` | `{order_id}` / `{rat_id}` / `{target_player_id?}` |
+| klien → server | `leave_room`, `sync`, `locale`, `ping` | |
+| server → klien | `state_sync` | `{phase, role, pin, host_name, roster[], minutes, minutes_options, subject, remaining_ms, leaderboard[], feed[], you?, podium?}` |
+| server → klien | `kitchen_sync` | dapur pribadi (pesanan, nampan, piring, oven, sajian, soal, cooldown, tikus, pie, skor, peringkat); setelah tiap perubahan dan ≥ 1×/detik |
+| server → klien | `question` | `{question{question_id, ingredient, number, text, subject, options}}` |
+| server → klien | `answer_result` | `{question_id, correct, choice, correct_index, ingredient?, cooldown_ms?, hint?}` |
+| server → klien | `order_served` / `order_failed` | `{order_id, monster, dish, coins, tip, score, pie_granted}` / `{order_id, monster, reason}` |
+| server → klien | `burnt`, `rat_appear`, `rat_result` | `{dish}`, `{rat_id, ingredient, steal_ms}`, `{rat_id, shooed, ingredient}` |
+| server → klien | `pie_hit` / `pie_result` | `{attacker, duration_ms}` / `{target}` |
+| server → klien | `action_broadcast` | `{id, at, kind: SERVED\|ANGRY\|BURNT\|RAT\|PIE, player, target?, dish?, coins?}` (host semua, pemain yang terlibat) |
+| server → klien | `leaderboard_sync` | `{leaderboard[], remaining_ms}` (maks. 4×/detik) |
+| server → klien | `podium_result` | `{podium[3], ranking[], you}` |
+| server → klien | `error` | `{code, for}` → `room.errors.*` |
 
 ## 3. Poin vs saldo toko
 

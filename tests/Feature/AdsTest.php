@@ -174,11 +174,12 @@ it('only activates campaigns that have an active creative', function () {
     expect($campaign->refresh()->status)->toBe('active');
 });
 
-it('serves live campaigns into every game page through the game middleware', function () {
+it('serves live campaigns into every game page through the game middleware', function (): void {
+    $this->withoutVite();
     AdCampaign::factory()->withCreative()->create();
     $player = adsPlayer();
 
-    foreach (['quiz-duel', 'sky-quiz', 'knowledge-train', 'crossword', 'snakes-and-ladders', 'market-math', 'flag-quest', 'port-sorter', 'turbo-trivia', 'block-battle'] as $game) {
+    foreach (['quiz-duel', 'sky-quiz', 'knowledge-train', 'crossword', 'snakes-and-ladders', 'market-math', 'flag-quest', 'port-sorter', 'turbo-trivia', 'block-battle', 'monster-cafe', 'ping-pong'] as $game) {
         $this->actingAs($player)->get('/games/'.$game)->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('adGame', $game)

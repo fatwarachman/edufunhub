@@ -37,6 +37,7 @@ export const GAME_COLORS: Record<string, string> = {
     'port-sorter': '#0d9488',
     'turbo-trivia': '#e11d48',
     'block-battle': '#ca8a04',
+    'monster-cafe': '#ea580c',
     'knowledge-train': 'var(--color-bubble-purple)',
 };
 

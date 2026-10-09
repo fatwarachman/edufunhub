@@ -30,6 +30,8 @@ func (s *Server) Presence(uid int64) []Activity {
 	}
 	p, ok := s.snakes.Presence(uid)
 	lobbyRoom("snakes-and-ladders", p, ok)
+	p, ok = s.pingpong.Presence(uid)
+	lobbyRoom("ping-pong", p, ok)
 	p, ok = s.crosswords.Presence(uid)
 	lobbyRoom("crossword", p, ok)
 	for _, key := range minigames.Keys {
@@ -43,7 +45,7 @@ func (s *Server) Presence(uid int64) []Activity {
 		Presence(uid int64) (pin, phase string, host, ok bool)
 	}
 	for game, hub := range map[string]roomHub{
-		"floor-drop": s.floor, "economy-heist": s.heist, "order-rush": s.rush, "turbo-trivia": s.turbo, "block-battle": s.block,
+		"floor-drop": s.floor, "economy-heist": s.heist, "order-rush": s.rush, "turbo-trivia": s.turbo, "block-battle": s.block, "monster-cafe": s.cafe,
 	} {
 		if pin, phase, host, ok := hub.Presence(uid); ok {
 			out = append(out, Activity{Game: game, Pin: pin, Phase: phase, Host: host})

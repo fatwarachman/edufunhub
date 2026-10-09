@@ -58,6 +58,7 @@ func main() {
 	}()
 	go srv.RunDuels(ctx, 250*time.Millisecond)
 	go srv.RunSnakes(ctx, 250*time.Millisecond)
+	go srv.RunPingPong(ctx, 250*time.Millisecond)
 	go srv.RunCrosswords(ctx, time.Second)
 	go srv.RunMinigames(ctx, 250*time.Millisecond)
 	go srv.RunFloorDrop(ctx, time.Second)
@@ -65,6 +66,7 @@ func main() {
 	go srv.RunOrderRush(ctx, time.Second)
 	go srv.RunTurboTrivia(ctx, time.Second)
 	go srv.RunBlockBattle(ctx, time.Second)
+	go srv.RunMonsterCafe(ctx, time.Second)
 	if bankURL := os.Getenv("GAME_QUESTION_BANK_URL"); bankURL != "" {
 		syncer := &questions.Syncer{URL: bankURL, Secret: []byte(secret), Logger: logger}
 		go syncer.Run(ctx, time.Minute)

@@ -86,7 +86,7 @@ class ActiveGames
                 : route('games.block-battle.play', ['pin' => $pin], absolute: false);
         }
 
-        if (in_array($game['key'], ['floor-drop', 'economy-heist', 'order-rush'], true)) {
+        if (in_array($game['key'], ['floor-drop', 'economy-heist', 'order-rush', 'monster-cafe'], true)) {
             return route($game['route'], array_filter(['role' => $host ? 'host' : 'player', 'pin' => $host ? null : $pin]), absolute: false);
         }
 

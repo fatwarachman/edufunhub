@@ -37,7 +37,9 @@ class StoreGameResultRequest extends FormRequest
         'economy-heist' => ['event_id' => '/^eh-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 12150, 'max_players' => 60],
         'order-rush' => ['event_id' => '/^or-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 12150, 'max_players' => 60, 'max_level' => 20],
         'turbo-trivia' => ['event_id' => '/^tt-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 4650, 'max_players' => 40, 'max_level' => 15],
+        'ping-pong' => ['event_id' => '/^pp-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 18150, 'max_players' => 2, 'max_level' => 3],
         'block-battle' => ['event_id' => '/^bb-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 12150, 'max_players' => 50, 'max_level' => 10],
+        'monster-cafe' => ['event_id' => '/^mc-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 12150, 'max_players' => 40, 'max_level' => 7],
     ];
 
     public function authorize(): bool

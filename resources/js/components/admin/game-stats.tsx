@@ -21,6 +21,8 @@ export const GAME_LABELS: Record<string, string> = {
     'port-sorter': 'Port Sorter',
     'turbo-trivia': 'Turbo Trivia',
     'block-battle': 'Block Battle',
+    'monster-cafe': 'Monster Café',
+    'ping-pong': 'Ping Pong',
 };
 
 /**
