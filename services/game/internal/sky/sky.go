@@ -185,8 +185,7 @@ func (s *Session) Start(now time.Time) Message {
 
 // nextQuestion prepares the round; it becomes playable after delay.
 func (s *Session) nextQuestion(now time.Time, delay time.Duration) {
-	q := s.gen.Choice()
-	s.question = questions.Trim(q, Options, s.gen.Rand)
+	s.question = s.gen.Present(s.gen.Choice(), Options)
 	s.removed = map[int]bool{}
 	s.roundAt = now.Add(delay)
 	s.drones = 0

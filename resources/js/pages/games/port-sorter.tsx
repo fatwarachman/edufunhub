@@ -3,6 +3,7 @@ import GameAdStrip from '@/components/ads/game-ad-strip';
 import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale } from '@/components/game-finale';
+import { GameLanguageToggle } from '@/components/game-language-toggle';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { useMyUserId } from '@/hooks/use-chat-socket';
@@ -708,6 +709,10 @@ export default function PortSorter({
                         </span>
                     )}
                     <div className="ml-auto flex gap-2">
+                        <GameLanguageToggle
+                            className="border-[#20364a]"
+                            testId="port-language-toggle"
+                        />
                         {phase === 'falling' && (
                             <button
                                 type="button"

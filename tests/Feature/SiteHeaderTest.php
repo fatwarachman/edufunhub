@@ -89,6 +89,14 @@ it('keeps the admin sidebar pinned while long pages scroll', function (): void {
         ->and($layout)->not->toContain("'md:relative md:z-auto'");
 });
 
+it('shows the EduFunHub brand logo in the admin sidebar', function (): void {
+    $layout = file_get_contents(resource_path('js/layouts/admin-layout.tsx'));
+
+    expect($layout)->toContain('src="/favicon.svg?v=edufunhub-logo-2"')
+        ->and($layout)->toContain('data-testid="admin-brand-logo"')
+        ->and($layout)->not->toContain('AppLogoIcon');
+});
+
 it('groups the admin settings pages under one Settings sub menu', function (): void {
     $layout = file_get_contents(resource_path('js/layouts/admin-layout.tsx'));
     $group = substr($layout, strpos($layout, "title: 'Settings',"));
@@ -281,4 +289,14 @@ it('never lets the phone clock badge slide under the bell or menu button', funct
         ->and($hook)->toContain("addEventListener?.('loadingdone'")
         ->and($css)->toContain(".edu-clock[data-tier='tight']")
         ->and($css)->toMatch("/\\.edu-clock\\[data-tier='hidden'\\]\\s*\\{\\s*display: none;/");
+});
+
+it('left-aligns the time and date inside the header clock badge', function (): void {
+    $css = file_get_contents(resource_path('css/edu-nav.css'));
+    $rule = substr($css, strpos($css, ".edu-clock {\n"));
+    $rule = substr($rule, 0, strpos($rule, '}'));
+
+    expect($rule)->toContain('align-items: flex-start;')
+        ->and($rule)->toContain('text-align: left;')
+        ->and($rule)->not->toContain('align-items: center;');
 });

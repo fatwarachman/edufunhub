@@ -1,0 +1,163 @@
+{
+    "title": "Search features",
+    "description": "Find admin menus, player features, settings, and games.",
+    "placeholder": "Search features, e.g. users, questions, or games…",
+    "empty": "No features found. Try another keyword.",
+    "hint": "↑ ↓ Select · Enter Open · Esc Close · Ctrl/⌘ K Search",
+    "admin": "Administration",
+    "player": "Player features",
+    "games": "Games",
+    "results": "Search results",
+    "features": {
+        "campaign": {
+            "href": "/admin/ads/campaigns/create",
+            "title": "Create ad campaign",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "createUser": {
+            "href": "/admin/users/create",
+            "title": "Add user",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "createRole": {
+            "href": "/admin/roles/create",
+            "title": "Add role",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "createQuestion": {
+            "href": "/admin/questions/create",
+            "title": "Create question",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "createItem": {
+            "href": "/admin/character-items/create",
+            "title": "Add character item",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "createWord": {
+            "href": "/admin/games/crossword/words/create",
+            "title": "Add crossword word",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "dashboard": {
+            "href": "/dashboard",
+            "title": "Player dashboard",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "portal": {
+            "href": "/portal",
+            "title": "Learning portal",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "games": {
+            "href": "/gamelist",
+            "title": "All games",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "leaderboard": {
+            "href": "/leaderboard",
+            "title": "Player leaderboard",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "ability": {
+            "href": "/ability",
+            "title": "Learning ability",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "character": {
+            "href": "/character",
+            "title": "Character and shop",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "profile": {
+            "href": "/profile",
+            "title": "Profile and password",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "friends": {
+            "href": "/friends",
+            "title": "Friends",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "chat": {
+            "href": "/chat",
+            "title": "Chat and groups",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "online": {
+            "href": "/players/online",
+            "title": "Online players",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "notifications": {
+            "href": "/notifications",
+            "title": "Player notifications",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "feedback": {
+            "href": "/feedback",
+            "title": "Send feedback",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "teacher": {
+            "href": "/teacher/questions",
+            "title": "Teacher question bank",
+            "superadminOnly": false,
+            "teacherOnly": true
+        },
+        "teacherImport": {
+            "href": "/teacher/questions/import",
+            "title": "Import teacher questions",
+            "superadminOnly": false,
+            "teacherOnly": true
+        },
+        "generate": {
+            "href": "/admin/questions/generate",
+            "title": "Generate AI questions",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "words": {
+            "href": "/admin/games/crossword/words",
+            "title": "Crossword word bank",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "sequences": {
+            "href": "/admin/games/order-rush/sequences",
+            "title": "Order Rush sequence bank",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "sorter": {
+            "href": "/admin/games/port-sorter/sets",
+            "title": "Port Sorter item bank",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "advertiser": {
+            "href": "/admin/ads/advertisers/create",
+            "title": "Add advertiser",
+            "superadminOnly": true,
+            "teacherOnly": false
+        }
+    }
+}

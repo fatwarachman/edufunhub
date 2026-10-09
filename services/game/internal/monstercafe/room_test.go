@@ -206,6 +206,11 @@ func TestCreateJoinStartEndSolo(t *testing.T) {
 	if err := tb.hub.Configure(tb.host, 4); err != ErrConfig {
 		t.Fatalf("bad minutes: %v", err)
 	}
+	for _, minutes := range []int{10, 15} {
+		if err := tb.hub.Configure(tb.host, minutes); err != nil {
+			t.Fatalf("configure %d minutes: %v", minutes, err)
+		}
+	}
 	if err := tb.hub.Configure(tb.host, 3); err != nil {
 		t.Fatal(err)
 	}

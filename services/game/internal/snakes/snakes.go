@@ -456,7 +456,7 @@ func (h *Hub) roll(r *room, now time.Time, auto bool) {
 	g.from = p.position
 	g.landing = Landing(p.position, g.dice)
 	g.final = Destination(g.landing)
-	g.question = questions.Trim(g.gen.Choice(), Options, g.gen.Rand)
+	g.question = g.gen.Present(g.gen.Choice(), Options)
 	g.round++
 	g.step, g.stepAt, g.auto = StepQuestion, now, auto
 	r.Touch(now)

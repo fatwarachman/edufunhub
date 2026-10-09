@@ -1,0 +1,32 @@
+<?php
+
+return [
+    'unavailable' => 'Configure the AI connection and select a model in AI settings first.',
+    'provider_error' => 'The AI answer could not be processed. Retry; if it still fails, check the connection and model in AI settings.',
+    'message_required' => 'Enter a message.',
+    'message_invalid' => 'The message must be text.',
+    'message_long' => 'The message may not exceed 4,000 characters.',
+    'history_invalid' => 'Conversation history must be a list containing only role and content.',
+    'history_long' => 'Conversation history may contain at most 12 messages.',
+    'role_invalid' => 'History roles must be user or assistant.',
+    'content_invalid' => 'Every history message must contain text.',
+    'content_long' => 'History messages may not exceed 8,000 characters.',
+    'conversation_invalid' => 'Invalid conversation.',
+    'title_required' => 'Enter a conversation title.',
+    'title_long' => 'The title may not exceed 100 characters.',
+    'invalid_filter' => 'Unsupported query or filter. Use the documented operation and filters.',
+    'invalid_range' => 'Use an ordered date range of at most 366 days.',
+    'query_limit' => 'The query limit has been reached.',
+    'sources' => [
+        'catalog' => 'Game catalog',
+        'players' => 'Players',
+        'player' => 'Player details',
+        'results' => 'Game results',
+        'matches' => 'Match history',
+        'points' => 'Points ledger',
+        'questions' => 'Question statistics',
+        'screen_time' => 'Active screen time',
+        'leaderboard' => 'Points leaderboard',
+        'ads' => 'Advertising statistics',
+    ],
+];

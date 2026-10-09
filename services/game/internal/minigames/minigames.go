@@ -262,7 +262,7 @@ func (h *Hub) Stop(uid int64, now time.Time) ([]int64, error) {
 func (h *Hub) next(g *game) Round {
 	if h.Spec.BankShare > 0 && g.rng.IntN(h.Spec.BankShare) == 0 {
 		if q, ok := g.bank.BankChoice(h.Spec.BankSubjects...); ok {
-			return Round{Question: questions.Trim(q, Options, g.rng)}
+			return Round{Question: g.bank.Present(q, Options)}
 		}
 	}
 	var round Round
@@ -273,7 +273,7 @@ func (h *Hub) next(g *game) Round {
 		}
 	}
 	g.seen[round.Question.Prompt.ID] = true
-	round.Question = questions.Trim(round.Question, Options, g.rng)
+	round.Question = g.bank.Present(round.Question, Options)
 	return round
 }
 

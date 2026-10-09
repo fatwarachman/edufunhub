@@ -74,6 +74,8 @@ class OpenAiCompatibleClient
             'url' => $this->settings->baseUrl(),
         ]]);
         app(AiManager::class)->forgetInstance(self::PROVIDER);
+        app(AiManager::class)->textProvider(self::PROVIDER)
+            ->useTextGateway(app(OpenAiCompatibleGateway::class));
 
         return self::PROVIDER;
     }

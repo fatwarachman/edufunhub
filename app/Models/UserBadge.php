@@ -6,6 +6,7 @@ use Database\Factories\UserBadgeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * A badge a player has earned (definitions live in config/badges.php).
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $user_id
  * @property string $badge
- * @property \Illuminate\Support\Carbon $earned_at
+ * @property Carbon $earned_at
  */
 class UserBadge extends Model
 {

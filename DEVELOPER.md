@@ -2,6 +2,7 @@
 
 > **Baca ini sebelum menyentuh satu baris kode pun.**  
 > Dokumen ini menjelaskan arsitektur, fitur, keamanan, dan konvensi yang wajib diikuti agar pengembangan baru tidak merusak fondasi yang sudah ada.
+> Panduan desain & teknis (style, komponen, resep game, menu, QA): [`docs/guidelines/README.md`](docs/guidelines/README.md).
 
 ---
 

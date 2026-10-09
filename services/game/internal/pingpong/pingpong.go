@@ -161,7 +161,7 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 func begin(r *room, now time.Time) {
 	g := &r.Game
 	g.round++
-	g.question = questions.Trim(g.gen.Choice(), Options, g.gen.Rand)
+	g.question = g.gen.Present(g.gen.Choice(), Options)
 	g.deadline = now.Add(g.answer)
 	g.botAt = now.Add(time.Duration(1000+g.rng.IntN(1001)) * time.Millisecond)
 	r.Touch(now)

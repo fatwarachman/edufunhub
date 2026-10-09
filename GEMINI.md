@@ -1,3 +1,7 @@
+## EduFunHub: aturan proyek
+
+- Baca `AGENTS.md` (aturan wajib: bahasa id/en, game Go dalam container, changelog) dan `docs/guidelines/README.md` (panduan desain & teknis untuk game, fitur, style, menu) sebelum mengubah kode.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

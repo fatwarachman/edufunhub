@@ -29,7 +29,7 @@ class PermissionController extends Controller
 
         return Inertia::render('admin/permissions/index', [
             'permissions' => $permissions,
-            'roles'       => $roles,
+            'roles' => $roles,
         ]);
     }
 }

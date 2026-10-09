@@ -1,4 +1,5 @@
-import AppLogoIcon from '@/components/app-logo-icon';
+import { AdminFeatureSearch } from '@/components/search/admin-feature-search';
+import { isGroup, navItems, type NavItem, type NavGroup } from '@/lib/admin-navigation';
 import { LanguageToggle } from '@/components/language-toggle';
 import { OnlineDot } from '@/components/online-dot';
 import { useAppearance } from '@/hooks/use-appearance';
@@ -9,39 +10,16 @@ import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
-    Activity,
-    BellRing,
-    BookMarked,
-    Bot,
-    ChartColumnBig,
-    ChartNoAxesCombined,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
-    Clock,
-    Coins,
-    Gauge,
     KeyRound,
-    ListChecks,
-    Lock,
     LogOut,
-    Megaphone,
     Menu,
-    MessageSquarePlus,
-    MonitorSmartphone,
     Moon,
-    Server,
     Settings,
-    ShieldCheck,
-    ShoppingBag,
-    SlidersHorizontal,
     Sun,
-    Swords,
-    Trophy,
     UserCog,
-    Users,
-    UsersRound,
-    Volume2,
     X,
 } from 'lucide-react';
 import {
@@ -51,149 +29,6 @@ import {
     useRef,
     useState,
 } from 'react';
-
-interface NavItem {
-    title: string;
-    href: string;
-    icon: React.ElementType;
-    exact?: boolean;
-    superadminOnly?: boolean;
-}
-
-/** Expandable sidebar entry that groups related pages (e.g. settings). */
-interface NavGroup {
-    title: string;
-    icon: React.ElementType;
-    children: NavItem[];
-}
-
-type NavEntry = NavItem | NavGroup;
-
-function isGroup(entry: NavEntry): entry is NavGroup {
-    return 'children' in entry;
-}
-
-const navItems: NavEntry[] = [
-    { title: 'Dashboard', href: '/admin/dashboard', icon: Gauge, exact: true },
-    { title: 'Users', href: '/admin/users', icon: Users },
-    { title: 'Roles', href: '/admin/roles', icon: ShieldCheck },
-    { title: 'Permissions', href: '/admin/permissions', icon: Lock },
-    {
-        title: 'Analytics',
-        icon: ChartNoAxesCombined,
-        children: [
-            {
-                title: 'User Statistics',
-                href: '/admin/user-statistics',
-                icon: UsersRound,
-                superadminOnly: true,
-            },
-            {
-                title: 'Playing Time',
-                href: '/admin/playing-time',
-                icon: Clock,
-                superadminOnly: true,
-            },
-            {
-                title: 'Screen Time',
-                href: '/admin/screen-time',
-                icon: MonitorSmartphone,
-                superadminOnly: true,
-            },
-            {
-                title: 'Game Statistics',
-                href: '/admin/games',
-                icon: ChartColumnBig,
-                superadminOnly: true,
-            },
-            {
-                title: 'Leaderboard',
-                href: '/admin/leaderboard',
-                icon: Trophy,
-                superadminOnly: true,
-            },
-        ],
-    },
-    {
-        title: 'Question Bank',
-        href: '/admin/questions',
-        icon: ListChecks,
-        superadminOnly: true,
-    },
-    {
-        title: 'Subjects',
-        href: '/admin/subjects',
-        icon: BookMarked,
-        superadminOnly: true,
-    },
-    {
-        title: 'Notifications',
-        href: '/admin/notifications',
-        icon: BellRing,
-        superadminOnly: true,
-    },
-    {
-        title: 'Character Items',
-        href: '/admin/character-items',
-        icon: ShoppingBag,
-        superadminOnly: true,
-    },
-    {
-        title: 'Advertising',
-        href: '/admin/ads',
-        icon: Megaphone,
-        superadminOnly: true,
-    },
-    {
-        title: 'Match History',
-        href: '/admin/matches',
-        icon: Swords,
-        superadminOnly: true,
-    },
-    {
-        title: 'Teacher Compensation',
-        href: '/admin/compensation',
-        icon: Coins,
-        superadminOnly: true,
-    },
-    {
-        title: 'Server Monitor',
-        href: '/admin/server-monitor',
-        icon: Server,
-        superadminOnly: true,
-    },
-    { title: 'Feedback', href: '/admin/feedback', icon: MessageSquarePlus },
-    { title: 'Activity Log', href: '/admin/activity-log', icon: Activity },
-    {
-        title: 'Settings',
-        icon: Settings,
-        children: [
-            {
-                title: 'General',
-                href: '/admin/settings',
-                icon: SlidersHorizontal,
-            },
-            {
-                title: 'Sound Settings',
-                href: '/admin/sound-settings',
-                icon: Volume2,
-                superadminOnly: true,
-            },
-            {
-                title: 'AI Settings',
-                href: '/admin/ai-settings',
-                icon: Bot,
-                superadminOnly: true,
-            },
-            {
-                title: 'Point Rules',
-                href: '/admin/point-rules',
-                icon: Coins,
-                superadminOnly: true,
-            },
-        ],
-    },
-];
 
 function isActive(href: string, currentUrl: string, exact = false): boolean {
     if (exact) return currentUrl === href || currentUrl.startsWith(href + '?');
@@ -327,9 +162,14 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                         sidebarCollapsed && 'md:justify-center md:px-2',
                     )}
                 >
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                        <AppLogoIcon className="size-5 fill-current" />
-                    </div>
+                    <img
+                        src="/favicon.svg?v=edufunhub-logo-2"
+                        alt=""
+                        aria-hidden="true"
+                        className="size-9 shrink-0 select-none"
+                        draggable={false}
+                        data-testid="admin-brand-logo"
+                    />
                     {!sidebarCollapsed && (
                         <div className="flex flex-col">
                             <span className="font-display text-sm leading-tight font-semibold text-sidebar-foreground">
@@ -523,6 +363,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     )}
 
                     <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+                        <AdminFeatureSearch />
                         <LanguageToggle variant="admin" />
                         {/* Theme toggle */}
                         <button

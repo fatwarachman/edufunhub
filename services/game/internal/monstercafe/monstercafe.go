@@ -2,7 +2,7 @@
 // self-paced cooking quiz for 1 to 40 players per room.
 //
 // A host screen (teacher, classroom projector) opens a room, picks the game
-// length (3, 5 or 7 minutes) and the question subject, and shares the 6 digit
+// length (3, 5, 7, 10 or 15 minutes) and the question subject, and shares the 6 digit
 // PIN or the invite link. Every student runs a private kitchen: monster
 // customers order burgers and pizzas, each ingredient is earned by answering
 // a quiz question correctly, the plate is cooked in an oven that burns
@@ -77,7 +77,7 @@ const (
 )
 
 // Minutes are the selectable game lengths.
-var Minutes = []int{3, 5, 7}
+var Minutes = []int{3, 5, 7, 10, 15}
 
 // DefaultMinutes is the game length of a new room.
 const DefaultMinutes = 5

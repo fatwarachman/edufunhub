@@ -3,10 +3,10 @@
 use App\Ai\Agents\QuestionWriter;
 use App\Jobs\GenerateQuestions;
 use App\Models\Question;
-use App\Models\Subject;
 use App\Models\QuestionGeneration;
 use App\Models\Role;
 use App\Models\Setting;
+use App\Models\Subject;
 use App\Models\User;
 use App\Services\Ai\AiSettings;
 use App\Services\PointRules;

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Requests\StoreGameResultRequest;
 use App\Models\GameHistory;
 use App\Models\Question;
 use App\Models\QuestionAnswer;
@@ -224,7 +225,13 @@ class GameAnalytics
         ])->all();
     }
 
-    /** @return Collection<int, array{key: string, titleKey: string, category: string, accent: string, awardsPoints: bool, minPlayers: int, maxPlayers: int, tracked: bool}> */
+    /**
+     * Catalog games. `tracked` means the Go service reports results to Laravel
+     * (game_histories); `questionBank` means the game draws from the shared
+     * question bank. Crossword, for example, is tracked but uses its own words.
+     *
+     * @return Collection<int, array{key: string, titleKey: string, category: string, accent: string, awardsPoints: bool, minPlayers: int, maxPlayers: int, tracked: bool, questionBank: bool}>
+     */
     public function catalogGames(): Collection
     {
         return collect(config('game-catalog.categories'))->flatMap(fn (array $category): array => collect($category['games'])->map(fn (array $game): array => [
@@ -235,7 +242,8 @@ class GameAnalytics
             'awardsPoints' => (bool) ($game['awards_points'] ?? false),
             'minPlayers' => (int) ($game['min_players'] ?? 1),
             'maxPlayers' => (int) ($game['max_players'] ?? 1),
-            'tracked' => in_array($game['key'], Question::GAMES, true),
+            'tracked' => array_key_exists($game['key'], StoreGameResultRequest::GAMES),
+            'questionBank' => in_array($game['key'], Question::GAMES, true),
         ])->all())->values();
     }
 

@@ -50,11 +50,21 @@
             "demoInvite": "Solo dengan robot · Duel dengan teman",
             "demoWinner": "5 : 3 — Menang!",
             "demoQuestion": "Berapa hasil 7 × 8?",
-            "demoOptions": ["54", "56", "63", "48"],
+            "demoOptions": [
+                "54",
+                "56",
+                "63",
+                "48"
+            ],
             "demoAnswer": "Jawaban: 56",
             "demoRally": "Reli 6 · giliran bergantian",
             "demoRallyQuestion": "Planet terdekat dengan Matahari adalah…",
-            "demoRallyOptions": ["Venus", "Merkurius", "Mars", "Bumi"],
+            "demoRallyOptions": [
+                "Venus",
+                "Merkurius",
+                "Mars",
+                "Bumi"
+            ],
             "demo": {
                 "subject": "PILIH MAPEL",
                 "read": "BACA SOAL",
@@ -862,6 +872,18 @@
                         "Tim dengan persentase warna paling dominan saat waktu habis menang."
                     ],
                     "fun": "Sangat visual, kontribusi langsung terlihat di layar proyektor, kompetitif tapi santai."
+                },
+                "roleplayProfession": {
+                    "title": "Roleplay Profesi / Career Quest",
+                    "inspiration": "Mekanik Story RPG & Dynamic Avatar",
+                    "concept": "Petualangan investigasi krisis dunia kerja nyata di mana murid bermain sebagai profesional menggunakan avatar profil asli mereka.",
+                    "gameplay": [
+                        "Avatar profil murid otomatis mengenakan seragam profesi (Jas Dokter, Rompi Engineer, Celemek Koki) sesuai episode skenario.",
+                        "Investigasi kasus dan dialog interaktif multi-mata pelajaran (misal: Biologi + Matematika untuk kalkulasi dosis IGD).",
+                        "Ekspresi avatar dinamis: berpikir saat memilih alat kerja, panik saat meteran krisis naik, dan selebrasi saat kasus terpecahkan.",
+                        "Selesaikan misi cerita untuk menaikkan pangkat profesi, membuka episode baru, dan mengumpulkan multi-subject XP."
+                    ],
+                    "fun": "Melihat foto profil dan karakter sendiri mengenakan seragam dokter atau engineer di tengah krisis membuat simulasi profesi terasa nyata dan sangat personal."
                 }
             }
         },

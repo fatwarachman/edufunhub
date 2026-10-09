@@ -361,8 +361,7 @@ func (m *match) record(p *player, option int, now time.Time) {
 }
 
 func (m *match) nextQuestion(now time.Time) {
-	q := m.gen.Choice()
-	m.question = questions.Trim(q, Options, m.gen.Rand)
+	m.question = m.gen.Present(m.gen.Choice(), Options)
 	m.phase, m.phaseAt = PhaseQuestion, now
 	for _, p := range m.players {
 		p.answered, p.choice, p.gained = false, -1, 0

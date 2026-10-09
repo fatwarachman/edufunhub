@@ -45,8 +45,8 @@ class RoleController extends Controller
     public function store(StoreRoleRequest $request): RedirectResponse
     {
         $role = Role::create([
-            'name'        => $request->name,
-            'slug'        => $request->slug,
+            'name' => $request->name,
+            'slug' => $request->slug,
             'description' => $request->description,
         ]);
 
@@ -75,7 +75,7 @@ class RoleController extends Controller
         $role->load('permissions:id');
 
         return Inertia::render('admin/roles/edit', [
-            'role'    => $role,
+            'role' => $role,
             'modules' => Module::query()->with('permissions:id,name,slug,module_id')->where('is_active', true)->get(),
         ]);
     }
@@ -90,8 +90,8 @@ class RoleController extends Controller
         }
 
         $role->update([
-            'name'        => $request->name,
-            'slug'        => $request->slug,
+            'name' => $request->name,
+            'slug' => $request->slug,
             'description' => $request->description,
         ]);
 

@@ -2,6 +2,7 @@ import GameAdStrip from '@/components/ads/game-ad-strip';
 import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale, podiumStandings } from '@/components/game-finale';
+import { GameLanguageToggle } from '@/components/game-language-toggle';
 import { useRoomPin } from '@/components/multiplayer/room';
 import { HostScreen } from '@/components/order-rush/host-screen';
 import { HowToPlay } from '@/components/order-rush/how-to-play';
@@ -226,6 +227,10 @@ export default function OrderRush({
                                 })}
                             </span>
                         )}
+                        <GameLanguageToggle
+                            className="hidden sm:inline-flex"
+                            testId="or-language-toggle"
+                        />
                         <button
                             type="button"
                             onClick={toggleMuted}
@@ -249,6 +254,10 @@ export default function OrderRush({
             </header>
             <main className="mx-auto flex flex-col gap-4 px-3 py-5 sm:px-6 lg:px-8">
                 <GameAdStrip />
+                <GameLanguageToggle
+                    className="self-end sm:hidden"
+                    testId="or-language-toggle-mobile"
+                />
                 {body}
                 {state.phase !== 'RACE_ACTIVE' && (
                     <HowToPlay className="mx-auto w-full max-w-3xl" />

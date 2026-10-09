@@ -445,7 +445,7 @@ func (r *Room) prepare(p *Player, now time.Time) {
 // ask sends the player's next question (stage QUESTION).
 func (r *Room) ask(p *Player, now time.Time) {
 	p.asked++
-	p.question = questions.Trim(p.gen.Choice(), Options, r.rng)
+	p.question = p.gen.Present(p.gen.Choice(), Options)
 	p.questionID = fmt.Sprintf("%d-%d", p.ID(), p.asked)
 	p.askedAt, p.until, p.stage = now, time.Time{}, StageQuestion
 	p.chests, p.pending = [Chests]Chest{}, Chest{}

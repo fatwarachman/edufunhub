@@ -942,12 +942,14 @@ html:has(.edu-nav-bar) {
     font-weight: 800;
 }
 
-/* Digital clock in the header nav: same ink frame as the nav buttons. */
+/* Digital clock in the header nav: same ink frame as the nav buttons. The time
+ * and date lines are left-aligned inside the badge. */
 .edu-clock {
     display: inline-flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    text-align: left;
     min-height: 44px;
     padding: 2px 12px;
     border: 2.5px solid #151b2e;
