@@ -6,6 +6,9 @@ php artisan migrate --force
 # Official school list for the school picker (first boot only, ~25 s)
 php artisan schools:import --if-empty || true
 
+# Recorded app changelog (database/data/changelog.php) for the admin Changelog page
+php artisan changelog:sync || true
+
 # Cache config + views (skip route cache — starter has duplicate route name collision)
 php artisan config:cache
 php artisan view:cache
