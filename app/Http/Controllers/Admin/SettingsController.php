@@ -23,11 +23,11 @@ class SettingsController extends Controller
         $tab = $request->query('tab', 'general');
 
         return Inertia::render('admin/settings', [
-            'tab'      => $tab,
-            'general'  => Setting::group('general'),
-            'mail'     => Setting::group('mail'),
+            'tab' => $tab,
+            'general' => Setting::group('general'),
+            'mail' => Setting::group('mail'),
             'security' => Setting::group('security'),
-            'profile'  => $request->user()->only('id', 'name', 'email', 'avatar_url', 'bio', 'timezone'),
+            'profile' => $request->user()->only('id', 'name', 'email', 'avatar_url', 'bio', 'timezone'),
         ]);
     }
 
@@ -37,11 +37,11 @@ class SettingsController extends Controller
     public function updateGeneral(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'app_name'        => ['required', 'string', 'max:100'],
+            'app_name' => ['required', 'string', 'max:100'],
             'app_description' => ['nullable', 'string', 'max:500'],
-            'app_url'         => ['nullable', 'url', 'max:255'],
-            'app_logo'        => ['nullable', 'string', 'max:500'],
-            'app_timezone'    => ['nullable', 'string', 'max:50'],
+            'app_url' => ['nullable', 'url', 'max:255'],
+            'app_logo' => ['nullable', 'string', 'max:500'],
+            'app_timezone' => ['nullable', 'string', 'max:50'],
             'maintenance_mode' => ['nullable', 'boolean'],
         ]);
 
@@ -63,14 +63,14 @@ class SettingsController extends Controller
     public function updateMail(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'mail_mailer'       => ['required', 'string', Rule::in(['smtp', 'log', 'sendmail', 'mailgun', 'ses'])],
-            'mail_host'         => ['nullable', 'string', 'max:255'],
-            'mail_port'         => ['nullable', 'integer', 'min:1', 'max:65535'],
-            'mail_encryption'   => ['nullable', 'string', Rule::in(['', 'tls', 'ssl'])],
-            'mail_username'     => ['nullable', 'string', 'max:255'],
-            'mail_password'     => ['nullable', 'string', 'max:255'],
+            'mail_mailer' => ['required', 'string', Rule::in(['smtp', 'log', 'sendmail', 'mailgun', 'ses'])],
+            'mail_host' => ['nullable', 'string', 'max:255'],
+            'mail_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
+            'mail_encryption' => ['nullable', 'string', Rule::in(['', 'tls', 'ssl'])],
+            'mail_username' => ['nullable', 'string', 'max:255'],
+            'mail_password' => ['nullable', 'string', 'max:255'],
             'mail_from_address' => ['nullable', 'email', 'max:255'],
-            'mail_from_name'    => ['nullable', 'string', 'max:255'],
+            'mail_from_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         foreach ($data as $key => $value) {
@@ -91,13 +91,13 @@ class SettingsController extends Controller
     public function updateSecurity(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'password_min_length'  => ['required', 'integer', 'min:6', 'max:128'],
+            'password_min_length' => ['required', 'integer', 'min:6', 'max:128'],
             'password_require_uppercase' => ['nullable', 'boolean'],
-            'password_require_numbers'   => ['nullable', 'boolean'],
-            'password_require_symbols'   => ['nullable', 'boolean'],
-            'session_lifetime'     => ['required', 'integer', 'min:1', 'max:1440'],
-            'max_login_attempts'   => ['required', 'integer', 'min:1', 'max:100'],
-            'two_factor_enabled'   => ['nullable', 'boolean'],
+            'password_require_numbers' => ['nullable', 'boolean'],
+            'password_require_symbols' => ['nullable', 'boolean'],
+            'session_lifetime' => ['required', 'integer', 'min:1', 'max:1440'],
+            'max_login_attempts' => ['required', 'integer', 'min:1', 'max:100'],
+            'two_factor_enabled' => ['nullable', 'boolean'],
         ]);
 
         foreach ($data as $key => $value) {
@@ -121,9 +121,9 @@ class SettingsController extends Controller
         $user = $request->user();
 
         $data = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'bio'      => ['nullable', 'string', 'max:1000'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'bio' => ['nullable', 'string', 'max:1000'],
             'timezone' => ['nullable', 'string', 'max:50'],
         ]);
 
@@ -144,7 +144,7 @@ class SettingsController extends Controller
     {
         $data = $request->validate([
             'current_password' => ['required', 'current_password'],
-            'password'         => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
         ]);
 
         $request->user()->update([

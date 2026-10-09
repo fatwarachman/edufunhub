@@ -4,6 +4,7 @@ use App\Models\ImpersonationLog;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 
 function roleWith(string ...$permissions): Role
 {
@@ -25,7 +26,7 @@ function adminWith(string ...$permissions): User
 }
 
 beforeEach(function () {
-    $this->seed(Database\Seeders\RolePermissionSeeder::class);
+    $this->seed(RolePermissionSeeder::class);
 });
 
 it('registers the impersonate permission for the super admin role only', function () {

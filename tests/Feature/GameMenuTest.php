@@ -103,7 +103,7 @@ it('describes list-view game details and popularity in both locales', function (
 });
 
 it('describes every coming-soon game in both locales', function (): void {
-    $games = ['saboteurLab', 'bossDefense', 'pixelPainter'];
+    $games = ['saboteurLab', 'bossDefense', 'pixelPainter', 'roleplayProfession'];
 
     foreach (['id', 'en'] as $locale) {
         $catalog = json_decode(

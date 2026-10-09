@@ -50,11 +50,21 @@
             "demoInvite": "Solo with bot · Duel with a friend",
             "demoWinner": "5 : 3 — Victory!",
             "demoQuestion": "What is 7 × 8?",
-            "demoOptions": ["54", "56", "63", "48"],
+            "demoOptions": [
+                "54",
+                "56",
+                "63",
+                "48"
+            ],
             "demoAnswer": "Answer: 56",
             "demoRally": "Rally 6 · turns alternate",
             "demoRallyQuestion": "Which planet is closest to the Sun?",
-            "demoRallyOptions": ["Venus", "Mercury", "Mars", "Earth"],
+            "demoRallyOptions": [
+                "Venus",
+                "Mercury",
+                "Mars",
+                "Earth"
+            ],
             "demo": {
                 "subject": "PICK A SUBJECT",
                 "read": "READ THE QUESTION",
@@ -863,6 +873,18 @@
                         "The team with the largest colour share when time runs out wins."
                     ],
                     "fun": "Highly visual, contributions show up instantly on the projector, competitive yet relaxed."
+                },
+                "roleplayProfession": {
+                    "title": "Roleplay Profession / Career Quest",
+                    "inspiration": "Story RPG & Dynamic Avatar mechanics",
+                    "concept": "Story-driven workplace crisis adventures where students step into real-world careers using their own profile avatars.",
+                    "gameplay": [
+                        "Student profile avatars dynamically wear profession uniforms (Doctor coat, Engineer safety vest, Chef apron) matching each scenario episode.",
+                        "Interactive case investigations and dialogue combining multiple subjects (e.g., Biology + Math for emergency medical dosing).",
+                        "Dynamic avatar reactions: thinking when choosing tools, panicking when crisis meters rise, and celebratory gestures upon solving the case.",
+                        "Complete story missions to unlock rank promotions, new episodes, and multi-subject XP."
+                    ],
+                    "fun": "Seeing your own profile character suited up in doctor or engineer gear solving high-stakes dilemmas makes career exploration personal and exciting."
                 }
             }
         },

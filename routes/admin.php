@@ -3,7 +3,9 @@
 use App\Http\Controllers\Admin\AbilityAssessmentController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AdController;
+use App\Http\Controllers\Admin\AiAssistantController;
 use App\Http\Controllers\Admin\AiSettingsController;
+use App\Http\Controllers\Admin\ChangelogController;
 use App\Http\Controllers\Admin\CharacterItemController;
 use App\Http\Controllers\Admin\CompensationController;
 use App\Http\Controllers\Admin\CrosswordWordController;
@@ -95,6 +97,11 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::put('/point-rules', [PointRulesController::class, 'update'])->name('point-rules.update');
             Route::get('/sound-settings', [GameSoundsController::class, 'index'])->name('sound-settings.index');
             Route::put('/sound-settings', [GameSoundsController::class, 'update'])->name('sound-settings.update');
+            Route::get('/ai-assistant', [AiAssistantController::class, 'index'])->name('ai-assistant.index');
+            Route::post('/ai-assistant/messages', [AiAssistantController::class, 'store'])->middleware('throttle:10,1,ai-assistant.messages')->name('ai-assistant.messages');
+            Route::get('/ai-assistant/conversations/{conversation}', [AiAssistantController::class, 'show'])->whereUuid('conversation')->name('ai-assistant.conversations.show');
+            Route::patch('/ai-assistant/conversations/{conversation}', [AiAssistantController::class, 'update'])->whereUuid('conversation')->middleware('throttle:30,1,ai-assistant.conversations')->name('ai-assistant.conversations.update');
+            Route::delete('/ai-assistant/conversations/{conversation}', [AiAssistantController::class, 'destroy'])->whereUuid('conversation')->middleware('throttle:30,1,ai-assistant.conversations')->name('ai-assistant.conversations.destroy');
             Route::get('/ai-settings', [AiSettingsController::class, 'index'])->name('ai-settings.index');
             Route::put('/ai-settings', [AiSettingsController::class, 'update'])->name('ai-settings.update');
             Route::post('/ai-settings/models', [AiSettingsController::class, 'refresh'])->name('ai-settings.models');
@@ -118,6 +125,10 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::patch('/subjects/{subject}/toggle', [SubjectController::class, 'toggle'])->name('subjects.toggle');
             Route::patch('/subjects/{subject}/move', [SubjectController::class, 'move'])->name('subjects.move');
             Route::resource('subjects', SubjectController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog.index');
+            Route::post('/changelog', [ChangelogController::class, 'store'])->middleware('throttle:30,1,changelog.store')->name('changelog.store');
+            Route::put('/changelog/{changelogEntry}', [ChangelogController::class, 'update'])->middleware('throttle:60,1,changelog.update')->name('changelog.update');
+            Route::delete('/changelog/{changelogEntry}', [ChangelogController::class, 'destroy'])->middleware('throttle:30,1,changelog.destroy')->name('changelog.destroy');
             // Order Rush sequence bank and Port Sorter item bank live under their game pages (sub tabs).
             Route::patch('/games/order-rush/sequences/{sequence_set}/toggle', [SequenceSetController::class, 'toggle'])->name('sequence-sets.toggle');
             Route::resource('games/order-rush/sequences', SequenceSetController::class)
