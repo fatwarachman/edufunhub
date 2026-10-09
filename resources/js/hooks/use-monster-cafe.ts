@@ -214,7 +214,7 @@ const EMPTY: MonsterCafeState = {
     role: 'player',
     roster: [],
     minutes: 5,
-    minutes_options: [3, 5, 7],
+    minutes_options: [3, 5, 7, 10, 15],
     receivedAt: 0,
     leaderboard: [],
     feed: [],

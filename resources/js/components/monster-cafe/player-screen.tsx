@@ -1536,7 +1536,7 @@ function SoloLobby({
                     {t('monsterCafe.player.soloDuration')}
                 </legend>
                 <div
-                    className="grid grid-cols-3 gap-2"
+                    className="grid grid-cols-5 gap-2"
                     role="group"
                     data-testid="mc-solo-minutes"
                 >

@@ -374,7 +374,7 @@ function HostLobby({
                         {t('monsterCafe.host.duration')}
                     </legend>
                     <div
-                        className="grid grid-cols-3 gap-2"
+                        className="grid grid-cols-3 gap-2 sm:grid-cols-5"
                         role="group"
                         data-testid="mc-minutes"
                     >
