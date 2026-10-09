@@ -72,7 +72,7 @@ class UserAnalytics
                 'active_delta' => $this->delta($active7, $activePrev7),
                 'points' => (int) $totals->points,
                 'accuracy' => $this->percent((int) $totals->correct, (int) $totals->correct + (int) $totals->wrong),
-                'online_15m' => User::query()->where('last_seen_at', '>=', now()->subMinutes(15))->count(),
+                'online_15m' => User::query()->where('last_seen_at', '>=', now()->subMinutes(User::ONLINE_MINUTES))->count(),
                 'profile_complete' => $profiles->filter(fn (array $p): bool => $p['complete'])->count(),
                 'profiles' => $profiles->count(),
                 'schools' => $profiles->pluck('school_key')->filter()->unique()->count(),

@@ -18,7 +18,7 @@ use Illuminate\Support\Collection;
 class PlayingTimeAnalytics
 {
     /** @var list<int> */
-    public const RANGES = [7, 30, 90];
+    public const RANGES = [1, 7, 30, 90];
 
     public const PLAYER_LIMIT = 100;
 
@@ -31,7 +31,7 @@ class PlayingTimeAnalytics
     public function report(array $filters): array
     {
         $base = fn (): Builder => GameHistory::query()
-            ->when($filters['days'] > 0, fn (Builder $query) => $query->where('played_at', '>=', now()->subDays($filters['days'])->startOfDay()))
+            ->when($filters['days'] > 0, fn (Builder $query) => $query->where('played_at', '>=', $this->rangeStart($filters['days'])))
             ->when($filters['game'], fn (Builder $query, string $game) => $query->where('game_key', $game));
 
         $totals = $base()
@@ -52,7 +52,11 @@ class PlayingTimeAnalytics
                 'avg_per_player' => $timedPlayers > 0 ? (int) round($seconds / $timedPlayers) : null,
             ],
             'games' => $this->perGame($base()),
-            'daily' => $this->daily($base(), $filters['days'] > 0 ? $filters['days'] : 30),
+            'daily' => $this->daily($base(), match (true) {
+                $filters['days'] === 1 => 7,
+                $filters['days'] > 0 => $filters['days'],
+                default => 30,
+            }),
             'players' => $this->perPlayer($base(), $filters['search']),
         ];
     }
@@ -100,6 +104,15 @@ class PlayingTimeAnalytics
             ->sortByDesc('seconds')
             ->values()
             ->all();
+    }
+
+    /**
+     * Start of a range filter: "today" (1) starts at midnight, longer ranges
+     * keep counting back the full number of days.
+     */
+    private function rangeStart(int $days): Carbon
+    {
+        return now()->subDays($days === 1 ? 0 : $days)->startOfDay();
     }
 
     /** @return list<array{date: string, seconds: int, players: int}> */

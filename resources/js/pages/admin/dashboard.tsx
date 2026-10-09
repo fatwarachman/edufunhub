@@ -37,6 +37,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import {
     Activity,
     ArrowRight,
+    ArrowUpRight,
     Cake,
     ChartColumnBig,
     Gamepad2,
@@ -256,18 +257,28 @@ export default function Dashboard(props: DashboardProps) {
                                 label={tr('Plays today')}
                                 value={kpis.plays_today}
                                 color="var(--color-bubble-blue)"
+                                href={
+                                    superadmin
+                                        ? '/admin/playing-time?days=1'
+                                        : undefined
+                                }
+                                testId="dashboard-pulse-plays"
                             />
                             <PulseStat
                                 icon={UserPlus}
                                 label={tr('New today')}
                                 value={kpis.signups_today}
                                 color="var(--color-bubble-orange)"
+                                href="/admin/users?activity=joined_today"
+                                testId="dashboard-pulse-signups"
                             />
                             <PulseStat
                                 icon={Radio}
                                 label={tr('Online')}
                                 value={kpis.online_15m}
                                 color="var(--color-bubble-green)"
+                                href="/admin/users?activity=online&sort=last_seen_at&direction=desc"
+                                testId="dashboard-pulse-online"
                             />
                         </div>
                     </div>
@@ -986,19 +997,52 @@ function PulseStat({
     label,
     value,
     color,
+    href,
+    testId,
 }: {
     icon: React.ElementType;
     label: string;
     value: number;
     color: string;
+    href?: string;
+    testId?: string;
 }) {
-    return (
-        <div className="flex min-w-24 flex-col gap-1 rounded-2xl border border-border bg-background/80 px-3 py-3 backdrop-blur sm:min-w-28 sm:px-4">
-            <Icon className="size-4" style={{ color }} />
+    const classes =
+        'group flex min-w-24 flex-col gap-1 rounded-2xl border border-border bg-background/80 px-3 py-3 backdrop-blur sm:min-w-28 sm:px-4';
+    const body = (
+        <>
+            <span className="flex items-center justify-between gap-2">
+                <Icon className="size-4" style={{ color }} />
+                {href && (
+                    <ArrowUpRight
+                        className="size-3.5 text-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground"
+                        aria-hidden="true"
+                    />
+                )}
+            </span>
             <span className="font-display text-2xl leading-none font-bold text-foreground tabular-nums">
                 {formatNumber(value)}
             </span>
-            <span className="text-xs text-muted-foreground">{tr(label)}</span>
+            <span className="text-xs font-medium text-foreground/70">
+                {tr(label)}
+            </span>
+        </>
+    );
+
+    return href ? (
+        <Link
+            href={href}
+            className={cn(
+                classes,
+                'transition-all hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-background hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+            )}
+            data-testid={testId}
+        >
+            {body}
+        </Link>
+    ) : (
+        <div className={classes} data-testid={testId}>
+            {body}
         </div>
     );
 }

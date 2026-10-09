@@ -38,6 +38,8 @@ class UserController extends Controller
                 $method = $request->signup === 'google' ? 'whereHas' : 'whereDoesntHave';
                 $q->{$method}('connectedAccounts', fn ($accounts) => $accounts->where('provider', 'google'));
             })
+            ->when($request->activity === 'joined_today', fn ($q) => $q->where('created_at', '>=', now()->startOfDay()))
+            ->when($request->activity === 'online', fn ($q) => $q->where('last_seen_at', '>=', now()->subMinutes(User::ONLINE_MINUTES)))
             ->when($request->search, function ($q, string $search): void {
                 $q->where(function ($q) use ($search): void {
                     $q->where('name', 'like', "%{$search}%")
@@ -64,7 +66,7 @@ class UserController extends Controller
         return Inertia::render('admin/users/index', [
             'users' => $users,
             'roles' => Role::query()->select('id', 'name', 'slug')->get(),
-            'filters' => (object) $request->only(['search', 'role', 'signup', 'sort', 'direction']),
+            'filters' => (object) $request->only(['search', 'role', 'signup', 'activity', 'sort', 'direction']),
             'canImpersonate' => $request->user()->hasPermission(ImpersonationController::PERMISSION)
                 && ! $request->session()->has('impersonated_by'),
             'viewerIsSuperadmin' => (bool) $request->user()->is_superadmin,

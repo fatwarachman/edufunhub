@@ -102,6 +102,7 @@ interface Props {
 
 const RANGES = [
     { value: 0, label: 'All time' },
+    { value: 1, label: 'Today' },
     { value: 7, label: '7 days' },
     { value: 30, label: '30 days' },
     { value: 90, label: '90 days' },
