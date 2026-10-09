@@ -40,6 +40,7 @@ use App\Http\Controllers\SchoolListController;
 use App\Http\Controllers\SchoolSuggestionController;
 use App\Http\Controllers\ScreenTimeController;
 use App\Http\Controllers\SkyQuizController;
+use App\Http\Controllers\SnakeGameController;
 use App\Http\Controllers\SnakesAndLaddersController;
 use App\Http\Controllers\Teacher\TeacherQuestionController;
 use App\Http\Controllers\TurboTriviaController;
@@ -163,6 +164,10 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::get('/games/snakes-and-ladders', [SnakesAndLaddersController::class, 'show'])->middleware(RecordGameAccess::class.':snakes-and-ladders')->name('games.snakes-and-ladders');
         Route::get('/games/sky-quiz', [SkyQuizController::class, 'show'])->middleware(RecordGameAccess::class.':sky-quiz')->name('games.sky-quiz');
         Route::post('/games/sky-quiz/token', [SkyQuizController::class, 'token'])->middleware('throttle:30,1,games.sky-quiz.token')->name('games.sky-quiz.token');
+        Route::get('/games/snake', [SnakeGameController::class, 'show'])->middleware(RecordGameAccess::class.':snake')->name('games.snake');
+        Route::get('/games/snake/arena/{code?}', [SnakeGameController::class, 'arena'])->middleware(RecordGameAccess::class.':snake')->name('games.snake.arena');
+        Route::get('/arena/snake/{code?}', [SnakeGameController::class, 'arena'])->middleware(RecordGameAccess::class.':snake')->name('games.snake.arena.alias');
+        Route::post('/games/snake/token', [SnakeGameController::class, 'token'])->middleware('throttle:30,1,games.snake.token')->name('games.snake.token');
     });
 });
 

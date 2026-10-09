@@ -22,6 +22,7 @@ import (
 	"edufunhub/game/internal/blockbattle"
 	"edufunhub/game/internal/crossword"
 	"edufunhub/game/internal/duel"
+	"edufunhub/game/internal/edusnake"
 	"edufunhub/game/internal/floordrop"
 	"edufunhub/game/internal/heist"
 	"edufunhub/game/internal/lobby"
@@ -57,6 +58,8 @@ type Config struct {
 	BlockBattle blockbattle.Config
 	// MonsterCafe timings (zero = monstercafe.Defaults).
 	MonsterCafe monstercafe.Config
+	// EduSnake timings (zero = edusnake.Defaults).
+	EduSnake edusnake.Config
 }
 
 type connection struct{ cancel context.CancelFunc }
@@ -96,6 +99,8 @@ type Server struct {
 	blockConns    map[floorKey]*blockbattle.Client
 	cafe          *monstercafe.Hub
 	cafeConns     map[floorKey]*monstercafe.Client
+	snake         *edusnake.Hub
+	snakeSubs     map[int64]*snakeSub
 	started       time.Time
 }
 
@@ -128,6 +133,9 @@ func New(cfg Config) *Server {
 	if cfg.MonsterCafe.Tick == 0 {
 		cfg.MonsterCafe = monstercafe.Defaults
 	}
+	if cfg.EduSnake.Step == 0 {
+		cfg.EduSnake = edusnake.Defaults
+	}
 	s := &Server{
 		cfg: cfg, sessions: map[int64]*session.Session{}, conns: map[int64]*connection{},
 		skies: map[int64]*sky.Session{}, skyConns: map[int64]*connection{},
@@ -151,6 +159,8 @@ func New(cfg Config) *Server {
 		blockConns: map[floorKey]*blockbattle.Client{},
 		cafe:       monstercafe.NewHub(cfg.MonsterCafe, uint64(cfg.Now().UnixNano())^0xcafe),
 		cafeConns:  map[floorKey]*monstercafe.Client{},
+		snake:      edusnake.NewHub(cfg.EduSnake, uint64(cfg.Now().UnixNano())^0x54a8),
+		snakeSubs:  map[int64]*snakeSub{},
 		started:    cfg.Now(),
 	}
 	for i, key := range minigames.Keys {
@@ -184,6 +194,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /ws/turbo-trivia", s.serveTurboTrivia)
 	mux.HandleFunc("GET /ws/block-battle", s.serveBlockBattle)
 	mux.HandleFunc("GET /ws/monster-cafe", s.serveMonsterCafe)
+	mux.HandleFunc("GET /ws/snake", s.serveEduSnake)
 	mux.HandleFunc("GET /internal/stats", s.serveStats)
 	mux.HandleFunc("GET /internal/presence", s.servePresence)
 	mux.HandleFunc("GET /internal/room", s.serveFindPin)
@@ -399,6 +410,8 @@ func (s *Server) Prune(ttl time.Duration) {
 		s.minis[key].Prune(s.cfg.Now())
 	}
 	s.reportMinis()
+	s.snake.Prune(s.cfg.Now())
+	s.reportEduSnake()
 }
 
 // serveSky runs the Sukhoi Sky Quiz referee over WebSocket.

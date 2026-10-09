@@ -8,6 +8,7 @@ return [
     'public_train_ws_url' => env('GAME_SERVICE_PUBLIC_TRAIN_WS_URL', '/game-ws/train'),
     'public_port_sorter_ws_url' => env('GAME_SERVICE_PUBLIC_PORT_SORTER_WS_URL', '/game-ws/port-sorter'),
     'public_snakes_ws_url' => env('GAME_SERVICE_PUBLIC_SNAKES_WS_URL', '/game-ws/snakes'),
+    'public_snake_ws_url' => env('GAME_SERVICE_PUBLIC_SNAKES_WS_URL', '/game-ws/snake'),
     'public_crossword_ws_url' => env('GAME_SERVICE_PUBLIC_CROSSWORD_WS_URL', '/game-ws/crossword'),
     // Room quiz games (market-math, number-garden, explore-indonesia, mini-lab): base + '/'.$game.
     'public_floor_drop_ws_url' => env('GAME_SERVICE_PUBLIC_FLOOR_DROP_WS_URL', '/game-ws/floor-drop'),

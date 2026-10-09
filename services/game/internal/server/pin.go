@@ -37,6 +37,8 @@ func (s *Server) FindPin(pin string) []RoomMatch {
 	}
 	phase, ok := s.snakes.RoomPhase(pin)
 	lobbyRoom("snakes-and-ladders", phase, ok)
+	phase, ok = s.snake.RoomPhase(pin)
+	lobbyRoom("snake", phase, ok)
 	phase, ok = s.pingpong.RoomPhase(pin)
 	lobbyRoom("ping-pong", phase, ok)
 	phase, ok = s.crosswords.RoomPhase(pin)

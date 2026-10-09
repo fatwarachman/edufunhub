@@ -30,6 +30,8 @@ func (s *Server) Presence(uid int64) []Activity {
 	}
 	p, ok := s.snakes.Presence(uid)
 	lobbyRoom("snakes-and-ladders", p, ok)
+	p, ok = s.snake.Presence(uid)
+	lobbyRoom("snake", p, ok)
 	p, ok = s.pingpong.Presence(uid)
 	lobbyRoom("ping-pong", p, ok)
 	p, ok = s.crosswords.Presence(uid)

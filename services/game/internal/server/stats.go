@@ -95,6 +95,11 @@ func (s *Server) Snapshot() Stats {
 	s.mu.Unlock()
 	cafeRooms, _ := s.cafe.Counts()
 	games = append(games, Usage{Game: "monster-cafe", Connections: cafeConns, Sessions: cafeRooms})
+	s.mu.Lock()
+	snakeConns := len(s.snakeSubs)
+	s.mu.Unlock()
+	snakeRooms, _ := s.snake.Counts()
+	games = append(games, Usage{Game: "snake", Connections: snakeConns, Sessions: snakeRooms})
 	return Stats{
 		Service:        "edufunhub-game",
 		GoVersion:      runtime.Version(),

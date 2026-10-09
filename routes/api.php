@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\QuestionBankController;
 use App\Http\Controllers\Api\SequenceBankController;
 use App\Http\Controllers\Api\SorterBankController;
+use App\Http\Controllers\SnakeGameController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +35,16 @@ Route::get('/internal/sorter-bank', SorterBankController::class)
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+Route::prefix('games/snake')->group(function (): void {
+    Route::get('/questions', [SnakeGameController::class, 'questions'])->name('api.games.snake.questions');
+    Route::get('/rooms/{code}', [SnakeGameController::class, 'showRoom'])->name('api.games.snake.rooms.show');
+
+    Route::middleware(['auth:sanctum,web'])->group(function (): void {
+        Route::post('/rooms', [SnakeGameController::class, 'storeRoom'])->name('api.games.snake.rooms.store');
+        Route::post('/rooms/{code}/join', [SnakeGameController::class, 'joinRoom'])->name('api.games.snake.rooms.join');
+    });
+});
 
 /*
 |--------------------------------------------------------------------------

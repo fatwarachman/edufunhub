@@ -126,6 +126,7 @@
         "board": "Permainan papan",
         "quiz": "Kuis edukasi",
         "snakes": "Ular Tangga Edukasi",
+        "snake": "Main Ular",
         "sky": "Sukhoi Sky Quiz",
         "adventure": "Petualangan",
         "flagQuest": "Misi Bendera",
@@ -400,7 +401,8 @@
             "portSorter": "Pilah paket jaringan ke keranjang yang tepat sebelum jatuh! Topik dan keranjang diatur guru: port & protokol, layanan, dan lainnya.",
             "turboTrivia": "Balap gokart kuis di proyektor kelas! Jawab benar untuk Nitro, lempar Kulit Pisang, tembak Rudal ke posisi 1, dan panggil Petir.",
             "blockBattle": "Adu balok di proyektor kelas! Jawab benar untuk balok I atau serangan, susun baris, rangkai kata & rumus, atau bangun benteng bersama melawan monster.",
-            "monsterCafe": "Jadi koki di restoran monster untuk 1–40 pemain! Jawab kuis untuk dapat bahan, rakit burger & pizza sebelum monster marah, usir tikus, dan lempar pie ke teman."
+            "monsterCafe": "Jadi koki di restoran monster untuk 1–40 pemain! Jawab kuis untuk dapat bahan, rakit burger & pizza sebelum monster marah, usir tikus, dan lempar pie ke teman.",
+            "snake": "Game ular edukatif model Potong Ekor! Jawab kuis dengan benar untuk memotong ekor dan menangkan permainan. Tersedia mode Solo, Shared Grid Battle, dan Split Grid Duel."
         },
         "detailsFirst": "Isi data peserta dulu",
         "detailsNoticeTitle": "Lengkapi data peserta dulu, ya!",
@@ -3056,5 +3058,137 @@
                 }
             }
         }
+    },
+    "snake": {
+        "title": "Main Ular",
+        "eyebrow": "ARENA KUIS · POTONG EKOR",
+        "subtitle": "Makan jawaban benar. Potong ekor sampai habis.",
+        "back": "Kembali",
+        "unmute": "Aktifkan suara sponsor",
+        "mute": "Bisukan suara sponsor",
+        "unavailable": "Arena belum tersedia. Pelajari cara bermain sambil menunggu.",
+        "intro": "Halo {{name}}! Main sendiri atau undang sampai 3 teman.",
+        "rules": "Ularmu mulai dengan ekor 15 ruas. Soal muncul di panel, pilihan A–D tersebar sebagai makanan di arena. Makan jawaban benar: ekor terpotong 3 ruas. Salah atau waktu habis: ekor bertambah 4 ruas. Ekor habis = menang!",
+        "soloHint": "Mulai sendiri untuk latihan, atau bagikan PIN agar teman ikut (maks. 4 pemain).",
+        "modeLabel": "Mode permainan",
+        "modes": {
+            "shared": {
+                "title": "Satu Arena",
+                "body": "Semua ular di satu arena dan berebut soal yang sama. Tabrak badan lawan = kehilangan nyawa."
+            },
+            "split": {
+                "title": "Arena Terpisah",
+                "body": "Tiap pemain punya arena dan soal sendiri. Jawaban benar mengirim serangan beban ke lawan."
+            }
+        },
+        "arena": "Arena ular",
+        "boardLabel": "Arena permainan ular",
+        "opponentBoard": "Arena {{name}}",
+        "gameLeft": "Sisa {{time}}",
+        "getReady": "Bersiap…",
+        "out": "Ularmu tersingkir. Tonton sampai selesai!",
+        "controlsHint": "Kendali: tombol panah atau W A S D. Di ponsel: geser di arena atau pakai tombol arah.",
+        "steer": "Arahkan ular ke jawaban yang benar",
+        "waiting": "Menunggu…",
+        "seconds": "{{count}} dtk",
+        "question": "Makan jawaban yang benar",
+        "options": "Pilihan jawaban di arena",
+        "preparing": "Menyiapkan soal…",
+        "tailLeft": "Sisa ekor: {{count}} ruas",
+        "cleared": "{{percent}}% terpotong",
+        "gauge": "Kemajuan potong ekor",
+        "players": "Pemain",
+        "tail": "Panjang ekor",
+        "lives": "Nyawa",
+        "score": "Poin soal",
+        "dpad": "Tombol arah",
+        "dir": {
+            "up": "Atas",
+            "down": "Bawah",
+            "left": "Kiri",
+            "right": "Kanan"
+        },
+        "feedback": {
+            "correctYou": "Benar ({{label}})! Ekor terpotong {{cut}} ruas.",
+            "correct": "{{name}} benar ({{label}}) dan memotong ekornya.",
+            "wrongYou": "Salah ({{label}})! Ekor bertambah {{grow}} ruas.",
+            "wrong": "{{name}} salah makan ({{label}}).",
+            "timeout": "Waktu habis! Ekor bertambah {{grow}} ruas.",
+            "crashYou": "Tabrakan! Nyawa berkurang satu.",
+            "crash": "{{name}} menabrak!",
+            "attack": {
+                "tail": "Kamu diserang: ekor bertambah 2 ruas!",
+                "block": "Kamu diserang: balok rintangan muncul 10 detik!"
+            }
+        },
+        "previousQuestion": "Soal tadi: {{prompt}}",
+        "answer": "Jawaban: {{answer}}",
+        "hint": "Petunjuk: {{hint}}",
+        "stopped": "Permainan dihentikan",
+        "won": "Kamu menang!",
+        "cleared_win": "Ekor habis — kamu juara!",
+        "noWinner": "Semua ular tersingkir",
+        "finished": "Permainan selesai",
+        "points": "+{{points}} poin akun",
+        "playAgain": "Main lagi",
+        "howTo": {
+            "title": "Cara bermain",
+            "step": "Langkah {{step}}/{{total}}",
+            "previous": "Sebelumnya",
+            "next": "Berikutnya",
+            "pause": "Jeda",
+            "replay": "Putar ulang",
+            "video": "Unduh video (ID)",
+            "pdf": "Unduh slide (ID)",
+            "demoPin": "PIN contoh",
+            "demoWinner": "Ekor habis — Juara!",
+            "demoQuestion": "Berapa hasil 7 × 8?",
+            "demoOptions": [
+                "54",
+                "56",
+                "63",
+                "48"
+            ],
+            "demo": {
+                "room": "BUAT RUANG & PILIH MODE",
+                "read": "BACA SOAL",
+                "cut": "JAWABAN BENAR",
+                "grow": "SALAH ATAU TERLAMBAT",
+                "junk": "SERANGAN BEBAN",
+                "win": "STAGE CLEAR"
+            },
+            "badge": {
+                "cut": "Benar! Ekor −3 ruas",
+                "grow": "Salah! Ekor +4 ruas",
+                "junk": "Lawan menjawab benar: balok rintangan muncul!"
+            },
+            "scenes": {
+                "room": {
+                    "title": "Buat ruang, pilih mode",
+                    "body": "Main sendiri atau bagikan PIN ke teman (maks. 4). Host memilih Satu Arena atau Arena Terpisah, mata pelajaran, dan waktu menjawab."
+                },
+                "read": {
+                    "title": "Baca soal, cari makanannya",
+                    "body": "Soal muncul di panel. Pilihan A, B, C, D tersebar sebagai makanan berwarna di arena. Gerakkan ular dengan panah, WASD, geser layar, atau tombol arah."
+                },
+                "cut": {
+                    "title": "Makan jawaban benar",
+                    "body": "Ekor terpotong 3 ruas dan kamu mendapat poin soal. Soal berikutnya langsung muncul. Di Satu Arena, yang tercepat makan jawaban benar yang menang soal itu."
+                },
+                "grow": {
+                    "title": "Salah atau waktu habis? Ekor memanjang",
+                    "body": "Makan jawaban salah atau terlambat menambah 4 ruas. Ekor panjang membuat arena makin sempit. Menabrak dinding, badan sendiri, atau badan lawan mengurangi satu dari 3 nyawa."
+                },
+                "junk": {
+                    "title": "Serangan beban (Arena Terpisah)",
+                    "body": "Di Arena Terpisah, setiap jawaban benar mengirim serangan ke lawan terdepan: ekornya +2 ruas atau balok rintangan muncul selama 10 detik."
+                },
+                "win": {
+                    "title": "Habiskan ekor, jadi juara",
+                    "body": "Pemain pertama yang ekornya habis menang. Kalau semua lawan tersingkir, yang tersisa menang; saat waktu habis, ekor terpendek menang. Poin akun ditentukan server."
+                }
+            }
+        },
+        "soloOut": "Permainan selesai — ekor belum habis. Coba lagi!"
     }
 }
