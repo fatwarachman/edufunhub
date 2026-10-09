@@ -519,7 +519,7 @@ func (r *Room) ask(now time.Time) {
 		r.answerLimit = r.cfg.NextLimit(r.answerLimit)
 	}
 	r.nextID++
-	q := questions.Trim(r.gen.Choice(), Options, r.rng)
+	q := r.gen.Present(r.gen.Choice(), Options)
 	r.round = RoundState{ID: r.nextID, Number: r.round.Number + 1, Question: q, Limit: r.answerLimit, Start: now, Deadline: now.Add(r.answerLimit)}
 	for _, p := range r.players {
 		p.choice, p.answered, p.answerMs = -1, false, 0

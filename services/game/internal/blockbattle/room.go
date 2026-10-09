@@ -552,7 +552,7 @@ func (r *Room) ask(p *Player, now time.Time) {
 		return
 	}
 	r.nextID++
-	q := questions.Trim(p.gen.Choice(), Options, r.rng)
+	q := p.gen.Present(p.gen.Choice(), Options)
 	limit := r.cfg.AnswerTime(r.grade)
 	p.q = QuestionState{ID: r.nextID, Question: q, Limit: limit, Start: now, Deadline: now.Add(limit), Stage: StageQuestion}
 	r.notify(p, r.questionMsg(p, now))

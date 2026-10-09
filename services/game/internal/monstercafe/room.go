@@ -539,7 +539,7 @@ func (r *Room) requestIngredient(p *Player, ingredient string, now time.Time) er
 		return ErrTrayFull
 	}
 	p.asked++
-	p.question = questions.Trim(p.gen.Choice(), Options, r.rng)
+	p.question = p.gen.Present(p.gen.Choice(), Options)
 	p.questionID = fmt.Sprintf("%d-%d", p.ID(), p.asked)
 	p.ingredient, p.askedAt = ingredient, now
 	if p.client != nil {

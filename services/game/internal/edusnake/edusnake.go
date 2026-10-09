@@ -768,7 +768,7 @@ func (h *Hub) event(r *room, f *feedback) {
 // nextQuestion loads a new question and scatters its options as food.
 func nextQuestion(r *room, b *board, now time.Time) {
 	b.round++
-	b.q = questions.Trim(b.gen.Choice(), Options, r.Game.rng)
+	b.q = b.gen.Present(b.gen.Choice(), Options)
 	b.deadline = now.Add(r.Game.answer)
 	if now.Before(r.Game.nextStep) {
 		b.deadline = r.Game.nextStep.Add(r.Game.answer)

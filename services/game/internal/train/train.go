@@ -174,7 +174,7 @@ func (s *Session) Start(now time.Time) Message {
 }
 
 func (s *Session) nextQuestion(now time.Time, delay time.Duration) {
-	s.question = questions.Trim(s.gen.Choice(), Lanes, s.gen.Rand)
+	s.question = s.gen.Present(s.gen.Choice(), Lanes)
 	s.roundAt = now.Add(delay)
 }
 

@@ -154,7 +154,7 @@ func (c *Challenge) next(now time.Time) {
 	case MathSprint:
 		c.current = c.gen.Arithmetic()
 	default:
-		c.current = c.gen.Choice()
+		c.current = c.gen.Present(c.gen.Choice(), 0)
 	}
 	if c.Rules.PerStep > 0 {
 		c.Deadline = now.Add(c.Rules.PerStep)

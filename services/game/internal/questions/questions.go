@@ -227,6 +227,15 @@ type Generator struct {
 	Rand     *rand.Rand
 	used     map[string]bool
 	fellBack bool
+	// shown remembers, per question key, every option arrangement already
+	// displayed in this game so a repeated question changes its order.
+	shown map[string][]arrangement
+}
+
+// arrangement is one displayed option order of a question.
+type arrangement struct {
+	answer    int
+	signature string
 }
 
 // New returns a generator for a grade with a seeded source.
@@ -556,6 +565,116 @@ func (q Question) origins() []int {
 		}
 	}
 	return order
+}
+
+// reshuffleTries bounds the attempts to find an unseen option order.
+const reshuffleTries = 32
+
+// Present prepares a multiple choice question for display: it trims the
+// options to n (n <= 0 keeps them all) and, when the same question already
+// appeared earlier in this game, reorders the options so the correct answer
+// moves to a position not used before (or at least away from its last
+// position) and the overall order differs from every earlier showing.
+func (g *Generator) Present(q Question, n int) Question {
+	if n > 0 {
+		q = Trim(q, n, g.Rand)
+	}
+	if len(q.Options) < 2 {
+		return q
+	}
+	q.Options = append([]Text(nil), q.Options...)
+	q.Order = q.origins()
+	key := q.identity()
+	if g.shown == nil {
+		g.shown = map[string][]arrangement{}
+	}
+	previous := g.shown[key]
+	if len(previous) > 0 {
+		target := g.freshPosition(len(q.Options), previous)
+		best, bestScore := q, -1
+		for try := 0; try < reshuffleTries && bestScore < 3; try++ {
+			candidate := q
+			candidate.Options = append([]Text(nil), q.Options...)
+			candidate.Order = append([]int(nil), q.Order...)
+			g.shuffle(&candidate)
+			candidate.moveAnswer(target)
+			if score := candidate.arrangementScore(previous); score > bestScore {
+				best, bestScore = candidate, score
+			}
+		}
+		q = best
+	}
+	g.shown[key] = append(previous, q.arrangement())
+	return q
+}
+
+// freshPosition picks a random answer position never used in previous
+// showings, or, once every position was used, any position except the last.
+func (g *Generator) freshPosition(options int, previous []arrangement) int {
+	used := map[int]bool{}
+	for _, p := range previous {
+		used[p.answer] = true
+	}
+	last := previous[len(previous)-1].answer
+	candidates := []int{}
+	for i := 0; i < options; i++ {
+		if !used[i] {
+			candidates = append(candidates, i)
+		}
+	}
+	if len(candidates) == 0 {
+		for i := 0; i < options; i++ {
+			if i != last {
+				candidates = append(candidates, i)
+			}
+		}
+	}
+	return candidates[g.Rand.IntN(len(candidates))]
+}
+
+// moveAnswer swaps the correct option into displayed position target.
+func (q *Question) moveAnswer(target int) {
+	if target == q.Answer || target < 0 || target >= len(q.Options) {
+		return
+	}
+	q.Options[q.Answer], q.Options[target] = q.Options[target], q.Options[q.Answer]
+	q.Order[q.Answer], q.Order[target] = q.Order[target], q.Order[q.Answer]
+	q.Answer = target
+}
+
+// identity is what repeats are tracked by: the key plus the prompt, so
+// generated content sharing a key prefix is never mistaken for a repeat.
+func (q Question) identity() string { return q.Key + "\x1f" + q.Prompt.ID }
+
+func (q Question) arrangement() arrangement {
+	signature := ""
+	for _, o := range q.Options {
+		signature += o.ID + "\x1f"
+	}
+	return arrangement{answer: q.Answer, signature: signature}
+}
+
+// arrangementScore rates how different q's order is from earlier showings:
+// +2 when the answer sits at a position never used before, +1 when the full
+// order is new; the answer staying at the last position scores 0.
+func (q Question) arrangementScore(previous []arrangement) int {
+	current := q.arrangement()
+	if current.answer == previous[len(previous)-1].answer {
+		return 0
+	}
+	score := 2
+	for _, p := range previous {
+		if p.answer == current.answer {
+			score = 1
+			break
+		}
+	}
+	for _, p := range previous {
+		if p.signature == current.signature {
+			return score
+		}
+	}
+	return score + 1
 }
 
 // Trim keeps the correct answer and up to n-1 random distractors, shuffled.

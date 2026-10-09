@@ -501,7 +501,7 @@ func (r *Room) racing() int {
 func (r *Room) ask(now time.Time) {
 	r.nextID++
 	r.asked++
-	q := questions.Trim(r.gen.Choice(), Options, r.rng)
+	q := r.gen.Present(r.gen.Choice(), Options)
 	limit := r.cfg.AnswerTime(r.grade)
 	r.q = QuestionState{ID: r.nextID, Number: r.asked, Question: q, Limit: limit, Start: now, Deadline: now.Add(limit), Stage: StageQuestion}
 	for _, k := range r.karts {
