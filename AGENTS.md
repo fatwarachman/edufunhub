@@ -16,6 +16,17 @@
 - Game multiplayer wajib memakai standar undangan PIN + link (`internal/lobby`, `GameInviteController`, `components/multiplayer/room.tsx`) dan aturan poin `internal/points` (setiap permainan selesai menambah poin akun). Rujukan: `docs/multiplayer.md`.
 - Setiap game wajib memasang fondasi iklan sponsor: route halaman memakai `RecordGameAccess`, halaman merender `<GameAdStrip />`, `<AdSlot placement="arena.result" />` (dan slot lain yang muat), serta jingle via `useAdMoments`/`AdMoment`. Rujukan: `docs/multiplayer.md` bagian 4.
 
+## Panduan wajib EduFunHub: desain & teknis
+
+- Sebelum membuat game, fitur, halaman, menu, atau mengubah UI, baca `docs/guidelines/README.md` dan dokumen turunannya: `design-system.md` (warna, tipografi, komponen, responsif, a11y), `game-development.md` (resep game Go + Laravel + React), `features-and-menus.md` (halaman pemain/admin, registrasi menu, i18n), `qa-and-release.md` (gate verifikasi, changelog, git).
+- Semua agen wajib memakai gaya dan komponen bersama yang sama; jangan membuat gaya visual atau komponen tandingan.
+
+## Aturan wajib EduFunHub: changelog
+
+- Setiap perubahan yang dikerjakan (fitur, peningkatan, perbaikan) wajib dicatat di `database/data/changelog.php` dalam pekerjaan yang sama, dengan judul dan keterangan Indonesia (`id`) + Inggris (`en`).
+- Penomoran versi mengikuti Semantic Versioning 2.0.0, dimulai dari `0.0.0`. Selama major masih 0: fitur baru atau perubahan perilaku menaikkan MINOR (`0.x.0`), perbaikan dan penyesuaian kecil menaikkan PATCH (`0.0.x`). MAJOR (`1.0.0`) hanya untuk rilis stabil publik pertama atau perubahan yang memutus kompatibilitas sesudahnya.
+- Rilis terbaru ditaruh paling atas; versi rilis yang sudah ada tidak diubah nomornya. Jalankan `php artisan changelog:sync` (entrypoint container menjalankannya setiap boot) agar tampil di menu admin Changelog (`/admin/changelog`).
+
 <laravel-boost-guidelines>
 === foundation rules ===
 
