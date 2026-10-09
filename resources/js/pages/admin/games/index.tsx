@@ -32,6 +32,7 @@ interface GameRow {
     accent: string;
     awardsPoints: boolean;
     tracked: boolean;
+    questionBank: boolean;
     plays: number;
     players: number;
     points: number;
@@ -235,11 +236,11 @@ function GamesCards({ games }: { games: GameRow[] }) {
                         <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
                             <span className="inline-flex items-center gap-1.5">
                                 <ListChecks className="size-3.5" />
-                                {game.tracked
+                                {game.questionBank
                                     ? tr('{0} active questions', [
                                           game.questions,
                                       ])
-                                    : tr('Uses local demo questions')}
+                                    : tr('Uses its own game content')}
                             </span>
                             <span>
                                 {tr('Last played')}{' '}
@@ -345,7 +346,7 @@ function GamesTable({ games }: { games: GameRow[] }) {
         ),
         points: (game) => formatNumber(game.points),
         questions: (game) =>
-            game.tracked ? formatNumber(game.questions) : '—',
+            game.questionBank ? formatNumber(game.questions) : '—',
         last_played_at: (game) => (
             <span className="flex items-center justify-between gap-2">
                 <LastPlayed value={game.last_played_at} />

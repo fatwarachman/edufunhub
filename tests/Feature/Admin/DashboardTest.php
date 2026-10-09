@@ -100,6 +100,7 @@ it('lists only the five most played games on the dashboard', function () {
             ->has('games', 5)
             ->where('games.0.key', 'crossword')
             ->where('games.0.plays', 6)
+            ->where('games.0.tracked', true)
             ->where('games.4.key', 'mini-lab')
             ->where('games.4.plays', 2));
 });
