@@ -47,7 +47,7 @@ test('empty leaderboard page renders without data', function (): void {
         ->where('overall.week.entries', [])
         ->where('overall.month.me', null)
         ->where('overall.all.entries', [])
-        ->has('games', 16)
+        ->has('games', 18)
         ->missing('schools')
         ->missing('gameBoards')
         ->loadDeferredProps('boards', fn (Assert $reload) => $reload

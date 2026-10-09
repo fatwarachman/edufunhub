@@ -13,6 +13,8 @@ return [
     | min_players / max_players: people who can play one round, mirroring the Go
     | service limits (services/game/internal/*). Host/projector screens do not count;
     | quiz-duel starts with one player because a bot joins when nobody else waits.
+    | released_at: date (Y-m-d, app timezone) the game became playable. /gamelist
+    | shows it under "Game terbaru" for PlayerPortal::NEW_GAME_DAYS days.
     */
     'categories' => [
         [
@@ -33,6 +35,7 @@ return [
                     'awards_points' => true,
                     'requires_grade' => true,
                     'guest_playable' => false,
+                    'released_at' => '2026-10-01',
                 ],
             ],
         ],
@@ -55,6 +58,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-09-30',
                 ],
             ],
         ],
@@ -76,6 +80,7 @@ return [
                     'awards_points' => true,
                     'requires_grade' => true,
                     'guest_playable' => false,
+                    'released_at' => '2026-09-30',
                 ],
                 [
                     'key' => 'quiz-duel',
@@ -92,6 +97,7 @@ return [
                     'requires_grade' => true,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-04',
                 ],
                 [
                     'key' => 'floor-drop',
@@ -108,6 +114,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-05',
                 ],
                 [
                     'key' => 'economy-heist',
@@ -124,6 +131,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-05',
                 ],
                 [
                     'key' => 'order-rush',
@@ -140,6 +148,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-05',
                 ],
                 [
                     'key' => 'turbo-trivia',
@@ -156,6 +165,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-06',
                 ],
                 [
                     'key' => 'block-battle',
@@ -172,6 +182,41 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-08',
+                ],
+                [
+                    'key' => 'ping-pong',
+                    'titleKey' => 'player.pingPong',
+                    'descriptionKey' => 'portal.games.pingPong',
+                    'route' => 'games.ping-pong',
+                    'icon' => 'network',
+                    'accent' => '#0f766e',
+                    'min_grade' => 1,
+                    'max_grade' => 12,
+                    'min_players' => 1,
+                    'max_players' => 2,
+                    'awards_points' => true,
+                    'requires_grade' => false,
+                    'guest_playable' => false,
+                    'multiplayer' => true,
+                    'released_at' => '2026-10-08',
+                ],
+                [
+                    'key' => 'monster-cafe',
+                    'titleKey' => 'player.monsterCafe',
+                    'descriptionKey' => 'portal.games.monsterCafe',
+                    'route' => 'games.monster-cafe',
+                    'icon' => 'chef',
+                    'accent' => '#ea580c',
+                    'min_grade' => 0,
+                    'max_grade' => 12,
+                    'min_players' => 1,
+                    'max_players' => 40,
+                    'awards_points' => true,
+                    'requires_grade' => false,
+                    'guest_playable' => false,
+                    'multiplayer' => true,
+                    'released_at' => '2026-10-08',
                 ],
             ],
         ],
@@ -194,6 +239,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-04',
                 ],
             ],
         ],
@@ -215,6 +261,7 @@ return [
                     'awards_points' => true,
                     'requires_grade' => true,
                     'guest_playable' => false,
+                    'released_at' => '2026-10-04',
                 ],
                 [
                     'key' => 'port-sorter',
@@ -230,6 +277,7 @@ return [
                     'awards_points' => true,
                     'requires_grade' => false,
                     'guest_playable' => false,
+                    'released_at' => '2026-10-05',
                 ],
             ],
         ],
@@ -252,6 +300,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-05',
                 ],
                 [
                     'key' => 'number-garden',
@@ -268,6 +317,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-05',
                 ],
                 [
                     'key' => 'explore-indonesia',
@@ -284,6 +334,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-05',
                 ],
                 [
                     'key' => 'mini-lab',
@@ -300,6 +351,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'released_at' => '2026-10-05',
                 ],
             ],
         ],

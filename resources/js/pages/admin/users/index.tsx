@@ -127,6 +127,7 @@ interface UsersIndexProps {
         search?: string;
         role?: string;
         signup?: string;
+        activity?: string;
         sort?: string;
         direction?: 'asc' | 'desc';
     };
@@ -299,6 +300,8 @@ export default function UsersIndex({
                 search: params.search ?? filters.search,
                 role: 'role' in params ? params.role : filters.role,
                 signup: 'signup' in params ? params.signup : filters.signup,
+                activity:
+                    'activity' in params ? params.activity : filters.activity,
                 sort: params.sort ?? filters.sort,
                 direction: params.direction ?? filters.direction,
             };
@@ -417,6 +420,23 @@ export default function UsersIndex({
                         <option value="">{tr('All sign-up methods')}</option>
                         <option value="google">{tr('Google account')}</option>
                         <option value="email">{tr('Email (direct)')}</option>
+                    </select>
+                    <select
+                        aria-label={tr('Activity')}
+                        value={filters.activity ?? ''}
+                        onChange={(e) =>
+                            updateFilters({
+                                activity: e.target.value || undefined,
+                            })
+                        }
+                        className="h-9 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        data-testid="users-activity-filter"
+                    >
+                        <option value="">{tr('All activity')}</option>
+                        <option value="joined_today">
+                            {tr('Joined today')}
+                        </option>
+                        <option value="online">{tr('Online now')}</option>
                     </select>
                 </div>
 

@@ -41,6 +41,8 @@ dataset('multiplayer games', [
     'order rush' => ['order-rush', '/games/order-rush'],
     'turbo trivia' => ['turbo-trivia', '/games/turbo-trivia'],
     'block battle' => ['block-battle', '/games/block-battle'],
+    'monster cafe' => ['monster-cafe', '/games/monster-cafe'],
+    'ping pong network' => ['ping-pong', '/games/ping-pong'],
 ]);
 
 it('marks every multiplayer game in the catalog', function (string $key): void {
@@ -111,6 +113,8 @@ it('records results for room games and adds them to the point total', function (
     'order rush' => ['order-rush', 'or-%d-room-1790000000000', 'room', 45, 'Order Rush TKJ'],
     'turbo trivia' => ['turbo-trivia', 'tt-%d-room-1790000000000', 'room', 45, 'Turbo Trivia'],
     'block battle' => ['block-battle', 'bb-%d-room-1790000000000', 'room', 45, 'Tetris Kuis'],
+    'monster cafe' => ['monster-cafe', 'mc-%d-room-1790000000000', 'room', 45, 'Monster Café'],
+    'ping pong network' => ['ping-pong', 'pp-%d-room-1790000000000', 'room', 45, 'Ping Pong'],
 ]);
 
 it('caps room game points and missions', function (array $override): void {

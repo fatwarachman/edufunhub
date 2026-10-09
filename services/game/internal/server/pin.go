@@ -37,6 +37,8 @@ func (s *Server) FindPin(pin string) []RoomMatch {
 	}
 	phase, ok := s.snakes.RoomPhase(pin)
 	lobbyRoom("snakes-and-ladders", phase, ok)
+	phase, ok = s.pingpong.RoomPhase(pin)
+	lobbyRoom("ping-pong", phase, ok)
 	phase, ok = s.crosswords.RoomPhase(pin)
 	lobbyRoom("crossword", phase, ok)
 	for _, key := range minigames.Keys {
@@ -52,7 +54,7 @@ func (s *Server) FindPin(pin string) []RoomMatch {
 	for _, room := range []struct {
 		game string
 		hub  roomHub
-	}{{"floor-drop", s.floor}, {"economy-heist", s.heist}, {"order-rush", s.rush}, {"turbo-trivia", s.turbo}, {"block-battle", s.block}} {
+	}{{"floor-drop", s.floor}, {"economy-heist", s.heist}, {"order-rush", s.rush}, {"turbo-trivia", s.turbo}, {"block-battle", s.block}, {"monster-cafe", s.cafe}} {
 		if phase, ok := room.hub.RoomPhase(pin); ok && phase != "GAME_OVER" {
 			out = append(out, RoomMatch{Game: room.game, Phase: phase, Open: phase == "LOBBY"})
 		}

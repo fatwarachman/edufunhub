@@ -265,8 +265,9 @@ func (h *Hub[S, P]) Create(claims auth.Claims, now time.Time, init func(r *Room[
 	return pin, append(affected, claims.Subject)
 }
 
-// Enter joins the room with the given PIN.
-func (h *Hub[S, P]) Enter(claims auth.Claims, pin string, now time.Time) ([]int64, error) {
+// Enter joins the room with the given PIN. Optional prepare callbacks run
+// under the lock after membership checks, before a new seat is appended.
+func (h *Hub[S, P]) Enter(claims auth.Claims, pin string, now time.Time, prepare ...func(*Room[S, P])) ([]int64, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	r, ok := h.rooms[pin]
@@ -281,6 +282,9 @@ func (h *Hub[S, P]) Enter(claims auth.Claims, pin string, now time.Time) ([]int6
 	}
 	if r.Active() >= h.cfg.Max {
 		return nil, ErrFull
+	}
+	for _, fn := range prepare {
+		fn(r)
 	}
 	affected := h.leaveLocked(claims.Subject, now)
 	r.Seats = append(r.Seats, &Seat[P]{Claims: claims})

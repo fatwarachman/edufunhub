@@ -3,6 +3,7 @@ import {
     Blocks,
     Cable,
     CarFront,
+    ChefHat,
     Dice5,
     Flag,
     FlaskConical,
@@ -39,6 +40,7 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
     network: Network,
     kart: CarFront,
     blocks: Blocks,
+    chef: ChefHat,
 };
 
 export function gameIcon(icon: string): LucideIcon {

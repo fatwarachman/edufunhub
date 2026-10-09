@@ -45,12 +45,15 @@ func (s *Server) Snapshot() Stats {
 	}
 	duelConns := len(s.duelSubs)
 	snakesConns := len(s.snakesSubs)
+	pingpongConns := len(s.pingpongSubs)
 	crosswordConns := len(s.crosswordSubs)
 	games = append(games, Usage{Game: "knowledge-train", Connections: len(s.trainConns), Sessions: len(s.trains)})
 	games = append(games, Usage{Game: "port-sorter", Connections: len(s.portConns), Sessions: len(s.ports)})
 	s.mu.Unlock()
 	matches, _ := s.duels.Counts()
 	games = append(games, Usage{Game: "quiz-duel", Connections: duelConns, Sessions: matches})
+	pingpongRooms, _ := s.pingpong.Counts()
+	games = append(games, Usage{Game: "ping-pong", Connections: pingpongConns, Sessions: pingpongRooms})
 	rooms, _ := s.snakes.Counts()
 	games = append(games, Usage{Game: "snakes-and-ladders", Connections: snakesConns, Sessions: rooms})
 	cwRooms, _ := s.crosswords.Counts()
@@ -87,6 +90,11 @@ func (s *Server) Snapshot() Stats {
 	s.mu.Unlock()
 	blockRooms, _ := s.block.Counts()
 	games = append(games, Usage{Game: "block-battle", Connections: blockConns, Sessions: blockRooms})
+	s.mu.Lock()
+	cafeConns := len(s.cafeConns)
+	s.mu.Unlock()
+	cafeRooms, _ := s.cafe.Counts()
+	games = append(games, Usage{Game: "monster-cafe", Connections: cafeConns, Sessions: cafeRooms})
 	return Stats{
 		Service:        "edufunhub-game",
 		GoVersion:      runtime.Version(),

@@ -26,7 +26,9 @@ import (
 	"edufunhub/game/internal/heist"
 	"edufunhub/game/internal/lobby"
 	"edufunhub/game/internal/minigames"
+	"edufunhub/game/internal/monstercafe"
 	"edufunhub/game/internal/orderrush"
+	"edufunhub/game/internal/pingpong"
 	"edufunhub/game/internal/portsorter"
 	"edufunhub/game/internal/session"
 	"edufunhub/game/internal/sky"
@@ -53,6 +55,8 @@ type Config struct {
 	TurboTrivia turbotrivia.Config
 	// BlockBattle timings (zero = blockbattle.Defaults).
 	BlockBattle blockbattle.Config
+	// MonsterCafe timings (zero = monstercafe.Defaults).
+	MonsterCafe monstercafe.Config
 }
 
 type connection struct{ cancel context.CancelFunc }
@@ -72,6 +76,8 @@ type Server struct {
 	duels         *duel.Hub
 	duelSubs      map[int64]*duelSub
 	duelRooms     *lobby.Hub[struct{}, struct{}]
+	pingpong      *pingpong.Hub
+	pingpongSubs  map[int64]*pingpongSub
 	snakes        *snakes.Hub
 	snakesSubs    map[int64]*snakesSub
 	crosswords    *crossword.Hub
@@ -88,6 +94,8 @@ type Server struct {
 	turboConns    map[floorKey]*turbotrivia.Client
 	block         *blockbattle.Hub
 	blockConns    map[floorKey]*blockbattle.Client
+	cafe          *monstercafe.Hub
+	cafeConns     map[floorKey]*monstercafe.Client
 	started       time.Time
 }
 
@@ -117,6 +125,9 @@ func New(cfg Config) *Server {
 	if cfg.BlockBattle.Tick == 0 {
 		cfg.BlockBattle = blockbattle.Defaults
 	}
+	if cfg.MonsterCafe.Tick == 0 {
+		cfg.MonsterCafe = monstercafe.Defaults
+	}
 	s := &Server{
 		cfg: cfg, sessions: map[int64]*session.Session{}, conns: map[int64]*connection{},
 		skies: map[int64]*sky.Session{}, skyConns: map[int64]*connection{},
@@ -124,7 +135,8 @@ func New(cfg Config) *Server {
 		ports: map[int64]*portsorter.Session{}, portConns: map[int64]*connection{},
 		duels: duel.NewHub(uint64(cfg.Now().UnixNano())), duelSubs: map[int64]*duelSub{},
 		duelRooms: lobby.New[struct{}, struct{}](uint64(cfg.Now().UnixNano())^0xd0e1, lobby.Config{Min: 2, Max: 2}),
-		snakes:    snakes.NewHub(uint64(cfg.Now().UnixNano()) ^ 0x51ed), snakesSubs: map[int64]*snakesSub{},
+		pingpong:  pingpong.NewHub(uint64(cfg.Now().UnixNano()) ^ 0x9913), pingpongSubs: map[int64]*pingpongSub{},
+		snakes: snakes.NewHub(uint64(cfg.Now().UnixNano()) ^ 0x51ed), snakesSubs: map[int64]*snakesSub{},
 		crosswords: crossword.NewHub(uint64(cfg.Now().UnixNano()) ^ 0xc055), crosswordSubs: map[int64]*crosswordSub{},
 		minis: map[string]*minigames.Hub{}, miniSubs: map[string]map[int64]*miniSub{},
 		floor:      floordrop.NewHub(cfg.FloorDrop, uint64(cfg.Now().UnixNano())^0xf1d0),
@@ -137,6 +149,8 @@ func New(cfg Config) *Server {
 		turboConns: map[floorKey]*turbotrivia.Client{},
 		block:      blockbattle.NewHub(cfg.BlockBattle, uint64(cfg.Now().UnixNano())^0xb10c),
 		blockConns: map[floorKey]*blockbattle.Client{},
+		cafe:       monstercafe.NewHub(cfg.MonsterCafe, uint64(cfg.Now().UnixNano())^0xcafe),
+		cafeConns:  map[floorKey]*monstercafe.Client{},
 		started:    cfg.Now(),
 	}
 	for i, key := range minigames.Keys {
@@ -159,6 +173,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /ws/train", s.serveTrain)
 	mux.HandleFunc("GET /ws/port-sorter", s.servePortSorter)
 	mux.HandleFunc("GET /ws/snakes", s.serveSnakes)
+	mux.HandleFunc("GET /ws/ping-pong", s.servePingPong)
 	mux.HandleFunc("GET /ws/crossword", s.serveCrossword)
 	for _, key := range minigames.Keys {
 		mux.HandleFunc("GET /ws/"+key, s.serveMini(key))
@@ -168,6 +183,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /ws/order-rush", s.serveOrderRush)
 	mux.HandleFunc("GET /ws/turbo-trivia", s.serveTurboTrivia)
 	mux.HandleFunc("GET /ws/block-battle", s.serveBlockBattle)
+	mux.HandleFunc("GET /ws/monster-cafe", s.serveMonsterCafe)
 	mux.HandleFunc("GET /internal/stats", s.serveStats)
 	mux.HandleFunc("GET /internal/presence", s.servePresence)
 	mux.HandleFunc("GET /internal/room", s.serveFindPin)
@@ -373,6 +389,8 @@ func (s *Server) Prune(ttl time.Duration) {
 	}
 	s.duels.Prune(s.cfg.Now())
 	s.duelRooms.Prune(s.cfg.Now(), 30*time.Minute, 5*time.Minute, nil)
+	s.pingpong.Prune(s.cfg.Now())
+	s.reportPingPong()
 	s.snakes.Prune(s.cfg.Now())
 	s.reportSnakes()
 	s.crosswords.Prune(s.cfg.Now())

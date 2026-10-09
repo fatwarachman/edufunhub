@@ -1,5 +1,98 @@
 {
+    "pingPong": {
+        "title": "Ping Pong",
+        "eyebrow": "ARENA KUIS · SEMUA MAPEL",
+        "subtitle": "Baca soal. Pilih jawaban. Kembalikan bola.",
+        "scoreboard": "Papan skor",
+        "you": "Kamu",
+        "bot": "Robot",
+        "courtLabel": "Lapangan ping pong. Skor kiri {{left}}, kanan {{right}}.",
+        "courtMark": "PING PONG · KUIS",
+        "unmute": "Aktifkan suara sponsor",
+        "mute": "Bisukan suara sponsor",
+        "unavailable": "Arena belum tersedia. Pelajari cara bermain sambil menunggu.",
+        "intro": "Halo {{name}}! Tantang robot atau undang satu teman.",
+        "rules": "Host memilih mata pelajaran. Jawaban benar mengembalikan bola; salah atau waktu habis memberi gol ke lawan. Raih 5 gol; setelah 60 giliran, skor tertinggi menang.",
+        "soloHint": "Main sendiri melawan robot, atau bagikan PIN untuk duel dengan teman.",
+        "target": "Target {{target}} gol",
+        "round": "Giliran {{round}} / {{total}}",
+        "rally": "Reli {{count}}",
+        "submitted": "Jawaban terkirim. Menunggu wasit…",
+        "yourTurn": "Giliranmu mengembalikan bola",
+        "waitTurn": "Menunggu {{name}}",
+        "seconds": "{{count}} dtk",
+        "question": "Jawab untuk mengembalikan bola",
+        "chooseOption": "Pilihan jawaban",
+        "preparing": "Menyiapkan servis…",
+        "answerHint": "Ketuk satu jawaban. Skor dan waktu ditentukan wasit server.",
+        "stopped": "Pertandingan dihentikan",
+        "draw": "Skor seri!",
+        "won": "Kamu menang!",
+        "finished": "Pertandingan selesai",
+        "points": "+{{points}} poin akun",
+        "playAgain": "Main lagi",
+        "returned": "Bola kembali!",
+        "goal": "Gol untuk lawan!",
+        "answer": "Jawaban: {{answer}}",
+        "hint": "Petunjuk: {{hint}}",
+        "previousQuestion": "Soal tadi: {{prompt}}",
+        "back": "Kembali",
+        "howTo": {
+            "title": "Cara bermain",
+            "step": "Langkah {{step}}/{{total}}",
+            "previous": "Sebelumnya",
+            "next": "Berikutnya",
+            "pause": "Jeda",
+            "replay": "Putar ulang",
+            "video": "Unduh video (ID)",
+            "pdf": "Unduh slide (ID)",
+            "demoPin": "PIN contoh",
+            "demoInvite": "Solo dengan robot · Duel dengan teman",
+            "demoWinner": "5 : 3 — Menang!",
+            "demoQuestion": "Berapa hasil 7 × 8?",
+            "demoOptions": ["54", "56", "63", "48"],
+            "demoAnswer": "Jawaban: 56",
+            "demoRally": "Reli 6 · giliran bergantian",
+            "demoRallyQuestion": "Planet terdekat dengan Matahari adalah…",
+            "demoRallyOptions": ["Venus", "Merkurius", "Mars", "Bumi"],
+            "demo": {
+                "subject": "PILIH MAPEL",
+                "read": "BACA SOAL",
+                "return": "KEMBALIKAN BOLA",
+                "goal": "GOL UNTUK LAWAN",
+                "rally": "RELI & GILIRAN",
+                "win": "HASIL PERTANDINGAN"
+            },
+            "scenes": {
+                "subject": {
+                    "title": "Buat ruang, pilih mapel",
+                    "body": "Buat ruang untuk melawan robot atau bagikan PIN ke satu teman. Host memilih mata pelajaran, atau Campuran untuk semua."
+                },
+                "read": {
+                    "title": "Baca soal di giliranmu",
+                    "body": "Saat bola datang, soal muncul di bawah meja. Baca baik-baik dan perhatikan waktu yang tersisa."
+                },
+                "return": {
+                    "title": "Jawaban benar? Bola kembali!",
+                    "body": "Ketuk jawaban yang tepat. Bola meluncur kembali ke lawan dan kamu mendapat poin soal."
+                },
+                "goal": {
+                    "title": "Salah atau terlambat? Gol!",
+                    "body": "Lawan mendapat satu gol. Lihat jawaban yang benar, lalu sisi yang kebobolan melakukan servis."
+                },
+                "rally": {
+                    "title": "Jaga reli, bergantian menjawab",
+                    "body": "Setiap giliran ada soal baru untuk pemain yang menerima bola. Makin panjang reli, makin seru duelnya."
+                },
+                "win": {
+                    "title": "Raih lima gol",
+                    "body": "Pertama meraih 5 gol menang. Setelah 60 giliran, skor dibandingkan; seri bisa terjadi. Poin akun ditentukan server."
+                }
+            }
+        }
+    },
     "player": {
+        "pingPong": "Ping Pong",
         "navigation": "Menu pengguna",
         "dashboard": "Beranda",
         "character": "Karakter",
@@ -78,6 +171,7 @@
         "portSorter": "Pilah Port & Protokol",
         "turboTrivia": "Turbo Trivia",
         "blockBattle": "Tetris Kuis",
+        "monsterCafe": "Monster Café",
         "shareWaRoom": "Bagikan via WhatsApp",
         "shareWaGame": "Bagikan game",
         "shareWaRoomText": "🎮 Ayo main {{game}} bareng di EduFunHub!\nKode PIN: {{pin}}\nLink gabung: {{url}}\nEduFunHub — Portal Edukasi Seru!",
@@ -288,6 +382,7 @@
         "recent": "Hasil terakhir",
         "allHistory": "Lihat semua riwayat",
         "games": {
+            "pingPong": "Kembalikan bola dengan menjawab soal kuis dari semua mata pelajaran. Main solo melawan robot atau undang teman lewat PIN.",
             "title": "Permainan edukasi",
             "flagQuest": "Jelajahi peta, selesaikan kuis, ular tangga, dan sprint hitung di tiap pos, lalu kibarkan bendera.",
             "snakes": "Ular tangga 100 petak dengan kuis: main sendiri, 2–4 pemain di satu perangkat, atau online bersama teman lewat PIN dan link.",
@@ -304,7 +399,8 @@
             "orderRush": "Balapan menyusun urutan kabel UTP, core fiber, OSI, DHCP dan TCP untuk siswa TKJ. Benar beruntun dapat power-up sabotase!",
             "portSorter": "Pilah paket jaringan ke keranjang yang tepat sebelum jatuh! Topik dan keranjang diatur guru: port & protokol, layanan, dan lainnya.",
             "turboTrivia": "Balap gokart kuis di proyektor kelas! Jawab benar untuk Nitro, lempar Kulit Pisang, tembak Rudal ke posisi 1, dan panggil Petir.",
-            "blockBattle": "Adu balok di proyektor kelas! Jawab benar untuk balok I atau serangan, susun baris, rangkai kata & rumus, atau bangun benteng bersama melawan monster."
+            "blockBattle": "Adu balok di proyektor kelas! Jawab benar untuk balok I atau serangan, susun baris, rangkai kata & rumus, atau bangun benteng bersama melawan monster.",
+            "monsterCafe": "Jadi koki di restoran monster untuk 1–40 pemain! Jawab kuis untuk dapat bahan, rakit burger & pizza sebelum monster marah, usir tikus, dan lempar pie ke teman."
         },
         "detailsFirst": "Isi data peserta dulu",
         "detailsNoticeTitle": "Lengkapi data peserta dulu, ya!",
@@ -715,6 +811,13 @@
         "headingAccent": "Edukatif",
         "intro": "Permainan dikelompokkan per jenis. Game berlabel \"Dapat poin\" diverifikasi server dan menambah poin akunmu.",
         "play": "Mainkan sekarang",
+        "latest": {
+            "title": "Game terbaru",
+            "intro_one": "Game yang baru dirilis dalam {{count}} hari terakhir. Ayo jadi yang pertama mencoba!",
+            "intro_other": "Game yang baru dirilis dalam {{count}} hari terakhir. Ayo jadi yang pertama mencoba!",
+            "badge": "Baru",
+            "released": "Rilis {{date}}"
+        },
         "upcoming": {
             "title": "Segera hadir",
             "intro": "Game multiplayer kelas yang sedang kami buat. Semua dimainkan bersama lewat proyektor dan perangkat murid.",
@@ -723,18 +826,6 @@
             "gameplayLabel": "Mekanik permainan",
             "funLabel": "Kenapa seru",
             "games": {
-                "monsterCafe": {
-                    "title": "Monster Café / Pizza Frenzy",
-                    "inspiration": "Mekanik Overcooked / Diner Dash",
-                    "concept": "Murid jadi koki di restoran monster.",
-                    "gameplay": [
-                        "Pelanggan monster minta pesanan makanan; tiap bahan makanan adalah jawaban dari soal kuis.",
-                        "Jawab kuis dengan benar untuk mendapat bahan, misalnya keju, roti, atau saus.",
-                        "Rakit bahan menjadi burger atau pizza sebelum monster marah (timer kesabaran).",
-                        "Ada orderan gosong, tikus pencuri bahan, dan power-up lempar pie ke meja murid lain untuk mengaburkan layar mereka selama 2 detik."
-                    ],
-                    "fun": "Panik, visual makanan kartun lucu, ritme cepat tanpa jeda."
-                },
                 "saboteurLab": {
                     "title": "Saboteur Lab / Impostor Protocol",
                     "inspiration": "Mekanik Among Us / Mafia",
@@ -769,17 +860,6 @@
                         "Tim dengan persentase warna paling dominan saat waktu habis menang."
                     ],
                     "fun": "Sangat visual, kontribusi langsung terlihat di layar proyektor, kompetitif tapi santai."
-                },
-                "osiPingPong": {
-                    "title": "Ping Pong Network / OSI Layer Match",
-                    "inspiration": "Pengetahuan IT · mekanik ping pong",
-                    "concept": "Adu ping pong dengan menebak layer OSI dari perangkat atau istilah jaringan.",
-                    "gameplay": [
-                        "Layar menampilkan perangkat atau istilah: Router, Switch, Hub, Kabel UTP, HTTP, MAC Address, IP Address.",
-                        "Ketuk tombol layer yang sesuai: Layer 1 (Physical), Layer 2 (Data Link), Layer 3 (Network), atau Layer 7 (Application).",
-                        "Jawaban benar memantulkan bola kembali ke lawan; jawaban salah berarti kebobolan gol."
-                    ],
-                    "fun": "Empat tombol besar dan reaksi cepat membuat hafalan 7 layer OSI terasa seperti pertandingan, bukan pelajaran kaku."
                 }
             }
         },
@@ -1030,7 +1110,19 @@
             "invalid_input": "Gerakan tidak dikenal.",
             "invalid_reward": "Hadiah tidak dikenal.",
             "no_reward": "Tidak ada hadiah untuk dipilih.",
-            "knocked_out": "Kamu sudah KO di permainan ini."
+            "knocked_out": "Kamu sudah KO di permainan ini.",
+            "cooldown": "Tunggu sebentar sebelum meminta bahan lagi.",
+            "tray_full": "Nampan penuh. Pakai dulu bahan yang ada.",
+            "plate_full": "Piring sudah penuh.",
+            "plate_empty": "Piring masih kosong.",
+            "no_ingredient": "Bahan itu tidak ada di nampanmu.",
+            "invalid_ingredient": "Bahan tidak dikenal.",
+            "oven_busy": "Oven sedang dipakai atau kamu masih memegang masakan.",
+            "oven_empty": "Oven kosong.",
+            "no_dish": "Belum ada masakan untuk disajikan.",
+            "invalid_order_id": "Pesanan itu sudah tidak ada.",
+            "no_pie": "Kamu belum punya pie.",
+            "invalid_rat": "Tikus itu sudah pergi."
         },
         "copyPinLabel": "Salin PIN",
         "copyLinkLabel": "Salin link",
@@ -2710,5 +2802,259 @@
         "prev": "Sebelumnya",
         "next": "Berikutnya",
         "autoRefresh": "Daftar diperbarui otomatis setiap 15 detik."
+    },
+    "monsterCafe": {
+        "common": {
+            "title": "Monster Café",
+            "coins": "{{amount}} koin",
+            "pin": "PIN {{pin}}",
+            "you": "Kamu",
+            "offline": "Terputus",
+            "leftGame": "keluar",
+            "rank": "#{{rank}}",
+            "minutes": "{{count}} menit",
+            "playersCount": "{{count}} pemain",
+            "timeLeft": "Sisa waktu",
+            "secondsLeft": "{{seconds}} dtk",
+            "patience": "Kesabaran monster",
+            "leaderboard": "Papan koin",
+            "feed": "Kejadian dapur",
+            "feedEmpty": "Belum ada kejadian. Ayo layani monster pertama!",
+            "podium": "Podium",
+            "ranking": "Peringkat akhir",
+            "winner": "{{name}} juara dengan {{coins}} koin!",
+            "servedCount": "{{count}} disajikan",
+            "stats": "{{served}} disajikan · {{correct}}/{{answered}} benar",
+            "ingredients": {
+                "BUN": "Roti burger",
+                "PATTY": "Daging",
+                "CHEESE": "Keju",
+                "LETTUCE": "Selada",
+                "TOMATO": "Tomat",
+                "SAUCE": "Saus",
+                "DOUGH": "Adonan",
+                "MUSHROOM": "Jamur",
+                "PEPPERONI": "Pepperoni",
+                "OLIVE": "Zaitun"
+            },
+            "dishes": {
+                "BURGER": "Burger",
+                "PIZZA": "Pizza",
+                "MESS": "Masakan gagal"
+            },
+            "monsters": {
+                "SLIME": "Slime",
+                "CYCLOPS": "Kiklop",
+                "VAMPIRE": "Vampir",
+                "YETI": "Yeti",
+                "DRAGON": "Naga",
+                "GHOST": "Hantu"
+            },
+            "moods": {
+                "HAPPY": "Senang",
+                "IMPATIENT": "Tidak sabar",
+                "ANGRY": "Marah"
+            },
+            "oven": {
+                "EMPTY": "Kosong",
+                "COOKING": "Memasak",
+                "READY": "Matang!",
+                "BURNT": "Gosong"
+            },
+            "feedActions": {
+                "SERVED": "{{name}} menyajikan {{dish}} (+{{coins}} koin)",
+                "ANGRY": "Monster pelanggan {{name}} pergi dengan marah",
+                "BURNT": "Masakan {{name}} gosong di oven",
+                "RAT": "Tikus mencuri bahan dari {{name}}",
+                "PIE": "{{name}} melempar pie ke {{target}}"
+            }
+        },
+        "player": {
+            "intro": "Halo {{name}}! Masukkan PIN dari layar host untuk masuk ke dapur.",
+            "roomClosed": "Ruangan ditutup oleh host.",
+            "waitingStart": "Kamu sudah masuk dapur! Tunggu host memulai.",
+            "waitingHost": "Tunggu host memulai ronde berikutnya.",
+            "preparing": "Menyiapkan dapur…",
+            "connectionLost": "Koneksi terputus. Menyambung ulang…",
+            "youWon": "Kamu koki terbaik!",
+            "yourRank": "Kamu peringkat {{rank}} dari {{total}}",
+            "earned": "+{{points}} poin",
+            "coinsLabel": "Koin",
+            "servedLabel": "Pesanan disajikan",
+            "streakLabel": "Beruntun",
+            "rankLabel": "Peringkat",
+            "rankOf": "#{{rank}}/{{of}}",
+            "pieButton": "Lempar pie ({{count}})",
+            "pieTarget": "Lempar pie ke siapa?",
+            "pieLeader": "Pemimpin klasemen",
+            "pieNoRivals": "Belum ada koki lain.",
+            "noOrders": "Monster berikutnya segera datang…",
+            "recipe": "Resep",
+            "serve": "Sajikan",
+            "serveMatch": "Sajikan — cocok!",
+            "serveHint": "Ketuk Sajikan pada pesanan yang cocok.",
+            "questionFor": "Soal untuk {{ingredient}}",
+            "pickAnswer": "Pilih jawabanmu",
+            "wrongAnswer": "Belum tepat, tunggu sebentar.",
+            "pantry": "Dapur bahan",
+            "pantryHint": "Ketuk bahan, jawab soal",
+            "trayFull": "Nampan penuh",
+            "cooldown": "Coba lagi dalam {{seconds}} dtk",
+            "tray": "Nampan",
+            "trayCount": "{{count}}/{{max}}",
+            "trayEmpty": "Nampan kosong. Ambil bahan dari dapur.",
+            "addToPlate": "Taruh {{ingredient}} ke piring",
+            "plate": "Piring",
+            "plateCount": "{{count}}/{{max}}",
+            "plateEmpty": "Ketuk bahan di nampan untuk menyusunnya di sini.",
+            "clear": "Kosongkan",
+            "cook": "Masak",
+            "oven": "Oven",
+            "ovenEmpty": "Oven siap dipakai.",
+            "cooking": "Memasak {{dish}}",
+            "burnIn": "Angkat! Gosong dalam {{seconds}} dtk",
+            "takeOut": "Angkat dari oven",
+            "discardBurnt": "Buang yang gosong",
+            "held": "Siap disajikan",
+            "heldEmpty": "Belum ada masakan matang.",
+            "discardDish": "Buang masakan",
+            "ratTitle": "Ada tikus pencuri!",
+            "ratBody": "Tikus mengincar {{ingredient}} — {{seconds}} dtk lagi!",
+            "shoo": "Usir!",
+            "gotIngredient": "Benar! {{ingredient}} masuk nampan.",
+            "served": "Tersaji! +{{coins}} koin (tip {{tip}})",
+            "pieGranted": "Dapat 1 pie! Lempar ke teman lewat tombol pie.",
+            "wrongDish": "Masakan tidak sesuai pesanan! Kesabaran monster berkurang.",
+            "monsterLeft": "Monster pergi dengan marah!",
+            "burnt": "Masakanmu gosong!",
+            "ratShooed": "Tikus berhasil diusir!",
+            "ratStole": "Tikus mencuri {{ingredient}}!",
+            "pieThrown": "Pie mendarat di wajah {{name}}!",
+            "pieHit": "{{name}} melemparmu pie!",
+            "soloPreparing": "Menyiapkan dapur pribadimu, {{name}}…",
+            "soloClosed": "Dapur sebelumnya sudah ditutup.",
+            "soloCreate": "Buat dapur",
+            "soloTitle": "Dapur pribadi",
+            "soloIntro": "Pilih durasi dan mapel soal, lalu mulai memasak. Tidak ada lawan, jadi pie tidak dipakai.",
+            "soloDuration": "Durasi",
+            "soloMinuteUnit": "menit",
+            "soloStart": "Mulai memasak ({{count}} menit)",
+            "soloAgain": "Main lagi",
+            "soloLeave": "Tutup dapur",
+            "soloEnd": "Akhiri permainan",
+            "soloEndConfirm": "Akhiri sekarang? Hasil dan poin dihitung dari yang sudah kamu dapat.",
+            "soloEndCancel": "Lanjut main",
+            "soloEndNow": "Ya, akhiri"
+        },
+        "page": {
+            "title": "Monster Café",
+            "tagline": "Jawab kuis, masak burger & pizza, layani monster!",
+            "chooseRole": "Pilih peranmu",
+            "hostTitle": "Layar Host",
+            "hostBody": "Untuk guru atau proyektor kelas. Buat ruangan, pilih mapel dan durasi, lalu tonton dapur semua koki.",
+            "playerTitle": "Koki (Pemain)",
+            "playerBody": "Masuk dengan PIN dari host. Jawab soal untuk dapat bahan, rakit pesanan, dan layani monster.",
+            "openHost": "Buka layar host",
+            "openPlayer": "Masuk sebagai koki",
+            "rules": "Ketuk bahan di dapur lalu jawab soal dengan benar untuk mendapatkannya. Susun bahan di piring sesuai resep, masak di oven, angkat sebelum gosong, lalu sajikan sebelum monster marah. Usir tikus pencuri dan lempar pie ke teman!",
+            "soloTitle": "Main sendiri",
+            "soloBody": "Buka dapur pribadi dan layani monster sendirian. Cocok untuk latihan atau saat tidak ada teman.",
+            "openSolo": "Main sendiri"
+        },
+        "host": {
+            "intro": "Kamu jadi host di layar proyektor. Murid bergabung dari perangkat masing-masing (1–40 koki).",
+            "rules": "Jawab soal untuk dapat bahan, rakit burger atau pizza, masak di oven, lalu sajikan sebelum monster marah. Awas tikus pencuri dan lemparan pie!",
+            "createRoom": "Buka restoran",
+            "roomClosed": "Restoran sebelumnya sudah ditutup.",
+            "switchRole": "Ganti peran",
+            "pinBadge": "PIN {{pin}}",
+            "joinHint": "Masuk lewat menu Gabung dengan PIN",
+            "duration": "Lama permainan",
+            "minutes": "{{count}} menit",
+            "durationHint": "Koin terbanyak setelah {{count}} menit jadi juara.",
+            "joined": "Koki yang bergabung",
+            "waitingPlayers": "Menunggu koki bergabung…",
+            "start": "Mulai memasak",
+            "needPlayers": "Butuh minimal 1 koki",
+            "closeRoom": "Tutup restoran",
+            "again": "Main lagi",
+            "endGame": "Akhiri permainan",
+            "endNow": "Akhiri sekarang",
+            "endConfirm": "Tekan sekali lagi untuk mengakhiri permainan.",
+            "timeLeft": "Sisa waktu",
+            "leaderboard": "Papan koin",
+            "playersCount": "{{count}} koki",
+            "servedTotal": "{{count}} hidangan tersaji",
+            "boardEmpty": "Belum ada koki di dapur.",
+            "feed": "Kabar dapur",
+            "feedEmpty": "Belum ada kejadian. Ayo mulai memasak!",
+            "feedActions": {
+                "SERVED": "{{name}} menyajikan {{dish}}",
+                "ANGRY": "Monster meninggalkan meja {{name}} dengan marah",
+                "BURNT": "{{dish}} milik {{name}} gosong di oven",
+                "RAT": "Tikus mencuri bahan dari {{name}}",
+                "PIE": "{{name}} melempar pie ke {{target}}"
+            }
+        },
+        "howTo": {
+            "title": "Cara bermain",
+            "step": "Langkah {{current}}/{{total}}",
+            "prev": "Sebelumnya",
+            "next": "Berikutnya",
+            "play": "Putar",
+            "pause": "Jeda",
+            "replay": "Putar ulang",
+            "goTo": "Ke langkah {{number}}",
+            "downloadVideo": "Unduh video (MP4)",
+            "downloadSlides": "Unduh slide (PDF)",
+            "demoProjector": "Layar guru",
+            "demoJoined": "Koki sudah masuk",
+            "demoChef": "Koki",
+            "demoOrder": "Pesanan",
+            "demoPatience": "Kesabaran",
+            "demoHurry": "Cepat!",
+            "demoAngry": "Kesabaran habis = monster pergi marah",
+            "demoQuestion": "5 × 3 = ?",
+            "demoTray": "Nampan",
+            "demoCorrect": "Benar! +{{ingredient}}",
+            "demoWrong": "Salah = tunggu 2 dtk",
+            "demoPlate": "Piring",
+            "demoOven": "Oven",
+            "demoReady": "Siap!",
+            "demoCooking": "Masak 3 dtk, ambil dalam 5 dtk",
+            "demoBurnt": "Telat = gosong",
+            "demoShoo": "Tikus diusir!",
+            "demoPie": "Pie siap dilempar",
+            "demoPieHit": "Kena pie: layar Budi buram 2 detik",
+            "demoServed": "+100 koin + tip",
+            "demoWinner": "{{name}} juara 1!",
+            "demoPoints": "Setiap permainan selesai menambah poin akunmu",
+            "scenes": {
+                "join": {
+                    "title": "1. Masuk dengan PIN",
+                    "body": "Guru membuka restoran di layar proyektor dan membagikan PIN 6 digit atau link. Kamu masuk dari HP atau laptop sebagai koki dengan avatarmu sendiri."
+                },
+                "order": {
+                    "title": "2. Monster datang memesan",
+                    "body": "Setiap monster memesan burger atau pizza dengan resep tertentu. Perhatikan bar kesabaran: makin lama, monster makin kesal."
+                },
+                "quiz": {
+                    "title": "3. Jawab kuis untuk dapat bahan",
+                    "body": "Ketuk bahan yang kamu butuhkan, lalu jawab soalnya. Benar = bahan masuk nampan. Salah = tunggu 2 detik sebelum mencoba lagi."
+                },
+                "cook": {
+                    "title": "4. Rakit dan masak",
+                    "body": "Susun bahan di piring sesuai resep, lalu masukkan ke oven. Setelah matang, segera ambil dalam 5 detik atau masakan jadi gosong!"
+                },
+                "pests": {
+                    "title": "5. Usir tikus, lempar pie",
+                    "body": "Tikus pencuri mengincar bahan di nampanmu: ketuk untuk mengusirnya. Sajikan 2 pesanan berturut-turut untuk dapat pie dan lempar ke teman agar layarnya buram 2 detik."
+                },
+                "win": {
+                    "title": "6. Sajikan dan jadi juara",
+                    "body": "Sajikan hidangan yang tepat untuk dapat 100 koin plus tip kalau monster masih sabar. Koin terbanyak saat waktu habis jadi juara."
+                }
+            }
+        }
     }
 }

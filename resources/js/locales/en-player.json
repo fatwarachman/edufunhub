@@ -1,5 +1,98 @@
 {
+    "pingPong": {
+        "title": "Ping Pong",
+        "eyebrow": "QUIZ ARENA · ALL SUBJECTS",
+        "subtitle": "Read the question. Pick the answer. Return the ball.",
+        "scoreboard": "Scoreboard",
+        "you": "You",
+        "bot": "Bot",
+        "courtLabel": "Ping pong court. Left score {{left}}, right score {{right}}.",
+        "courtMark": "PING PONG · QUIZ",
+        "unmute": "Unmute sponsor audio",
+        "mute": "Mute sponsor audio",
+        "unavailable": "The arena is not available yet. Learn how to play while you wait.",
+        "intro": "Hi {{name}}! Challenge the bot or invite one friend.",
+        "rules": "The host picks the subject. Correct answers return the ball; wrong answers or timeouts give your opponent a goal. Reach 5 goals; after 60 turns, the higher score wins.",
+        "soloHint": "Play solo against the bot, or share your PIN to duel a friend.",
+        "target": "Target {{target}} goals",
+        "round": "Turn {{round}} / {{total}}",
+        "rally": "Rally {{count}}",
+        "submitted": "Answer sent. Waiting for the referee…",
+        "yourTurn": "Your turn to return",
+        "waitTurn": "Waiting for {{name}}",
+        "seconds": "{{count}} sec",
+        "question": "Answer to return the ball",
+        "chooseOption": "Answer options",
+        "preparing": "Preparing the serve…",
+        "answerHint": "Tap one answer. The server referee controls the score and clock.",
+        "stopped": "Match stopped",
+        "draw": "A tie!",
+        "won": "You won!",
+        "finished": "Match complete",
+        "points": "+{{points}} account points",
+        "playAgain": "Play again",
+        "returned": "Ball returned!",
+        "goal": "Goal for the opponent!",
+        "answer": "Answer: {{answer}}",
+        "hint": "Hint: {{hint}}",
+        "previousQuestion": "Last question: {{prompt}}",
+        "back": "Back",
+        "howTo": {
+            "title": "How to play",
+            "step": "Step {{step}}/{{total}}",
+            "previous": "Previous",
+            "next": "Next",
+            "pause": "Pause",
+            "replay": "Replay",
+            "video": "Download video (Indonesian)",
+            "pdf": "Download slides (Indonesian)",
+            "demoPin": "Example PIN",
+            "demoInvite": "Solo with bot · Duel with a friend",
+            "demoWinner": "5 : 3 — Victory!",
+            "demoQuestion": "What is 7 × 8?",
+            "demoOptions": ["54", "56", "63", "48"],
+            "demoAnswer": "Answer: 56",
+            "demoRally": "Rally 6 · turns alternate",
+            "demoRallyQuestion": "Which planet is closest to the Sun?",
+            "demoRallyOptions": ["Venus", "Mercury", "Mars", "Earth"],
+            "demo": {
+                "subject": "PICK A SUBJECT",
+                "read": "READ THE QUESTION",
+                "return": "RETURN THE BALL",
+                "goal": "GOAL FOR THE OPPONENT",
+                "rally": "RALLY & TURNS",
+                "win": "MATCH RESULT"
+            },
+            "scenes": {
+                "subject": {
+                    "title": "Create a room, pick a subject",
+                    "body": "Create a room to face the bot or share the PIN with one friend. The host picks a subject, or Mixed for all of them."
+                },
+                "read": {
+                    "title": "Read the question on your turn",
+                    "body": "When the ball comes to you, a question appears below the table. Read it carefully and watch the time left."
+                },
+                "return": {
+                    "title": "Correct? The ball goes back!",
+                    "body": "Tap the right answer. The ball flies back to your opponent and you earn the question points."
+                },
+                "goal": {
+                    "title": "Wrong or late? A goal!",
+                    "body": "Your opponent gains one goal. See the correct answer, then the conceding side serves."
+                },
+                "rally": {
+                    "title": "Keep the rally, take turns",
+                    "body": "Every turn brings a new question for the player receiving the ball. The longer the rally, the better the duel."
+                },
+                "win": {
+                    "title": "Reach five goals",
+                    "body": "First to 5 goals wins. After 60 turns, scores are compared; a tie is possible. The server awards account points."
+                }
+            }
+        }
+    },
     "player": {
+        "pingPong": "Ping Pong",
         "navigation": "User navigation",
         "dashboard": "Dashboard",
         "character": "Character",
@@ -79,6 +172,7 @@
         "portSorter": "Port Sorter",
         "turboTrivia": "Turbo Trivia",
         "blockBattle": "Quiz Tetris",
+        "monsterCafe": "Monster Café",
         "shareWaRoom": "Share via WhatsApp",
         "shareWaGame": "Share game",
         "shareWaRoomText": "🎮 Let's play {{game}} together on EduFunHub!\nPIN Code: {{pin}}\nJoin link: {{url}}\nEduFunHub — Portal Edukasi Seru!",
@@ -289,6 +383,7 @@
         "recent": "Recent results",
         "allHistory": "See full history",
         "games": {
+            "pingPong": "Return the ball by answering quiz questions from every subject. Play solo against a bot or invite a friend by PIN.",
             "title": "Educational games",
             "flagQuest": "Explore the map, beat quizzes, snakes & ladders and math sprints at each station, then raise the flag.",
             "snakes": "100-square snakes and ladders with quizzes: play solo, 2–4 players on one device, or online with friends via PIN and link.",
@@ -305,7 +400,8 @@
             "orderRush": "Race to order UTP cables, fibre cores, OSI layers, DHCP and TCP steps for networking students. Streaks earn sabotage power-ups!",
             "portSorter": "Sort network packets into the right bin before they drop! Topics and bins are set by teachers: ports & protocols, services and more.",
             "turboTrivia": "A quiz kart race on the classroom projector! Answer right for Nitro, drop Banana Peels, fire Missiles at first place and call Lightning.",
-            "blockBattle": "A block battle on the classroom projector! Answer right for an I piece or an attack, clear lines, build words & equations, or build a fortress together against a monster."
+            "blockBattle": "A block battle on the classroom projector! Answer right for an I piece or an attack, clear lines, build words & equations, or build a fortress together against a monster.",
+            "monsterCafe": "Cook in a monster restaurant for 1–40 players! Answer quizzes to earn ingredients, build burgers & pizzas before the monsters get angry, shoo rats and throw pies at friends."
         },
         "detailsFirst": "Complete details first",
         "detailsNoticeTitle": "Complete your participant details first!",
@@ -716,6 +812,13 @@
         "headingAccent": "Games",
         "intro": "Games are grouped by type. Games labelled \"Earns points\" are verified by the server and add points to your account.",
         "play": "Play now",
+        "latest": {
+            "title": "Latest games",
+            "intro_one": "Games released in the last day. Be the first to try them!",
+            "intro_other": "Games released in the last {{count}} days. Be the first to try them!",
+            "badge": "New",
+            "released": "Released {{date}}"
+        },
         "upcoming": {
             "title": "Coming soon",
             "intro": "Classroom multiplayer games we are building now. All are played together on the projector and students' devices.",
@@ -724,18 +827,6 @@
             "gameplayLabel": "Gameplay",
             "funLabel": "Why it's fun",
             "games": {
-                "monsterCafe": {
-                    "title": "Monster Café / Pizza Frenzy",
-                    "inspiration": "Overcooked / Diner Dash mechanics",
-                    "concept": "Students are chefs in a monster restaurant.",
-                    "gameplay": [
-                        "Monster customers place food orders; every ingredient is the answer to a quiz question.",
-                        "Answer correctly to earn an ingredient, such as cheese, bread or sauce.",
-                        "Assemble the ingredients into a burger or pizza before the monster gets angry (patience timer).",
-                        "Watch out for burnt orders and ingredient-stealing rats, and use the pie power-up to blur another student's screen for 2 seconds."
-                    ],
-                    "fun": "Frantic, funny cartoon food and a fast pace with no downtime."
-                },
                 "saboteurLab": {
                     "title": "Saboteur Lab / Impostor Protocol",
                     "inspiration": "Among Us / Mafia mechanics",
@@ -770,17 +861,6 @@
                         "The team with the largest colour share when time runs out wins."
                     ],
                     "fun": "Highly visual, contributions show up instantly on the projector, competitive yet relaxed."
-                },
-                "osiPingPong": {
-                    "title": "Ping Pong Network / OSI Layer Match",
-                    "inspiration": "IT knowledge · ping pong mechanics",
-                    "concept": "A ping pong duel where you return the ball by naming the right OSI layer.",
-                    "gameplay": [
-                        "A device or term appears on screen: Router, Switch, Hub, UTP cable, HTTP, MAC address, IP address.",
-                        "Tap the matching layer: Layer 1 (Physical), Layer 2 (Data Link), Layer 3 (Network) or Layer 7 (Application).",
-                        "A correct answer bounces the ball back to your opponent; a wrong one concedes a goal."
-                    ],
-                    "fun": "Four big buttons and fast reactions turn memorising the 7 OSI layers into a match instead of a rigid lesson."
                 }
             }
         },
@@ -1031,7 +1111,19 @@
             "invalid_input": "Unknown move.",
             "invalid_reward": "Unknown reward.",
             "no_reward": "There is no reward to pick.",
-            "knocked_out": "You are already knocked out in this game."
+            "knocked_out": "You are already knocked out in this game.",
+            "cooldown": "Wait a moment before asking for another ingredient.",
+            "tray_full": "Your tray is full. Use some ingredients first.",
+            "plate_full": "The plate is full.",
+            "plate_empty": "The plate is empty.",
+            "no_ingredient": "That ingredient isn't on your tray.",
+            "invalid_ingredient": "Unknown ingredient.",
+            "oven_busy": "The oven is busy or you're still holding a dish.",
+            "oven_empty": "The oven is empty.",
+            "no_dish": "You have no dish to serve.",
+            "invalid_order_id": "That order is gone.",
+            "no_pie": "You don't have a pie yet.",
+            "invalid_rat": "That rat is already gone."
         },
         "copyPinLabel": "Copy PIN",
         "copyLinkLabel": "Copy link",
@@ -2711,5 +2803,259 @@
         "prev": "Previous",
         "next": "Next",
         "autoRefresh": "The list updates automatically every 15 seconds."
+    },
+    "monsterCafe": {
+        "common": {
+            "title": "Monster Café",
+            "coins": "{{amount}} coins",
+            "pin": "PIN {{pin}}",
+            "you": "You",
+            "offline": "Offline",
+            "leftGame": "left",
+            "rank": "#{{rank}}",
+            "minutes": "{{count}} min",
+            "playersCount": "{{count}} players",
+            "timeLeft": "Time left",
+            "secondsLeft": "{{seconds}} s",
+            "patience": "Monster patience",
+            "leaderboard": "Coin board",
+            "feed": "Kitchen events",
+            "feedEmpty": "Nothing yet. Serve the first monster!",
+            "podium": "Podium",
+            "ranking": "Final ranking",
+            "winner": "{{name}} wins with {{coins}} coins!",
+            "servedCount": "{{count}} served",
+            "stats": "{{served}} served · {{correct}}/{{answered}} correct",
+            "ingredients": {
+                "BUN": "Bun",
+                "PATTY": "Patty",
+                "CHEESE": "Cheese",
+                "LETTUCE": "Lettuce",
+                "TOMATO": "Tomato",
+                "SAUCE": "Sauce",
+                "DOUGH": "Dough",
+                "MUSHROOM": "Mushroom",
+                "PEPPERONI": "Pepperoni",
+                "OLIVE": "Olive"
+            },
+            "dishes": {
+                "BURGER": "Burger",
+                "PIZZA": "Pizza",
+                "MESS": "Kitchen mess"
+            },
+            "monsters": {
+                "SLIME": "Slime",
+                "CYCLOPS": "Cyclops",
+                "VAMPIRE": "Vampire",
+                "YETI": "Yeti",
+                "DRAGON": "Dragon",
+                "GHOST": "Ghost"
+            },
+            "moods": {
+                "HAPPY": "Happy",
+                "IMPATIENT": "Impatient",
+                "ANGRY": "Angry"
+            },
+            "oven": {
+                "EMPTY": "Empty",
+                "COOKING": "Cooking",
+                "READY": "Ready!",
+                "BURNT": "Burnt"
+            },
+            "feedActions": {
+                "SERVED": "{{name}} served a {{dish}} (+{{coins}} coins)",
+                "ANGRY": "{{name}}'s monster left angry",
+                "BURNT": "{{name}}'s dish burnt in the oven",
+                "RAT": "A rat stole an ingredient from {{name}}",
+                "PIE": "{{name}} threw a pie at {{target}}"
+            }
+        },
+        "player": {
+            "intro": "Hi {{name}}! Enter the PIN from the host screen to enter the kitchen.",
+            "roomClosed": "The host closed the room.",
+            "waitingStart": "You're in the kitchen! Wait for the host to start.",
+            "waitingHost": "Wait for the host to start the next round.",
+            "preparing": "Setting up the kitchen…",
+            "connectionLost": "Connection lost. Reconnecting…",
+            "youWon": "You're the best chef!",
+            "yourRank": "You placed {{rank}} of {{total}}",
+            "earned": "+{{points}} points",
+            "coinsLabel": "Coins",
+            "servedLabel": "Orders served",
+            "streakLabel": "Streak",
+            "rankLabel": "Rank",
+            "rankOf": "#{{rank}}/{{of}}",
+            "pieButton": "Throw a pie ({{count}})",
+            "pieTarget": "Throw the pie at whom?",
+            "pieLeader": "Current leader",
+            "pieNoRivals": "No other chefs yet.",
+            "noOrders": "The next monster is on its way…",
+            "recipe": "Recipe",
+            "serve": "Serve",
+            "serveMatch": "Serve — match!",
+            "serveHint": "Tap Serve on the matching order.",
+            "questionFor": "Question for {{ingredient}}",
+            "pickAnswer": "Pick your answer",
+            "wrongAnswer": "Not quite, wait a moment.",
+            "pantry": "Pantry",
+            "pantryHint": "Tap an ingredient, answer",
+            "trayFull": "Tray is full",
+            "cooldown": "Try again in {{seconds}} s",
+            "tray": "Tray",
+            "trayCount": "{{count}}/{{max}}",
+            "trayEmpty": "Tray is empty. Get ingredients from the pantry.",
+            "addToPlate": "Put {{ingredient}} on the plate",
+            "plate": "Plate",
+            "plateCount": "{{count}}/{{max}}",
+            "plateEmpty": "Tap ingredients on the tray to stack them here.",
+            "clear": "Clear",
+            "cook": "Cook",
+            "oven": "Oven",
+            "ovenEmpty": "The oven is free.",
+            "cooking": "Cooking {{dish}}",
+            "burnIn": "Take it out! Burns in {{seconds}} s",
+            "takeOut": "Take out",
+            "discardBurnt": "Throw away the burnt dish",
+            "held": "Ready to serve",
+            "heldEmpty": "No cooked dish yet.",
+            "discardDish": "Throw away dish",
+            "ratTitle": "A thieving rat!",
+            "ratBody": "The rat wants your {{ingredient}} — {{seconds}} s left!",
+            "shoo": "Shoo!",
+            "gotIngredient": "Correct! {{ingredient}} went onto the tray.",
+            "served": "Served! +{{coins}} coins (tip {{tip}})",
+            "pieGranted": "You got a pie! Throw it at a friend with the pie button.",
+            "wrongDish": "That dish doesn't match the order! The monster lost patience.",
+            "monsterLeft": "A monster left angry!",
+            "burnt": "Your dish burnt!",
+            "ratShooed": "You shooed the rat away!",
+            "ratStole": "The rat stole your {{ingredient}}!",
+            "pieThrown": "The pie hit {{name}} in the face!",
+            "pieHit": "{{name}} hit you with a pie!",
+            "soloPreparing": "Setting up your private kitchen, {{name}}…",
+            "soloClosed": "Your previous kitchen was closed.",
+            "soloCreate": "Open kitchen",
+            "soloTitle": "Private kitchen",
+            "soloIntro": "Pick the duration and question subject, then start cooking. There are no rivals, so pies are not used.",
+            "soloDuration": "Duration",
+            "soloMinuteUnit": "min",
+            "soloStart": "Start cooking ({{count}} min)",
+            "soloAgain": "Play again",
+            "soloLeave": "Close kitchen",
+            "soloEnd": "End game",
+            "soloEndConfirm": "End now? Your result and points count what you earned so far.",
+            "soloEndCancel": "Keep playing",
+            "soloEndNow": "Yes, end it"
+        },
+        "page": {
+            "title": "Monster Café",
+            "tagline": "Answer quizzes, cook burgers & pizzas, serve monsters!",
+            "chooseRole": "Choose your role",
+            "hostTitle": "Host screen",
+            "hostBody": "For the teacher or class projector. Create a room, pick the subject and duration, then watch every kitchen.",
+            "playerTitle": "Chef (player)",
+            "playerBody": "Join with the PIN from the host. Answer questions to earn ingredients, build orders and serve monsters.",
+            "openHost": "Open host screen",
+            "openPlayer": "Join as a chef",
+            "rules": "Tap an ingredient in the pantry and answer its question correctly to get it. Stack ingredients on the plate as the recipe says, cook them in the oven, take them out before they burn, and serve before the monster gets angry. Shoo the thieving rat and throw pies at friends!",
+            "soloTitle": "Play solo",
+            "soloBody": "Open a private kitchen and serve the monsters on your own. Great for practice or when no friends are around.",
+            "openSolo": "Play solo"
+        },
+        "host": {
+            "intro": "You are the host on the projector screen. Students join from their own devices (1–40 chefs).",
+            "rules": "Answer questions to earn ingredients, build a burger or pizza, bake it in the oven and serve it before the monster gets angry. Watch out for thieving rats and flying pies!",
+            "createRoom": "Open the café",
+            "roomClosed": "The previous café has closed.",
+            "switchRole": "Switch role",
+            "pinBadge": "PIN {{pin}}",
+            "joinHint": "Join from the Join menu with the PIN",
+            "duration": "Game length",
+            "minutes": "{{count}} min",
+            "durationHint": "Most coins after {{count}} minutes wins.",
+            "joined": "Chefs joined",
+            "waitingPlayers": "Waiting for chefs to join…",
+            "start": "Start cooking",
+            "needPlayers": "Needs at least 1 chef",
+            "closeRoom": "Close the café",
+            "again": "Play again",
+            "endGame": "End game",
+            "endNow": "End now",
+            "endConfirm": "Press once more to end the game.",
+            "timeLeft": "Time left",
+            "leaderboard": "Coin board",
+            "playersCount": "{{count}} chefs",
+            "servedTotal": "{{count}} dishes served",
+            "boardEmpty": "No chefs in the kitchen yet.",
+            "feed": "Kitchen news",
+            "feedEmpty": "Nothing has happened yet. Start cooking!",
+            "feedActions": {
+                "SERVED": "{{name}} served a {{dish}}",
+                "ANGRY": "A monster stormed away from {{name}}",
+                "BURNT": "{{name}}'s {{dish}} burnt in the oven",
+                "RAT": "A rat stole an ingredient from {{name}}",
+                "PIE": "{{name}} threw a pie at {{target}}"
+            }
+        },
+        "howTo": {
+            "title": "How to play",
+            "step": "Step {{current}}/{{total}}",
+            "prev": "Previous",
+            "next": "Next",
+            "play": "Play",
+            "pause": "Pause",
+            "replay": "Replay",
+            "goTo": "Go to step {{number}}",
+            "downloadVideo": "Download video (MP4)",
+            "downloadSlides": "Download slides (PDF)",
+            "demoProjector": "Teacher screen",
+            "demoJoined": "Chefs joined",
+            "demoChef": "Chef",
+            "demoOrder": "Order",
+            "demoPatience": "Patience",
+            "demoHurry": "Hurry!",
+            "demoAngry": "No patience left = monster storms off",
+            "demoQuestion": "5 × 3 = ?",
+            "demoTray": "Tray",
+            "demoCorrect": "Correct! +{{ingredient}}",
+            "demoWrong": "Wrong = wait 2s",
+            "demoPlate": "Plate",
+            "demoOven": "Oven",
+            "demoReady": "Ready!",
+            "demoCooking": "Bakes 3s, take it out within 5s",
+            "demoBurnt": "Too late = burnt",
+            "demoShoo": "Rat shooed!",
+            "demoPie": "Pie ready to throw",
+            "demoPieHit": "Pie hit: Budi's screen blurs for 2 seconds",
+            "demoServed": "+100 coins + tip",
+            "demoWinner": "{{name}} takes first place!",
+            "demoPoints": "Every finished game adds points to your account",
+            "scenes": {
+                "join": {
+                    "title": "1. Join with the PIN",
+                    "body": "The teacher opens the café on the projector and shares a 6-digit PIN or link. You join from a phone or laptop as a chef with your own avatar."
+                },
+                "order": {
+                    "title": "2. Monsters place orders",
+                    "body": "Each monster orders a burger or pizza with a set recipe. Watch the patience bar: the longer it takes, the grumpier the monster gets."
+                },
+                "quiz": {
+                    "title": "3. Answer quizzes for ingredients",
+                    "body": "Tap the ingredient you need, then answer its question. Right = the ingredient lands on your tray. Wrong = wait 2 seconds before trying again."
+                },
+                "cook": {
+                    "title": "4. Build and bake",
+                    "body": "Stack the ingredients on the plate following the recipe, then put it in the oven. Once it is ready, take it out within 5 seconds or it burns!"
+                },
+                "pests": {
+                    "title": "5. Shoo rats, throw pies",
+                    "body": "A thieving rat goes for an ingredient on your tray: tap it to shoo it away. Serve 2 orders in a row to earn a pie and throw it at a friend to blur their screen for 2 seconds."
+                },
+                "win": {
+                    "title": "6. Serve and win",
+                    "body": "Serve the right dish for 100 coins plus a tip while the monster is still patient. Most coins when time runs out wins."
+                }
+            }
+        }
     }
 }

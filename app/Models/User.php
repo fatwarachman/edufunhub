@@ -21,6 +21,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
+    /** A user counts as online when seen within this many minutes. */
+    public const ONLINE_MINUTES = 15;
+
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, \Laravel\Scout\Searchable, LogsActivity, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
 

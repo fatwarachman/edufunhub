@@ -7,6 +7,7 @@ use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\PointLedger;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -17,6 +18,9 @@ class PlayerPortal
 {
     /** Window (days) used for the "most played" ranking on the portal. */
     public const POPULARITY_DAYS = 30;
+
+    /** A game counts as new on /gamelist for this many days after its catalog released_at. */
+    public const NEW_GAME_DAYS = 3;
 
     /** Ranks that get a "most played" badge; games with equal plays share a rank. */
     public const POPULAR_BADGES = 3;
@@ -67,6 +71,34 @@ class PlayerPortal
                     && $grade <= ($game['max_grade'] ?? 12),
             ])->values()->all(),
         ])->values()->all();
+    }
+
+    /**
+     * Catalog games released within the last NEW_GAME_DAYS days, newest first
+     * (catalog order breaks ties). Games without a released_at never count.
+     *
+     * @return list<array{key: string, releasedAt: string}>
+     */
+    public function newGames(int $days = self::NEW_GAME_DAYS): array
+    {
+        $since = now()->startOfDay()->subDays($days - 1);
+        $today = now()->endOfDay();
+
+        return collect(config('game-catalog.categories'))
+            ->flatMap(fn (array $category): array => $category['games'])
+            ->filter(fn (array $game): bool => filled($game['released_at'] ?? null))
+            ->map(fn (array $game): array => [
+                'key' => $game['key'],
+                'released' => Carbon::parse($game['released_at'])->startOfDay(),
+            ])
+            ->filter(fn (array $game): bool => $game['released']->betweenIncluded($since, $today))
+            ->sortByDesc(fn (array $game): int => $game['released']->getTimestamp())
+            ->map(fn (array $game): array => [
+                'key' => $game['key'],
+                'releasedAt' => $game['released']->toDateString(),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
