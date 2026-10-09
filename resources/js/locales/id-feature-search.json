@@ -1,0 +1,163 @@
+{
+    "title": "Cari fitur",
+    "description": "Temukan menu admin, fitur pemain, pengaturan, dan permainan.",
+    "placeholder": "Cari fitur, misalnya pengguna, soal, atau game…",
+    "empty": "Fitur tidak ditemukan. Coba kata kunci lain.",
+    "hint": "↑ ↓ Pilih · Enter Buka · Esc Tutup · Ctrl/⌘ K Cari",
+    "admin": "Administrasi",
+    "player": "Fitur pemain",
+    "games": "Permainan",
+    "results": "Hasil pencarian",
+    "features": {
+        "campaign": {
+            "href": "/admin/ads/campaigns/create",
+            "title": "Buat kampanye iklan",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "createUser": {
+            "href": "/admin/users/create",
+            "title": "Tambah pengguna",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "createRole": {
+            "href": "/admin/roles/create",
+            "title": "Tambah peran",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "createQuestion": {
+            "href": "/admin/questions/create",
+            "title": "Buat soal",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "createItem": {
+            "href": "/admin/character-items/create",
+            "title": "Tambah item karakter",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "createWord": {
+            "href": "/admin/games/crossword/words/create",
+            "title": "Tambah kata teka-teki silang",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "dashboard": {
+            "href": "/dashboard",
+            "title": "Dashboard pemain",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "portal": {
+            "href": "/portal",
+            "title": "Portal belajar",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "games": {
+            "href": "/gamelist",
+            "title": "Semua permainan",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "leaderboard": {
+            "href": "/leaderboard",
+            "title": "Peringkat pemain",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "ability": {
+            "href": "/ability",
+            "title": "Kemampuan belajar",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "character": {
+            "href": "/character",
+            "title": "Karakter dan toko",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "profile": {
+            "href": "/profile",
+            "title": "Profil dan kata sandi",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "friends": {
+            "href": "/friends",
+            "title": "Teman",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "chat": {
+            "href": "/chat",
+            "title": "Percakapan dan grup",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "online": {
+            "href": "/players/online",
+            "title": "Pemain online",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "notifications": {
+            "href": "/notifications",
+            "title": "Notifikasi pemain",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "feedback": {
+            "href": "/feedback",
+            "title": "Kirim masukan",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "teacher": {
+            "href": "/teacher/questions",
+            "title": "Bank soal guru",
+            "superadminOnly": false,
+            "teacherOnly": true
+        },
+        "teacherImport": {
+            "href": "/teacher/questions/import",
+            "title": "Impor soal guru",
+            "superadminOnly": false,
+            "teacherOnly": true
+        },
+        "generate": {
+            "href": "/admin/questions/generate",
+            "title": "Buat soal AI",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "words": {
+            "href": "/admin/games/crossword/words",
+            "title": "Bank kata teka-teki silang",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "sequences": {
+            "href": "/admin/games/order-rush/sequences",
+            "title": "Bank urutan Order Rush",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "sorter": {
+            "href": "/admin/games/port-sorter/sets",
+            "title": "Bank item Port Sorter",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "advertiser": {
+            "href": "/admin/ads/advertisers/create",
+            "title": "Tambah pengiklan",
+            "superadminOnly": true,
+            "teacherOnly": false
+        }
+    }
+}
