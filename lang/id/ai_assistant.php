@@ -1,0 +1,32 @@
+<?php
+
+return [
+    'unavailable' => 'Atur koneksi AI dan pilih model di Pengaturan AI terlebih dahulu.',
+    'provider_error' => 'Jawaban AI belum dapat diproses. Coba lagi; jika tetap gagal, periksa koneksi dan model di Pengaturan AI.',
+    'message_required' => 'Tulis pesan terlebih dahulu.',
+    'message_invalid' => 'Pesan harus berupa teks.',
+    'message_long' => 'Pesan maksimal 4.000 karakter.',
+    'history_invalid' => 'Riwayat percakapan harus berupa daftar yang hanya berisi peran dan isi pesan.',
+    'history_long' => 'Riwayat percakapan maksimal 12 pesan.',
+    'role_invalid' => 'Peran riwayat harus user atau assistant.',
+    'content_invalid' => 'Setiap pesan riwayat harus berisi teks.',
+    'content_long' => 'Pesan riwayat maksimal 8.000 karakter.',
+    'conversation_invalid' => 'Percakapan tidak valid.',
+    'title_required' => 'Tulis judul percakapan.',
+    'title_long' => 'Judul maksimal 100 karakter.',
+    'invalid_filter' => 'Kueri atau filter tidak didukung. Gunakan operasi dan filter yang tersedia.',
+    'invalid_range' => 'Gunakan rentang tanggal berurutan maksimal 366 hari.',
+    'query_limit' => 'Batas kueri telah tercapai.',
+    'sources' => [
+        'catalog' => 'Katalog game',
+        'players' => 'Pemain',
+        'player' => 'Detail pemain',
+        'results' => 'Hasil permainan',
+        'matches' => 'Riwayat pertandingan',
+        'points' => 'Buku poin',
+        'questions' => 'Statistik soal',
+        'screen_time' => 'Waktu layar aktif',
+        'leaderboard' => 'Peringkat poin',
+        'ads' => 'Statistik iklan',
+    ],
+];

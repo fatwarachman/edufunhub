@@ -48,6 +48,10 @@ return [
     |
     */
 
+    'conversations' => [
+        'generate_title' => false,
+    ],
+
     'caching' => [
         'embeddings' => [
             'cache' => false,
