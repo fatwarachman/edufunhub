@@ -4,14 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProfileAccountRequest;
 use App\Http\Requests\UpdateProfilePasswordRequest;
+use App\Http\Requests\UpdateProfilePhotoRequest;
 use App\Models\PasswordHistory;
 use App\Models\Question;
 use App\Models\User;
 use App\Services\PlayerPortal;
+use App\Services\ProfilePhoto;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * The player's own profile: account data, player details, password and
@@ -32,6 +36,7 @@ class ProfileController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'email_verified' => $user->email_verified_at !== null,
+                'avatar_url' => $user->avatar_url,
                 'joined_at' => $user->created_at?->toIso8601String(),
                 'last_seen_at' => $user->last_seen_at?->toIso8601String(),
                 'password_updated_at' => $user->password_updated_at?->toIso8601String(),
@@ -71,6 +76,33 @@ class ProfileController extends Controller
         $request->user()->update(['name' => $request->validated('name')]);
 
         return back()->with('success', __('profile.saved'));
+    }
+
+    public function photo(UpdateProfilePhotoRequest $request): RedirectResponse
+    {
+        ProfilePhoto::store($request->user(), $request->file('photo'));
+
+        return back()->with('success', __('profile.photo_saved'));
+    }
+
+    public function destroyPhoto(Request $request): RedirectResponse
+    {
+        ProfilePhoto::remove($request->user());
+
+        return back()->with('success', __('profile.photo_removed'));
+    }
+
+    /** Streams a stored profile photo to signed-in users (no storage symlink needed). */
+    public function showPhoto(string $file): StreamedResponse
+    {
+        $path = ProfilePhoto::FOLDER.'/'.$file;
+        abort_unless(Storage::disk('public')->exists($path), 404);
+
+        return Storage::disk('public')->response($path, null, [
+            'Cache-Control' => 'private, max-age=604800',
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'; sandbox",
+        ]);
     }
 
     public function password(UpdateProfilePasswordRequest $request): RedirectResponse
