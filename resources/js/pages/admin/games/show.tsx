@@ -1,4 +1,4 @@
-import { smoothLine } from '@/components/admin/dashboard-kit';
+import { chartEvents, smoothLine } from '@/components/admin/dashboard-kit';
 import {
     BAND_LABELS,
     BucketTable,
@@ -336,6 +336,7 @@ export default function GameShow({
                                         height="100%"
                                     >
                                         <AreaChart
+                                            {...chartEvents}
                                             data={stats.daily}
                                             margin={{
                                                 left: -20,
@@ -403,6 +404,7 @@ export default function GameShow({
                                         height="100%"
                                     >
                                         <BarChart
+                                            {...chartEvents}
                                             data={stats.outcomes}
                                             margin={{
                                                 left: -20,

@@ -8,6 +8,7 @@ import {
     type ActivityProperties,
     activitySummary,
 } from '@/components/admin/activity-entry';
+import { useAdminBreadcrumbs } from '@/components/admin/admin-breadcrumbs';
 import {
     FlashMessages,
     type Paginated,
@@ -15,6 +16,7 @@ import {
 } from '@/components/admin/admin-kit';
 import {
     axisTick,
+    chartEvents,
     chartTooltipStyle,
     GameDot,
     KpiCard,
@@ -49,7 +51,6 @@ import { cn } from '@/lib/utils';
 import { Deferred, Head, Link, router } from '@inertiajs/react';
 import {
     Activity,
-    ArrowLeft,
     ArrowRight,
     BookOpenCheck,
     BrainCircuit,
@@ -356,8 +357,13 @@ export default function ShowUser(props: Props) {
     }, [scrollRequest]);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [editingSchool, setEditingSchool] = useState(false);
+    const isLearnerAccount =
+        !user.is_superadmin &&
+        !user.is_teacher &&
+        !user.roles.some((role) => role.slug === 'admin');
     const [deleting, setDeleting] = useState(false);
     const suspended = user.status === 'suspended';
+    useAdminBreadcrumbs([{ title: profile?.nickname || user.name }]);
     const completeness = [
         hasGrade(profile?.grade),
         profile?.birth_date,
@@ -369,14 +375,6 @@ export default function ShowUser(props: Props) {
         <>
             <Head title={user.name} />
             <div className="flex flex-col gap-6">
-                <Link
-                    href="/admin/users"
-                    className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-                >
-                    <ArrowLeft className="size-4" />
-                    {tr('Back to users')}
-                </Link>
-
                 <FlashMessages />
 
                 {/* Identity card */}
@@ -616,19 +614,20 @@ export default function ShowUser(props: Props) {
                                         {completeness}
                                         {tr('/4 complete')}
                                     </span>
-                                    {props.viewerIsSuperadmin && profile && (
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setEditingSchool(true)
-                                            }
-                                            className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                            data-testid="user-edit-school-grade"
-                                        >
-                                            <Edit className="size-4" />
-                                            {tr('Edit')}
-                                        </button>
-                                    )}
+                                    {props.viewerIsSuperadmin &&
+                                        isLearnerAccount && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setEditingSchool(true)
+                                                }
+                                                className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                                data-testid="user-edit-school-grade"
+                                            >
+                                                <Edit className="size-4" />
+                                                {tr('Edit')}
+                                            </button>
+                                        )}
                                 </div>
                             }
                         >
@@ -788,6 +787,7 @@ export default function ShowUser(props: Props) {
                                         height="100%"
                                     >
                                         <LineChart
+                                            {...chartEvents}
                                             data={props.trend}
                                             margin={{
                                                 left: -12,
@@ -1040,6 +1040,7 @@ export default function ShowUser(props: Props) {
                             <div className="h-36">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
+                                        {...chartEvents}
                                         data={props.daily}
                                         margin={{ left: -24, right: 4, top: 4 }}
                                     >
@@ -1104,7 +1105,9 @@ export default function ShowUser(props: Props) {
                                 [
                                     {
                                         key: 'games',
-                                        label: `Game history (${props.plays.total})`,
+                                        label: tr('Game history ({0})', [
+                                            props.plays.total,
+                                        ]),
                                         icon: History,
                                     },
                                     {
@@ -1121,17 +1124,23 @@ export default function ShowUser(props: Props) {
                                     },
                                     {
                                         key: 'matches',
-                                        label: `Matches (${props.matches.total})`,
+                                        label: tr('Matches ({0})', [
+                                            props.matches.total,
+                                        ]),
                                         icon: Swords,
                                     },
                                     {
                                         key: 'activity',
-                                        label: `Activity log (${props.activityLog.length})`,
+                                        label: tr('Activity log ({0})', [
+                                            props.activityLog.length,
+                                        ]),
                                         icon: Activity,
                                     },
                                     {
                                         key: 'logins',
-                                        label: `Logins (${props.logins.length})`,
+                                        label: tr('Logins ({0})', [
+                                            props.logins.length,
+                                        ]),
                                         icon: LogIn,
                                     },
                                 ] as {
@@ -1155,13 +1164,15 @@ export default function ShowUser(props: Props) {
                                     )}
                                 >
                                     <item.icon className="size-4" />
-                                    {tr(item.label)}
+                                    {item.label}
                                 </button>
                             ))}
                         </div>
                     </header>
                     <div className="p-5">
-                        {tab === 'games' && <GameHistory plays={props.plays} />}
+                        {tab === 'games' && (
+                            <GameHistory plays={props.plays} userId={user.id} />
+                        )}
                         {tab === 'perGame' && (
                             <PerGameTable rows={props.perGame} />
                         )}
@@ -1209,7 +1220,7 @@ export default function ShowUser(props: Props) {
                 </section>
             </div>
 
-            {editingSchool && profile && (
+            {editingSchool && isLearnerAccount && (
                 <PlayerSchoolGradeDialog
                     userId={user.id}
                     profile={profile}
@@ -1329,7 +1340,13 @@ function Fact({
     );
 }
 
-function GameHistory({ plays }: { plays: Props['plays'] }) {
+function GameHistory({
+    plays,
+    userId,
+}: {
+    plays: Props['plays'];
+    userId: number;
+}) {
     if (plays.data.length === 0) {
         return <EmptyState icon={Gamepad2} title={tr('No games played yet')} />;
     }
@@ -1340,6 +1357,15 @@ function GameHistory({ plays }: { plays: Props['plays'] }) {
                 testId="user-plays-table"
                 rows={plays.data}
                 rowKey={(play) => play.id}
+                onRowClick={(play) =>
+                    router.visit(`/admin/users/${userId}/plays/${play.id}`)
+                }
+                rowAriaLabel={(play) =>
+                    tr('Open details of {0} played {1}', [
+                        gameLabel(play.game_key),
+                        formatDateTime(play.played_at),
+                    ])
+                }
                 columns={[
                     {
                         key: 'game',

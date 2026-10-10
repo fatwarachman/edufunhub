@@ -1,5 +1,6 @@
 import {
     axisTick,
+    chartEvents,
     chartTooltipStyle,
     Delta,
     GAME_COLORS,
@@ -433,6 +434,7 @@ export default function Dashboard(props: DashboardProps) {
                         <div className="h-72">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart
+                                    {...chartEvents}
                                     data={daily}
                                     margin={{ left: -18, right: 8, top: 8 }}
                                 >
@@ -679,6 +681,7 @@ export default function Dashboard(props: DashboardProps) {
                         <div className="h-48">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
+                                    {...chartEvents}
                                     data={props.grades}
                                     margin={{ left: -24, right: 4, top: 4 }}
                                 >
@@ -740,6 +743,7 @@ export default function Dashboard(props: DashboardProps) {
                         <div className="h-48">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
+                                    {...chartEvents}
                                     data={props.ages}
                                     margin={{ left: -24, right: 4, top: 4 }}
                                 >

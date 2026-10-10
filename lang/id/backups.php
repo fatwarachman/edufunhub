@@ -1,0 +1,35 @@
+<?php
+
+return [
+    'started' => 'Backup dimulai. Halaman ini diperbarui saat selesai.',
+    'already_running' => 'Backup lain masih berjalan. Tunggu sampai selesai.',
+    'still_running' => 'Backup ini masih berjalan dan belum bisa dihapus.',
+    'settings_saved' => 'Pengaturan backup disimpan.',
+    'deleted' => 'Backup dihapus.',
+    'remote_delete_failed' => 'Salinan di server FTP tidak bisa dihapus: :error',
+    'local_missing' => 'File backup lokal tidak bisa dibaca.',
+    'ftp' => [
+        'not_configured' => 'Isi host, username, dan password FTP lalu simpan pengaturan terlebih dahulu.',
+        'ok' => 'Koneksi FTP ke :host berhasil: file uji berhasil ditulis lalu dihapus.',
+        'password_removed' => 'Password FTP dihapus.',
+        'upload_failed' => 'Unggah ke FTP gagal: :error',
+        'resolve' => 'Host FTP :host tidak ditemukan.',
+        'connect' => 'Tidak bisa terhubung ke :host port :port (periksa host, port, firewall, atau mode pasif).',
+        'login' => 'Server FTP menolak username atau password.',
+        'tls' => 'Jabat tangan TLS (FTPS) gagal. Pastikan server mendukung TLS eksplisit.',
+        'denied' => 'Server FTP menolak operasi file. Periksa folder dan izin tulis.',
+        'failed' => 'Permintaan FTP gagal.',
+    ],
+    'validation' => [
+        'frequency' => 'Pilih harian atau mingguan.',
+        'time' => 'Isi jam dengan format JJ:MM, misalnya 02:00.',
+        'weekday' => 'Pilih hari dalam seminggu.',
+        'destination' => 'Pilih lokal, FTP, atau keduanya.',
+        'keep' => 'Simpan antara 1 sampai 100 backup.',
+        'ftp_host' => 'Isi nama host atau alamat IP FTP (tanpa ftp://).',
+        'ftp_port' => 'Isi port antara 1 sampai 65535 (biasanya 21).',
+        'ftp_username' => 'Isi username FTP.',
+        'ftp_password' => 'Isi password FTP.',
+        'ftp_directory' => 'Gunakan path folder berisi huruf, angka, titik, strip, dan garis miring saja.',
+    ],
+];

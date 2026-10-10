@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\CharacterItemController;
 use App\Http\Controllers\Admin\CompensationController;
 use App\Http\Controllers\Admin\CrosswordWordController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DatabaseBackupController;
+use App\Http\Controllers\Admin\DeviceUsageController;
 use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\GameSoundsController;
 use App\Http\Controllers\Admin\GameStatisticsController;
@@ -31,6 +33,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SorterSetController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserGamePlayController;
 use App\Http\Controllers\Admin\UserStatisticsController;
 use App\Http\Controllers\Admin\WhatsAppController;
 use App\Http\Middleware\EnsureAdmin;
@@ -56,9 +59,11 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/device-usage/games', [DeviceUsageController::class, 'games'])->name('device-usage.games');
 
         // Users CRUD + toggle status
         Route::resource('users', UserController::class);
+        Route::get('/users/{user}/plays/{play}', [UserGamePlayController::class, 'show'])->whereNumber(['user', 'play'])->name('users.plays.show');
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::patch('/users/{user}/teacher', [UserController::class, 'toggleTeacher'])->middleware(EnsureSuperadmin::class)->name('users.teacher');
         Route::patch('/users/{user}/player-details', [PlayerSchoolGradeController::class, 'update'])->middleware([EnsureSuperadmin::class, 'throttle:30,1,users.player-details'])->name('users.player-details');
@@ -123,6 +128,13 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::get('/compensation', [CompensationController::class, 'index'])->name('compensation.index');
             Route::put('/compensation', [CompensationController::class, 'update'])->name('compensation.update');
             Route::get('/server-monitor', [ServerMonitorController::class, 'index'])->name('server-monitor.index');
+            Route::get('/backups', [DatabaseBackupController::class, 'index'])->name('backups.index');
+            Route::post('/backups', [DatabaseBackupController::class, 'store'])->middleware('throttle:6,1,backups.store')->name('backups.store');
+            Route::put('/backups/settings', [DatabaseBackupController::class, 'update'])->middleware('throttle:30,1,backups.settings')->name('backups.settings');
+            Route::post('/backups/test-ftp', [DatabaseBackupController::class, 'test'])->middleware('throttle:10,1,backups.test')->name('backups.test');
+            Route::delete('/backups/ftp-password', [DatabaseBackupController::class, 'forgetPassword'])->middleware('throttle:10,1,backups.password')->name('backups.password');
+            Route::get('/backups/{backup}/download', [DatabaseBackupController::class, 'download'])->whereNumber('backup')->middleware('throttle:20,1,backups.download')->name('backups.download');
+            Route::delete('/backups/{backup}', [DatabaseBackupController::class, 'destroy'])->whereNumber('backup')->middleware('throttle:30,1,backups.destroy')->name('backups.destroy');
             Route::get('/matches', [MatchHistoryController::class, 'index'])->name('matches.index');
             // Crossword word bank lives under the crossword game page (sub tab "Word bank").
             Route::patch('/games/crossword/words/{crossword_word}/toggle', [CrosswordWordController::class, 'toggle'])->name('crossword-words.toggle');
@@ -193,6 +205,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
         Route::put('/settings/general', [SettingsController::class, 'updateGeneral'])->name('settings.general');
         Route::put('/settings/mail', [SettingsController::class, 'updateMail'])->name('settings.mail');
         Route::put('/settings/security', [SettingsController::class, 'updateSecurity'])->name('settings.security');
+        Route::put('/settings/registration', [SettingsController::class, 'updateRegistration'])->middleware([EnsureSuperadmin::class, 'throttle:20,1,settings.registration'])->name('settings.registration');
         Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile');
         Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
     });

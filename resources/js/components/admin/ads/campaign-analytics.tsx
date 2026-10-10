@@ -1,4 +1,5 @@
 import { tooltipStyle } from '@/components/admin/ads/shared';
+import { chartEvents } from '@/components/admin/dashboard-kit';
 import { Panel, formatNumber, gameLabel } from '@/components/admin/game-stats';
 import { ResponsiveTable } from '@/components/responsive-table';
 import { tr } from '@/lib/admin-i18n';
@@ -210,6 +211,7 @@ export function CampaignAnalyticsPanels({
                 <div className="h-48">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart
+                            {...chartEvents}
                             data={analytics.hours}
                             margin={{ left: -20, right: 8, top: 8 }}
                         >

@@ -52,6 +52,17 @@ export const chartTooltipStyle = {
 
 export const axisTick = { fill: 'var(--muted-foreground)', fontSize: 11 };
 
+/**
+ * Spread on every recharts chart. Recharts 3 throttles mousemove to the next
+ * animation frame and does not cancel that frame on mouseleave, so a click
+ * that re-renders the page (sorting, tabs, filters) moves the chart away
+ * from a still pointer and the tooltip comes back and sticks
+ * (recharts/recharts#7876). Handling pointer events synchronously avoids it.
+ */
+export const chartEvents: {
+    throttledEvents: ReadonlyArray<keyof GlobalEventHandlersEventMap>;
+} = { throttledEvents: [] };
+
 export function timeAgo(value: string | null | undefined): string {
     if (!value) return '—';
     const mins = Math.floor((Date.now() - new Date(value).getTime()) / 60000);
@@ -144,6 +155,7 @@ export function Sparkline({
         <div className="h-12 w-full" aria-hidden="true">
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
+                    {...chartEvents}
                     data={data}
                     margin={{ top: 4, right: 0, bottom: 0, left: 0 }}
                 >

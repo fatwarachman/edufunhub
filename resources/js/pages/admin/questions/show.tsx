@@ -1,5 +1,6 @@
 import {
     axisTick,
+    chartEvents,
     chartTooltipStyle,
     GameDot,
     KpiCard,
@@ -539,7 +540,7 @@ export default function QuestionShow({ question, stats }: Props) {
                                         width="100%"
                                         height="100%"
                                     >
-                                        <PieChart>
+                                        <PieChart {...chartEvents}>
                                             <Pie
                                                 data={[
                                                     {
@@ -600,6 +601,7 @@ export default function QuestionShow({ question, stats }: Props) {
                                         height="100%"
                                     >
                                         <BarChart
+                                            {...chartEvents}
                                             data={stats.daily}
                                             margin={{
                                                 left: -20,

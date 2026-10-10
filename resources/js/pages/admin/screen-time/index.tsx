@@ -1,5 +1,6 @@
 import {
     axisTick,
+    chartEvents,
     chartTooltipStyle,
     GAME_COLORS,
     KpiCard,
@@ -524,6 +525,7 @@ function OverviewSections({
                     <div className="h-60" data-testid="screen-time-daily">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
+                                {...chartEvents}
                                 data={chartData}
                                 margin={{
                                     top: 8,
@@ -1064,6 +1066,7 @@ function UserDrilldown({
                     <div className="h-56 min-w-0 lg:col-span-3">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
+                                {...chartEvents}
                                 data={chartData}
                                 margin={{
                                     top: 8,

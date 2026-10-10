@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\ProfilePhoto;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -13,7 +14,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
@@ -409,11 +409,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getAvatarUrlAttribute($value): ?string
     {
-        if ($value) {
-            return str_starts_with($value, 'http') ? $value : Storage::url($value);
-        }
-
-        return null; // The frontend should handle fallback avatars
+        return ProfilePhoto::url($value ?? $this->attributes['avatar_url'] ?? null);
     }
 
     /**

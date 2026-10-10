@@ -5,6 +5,7 @@ use App\Models\PlayerProfile;
 use App\Models\Role;
 use App\Models\School;
 use App\Models\User;
+use App\Services\ProfileWizard;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Activitylog\Models\Activity;
 
@@ -42,7 +43,7 @@ test('npsn overrides the school name, city and level sent by the client', functi
         ])
         ->assertSessionHasNoErrors()
         ->assertRedirect("/admin/users/{$player->id}")
-        ->assertSessionHas('success', 'Grade and school updated.');
+        ->assertSessionHas('success', 'Learner details updated.');
 
     expect($player->playerProfile->refresh())
         ->grade->toBe(8)
@@ -145,20 +146,111 @@ test('invalid school fields are rejected', function (array $input, string $field
     'school name too long' => [['school_name' => str_repeat('A', PlayerProfile::SCHOOL_NAME_MAX + 1)], 'school_name'],
 ]);
 
-test('an account without a learner profile is refused and gets no profile', function (): void {
+test('a learner without a profile row gets one created, wizard stays pending', function (): void {
+    $user = User::factory()->profilePending()->create();
+    $birthDate = now()->subYears(9)->toDateString();
+
+    $this->actingAs($this->superadmin)
+        ->patch("/admin/users/{$user->id}/player-details", [
+            'grade' => 4,
+            'birth_date' => $birthDate,
+            'school_name' => 'SDN 2 Bogor',
+            'school_city' => 'Kota Bogor',
+            'school_level' => 'SD',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($user->playerProfile()->sole())
+        ->grade->toBe(4)
+        ->school_name->toBe('SDN 2 Bogor')
+        ->and($user->playerProfile()->sole()->birth_date->toDateString())->toBe($birthDate)
+        ->and($user->refresh()->profile_completed_at)->toBeNull();
+
+    $log = Activity::query()->where('description', 'Updated learner grade, school and birth date')->sole();
+    expect($log->event)->toBe('created')
+        ->and($log->properties['old'])->toMatchArray(['grade' => null, 'birth_date' => null, 'school_name' => null])
+        ->and($log->properties['attributes'])->toMatchArray(['grade' => 4, 'birth_date' => $birthDate, 'school_name' => 'SDN 2 Bogor']);
+});
+
+test('superadmin sets the birth date of a learner whose wizard is pending, and the wizard prefills it', function (): void {
+    $player = adminSchoolGradePlayer(['birth_date' => null]);
+    $player->forceFill(['profile_completed_at' => null])->save();
+    $birthDate = now()->subYears(11)->toDateString();
+
+    $this->actingAs($this->superadmin)
+        ->patch("/admin/users/{$player->id}/player-details", [
+            'grade' => 5,
+            'birth_date' => $birthDate,
+            'school_name' => 'SDN 1 Bogor',
+            'school_city' => 'Kota Bogor',
+            'school_level' => 'SD',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($player->playerProfile->refresh()->birth_date->toDateString())->toBe($birthDate)
+        ->and($player->refresh()->profile_completed_at)->toBeNull()
+        ->and(app(ProfileWizard::class)->pendingFor($player->refresh()))->toMatchArray(['birth_date' => $birthDate, 'grade' => 5]);
+});
+
+test('an empty birth date keeps the stored one', function (): void {
+    $stored = now()->subYears(10)->toDateString();
+    $player = adminSchoolGradePlayer(['birth_date' => $stored]);
+
+    $this->actingAs($this->superadmin)
+        ->patch("/admin/users/{$player->id}/player-details", [
+            'grade' => 6,
+            'birth_date' => '',
+            'school_name' => 'SDN 1 Bogor',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($player->playerProfile->refresh())
+        ->grade->toBe(6)
+        ->and($player->playerProfile->birth_date->toDateString())->toBe($stored);
+});
+
+test('invalid birth dates are rejected with the player form messages', function (string $birthDate, string $message): void {
+    $stored = now()->subYears(10)->toDateString();
+    $player = adminSchoolGradePlayer(['birth_date' => $stored]);
+
+    $this->actingAs($this->superadmin)
+        ->patch("/admin/users/{$player->id}/player-details", [
+            'grade' => 5,
+            'birth_date' => $birthDate,
+            'school_name' => 'SDN 1 Bogor',
+        ])
+        ->assertSessionHasErrors(['birth_date' => $message]);
+
+    expect($player->playerProfile->refresh()->birth_date->toDateString())->toBe($stored);
+})->with([
+    'future date' => [fn (): string => now()->addDay()->toDateString(), fn (): string => __('character.birth_date_range', ['min' => PlayerProfile::MIN_AGE, 'max' => PlayerProfile::MAX_AGE])],
+    'too young' => [fn (): string => now()->subYear()->toDateString(), fn (): string => __('character.birth_date_range', ['min' => PlayerProfile::MIN_AGE, 'max' => PlayerProfile::MAX_AGE])],
+    'bad format' => ['10/01/2015', fn (): string => __('character.birth_date_invalid')],
+]);
+
+test('admin and teacher accounts are refused and get no profile', function (string $slug): void {
     $user = User::factory()->create();
+    $user->roles()->attach(Role::query()->firstOrCreate(['slug' => $slug], ['name' => ucfirst($slug)])->id);
 
     $this->actingAs($this->superadmin)
         ->patch("/admin/users/{$user->id}/player-details", [
             'grade' => 5,
             'school_name' => 'SDN 2 Bogor',
-            'school_city' => 'Kota Bogor',
-            'school_level' => 'SD',
         ])
-        ->assertSessionHasErrors(['profile' => UpdatePlayerSchoolGradeRequest::PROFILE_MISSING]);
+        ->assertSessionHasErrors(['profile' => UpdatePlayerSchoolGradeRequest::NOT_A_LEARNER]);
 
     expect($user->playerProfile()->exists())->toBeFalse()
-        ->and(Activity::query()->where('description', 'Updated learner grade and school')->count())->toBe(0);
+        ->and(Activity::query()->where('description', 'Updated learner grade, school and birth date')->count())->toBe(0);
+})->with([Role::ADMIN, Role::TEACHER]);
+
+test('superadmin accounts are refused', function (): void {
+    $other = User::factory()->superadmin()->create();
+
+    $this->actingAs($this->superadmin)
+        ->patch("/admin/users/{$other->id}/player-details", ['grade' => 5, 'school_name' => 'SDN 2 Bogor'])
+        ->assertSessionHasErrors(['profile' => UpdatePlayerSchoolGradeRequest::NOT_A_LEARNER]);
+
+    expect($other->playerProfile()->exists())->toBeFalse();
 });
 
 test('plain admins cannot change grade or school', function (): void {
@@ -199,19 +291,20 @@ test('the change is logged with the admin, the learner and old and new values', 
     $this->actingAs($this->superadmin)
         ->patch("/admin/users/{$player->id}/player-details", [
             'grade' => 7,
+            'birth_date' => '2014-05-06',
             'school_npsn' => '20200777',
             'school_name' => 'whatever',
         ])
         ->assertSessionHasNoErrors();
 
-    $log = Activity::query()->where('description', 'Updated learner grade and school')->sole();
+    $log = Activity::query()->where('description', 'Updated learner grade, school and birth date')->sole();
 
     expect($log->causer_id)->toBe($this->superadmin->id)
         ->and($log->subject_type)->toBe(User::class)
         ->and($log->subject_id)->toBe($player->id)
         ->and($log->event)->toBe('updated')
-        ->and($log->properties['old'])->toMatchArray(['grade' => 3, 'school_name' => 'SDN 1 Bogor', 'school_level' => 'SD', 'school_npsn' => null])
-        ->and($log->properties['attributes'])->toMatchArray(['grade' => 7, 'school_name' => 'SMP NEGERI 7 BOGOR', 'school_city' => 'Kota Bogor', 'school_level' => 'SMP', 'school_npsn' => '20200777']);
+        ->and($log->properties['old'])->toMatchArray(['grade' => 3, 'birth_date' => now()->subYears(10)->toDateString(), 'school_name' => 'SDN 1 Bogor', 'school_level' => 'SD', 'school_npsn' => null])
+        ->and($log->properties['attributes'])->toMatchArray(['grade' => 7, 'birth_date' => '2014-05-06', 'school_name' => 'SMP NEGERI 7 BOGOR', 'school_city' => 'Kota Bogor', 'school_level' => 'SMP', 'school_npsn' => '20200777']);
 });
 
 test('the user detail page shares school fields and the viewer role', function (): void {

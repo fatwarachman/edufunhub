@@ -1,3 +1,4 @@
+import { BirthDateSelect } from '@/components/birth-date-select';
 import InputError from '@/components/input-error';
 import { SchoolPicker } from '@/components/school-picker';
 import { WhatsAppIcon } from '@/components/whatsapp-share-button';
@@ -141,7 +142,7 @@ export function ProfileWizard({
                     onEscapeKeyDown={(event) => event.preventDefault()}
                     onPointerDownOutside={(event) => event.preventDefault()}
                     onInteractOutside={(event) => event.preventDefault()}
-                    className="fixed inset-x-0 bottom-0 z-[70] flex max-h-[calc(100dvh-0.75rem)] w-full flex-col overflow-hidden rounded-t-3xl border-[3px] border-[#1f2a44] bg-[#FFFDF7] text-[#1f2a44] shadow-[6px_6px_0px_#1f2a44] outline-none sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:max-h-[calc(100dvh-2rem)] sm:w-[min(36rem,calc(100vw-2rem))] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl"
+                    className="fixed top-1/2 left-1/2 z-[70] flex max-h-[calc(100dvh-1.5rem)] w-[min(36rem,calc(100vw-1.5rem))] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-3xl border-[3px] border-[#1f2a44] bg-[#FFFDF7] text-[#1f2a44] shadow-[6px_6px_0px_#1f2a44] outline-none sm:max-h-[calc(100dvh-2rem)] sm:w-[min(36rem,calc(100vw-2rem))]"
                     data-testid="profile-wizard"
                 >
                     <WizardBody prefill={prefill} t={t} />
@@ -162,7 +163,6 @@ function WizardBody({
     const [errors, setErrors] = useState<Errors>({});
     const [step, setStep] = useState(0);
     const [processing, setProcessing] = useState(false);
-    const today = new Date().toISOString().slice(0, 10);
     const current = STEPS[step];
     const last = step === STEPS.length - 1;
 
@@ -343,18 +343,13 @@ function WizardBody({
                         >
                             {t('player.birthDate')}
                         </label>
-                        <input
+                        <BirthDateSelect
                             id="wizard-birth-date"
-                            type="date"
-                            name="birth_date"
-                            max={today}
                             value={data.birth_date}
-                            onChange={(event) =>
-                                update('birth_date', event.target.value)
-                            }
-                            aria-invalid={errors.birth_date ? true : undefined}
-                            className={inputClass}
-                            data-testid="profile-wizard-birth-date"
+                            onChange={(value) => update('birth_date', value)}
+                            invalid={Boolean(errors.birth_date)}
+                            className={cn(inputClass, 'px-2.5')}
+                            testId="profile-wizard-birth-date"
                         />
                         <InputError message={errors.birth_date} />
                     </>

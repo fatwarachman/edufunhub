@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tentang EduFunHub — Bermain Sambil Belajar</title>
+<meta name="description" content="Kisah di balik EduFunHub: hadiah untuk anak-anak agar bisa bermain sambil belajar dan screentime lebih bermanfaat.">
+
+<!--
+  System: Magazine Editorial × Bauhaus Geometric (Indonesian Pop Energy)
+  Type: Space Grotesk? NO → Instrument Sans 700/800 (display), DM Sans 400/500/600 (body) — distinctive, uncommonly paired
+  Color: Ink #151b2e on Cream #faf7ef · Amber #F5A623 (primary CTA) · Coral #E85D75 (accent) · Teal #1AAB8A (success) · Violet #6C5CE7 (tier) · Yellow #FFD93D (highlight)
+  Grid: Asymmetric 2-col hero, diagonal section dividers, varied section layouts (no repeated card grids)
+  Rhythm: Oversized display type, numbered sections, offset blocks, generous whitespace, bold geometric shapes as composition elements
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ============= RESET & TOKENS ============= */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#151b2e;
+  --cream:#faf7ef;
+  --amber:#F5A623;
+  --coral:#E85D75;
+  --teal:#1AAB8A;
+  --violet:#6C5CE7;
+  --yellow:#FFD93D;
+  --body-font:'DM Sans',system-ui,sans-serif;
+  --display-font:'Instrument Sans','DM Sans',system-ui,sans-serif;
+  --r-sm:8px;--r-md:16px;--r-lg:24px;--r-xl:32px;
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--body-font);color:var(--ink);background:var(--cream);line-height:1.6;overflow-x:hidden}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font:inherit;border:0;background:0}
+
+/* ============= UTILITIES ============= */
+.container{max-width:100%;margin:0 auto;padding:0 24px}
+@media(min-width:768px){.container{padding:0 48px}}@media(min-width:1200px){.container{padding:0 80px}}@media(min-width:1600px){.container{padding:0 120px}}
+.section-num{font-family:var(--display-font);font-weight:700;font-size:clamp(80px,12vw,160px);line-height:1;color:var(--ink);opacity:.06;position:absolute;top:-24px;left:-8px;pointer-events:none;user-select:none}
+
+/* ============= HEADER ============= */
+.site-header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:3px solid var(--ink);backdrop-filter:blur(12px)}
+/* Mobile menu scrolls inside the sticky header instead of growing past the viewport. */
+#mobile-nav{max-height:calc(100dvh - 75px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+/* Sign in / sign up stay pinned at the top while the menu list scrolls. */
+.mobile-nav-auth{position:sticky;top:-16px;z-index:2;display:flex;gap:8px;margin:-16px -24px 6px;padding:16px 24px 14px;background:var(--cream);border-bottom:2px solid rgba(21,27,46,.08)}
+.site-header .container{display:flex;align-items:center;justify-content:space-between;height:72px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:44px;height:44px;background:var(--amber);border:3px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink);transition:transform .2s}
+.logo:hover .logo-mark{transform:translateY(-2px);box-shadow:5px 5px 0 var(--ink)}
+.logo-mark svg{width:24px;height:24px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.logo-text{font-family:var(--display-font);font-weight:700;font-size:22px;letter-spacing:-.02em}
+.logo-text span{color:var(--coral)}
+/* Header wordmark: "fun" in the brand amber of the logo mark and buttons. */
+.logo-text .logo-fun{color:var(--amber)}
+.logo-tag{font-size:11px;font-weight:600;color:var(--ink);opacity:.5;letter-spacing:.04em}
+.nav-desktop{display:none;gap:4px;align-items:center}
+@media(min-width:1024px){.nav-desktop{display:flex}}
+.nav-link{padding:8px 14px;font-weight:600;font-size:14px;border-radius:var(--r-sm);transition:all .15s}
+.nav-link:hover{background:var(--ink);color:var(--cream)}
+.nav-dropdown{position:relative}
+.nav-dropdown-trigger{display:flex;align-items:center;gap:4px;padding:8px 14px;font-weight:600;font-size:14px;border-radius:var(--r-sm);cursor:pointer;border:0;background:0;font-family:var(--body-font);color:var(--ink);transition:all .15s}
+.nav-dropdown-trigger:hover{background:var(--ink);color:var(--cream)}
+.nav-dropdown-trigger svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none;transition:transform .2s}
+.nav-dropdown.open .nav-dropdown-trigger svg{transform:rotate(180deg)}
+.nav-dropdown-menu{position:absolute;top:calc(100% + 4px);left:0;min-width:220px;background:white;border:3px solid var(--ink);border-radius:var(--r-md);box-shadow:5px 5px 0 var(--ink);padding:6px;display:none;z-index:110}
+.nav-dropdown.open .nav-dropdown-menu{display:block}
+.nav-dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r-sm);font-size:13px;font-weight:600;color:var(--ink);transition:all .15s;text-decoration:none}
+.nav-dropdown-item:hover{background:var(--cream)}
+.nav-dropdown-icon{width:32px;height:32px;border:2px solid var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:1px 1px 0 var(--ink)}
+.nav-dropdown-icon svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.nav-dropdown-item .dd-label{font-family:var(--display-font);font-weight:700;font-size:13px}
+
+.nav-dropdown-group{padding:8px 12px 2px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(21,27,46,.45)}
+.nav-dropdown-menu{max-height:min(75vh,620px);overflow-y:auto}
+.nav-dropdown-item .dd-desc{font-size:11px;color:rgba(21,27,46,.5);font-weight:500}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:var(--r-md);font-family:var(--display-font);font-weight:700;font-size:15px;border:3px solid var(--ink);transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--amber);color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:6px 6px 0 var(--ink)}
+.btn-primary:active{transform:translateY(0);box-shadow:2px 2px 0 var(--ink)}
+.btn-outline{background:var(--cream);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.btn-outline:hover{background:var(--ink);color:var(--cream)}
+.btn-ghost{border:0;padding:10px 16px;font-weight:600}
+.btn-ghost:hover{background:rgba(21,27,46,.06)}
+.header-cta{display:none;gap:8px;align-items:center}
+@media(min-width:768px){.header-cta{display:flex}}
+.mobile-toggle{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border:2px solid var(--ink);border-radius:var(--r-sm);background:white;box-shadow:2px 2px 0 var(--ink)}
+@media(min-width:1024px){.mobile-toggle{display:none}}
+.mobile-toggle svg{width:22px;height:22px;stroke:var(--ink);stroke-width:2.5;fill:none}
+
+/* ============= HERO ============= */
+.hero{padding:80px 0 60px;position:relative}
+@media(min-width:768px){.hero{padding:100px 0 80px}}
+.hero-grid{display:grid;gap:48px;align-items:center}
+@media(min-width:900px){.hero-grid{grid-template-columns:1fr 1fr;gap:64px}}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border:2px solid var(--ink);border-radius:999px;background:var(--yellow);font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase;box-shadow:2px 2px 0 var(--ink)}
+.hero-badge svg{width:14px;height:14px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.hero h1{font-family:var(--display-font);font-weight:700;font-size:clamp(36px,5.5vw,72px);line-height:1.05;letter-spacing:-.03em;margin-top:20px}
+.hero h1 em{font-style:normal;color:var(--amber);position:relative}
+.hero h1 em::after{content:'';position:absolute;bottom:2px;left:0;width:100%;height:6px;background:var(--coral);border-radius:3px;opacity:.5}
+.hero h1 .violet{color:var(--violet)}
+.hero-sub{margin-top:20px;font-size:18px;font-weight:500;line-height:1.7;max-width:640px;color:rgba(21,27,46,.7)}
+.hero-sub strong{color:var(--ink);font-weight:700}
+.hero-ctas{margin-top:32px;display:flex;flex-wrap:wrap;gap:12px}
+.hero-trust{margin-top:24px;display:flex;flex-wrap:wrap;gap:16px;font-size:13px;font-weight:600;color:rgba(21,27,46,.5)}
+.hero-trust span{display:flex;align-items:center;gap:6px}
+.hero-trust svg{width:16px;height:16px;stroke:var(--teal);stroke-width:2.5;fill:none}
+
+/* Hero visual: Asymmetric game preview */
+.hero-visual{position:relative}
+.game-preview{background:white;border:4px solid var(--ink);border-radius:var(--r-xl);box-shadow:8px 8px 0 var(--ink);overflow:hidden;transform:rotate(1deg)}
+@media(min-width:900px){.game-preview{transform:rotate(2deg)}}
+.game-preview-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--ink);color:var(--cream);font-size:12px;font-weight:700;letter-spacing:.02em}
+.game-preview-dots{display:flex;gap:6px}
+.game-preview-dots span{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.2)}
+.game-preview-dots span:nth-child(1){background:var(--coral)}
+.game-preview-dots span:nth-child(2){background:var(--yellow)}
+.game-preview-dots span:nth-child(3){background:var(--teal)}
+.game-preview-body{padding:24px}
+.quiz-q{text-align:center;padding:20px;border:2px solid var(--ink);border-radius:var(--r-md);background:var(--cream);margin-bottom:16px}
+.quiz-q .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--violet);margin-bottom:8px}
+.quiz-q .text{font-family:var(--display-font);font-weight:700;font-size:18px;line-height:1.4}
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quiz-opt{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--ink);border-radius:var(--r-sm);font-weight:600;font-size:13px;transition:all .15s}
+.quiz-opt:hover{background:var(--cream)}
+.quiz-opt.correct{background:rgba(26,171,138,.15);border-color:var(--teal)}
+.quiz-opt .key{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:2px solid var(--ink);font-family:var(--display-font);font-weight:700;font-size:12px;background:var(--yellow);flex-shrink:0}
+.quiz-opt.correct .key{background:var(--teal);color:white;border-color:var(--teal)}
+
+/* Floating geometric accents */
+.geo{position:absolute;border:3px solid var(--ink);z-index:-1}
+.geo-circle{width:80px;height:80px;border-radius:50%;background:var(--yellow);top:-20px;right:40px;box-shadow:4px 4px 0 var(--ink);animation:float 6s ease-in-out infinite}
+.geo-square{width:60px;height:60px;border-radius:var(--r-sm);background:var(--coral);bottom:30px;left:-20px;box-shadow:3px 3px 0 var(--ink);transform:rotate(15deg);animation:float 5s ease-in-out 1s infinite}
+.geo-tri{width:0;height:0;border-left:35px solid transparent;border-right:35px solid transparent;border-bottom:60px solid var(--teal);top:60%;right:-10px;border:none;filter:drop-shadow(3px 3px 0 var(--ink));animation:float 7s ease-in-out .5s infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@media(max-width:899px){.geo{display:none}}
+
+/* ============= DIAGONAL DIVIDER ============= */
+.diagonal{height:60px;background:var(--ink);clip-path:polygon(0 0,100% 100%,100% 100%,0 100%);margin-top:-1px}
+.diagonal-up{clip-path:polygon(0 100%,100% 0,100% 100%,0 100%);margin-bottom:-1px}
+
+/* ============= SECTION: GAME MODES ============= */
+.modes{background:var(--ink);color:var(--cream);padding:80px 0}
+.modes-header{max-width:800px}
+.modes-header .overline{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--yellow);margin-bottom:12px}
+.modes-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;letter-spacing:-.02em}
+.modes-header p{margin-top:12px;font-size:16px;color:rgba(250,247,239,.6);max-width:640px}
+.modes-list{margin-top:48px;display:grid;gap:2px}
+.mode-item{display:grid;align-items:center;padding:28px 0;border-top:1px solid rgba(250,247,239,.1);transition:all .3s;cursor:default}
+@media(min-width:768px){.mode-item{grid-template-columns:48px 1fr 1fr 120px;gap:24px}}
+.mode-num{font-family:var(--display-font);font-weight:700;font-size:32px;color:var(--amber);line-height:1}
+.mode-title{font-family:var(--display-font);font-weight:700;font-size:20px;letter-spacing:-.01em;margin-top:8px}
+@media(min-width:768px){.mode-title{margin-top:0}}
+.mode-desc{font-size:14px;color:rgba(250,247,239,.55);margin-top:6px;line-height:1.6}
+@media(min-width:768px){.mode-desc{margin-top:0}}
+.mode-tag{display:inline-flex;padding:4px 12px;border:2px solid rgba(250,247,239,.15);border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--yellow);margin-top:10px}
+@media(min-width:768px){.mode-tag{margin-top:0}}
+.mode-item:hover{background:rgba(250,247,239,.04)}
+.mode-item:hover .mode-num{color:var(--coral)}
+
+/* ============= SECTION: LEVELS (Magazine-style offset) ============= */
+.levels{padding:80px 0;position:relative}
+.levels-header{text-align:center;max-width:800px;margin:0 auto}
+.levels-header .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:white}
+.levels-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;margin-top:16px}
+.levels-header h2 .highlight{color:var(--violet)}
+.levels-track{margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+
+
+
+.level-card{border:3px solid var(--ink);border-radius:var(--r-lg);padding:28px 24px;background:white;box-shadow:5px 5px 0 var(--ink);transition:transform .2s;position:relative;overflow:hidden}
+.level-card:hover{transform:translateY(-4px)}
+.level-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:6px}
+.level-card:nth-child(1)::before{background:var(--yellow)}
+.level-card:nth-child(2)::before{background:var(--amber)}
+.level-card:nth-child(3)::before{background:var(--teal)}
+.level-card:nth-child(4)::before{background:var(--coral)}
+.level-card:nth-child(5)::before{background:var(--violet)}
+.level-icon{width:48px;height:48px;border:2px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
+.level-icon svg{width:24px;height:24px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.level-card h3{font-family:var(--display-font);font-weight:700;font-size:18px;margin-top:16px}
+.level-card p{font-size:13px;color:rgba(21,27,46,.6);margin-top:8px;line-height:1.6}
+
+/* ============= SECTION: SUBJECTS — offset asymmetric ============= */
+.subjects{background:white;border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);padding:80px 0}
+.subjects-layout{display:grid;gap:48px}
+@media(min-width:900px){.subjects-layout{grid-template-columns:380px 1fr;gap:64px}}
+.subjects-sticky{position:relative}
+@media(min-width:900px){.subjects-sticky{position:sticky;top:100px;align-self:start}}
+.subjects-sticky .overline{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--coral)}
+.subjects-sticky h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1.15;margin-top:12px}
+.subjects-sticky p{margin-top:16px;font-size:15px;color:rgba(21,27,46,.6);line-height:1.7}
+.subject-grid{display:grid;gap:12px}
+@media(min-width:500px){.subject-grid{grid-template-columns:1fr 1fr}}
+.subject-item{display:flex;gap:14px;padding:20px;border:2px solid var(--ink);border-radius:var(--r-md);background:var(--cream);transition:all .2s;box-shadow:3px 3px 0 var(--ink)}
+.subject-item:hover{transform:translateY(-2px);box-shadow:5px 5px 0 var(--ink)}
+.subject-icon{width:40px;height:40px;border:2px solid var(--ink);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:2px 2px 0 var(--ink)}
+.subject-icon svg{width:20px;height:20px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.subject-item h4{font-family:var(--display-font);font-weight:700;font-size:14px}
+.subject-item p{font-size:12px;color:rgba(21,27,46,.55);margin-top:4px;line-height:1.5}
+.subject-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.subject-tags span{font-size:10px;font-weight:700;padding:2px 8px;border:1px solid var(--ink);border-radius:4px;background:white}
+
+/* ============= SECTION: SOCIAL PROOF ============= */
+.proof{padding:80px 0;position:relative}
+.proof-header{text-align:center;max-width:720px;margin:0 auto}
+.proof-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1}
+.proof-stats{margin-top:48px;display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(min-width:768px){.proof-stats{grid-template-columns:repeat(4,1fr)}}
+.stat-card{text-align:center;padding:32px 16px;border:3px solid var(--ink);border-radius:var(--r-lg);box-shadow:4px 4px 0 var(--ink);background:white}
+.stat-card .num{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,40px);line-height:1}
+.stat-card:nth-child(1) .num{color:var(--amber)}
+.stat-card:nth-child(2) .num{color:var(--teal)}
+.stat-card:nth-child(3) .num{color:var(--violet)}
+.stat-card:nth-child(4) .num{color:var(--coral)}
+.stat-card .label{font-size:13px;font-weight:600;color:rgba(21,27,46,.55);margin-top:8px}
+
+/* Testimonials: horizontal scroll, editorial cards */
+.testimonials{margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+
+
+
+.testimonial{padding:28px;border:3px solid var(--ink);border-radius:var(--r-lg);background:white;box-shadow:4px 4px 0 var(--ink);position:relative}
+.testimonial::before{content:'\201C';font-family:Georgia,serif;font-size:56px;line-height:1;color:var(--amber);opacity:.3;position:absolute;top:12px;left:20px}
+.testimonial blockquote{font-size:14px;line-height:1.7;color:rgba(21,27,46,.75);margin-top:12px;font-style:italic}
+.testimonial-author{display:flex;align-items:center;gap:12px;margin-top:20px;padding-top:16px;border-top:2px solid rgba(21,27,46,.06)}
+.testimonial-avatar{width:40px;height:40px;border:2px solid var(--ink);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-weight:700;font-size:14px;color:white;box-shadow:2px 2px 0 var(--ink)}
+.testimonial:nth-child(1) .testimonial-avatar{background:var(--amber)}
+.testimonial:nth-child(2) .testimonial-avatar{background:var(--teal)}
+.testimonial:nth-child(3) .testimonial-avatar{background:var(--violet)}
+.testimonial:nth-child(4) .testimonial-avatar{background:var(--coral)}
+.testimonial-info .name{font-weight:700;font-size:14px}
+.testimonial-info .role{font-size:12px;color:rgba(21,27,46,.5)}
+
+/* ============= SECTION: FAQ ============= */
+.faq{background:var(--ink);color:var(--cream);padding:80px 0}
+.faq-layout{display:grid;gap:48px}
+@media(min-width:768px){.faq-layout{grid-template-columns:1fr 1fr;gap:64px}}
+.faq-left h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,44px);line-height:1.1}
+.faq-left p{margin-top:16px;font-size:15px;color:rgba(250,247,239,.5);line-height:1.7}
+.faq-list{display:flex;flex-direction:column}
+.faq-item{border-top:1px solid rgba(250,247,239,.1);transition:background .2s}
+.faq-item:last-child{border-bottom:1px solid rgba(250,247,239,.1)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0;font-weight:700;font-size:15px;cursor:pointer;width:100%;text-align:left;color:var(--cream);background:0;border:0;font-family:var(--body-font);line-height:1.5}
+.faq-q:hover{color:var(--yellow)}
+.faq-q svg{width:20px;height:20px;stroke:var(--cream);stroke-width:2.5;fill:none;flex-shrink:0;transition:transform .2s}
+.faq-q svg{transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.faq-item.open .faq-q svg{transform:rotate(180deg)}
+.faq-q-icon{width:28px;height:28px;border:2px solid rgba(250,247,239,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .35s cubic-bezier(.4,0,.2,1);background:rgba(250,247,239,.05)}
+.faq-item.open .faq-q-icon{background:var(--amber);border-color:var(--amber)}
+.faq-item.open .faq-q-icon svg{stroke:var(--ink)}
+.faq-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1),opacity .35s cubic-bezier(.4,0,.2,1);opacity:0}
+.faq-item.open .faq-a{grid-template-rows:1fr;opacity:1}
+.faq-a-inner{overflow:hidden;min-height:0}
+.faq-a p{padding:0 0 20px;font-size:14px;color:rgba(250,247,239,.5);line-height:1.7;padding-top:4px}
+
+/* ============= SECTION: CTA ============= */
+.cta-section{padding:80px 0;text-align:center;position:relative}
+.cta-card{max-width:900px;margin:0 auto;padding:48px 32px;border:4px solid var(--ink);border-radius:var(--r-xl);background:white;box-shadow:8px 8px 0 var(--ink);position:relative;overflow:hidden}
+.cta-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:8px;background:linear-gradient(90deg,var(--amber),var(--coral),var(--violet),var(--teal))}
+.cta-card h2{font-family:var(--display-font);font-weight:700;font-size:clamp(24px,3.5vw,36px);line-height:1.15}
+.cta-card p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6);max-width:600px;margin-left:auto;margin-right:auto}
+.cta-buttons{margin-top:28px;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+
+/* ============= FOOTER ============= */
+.site-footer{background:var(--ink);color:var(--cream);border-top:3px solid var(--cream);padding:48px 0 24px}
+.footer-top{display:grid;gap:32px}
+@media(min-width:768px){.footer-top{grid-template-columns:2fr 1fr 1fr;gap:48px}}
+.footer-brand .logo-text{font-size:20px}
+.footer-brand p{margin-top:8px;font-size:13px;color:rgba(250,247,239,.4);max-width:400px;line-height:1.6}
+.footer-col h4{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)}
+.footer-col a{display:block;font-size:14px;color:rgba(250,247,239,.6);padding:4px 0;transition:color .15s}
+.footer-col a:hover{color:var(--yellow)}
+.footer-bottom{margin-top:40px;padding-top:20px;border-top:1px solid rgba(250,247,239,.08);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:12px;color:rgba(250,247,239,.3)}
+
+/* ============= RESPONSIVE ============= */
+@media(max-width:767px){
+  .hero{padding:48px 0 40px}
+  .quiz-opts{grid-template-columns:1fr}
+  .game-preview{transform:none}
+  .proof-stats{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ============= PREFERS REDUCED MOTION ============= */
+@media(prefers-reduced-motion:reduce){
+  .geo-circle,.geo-square,.geo-tri{animation:none}
+  .level-card:hover,.subject-item:hover,.logo:hover .logo-mark,.btn-primary:hover{transform:none}
+}
+
+/* ============= SECTION: LEADERBOARD ============= */
+.leaderboard{padding:80px 0;position:relative}
+.leaderboard-header{text-align:center;max-width:800px;margin:0 auto}
+.leaderboard-header .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:white;padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:var(--amber)}
+.leaderboard-header .overline svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.leaderboard-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;margin-top:16px}
+.leaderboard-header h2 .highlight{color:var(--coral)}
+.leaderboard-header p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6);max-width:640px;margin-left:auto;margin-right:auto}
+.lb-list{margin-top:40px;display:flex;flex-direction:column;gap:12px;max-width:900px;margin-left:auto;margin-right:auto}
+.lb-item{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border:3px solid var(--ink);border-radius:var(--r-lg);box-shadow:4px 4px 0 var(--ink);background:white;transition:transform .2s}
+.lb-item:hover{transform:translateY(-2px)}
+.lb-item:nth-child(1){background:var(--yellow)}
+.lb-item:nth-child(2){background:#f1f5f9}
+.lb-item:nth-child(3){background:#fff3e8}
+.lb-left{display:flex;align-items:center;gap:16px}
+.lb-rank{width:48px;height:48px;border:2px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-weight:700;font-size:16px;box-shadow:2px 2px 0 var(--ink);flex-shrink:0}
+.lb-item:nth-child(1) .lb-rank{background:var(--amber);color:white}
+.lb-item:nth-child(2) .lb-rank{background:var(--teal);color:var(--ink)}
+.lb-item:nth-child(3) .lb-rank{background:var(--yellow);color:var(--ink)}
+.lb-item:nth-child(n+4) .lb-rank{background:white;color:var(--ink)}
+.lb-info h3{font-family:var(--display-font);font-weight:700;font-size:16px}
+.lb-info .meta{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px;font-size:12px;font-weight:600;color:rgba(21,27,46,.5)}
+.lb-info .meta svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.5;fill:none}
+.lb-points{text-align:right}
+.lb-points .val{font-family:var(--display-font);font-weight:700;font-size:18px}
+.lb-points .sub{font-size:11px;font-weight:600;color:var(--teal)}
+.lb-notice{margin-top:32px;text-align:center;padding:24px;border:3px solid var(--ink);border-radius:var(--r-xl);background:rgba(108,92,231,.1);max-width:700px;margin-left:auto;margin-right:auto}
+.lb-notice h4{font-family:var(--display-font);font-weight:700;font-size:18px}
+.lb-notice p{font-size:13px;color:rgba(21,27,46,.6);margin-top:6px}
+.lb-cards{margin-top:40px;display:grid;gap:20px;max-width:900px;margin-left:auto;margin-right:auto}
+@media(min-width:768px){.lb-cards{grid-template-columns:1fr 1fr}}
+.lb-card{padding:28px;border:3px solid var(--ink);border-radius:var(--r-xl);background:white;box-shadow:5px 5px 0 var(--ink)}
+.lb-card .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:white;box-shadow:2px 2px 0 var(--ink)}
+.lb-card h3{font-family:var(--display-font);font-weight:700;font-size:20px;margin-top:12px}
+.lb-card p{font-size:14px;color:rgba(21,27,46,.6);margin-top:8px;line-height:1.6}
+.lb-card ul{margin-top:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:700;color:rgba(21,27,46,.7)}
+.lb-card ul li{display:flex;align-items:center;gap:8px}
+.lb-card .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.lb-card .foot{margin-top:16px;padding-top:12px;border-top:2px solid rgba(21,27,46,.06);font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.lb-card .foot svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.live-stats{margin-top:40px;max-width:900px;margin-left:auto;margin-right:auto}
+.live-stats[hidden],.live-board[hidden]{display:none}
+@media(min-width:768px){.live-stats{grid-template-columns:repeat(3,1fr)}}
+.live-stats .stat-card{padding:24px 12px}
+.live-stats .stat-card:nth-child(5) .num{color:var(--teal)}
+.live-stats .stat-card:nth-child(6) .num{color:var(--violet)}
+.lb-item .lb-points{margin-left:auto}
+.podium-spot.empty{background:transparent;border-style:dashed;box-shadow:none;color:rgba(21,27,46,.4)}
+.podium-spot.empty .podium-medal{background:transparent;box-shadow:none;border-style:dashed}
+.live-board{margin-top:48px;max-width:900px;margin-left:auto;margin-right:auto}
+.live-board-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.live-board-head h3{font-family:var(--display-font);font-weight:700;font-size:22px}
+.lb-tabs{display:inline-flex;gap:6px;padding:4px;border:3px solid var(--ink);border-radius:999px;background:white;box-shadow:3px 3px 0 var(--ink)}
+.lb-tab{padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700;color:var(--ink)}
+.lb-tab[aria-selected="true"]{background:var(--ink);color:var(--cream)}
+.lb-tab:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.lb-podium{margin-top:24px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}
+.podium-spot{min-width:0;text-align:center;padding:16px 8px;border:3px solid var(--ink);border-radius:var(--r-lg);box-shadow:4px 4px 0 var(--ink);background:white}
+.podium-spot.p1{background:var(--yellow);padding-top:28px;padding-bottom:28px}
+.podium-spot.p2{background:#f1f5f9}
+.podium-spot.p3{background:#fff3e8}
+.podium-medal{width:40px;height:40px;margin:0 auto;border:2px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-weight:700;box-shadow:2px 2px 0 var(--ink);background:white}
+.podium-spot.p1 .podium-medal{background:var(--amber);color:white;width:48px;height:48px}
+.podium-spot.p2 .podium-medal{background:var(--teal)}
+.podium-name{margin-top:10px;font-family:var(--display-font);font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podium-school{font-size:11px;font-weight:600;color:rgba(21,27,46,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podium-points{margin-top:6px;font-family:var(--display-font);font-weight:700;font-size:16px}
+.lb-players{margin-top:16px}
+.lb-players .lb-item:nth-child(n){background:white}
+.lb-players .lb-item:nth-child(n) .lb-rank{background:white;color:var(--ink)}
+.lb-info{min-width:0}
+.lb-left{min-width:0}
+.lb-info h3{overflow-wrap:anywhere}
+.lb-empty{margin-top:16px;padding:20px;text-align:center;border:3px dashed rgba(21,27,46,.3);border-radius:var(--r-lg);font-size:14px;font-weight:600;color:rgba(21,27,46,.6)}
+.lb-empty[hidden],.lb-podium[hidden]{display:none}
+.lb-subhead{margin-top:48px;max-width:900px;margin-left:auto;margin-right:auto;font-family:var(--display-font);font-weight:700;font-size:22px}
+.lb-subhead[hidden]{display:none}
+.lb-updated{margin-top:8px;font-size:12px;font-weight:600;color:rgba(21,27,46,.45);text-align:center}
+@media(max-width:479px){.podium-spot{padding:12px 4px}.podium-name{font-size:13px}.podium-points{font-size:14px}}
+
+/* ============= SECTION: ECONOMY ============= */
+.economy{background:white;border-top:3px solid var(--ink);padding:80px 0}
+.economy-header{text-align:center;max-width:800px;margin:0 auto}
+.economy-header .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:var(--yellow)}
+.economy-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;margin-top:16px}
+.economy-header h2 .highlight{color:var(--amber)}
+.economy-header p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6);max-width:640px;margin-left:auto;margin-right:auto}
+.econ-grid{margin-top:40px;display:grid;gap:16px}
+@media(min-width:640px){.econ-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:1024px){.econ-grid{grid-template-columns:repeat(4,1fr)}}
+.econ-grid[hidden],.econ-card[hidden]{display:none}
+.econ-card{border:3px solid var(--ink);border-radius:var(--r-xl);padding:20px;background:white;box-shadow:5px 5px 0 var(--ink);transition:transform .2s}
+.econ-card:hover{transform:translateY(-4px)}
+.econ-card .top{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:700;text-transform:uppercase}
+.econ-card .rarity{padding:2px 10px;border:1px solid var(--ink);border-radius:999px;color:white}
+.econ-card .type{color:rgba(21,27,46,.5)}
+.econ-card .visual{margin:16px 0;height:120px;border:2px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
+.econ-card h3{font-family:var(--display-font);font-weight:700;font-size:15px}
+.econ-card .desc{font-size:12px;color:rgba(21,27,46,.6);margin-top:4px;line-height:1.5}
+.econ-card .price{margin-top:12px;padding-top:12px;border-top:2px solid rgba(21,27,46,.06);display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700}
+.econ-card .price .coins{display:flex;align-items:center;gap:6px;color:var(--amber);font-family:var(--display-font)}
+.econ-card .price .coins svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.econ-card .price .buy{font-size:11px;padding:4px 12px;border:1px solid var(--ink);border-radius:var(--r-md);background:var(--cream)}
+.econ-highlights{margin-top:40px;display:grid;gap:16px}
+@media(min-width:640px){.econ-highlights{grid-template-columns:repeat(3,1fr)}}
+.econ-hl{display:flex;gap:14px;padding:20px;border:3px solid var(--ink);border-radius:var(--r-xl);background:white;box-shadow:4px 4px 0 var(--ink)}
+.econ-hl .icon{width:48px;height:48px;border:2px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:2px 2px 0 var(--ink)}
+.econ-hl .icon svg{width:24px;height:24px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.econ-hl h4{font-family:var(--display-font);font-weight:700;font-size:14px}
+.econ-hl p{font-size:12px;color:rgba(21,27,46,.55);margin-top:4px;line-height:1.5}
+.econ-notice{margin-top:40px;max-width:600px;margin-left:auto;margin-right:auto;text-align:center;padding:24px;border:3px solid var(--ink);border-radius:var(--r-xl);background:white;box-shadow:6px 6px 0 var(--ink)}
+.econ-notice h4{font-family:var(--display-font);font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;gap:8px}
+.econ-notice p{font-size:13px;color:rgba(21,27,46,.6);margin-top:8px}
+
+/* ============= SECTION: TEACHERS ============= */
+.teachers{padding:80px 0}
+.teachers-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:48px}
+.teachers-left,.teachers-right{min-width:0}
+.teachers-left .btn{max-width:100%;white-space:normal;text-align:left}
+.teachers-left .btn svg{flex-shrink:0}
+.teachers-right .tr-head{flex-wrap:wrap;gap:12px}
+.tr-head-left>div{min-width:0}
+.tr-perk{min-width:0;overflow-wrap:anywhere}
+.tr-sim{flex-wrap:wrap}
+.tr-sim>div{min-width:0}
+@media(min-width:900px){.teachers-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px}}
+.teachers-left .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:white;padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:var(--violet)}
+.teachers-left .overline svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.teachers-left h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,44px);line-height:1.15;margin-top:16px}
+.teachers-left h2 .highlight{color:var(--teal)}
+.teachers-left>p{margin-top:16px;font-size:15px;color:rgba(21,27,46,.6);line-height:1.7}
+.teachers-checks{margin-top:24px;display:flex;flex-direction:column;gap:12px}
+.teachers-checks .check{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:rgba(21,27,46,.7)}
+.teachers-checks .check-icon{width:24px;height:24px;border:2px solid var(--ink);border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:1.5px 1.5px 0 var(--ink)}
+.teachers-checks .check-icon svg{width:14px;height:14px;stroke:var(--ink);stroke-width:3;fill:none}
+.teachers-right{border:4px solid var(--ink);border-radius:var(--r-xl);background:var(--cream);padding:24px;box-shadow:8px 8px 0 var(--ink)}
+.teachers-right .tr-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:3px solid var(--ink)}
+.tr-head-left{display:flex;align-items:center;gap:12px}
+.tr-head-icon{width:48px;height:48px;border:2px solid var(--ink);border-radius:var(--r-md);background:var(--yellow);display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
+.tr-head-icon svg{width:24px;height:24px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.tr-perks{margin-top:20px;display:grid;gap:12px}
+@media(min-width:500px){.tr-perks{grid-template-columns:1fr 1fr}}
+.tr-perk{border:3px solid var(--ink);border-radius:var(--r-md);background:white;padding:16px;box-shadow:3px 3px 0 var(--ink)}
+.tr-perk .perk-icon{width:40px;height:40px;border:2px solid var(--ink);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
+.tr-perk .perk-icon svg{width:20px;height:20px;stroke:white;stroke-width:2.5;fill:none}
+.tr-perk h4{font-family:var(--display-font);font-weight:700;font-size:13px;margin-top:10px}
+.tr-perk p{font-size:11px;color:rgba(21,27,46,.6);margin-top:4px;line-height:1.5}
+.tr-sim{margin-top:16px;border:2px solid var(--ink);border-radius:var(--r-md);background:white;padding:14px;box-shadow:2px 2px 0 var(--ink);display:flex;align-items:center;gap:12px}
+.tr-sim-avatar{width:44px;height:44px;border:2px solid var(--ink);border-radius:var(--r-md);background:var(--amber);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-weight:700;font-size:12px;color:white;flex-shrink:0;box-shadow:1.5px 1.5px 0 var(--ink)}
+.tr-sim .income{padding:4px 10px;border:1px solid var(--ink);border-radius:var(--r-sm);font-size:11px;font-weight:700;color:#008f75;background:rgba(26,171,138,.1);white-space:nowrap}
+@media(max-width:399px){.teachers-right{padding:16px;box-shadow:6px 6px 0 var(--ink)}.teachers-left .overline{white-space:normal}}
+
+/* ============= SECTION: PRICING ============= */
+.pricing{background:white;border-top:3px solid var(--ink);padding:80px 0}
+.pricing .btn{max-width:100%;white-space:normal;text-align:center}
+.pricing .btn svg{flex-shrink:0}
+.pricing-header{text-align:center;max-width:800px;margin:0 auto}
+.pricing-header .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:var(--teal)}
+.pricing-header .overline svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.pricing-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;margin-top:16px}
+.pricing-header h2 .highlight{color:var(--teal)}
+.pricing-header p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6)}
+.pricing-card{margin-top:40px;max-width:750px;margin-left:auto;margin-right:auto;border:4px solid var(--ink);border-radius:var(--r-xl);background:var(--cream);padding:32px;box-shadow:8px 8px 0 var(--ink)}
+.pricing-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;padding-bottom:24px;border-bottom:3px solid var(--ink)}
+.pricing-top .tier{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 12px;border:2px solid var(--ink);border-radius:999px;background:var(--yellow);font-family:var(--display-font)}
+.pricing-top h3{font-family:var(--display-font);font-weight:700;font-size:clamp(24px,3vw,32px);margin-top:8px}
+.pricing-top .sub{font-size:13px;font-weight:600;color:rgba(21,27,46,.6)}
+.pricing-price{text-align:center;padding:16px 24px;border:3px solid var(--ink);border-radius:var(--r-lg);background:white;box-shadow:4px 4px 0 var(--ink)}
+.pricing-price .amount{font-family:var(--display-font);font-weight:700;font-size:clamp(36px,5vw,48px);color:var(--teal)}
+.pricing-price .forever{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.pricing-benefits{margin-top:24px}
+.pricing-benefits .label{font-family:var(--display-font);font-weight:700;font-size:15px}
+.pricing-benefits-grid{margin-top:12px;display:grid;gap:10px}
+@media(min-width:500px){.pricing-benefits-grid{grid-template-columns:1fr 1fr}}
+.pricing-benefit{display:flex;align-items:flex-start;gap:10px}
+.pricing-benefit .check{width:20px;height:20px;border:2px solid var(--ink);border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pricing-benefit .check svg{width:14px;height:14px;stroke:var(--ink);stroke-width:3;fill:none}
+.pricing-benefit span{font-size:13px;font-weight:600;color:rgba(21,27,46,.7)}
+.pricing-cta{margin-top:32px;text-align:center}
+
+/* ============= SECTION: TESTIMONIALS (updated) ============= */
+.testi-section{border-top:3px solid var(--ink);padding:80px 0}
+.testi-header{text-align:center;max-width:800px;margin:0 auto}
+.testi-header .overline{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:white;padding:6px 16px;border:2px solid var(--ink);border-radius:999px;box-shadow:2px 2px 0 var(--ink);background:var(--coral)}
+.testi-header .overline svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.5;fill:none}
+.testi-header h2{font-family:var(--display-font);font-weight:700;font-size:clamp(28px,4vw,48px);line-height:1.1;margin-top:16px}
+.testi-header h2 .highlight{color:var(--violet)}
+.testi-header p{margin-top:12px;font-size:16px;color:rgba(21,27,46,.6)}
+.testi-grid{margin-top:40px;display:grid;gap:20px}
+@media(min-width:768px){.testi-grid{grid-template-columns:repeat(3,1fr)}}
+.testi-card{border:3px solid var(--ink);border-radius:var(--r-xl);padding:24px;background:white;box-shadow:5px 5px 0 var(--ink);transition:transform .2s;display:flex;flex-direction:column;justify-content:space-between}
+.testi-card:hover{transform:translateY(-3px)}
+.testi-card .stars{display:flex;gap:4px}
+.testi-card .stars svg{width:16px;height:16px;fill:var(--yellow);stroke:var(--amber);stroke-width:1.5}
+.testi-card .tag{font-size:10px;font-weight:700;padding:2px 10px;border:1px solid var(--ink);border-radius:999px;color:white}
+.testi-card blockquote{margin-top:16px;font-size:14px;line-height:1.7;color:rgba(21,27,46,.75);font-style:italic}
+.testi-card .author{display:flex;align-items:center;gap:12px;margin-top:20px;padding-top:16px;border-top:2px solid rgba(21,27,46,.06)}
+.testi-card .avatar{width:48px;height:48px;border:2px solid var(--ink);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-weight:700;font-size:14px;color:white;flex-shrink:0;box-shadow:2px 2px 0 var(--ink)}
+
+/* ============= FOOTER EXPANDED ============= */
+@media(min-width:768px){.footer-top{grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:32px}}
+.footer-badges{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;font-size:12px;font-weight:600;color:rgba(250,247,239,.8)}
+.footer-badges span{padding:4px 12px;border:1px solid rgba(250,247,239,.15);border-radius:var(--r-md);background:rgba(250,247,239,.06);display:flex;align-items:center;gap:6px}
+.footer-badges svg{width:16px;height:16px;stroke:var(--teal);stroke-width:2.5;fill:none}
+
+/* FOOTER RESPONSIVE */
+@media(min-width:768px){
+  .footer-top{grid-template-columns:2fr 1fr 1fr 1fr 1fr!important}
+}
+/* ============= ABOUT PAGE ============= */
+.about-hero{padding:64px 0 40px;position:relative}
+@media(min-width:768px){.about-hero{padding:96px 0 56px}}
+.about-wrap{max-width:880px;margin:0 auto}
+.about-hero h1{font-family:var(--display-font);font-weight:700;font-size:clamp(34px,5vw,60px);line-height:1.08;letter-spacing:-.03em;margin-top:20px}
+.about-hero h1 em{font-style:normal;color:var(--amber)}
+.about-lead{margin-top:18px;font-size:18px;font-weight:500;line-height:1.7;color:rgba(21,27,46,.7)}
+.about-card{margin-top:40px;background:white;border:4px solid var(--ink);border-radius:var(--r-xl);box-shadow:8px 8px 0 var(--ink);padding:28px 22px;position:relative;overflow:hidden}
+@media(min-width:768px){.about-card{padding:44px 48px}}
+.about-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:var(--yellow);opacity:.45}
+.about-heart{position:relative;width:56px;height:56px;border:3px solid var(--ink);border-radius:var(--r-md);background:var(--coral);box-shadow:3px 3px 0 var(--ink);display:flex;align-items:center;justify-content:center}
+.about-heart svg{width:28px;height:28px;fill:var(--cream);stroke:var(--ink);stroke-width:2}
+.about-quote{position:relative;margin-top:22px;font-family:var(--display-font);font-weight:600;font-size:clamp(19px,2.6vw,26px);line-height:1.5;letter-spacing:-.01em;color:var(--ink);border-left:6px solid var(--amber);padding-left:18px;overflow-wrap:anywhere}
+.about-sign{position:relative;margin-top:20px;font-size:14px;font-weight:700;color:rgba(21,27,46,.6)}
+.about-points{margin-top:40px;display:grid;gap:16px}
+@media(min-width:768px){.about-points{grid-template-columns:repeat(3,1fr)}}
+.about-point{background:var(--cream);border:3px solid var(--ink);border-radius:var(--r-lg);box-shadow:4px 4px 0 var(--ink);padding:20px}
+.about-point .ap-icon{width:40px;height:40px;border:2px solid var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 var(--ink)}
+.about-point .ap-icon svg{width:20px;height:20px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.about-point h3{margin-top:14px;font-family:var(--display-font);font-weight:700;font-size:18px}
+.about-point p{margin-top:6px;font-size:14px;line-height:1.6;color:rgba(21,27,46,.7)}
+.about-ctas{margin-top:40px;display:flex;flex-wrap:wrap;gap:12px;padding-bottom:72px}
+</style>
+</head>
+<body>
+
+<!-- ====================== HEADER ====================== -->
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/><path d="M8 8V6a4 4 0 018 0v2"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">edu<span class="logo-fun">fun</span><span>hub</span>.com</div>
+        <div class="logo-tag">Bermain · Belajar · Berprestasi</div>
+      </div>
+    </a>
+
+    <nav class="nav-desktop">
+      <a href="/#game-modes" class="nav-link">Mode Game</a>
+      <a href="/#levels" class="nav-link">Jenjang</a>
+      <a href="/#subjects" class="nav-link">Mata Pelajaran</a>
+      <a href="/#leaderboard" class="nav-link">Leaderboard</a><a href="/#economy" class="nav-link">Item Shop</a><a href="/#teachers" class="nav-link">Guru</a><a href="/#pricing" class="nav-link">Harga</a>
+      <div class="nav-dropdown" id="nav-dd">
+        <button class="nav-dropdown-trigger" onclick="toggleDropdown()">
+          Mainkan
+          <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-dropdown-menu">
+          <a href="/gamelist" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:var(--yellow)"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5" fill="currentColor"/><circle cx="15" cy="12" r="1.5" fill="currentColor"/></svg></div>
+            <div><div class="dd-label">Semua Game</div><div class="dd-desc">Daftar lengkap game edukatif<span data-live-stat="games" data-live-template=" · {n} game"></span></div></div>
+          </a>
+          <div class="nav-dropdown-group">Petualangan</div>
+          <a href="/games/flag-quest" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#d4f5ec"><svg viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h12l-2 4 2 4H5"/></svg></div>
+            <div><div class="dd-label">Misi Bendera</div><div class="dd-desc">Jelajah peta & kuis tiap pos<span data-game-players="flag-quest"></span></div></div>
+          </a>
+          <div class="nav-dropdown-group">Kuis edukasi</div>
+          <a href="/games/sky-quiz" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#e3dbf9"><svg viewBox="0 0 24 24"><path d="M3 12l7-7 11 7-11 7-7-7z"/><path d="M10 5v14"/></svg></div>
+            <div><div class="dd-label">Sukhoi Sky Quiz</div><div class="dd-desc">Terbang & tembak jawaban<span data-game-players="sky-quiz"></span></div></div>
+          </a>
+          <a href="/games/quiz-duel" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#ffd6e0"><svg viewBox="0 0 24 24"><path d="M4 4l10 10M14 4L4 14"/><path d="M15 15l5 5M9 15l-5 5"/></svg></div>
+            <div><div class="dd-label">Duel Kuis Kelas</div><div class="dd-desc">Adu cepat 1 lawan 1<span data-game-players="quiz-duel"></span></div></div>
+          </a>
+          <a href="/games/floor-drop" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#dbeafe"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg></div>
+            <div><div class="dd-label">Lantai Runtuh</div><div class="dd-desc">Battle royale kuis<span data-game-players="floor-drop"></span></div></div>
+          </a>
+          <a href="/games/economy-heist" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#ffe08a"><svg viewBox="0 0 24 24"><rect x="3" y="10" width="18" height="10" rx="2"/><path d="M3 12a9 6 0 0 1 18 0"/><rect x="10" y="12" width="4" height="4" rx="1"/></svg></div>
+            <div><div class="dd-label">Peti Emas Misteri</div><div class="dd-desc">Buka peti, curi &amp; tukar emas<span data-game-players="economy-heist"></span></div></div>
+          </a>
+          <a href="/games/order-rush" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#99f6e4"><svg viewBox="0 0 24 24"><path d="M4 9a2 2 0 0 1-2-2V5h6v2a2 2 0 0 1-2 2Z"/><path d="M3 5V3M7 5V3M19 15V6.5a3.5 3.5 0 0 0-7 0v11a3.5 3.5 0 0 1-7 0V9"/><path d="M17 21v-2M21 21v-2M22 19h-6v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2Z"/></svg></div>
+            <div><div class="dd-label">Order Rush TKJ</div><div class="dd-desc">Balapan urutan kabel &amp; protokol<span data-game-players="order-rush"></span></div></div>
+          </a>
+          <a href="/games/turbo-trivia" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#fecdd3"><svg viewBox="0 0 24 24"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2M19 18v2"/></svg></div>
+            <div><div class="dd-label">Turbo Trivia</div><div class="dd-desc">Balap gokart kuis di proyektor<span data-game-players="turbo-trivia"></span></div></div>
+          </a>
+          <a href="/games/block-battle" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#fde68a"><svg viewBox="0 0 24 24"><path d="M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"/><rect x="14" y="2" width="8" height="8" rx="1"/></svg></div>
+            <div><div class="dd-label">Tetris Kuis</div><div class="dd-desc">Adu balok &amp; kuis di proyektor<span data-game-players="block-battle"></span></div></div>
+          </a>
+          <a href="/games/ping-pong" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#99f6e4"><svg viewBox="0 0 24 24"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3M12 12V8"/></svg></div>
+            <div><div class="dd-label">Ping Pong</div><div class="dd-desc">Tebak layer OSI, pantulkan bola<span data-game-players="ping-pong"></span></div></div>
+          </a>
+          <a href="/games/monster-cafe" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#fed7aa"><svg viewBox="0 0 24 24"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/></svg></div>
+            <div><div class="dd-label">Monster Café</div><div class="dd-desc">Masak burger &amp; pizza dari jawaban kuis<span data-game-players="monster-cafe"></span></div></div>
+          </a>
+          <div class="nav-dropdown-group">Asah otak</div>
+          <a href="/games/crossword" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></div>
+            <div><div class="dd-label">Teka-Teki Silang</div><div class="dd-desc">Isi kotak dengan jawaban kuis<span data-game-players="crossword"></span></div></div>
+          </a>
+          <div class="nav-dropdown-group">Arkade edukasi</div>
+          <a href="/games/knowledge-train" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#c9f5e5"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12M9 21l-2-4M15 21l2-4"/></svg></div>
+            <div><div class="dd-label">Kereta Pengetahuan</div><div class="dd-desc">Pilih rel jawaban benar<span data-game-players="knowledge-train"></span></div></div>
+          </a>
+          <a href="/games/port-sorter" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#ccfbf1"><svg viewBox="0 0 24 24"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3M12 12V8"/></svg></div>
+            <div><div class="dd-label">Pilah Port &amp; Protokol</div><div class="dd-desc">Pilah paket ke keranjang protokol<span data-game-players="port-sorter"></span></div></div>
+          </a>
+          <div class="nav-dropdown-group">Jelajah &amp; eksperimen</div>
+          <a href="/games/market-math" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#ffedd5"><svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a1 1 0 0 0 1 .8h9.6a1 1 0 0 0 1-.8L21 7H6"/></svg></div>
+            <div><div class="dd-label">Pasar Matematika</div><div class="dd-desc">Belanja sambil berhitung<span data-game-players="market-math"></span></div></div>
+          </a>
+          <a href="/games/number-garden" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#dcfce7"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3"/><path d="M12 12v10M8 18c2 0 4-1 4-3M16 16c-2 0-4-1-4-3"/></svg></div>
+            <div><div class="dd-label">Taman Angka &amp; Huruf</div><div class="dd-desc">Hitung bunga &amp; tebak huruf<span data-game-players="number-garden"></span></div></div>
+          </a>
+          <a href="/games/explore-indonesia" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#ffe4e6"><svg viewBox="0 0 24 24"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg></div>
+            <div><div class="dd-label">Jelajah Indonesia</div><div class="dd-desc">Provinsi, budaya &amp; ibu kota<span data-game-players="explore-indonesia"></span></div></div>
+          </a>
+          <a href="/games/mini-lab" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#ede9fe"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4 20a1 1 0 0 0 1 1.5h14A1 1 0 0 0 20 20l-6-11V3"/></svg></div>
+            <div><div class="dd-label">Lab Mini</div><div class="dd-desc">Percobaan sains mini<span data-game-players="mini-lab"></span></div></div>
+          </a>
+          <div class="nav-dropdown-group">Permainan papan</div>
+          <a href="/games/snakes-and-ladders" class="nav-dropdown-item">
+            <div class="nav-dropdown-icon" style="background:#fff3b0"><svg viewBox="0 0 24 24"><path d="M4 20 Q8 4 12 12 Q16 20 20 4" stroke-linecap="round"/></svg></div>
+            <div><div class="dd-label">Ular Tangga</div><div class="dd-desc">Board game kuis<span data-game-players="snakes-and-ladders"></span></div></div>
+          </a>
+        </div>
+      </div>
+      <a href="/#faq" class="nav-link">FAQ</a>
+    </nav>
+
+    <div class="header-cta">
+      <a href="/register" class="btn btn-primary">Mulai Main</a>
+    </div>
+
+    <button class="mobile-toggle" onclick="document.getElementById('mobile-nav').classList.toggle('open')" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+
+  <!-- Mobile Nav -->
+  <div id="mobile-nav" style="display:none;padding:16px 24px 24px;border-top:2px solid var(--ink);background:var(--cream)">
+    <div class="mobile-nav-auth">
+      <a href="/register" class="btn btn-primary" style="flex:1;justify-content:center">Mulai Main</a>
+    </div>
+    <a href="/#game-modes" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Mode Game</a>
+    <div style="height:1px;background:rgba(21,27,46,.08);margin:4px 0"></div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.35);padding:8px 0 4px">Mainkan</div>
+    <a href="/gamelist" style="display:block;padding:10px 0;font-weight:700;font-size:15px;color:var(--ink)">🎮 Semua Game</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Petualangan</div>
+    <a href="/games/flag-quest" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Misi Bendera</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Kuis edukasi</div>
+    <a href="/games/sky-quiz" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Sukhoi Sky Quiz</a>
+    <a href="/games/quiz-duel" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Duel Kuis Kelas</a>
+    <a href="/games/floor-drop" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Lantai Runtuh</a>
+    <a href="/games/economy-heist" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Peti Emas Misteri</a>
+    <a href="/games/order-rush" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Order Rush TKJ</a>
+    <a href="/games/turbo-trivia" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Turbo Trivia</a>
+    <a href="/games/block-battle" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Tetris Kuis</a>
+    <a href="/games/ping-pong" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Ping Pong</a>
+    <a href="/games/monster-cafe" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Monster Café</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Asah otak</div>
+    <a href="/games/crossword" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Teka-Teki Silang</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Arkade edukasi</div>
+    <a href="/games/knowledge-train" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Kereta Pengetahuan</a>
+    <a href="/games/port-sorter" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Pilah Port &amp; Protokol</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Jelajah &amp; eksperimen</div>
+    <a href="/games/market-math" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Pasar Matematika</a>
+    <a href="/games/number-garden" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Taman Angka &amp; Huruf</a>
+    <a href="/games/explore-indonesia" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Jelajah Indonesia</a>
+    <a href="/games/mini-lab" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Lab Mini</a>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(21,27,46,.45);padding:8px 0 2px">Permainan papan</div>
+    <a href="/games/snakes-and-ladders" style="display:block;padding:10px 0 10px 12px;font-weight:700;font-size:15px;color:var(--ink)">Ular Tangga</a>
+    <div style="height:1px;background:rgba(21,27,46,.08);margin:4px 0"></div>
+    <a href="/#levels" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Jenjang</a>
+    <a href="/#subjects" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Mata Pelajaran</a>
+    <a href="/#proof" style="display:block;padding:12px 0;font-weight:700;font-size:16px">Komunitas</a>
+    <a href="/#faq" style="display:block;padding:12px 0;font-weight:700;font-size:16px">FAQ</a>
+  </div>
+</header>
+
+<!-- ====================== ABOUT ====================== -->
+<main>
+<section class="about-hero">
+  <div class="container">
+    <div class="about-wrap">
+      <div class="hero-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        TENTANG KAMI
+      </div>
+      <h1>Tentang <em>EduFunHub</em></h1>
+      <p class="about-lead">
+        EduFunHub adalah portal game edukasi gratis untuk anak Indonesia, dari TK hingga perguruan tinggi. Kuis kilat, board game, dan petualangan seru dirancang agar setiap menit di depan layar jadi waktu belajar yang menyenangkan.
+      </p>
+
+      <article class="about-card" aria-labelledby="about-story-title">
+        <div class="about-heart" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.5h2c.7-1.3 2.2-2.5 4.3-2.5 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>
+        </div>
+        <h2 id="about-story-title" class="about-sign" style="margin-top:18px;text-transform:uppercase;letter-spacing:.06em;font-size:12px">Pesan dari pembuat EduFunHub</h2>
+        <blockquote class="about-quote">
+          Aplikasi ini aku buat sebagai hadiah dan rasa sayang untuk anak anakku, dan semua anak agar bisa bermain sambil belajar dan screentime nya lebih bermanfaat. Terimakasih juga untuk istriku tercinta atas segala doa dan dukungannya
+        </blockquote>
+        <p class="about-sign">— fatwarachman, pembuat EduFunHub</p>
+      </article>
+
+      <div class="about-points">
+        <div class="about-point">
+          <div class="ap-icon" style="background:var(--yellow)"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg></div>
+          <h3>Bermain sambil belajar</h3>
+          <p>Materi sekolah dikemas jadi game, sehingga anak belajar tanpa merasa dipaksa.</p>
+        </div>
+        <div class="about-point">
+          <div class="ap-icon" style="background:#d6f5ec"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>Screentime bermanfaat</h3>
+          <p>Waktu di depan layar diisi kuis dan tantangan yang melatih pengetahuan.</p>
+        </div>
+        <div class="about-point">
+          <div class="ap-icon" style="background:#ffe4e6"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h3>Aman &amp; ramah anak</h3>
+          <p>Dibuat dengan rasa sayang seorang ayah, untuk semua anak Indonesia.</p>
+        </div>
+      </div>
+
+      <div class="about-ctas">
+        <a href="/register" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg>
+          Mulai Main
+        </a>
+        <a href="/" class="btn btn-outline">Kembali ke Beranda</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ====================== FOOTER ====================== -->
+<footer style="background:var(--ink);border-top:3px solid rgba(250,247,239,.08);padding:60px 0 0">
+  <div class="container">
+    <div class="footer-top" style="display:grid;gap:32px;grid-template-columns:1fr">
+      <div class="footer-brand">
+        <div style="font-family:var(--display-font);font-weight:700;font-size:22px;color:var(--cream);letter-spacing:-.5px">
+          edu<span style="color:var(--amber)">fun</span>hub.com
+        </div>
+        <p style="margin-top:10px;font-size:13px;color:rgba(250,247,239,.45);line-height:1.6;max-width:280px">
+          Platform belajar via game edukatif berbasis poin, arena duel, dan leaderboard sekolah nasional.
+        </p>
+        <div class="footer-badges" style="margin-top:16px">
+          <span>🇮🇩 Karya Anak Bangsa</span>
+          <span>
+            <svg width="14" height="14" viewBox="0 0 24 24" stroke="var(--teal)" stroke-width="2.5" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Aman &amp; Ramah Anak
+          </span>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4 style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)">Mode Permainan</h4>
+        <a href="/#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Ular Tangga Pengetahuan</a>
+        <a href="/#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Pesawat Sky Quiz</a>
+        <a href="/#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Duel Langsung</a>
+        <a href="/#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Kuis Cepat Live</a>
+        <a href="/#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Arena Multiplayer</a>
+        <a href="/#game-modes" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Misi Harian</a>
+      </div>
+      <div class="footer-col">
+        <h4 style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)">Mata Pelajaran</h4>
+        <a href="/#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Matematika</a>
+        <a href="/#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Ilmu Pengetahuan Alam</a>
+        <a href="/#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Bahasa Indonesia</a>
+        <a href="/#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Sejarah &amp; IPS</a>
+        <a href="/#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Bahasa Inggris</a>
+        <a href="/#subjects" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Teknologi &amp; Komputer</a>
+      </div>
+      <div class="footer-col">
+        <h4 style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)">Jenjang Pendidikan</h4>
+        <a href="/#levels" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Taman Kanak-Kanak</a>
+        <a href="/#levels" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Sekolah Dasar</a>
+        <a href="/#levels" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Sekolah Menengah</a>
+        <a href="/#levels" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Perguruan Tinggi</a>
+        <a href="/#levels" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Pendidikan Umum</a>
+      </div>
+      <div class="footer-col">
+        <h4 style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;color:rgba(250,247,239,.3)">Komunitas &amp; Sekolah</h4>
+        <a href="/#leaderboard" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Leaderboard Sekolah</a>
+        <a href="/#teachers" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Studio Pengajar</a>
+        <a href="/#economy" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Item Shop &amp; Poin</a>
+        <a href="/#faq" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">FAQ &amp; Bantuan</a>
+        <a href="/about" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Tentang EduFunHub</a>
+        <a href="/register" style="display:block;font-size:13px;color:rgba(250,247,239,.55);padding:4px 0;transition:color .15s;text-decoration:none">Daftar Sekarang</a>
+      </div>
+    </div>
+    <div style="margin-top:48px;padding:20px 0;border-top:1px solid rgba(250,247,239,.06);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:12px;color:rgba(250,247,239,.25)">
+      <span>© 2026 EduFunHub Indonesia. Dikembangkan oleh fatwarachman.</span>
+      <span style="display:flex;flex-wrap:wrap;gap:16px"><a href="/about" style="color:rgba(250,247,239,.45);text-decoration:none">Tentang EduFunHub</a><a href="/privacy" style="color:rgba(250,247,239,.45);text-decoration:none">Kebijakan Privasi</a><a href="/terms" style="color:rgba(250,247,239,.45);text-decoration:none">Ketentuan Layanan</a></span>
+      <span>Dibuat dengan ❤️ oleh fatwarachman untuk kemajuan pendidikan Indonesia</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Mobile nav toggle
+document.querySelector('.mobile-toggle').addEventListener('click', function() {
+  const nav = document.getElementById('mobile-nav');
+  nav.style.display = nav.style.display === 'none' ? 'block' : 'none';
+});
+
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    const item = this.parentElement;
+    const wasOpen = item.classList.contains('open');
+    // close all
+    document.querySelectorAll('.faq-item').forEach(function(el) { el.classList.remove('open'); });
+    if (!wasOpen) item.classList.add('open');
+  });
+});
+
+// Dropdown toggle
+function toggleDropdown() {
+  var dd = document.getElementById('nav-dd');
+  dd.classList.toggle('open');
+}
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  var dd = document.getElementById('nav-dd');
+  if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+});
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // close mobile nav
+      document.getElementById('mobile-nav').style.display = 'none';
+    }
+  });
+});
+</script>
+</body>
+</html>

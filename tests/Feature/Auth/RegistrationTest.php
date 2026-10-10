@@ -18,8 +18,8 @@ test('registration screen offers only Google sign-up', function (bool $enabled) 
         ->where('googleRedirectUrl', $enabled ? route('google.redirect') : null));
 })->with([true, false]);
 
-test('manual email and password sign-up is closed', function () {
-    expect(Route::has('register.store'))->toBeFalse();
+test('email and password sign-up is closed while the admin switch is off', function () {
+    expect(Route::has('register.store'))->toBeTrue();
 
     $this->post('/register', [
         'name' => 'Test User',
@@ -28,7 +28,7 @@ test('manual email and password sign-up is closed', function () {
         'school_name' => 'SDN 1 Bogor',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ])->assertStatus(405);
+    ])->assertNotFound();
 
     $this->assertGuest();
     expect(User::query()->where('email', 'test@example.com')->exists())->toBeFalse();

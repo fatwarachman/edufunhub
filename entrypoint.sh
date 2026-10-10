@@ -16,6 +16,9 @@ php artisan view:cache
 # queue work in background
 php artisan queue:work --queue=high,low &
 
+# scheduler in background (database backups on /admin/backups, pruning, reminders)
+php artisan schedule:work &
+
 # Start Reverb WebSocket server in background (skip on error, optional)
 php artisan reverb:start --host=0.0.0.0 --port=8080 2>/dev/null &
 

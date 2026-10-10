@@ -18,6 +18,7 @@ import {
     type DailyPoint,
     type SizeSpec,
 } from '@/components/admin/ads/shared';
+import { chartEvents } from '@/components/admin/dashboard-kit';
 import {
     EmptyState,
     Panel,
@@ -284,6 +285,7 @@ function Overview({
                     <div className="h-64" data-testid="ads-daily-chart">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
+                                {...chartEvents}
                                 data={daily}
                                 margin={{ left: -20, right: 8, top: 8 }}
                             >

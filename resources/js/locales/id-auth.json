@@ -36,7 +36,12 @@
         "googleOnly": "Akun baru dibuat dengan akun Google. Cukup satu klik, tanpa kata sandi baru.",
         "google": "Daftar dengan Google",
         "googleUnavailable": "Pendaftaran dengan Google belum tersedia. Silakan coba lagi nanti.",
-        "googleWhy": "Email dari Google sudah terverifikasi, jadi akunmu lebih aman. Setelah masuk, lengkapi tanggal lahir dan sekolahmu."
+        "googleWhy": "Email dari Google sudah terverifikasi, jadi akunmu lebih aman. Setelah masuk, lengkapi tanggal lahir dan sekolahmu.",
+        "googleOrEmail": "Daftar dengan akun Google, atau buat akun dengan email dan kata sandi.",
+        "emailDivider": "atau daftar dengan email",
+        "submit": "Buat akun",
+        "wizardNote": "Setelah akun dibuat, kamu akan diminta melengkapi tanggal lahir, kelas, dan sekolah.",
+        "honeypot": "Jangan isi kolom ini"
     },
     "login": {
         "adminTitle": "Masuk Admin",

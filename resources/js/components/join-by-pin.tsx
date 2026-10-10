@@ -351,7 +351,7 @@ export function JoinByPinDialog({
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-black/60 p-3 pt-[12vh] backdrop-blur-sm sm:p-4 sm:pt-[15vh]"
+            className="fixed inset-0 z-[70] flex items-center justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm sm:p-4"
             onPointerDown={(event) => {
                 if (event.target === event.currentTarget) {
                     onClose();

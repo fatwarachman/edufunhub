@@ -24,6 +24,168 @@
 
 return [
     [
+        'version' => '0.14.0',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'wizard-birth-date-mobile',
+                'type' => 'fix',
+                'title' => [
+                    'id' => 'Tanggal lahir di wizard bisa diisi di HP',
+                    'en' => 'Birth date in the wizard works on phones',
+                ],
+                'body' => [
+                    'id' => 'Kolom tanggal lahir di wizard login pertama, kartu data pemain, dan profil kini memakai pilihan Tanggal, Bulan, dan Tahun, sehingga bisa diisi di semua HP tanpa bergantung pada kalender bawaan browser.',
+                    'en' => 'The birth date field in the first-login wizard, the player details card and the profile now uses Day, Month and Year pickers, so it can be filled on every phone without relying on the browser date picker.',
+                ],
+            ],
+            [
+                'key' => 'modals-centered',
+                'type' => 'improvement',
+                'title' => [
+                    'id' => 'Semua modal tampil di tengah layar',
+                    'en' => 'All modals open in the centre of the screen',
+                ],
+                'body' => [
+                    'id' => 'Modal seperti ucapan selamat di akhir permainan, wizard profil, gabung dengan PIN, kontrol host, chat, dan papan peringkat kini tampil di tengah layar juga di HP, dengan isi yang bisa digulir bila panjang.',
+                    'en' => 'Modals such as the end-of-game congratulations, the profile wizard, join by PIN, host controls, chat and the leaderboard now open in the centre of the screen on phones too, with scrollable content when long.',
+                ],
+            ],
+            [
+                'key' => 'admin-player-details-before-wizard',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Admin bisa mengatur sekolah, kelas, dan tanggal lahir pengguna',
+                    'en' => 'Admins can set a user\'s school, grade and birth date',
+                ],
+                'body' => [
+                    'id' => 'Super admin bisa mengisi kelas, sekolah, dan tanggal lahir dari halaman detail pengguna, meski pengguna belum menjalankan wizard atau belum punya profil pelajar. Data ini otomatis terisi di wizard pengguna, dan setiap perubahan tercatat di log aktivitas.',
+                    'en' => 'Super admins can fill in the grade, school and birth date from the user detail page, even before the user has run the wizard or has a learner profile. The data prefills the user\'s wizard, and every change is recorded in the activity log.',
+                ],
+            ],
+            [
+                'key' => 'device-usage-games-page',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Halaman lengkap perangkat per game',
+                    'en' => 'Full device usage per game page',
+                ],
+                'body' => [
+                    'id' => 'Panel Per game & browser di dasbor admin kini menampilkan 5 game teratas dengan tombol Lihat semua, yang membuka halaman berisi semua game beserta pembagian perangkat dan browser masing-masing.',
+                    'en' => 'The Per game & browser panel on the admin dashboard now shows the top 5 games with a See all button that opens a page listing every game with its device and browser split.',
+                ],
+            ],
+            [
+                'key' => 'landing-start-only',
+                'type' => 'improvement',
+                'title' => [
+                    'id' => 'Masuk dan daftar lewat tombol Mulai Main',
+                    'en' => 'Sign in and sign up through the Start playing button',
+                ],
+                'body' => [
+                    'id' => 'Tombol Masuk dihapus dari header dan menu HP di landing page. Pengguna masuk atau mendaftar cukup lewat tombol Mulai Main.',
+                    'en' => 'The Sign in button was removed from the landing page header and phone menu. Users sign in or sign up through the Start playing button.',
+                ],
+            ],
+            [
+                'key' => 'email-registration-toggle',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Pendaftaran dengan email bisa diaktifkan',
+                    'en' => 'Email sign-up can be turned on',
+                ],
+                'body' => [
+                    'id' => 'Super admin bisa mengaktifkan pendaftaran dengan email dan kata sandi di Pengaturan, tab Registration (nonaktif secara bawaan). Saat aktif, halaman daftar menampilkan formulir email di samping Google, dan akun baru langsung diarahkan ke wizard profil.',
+                    'en' => 'Super admins can turn on email and password sign-up in Settings, Registration tab (off by default). When on, the sign-up page shows an email form next to Google, and new accounts go straight to the profile wizard.',
+                ],
+            ],
+            [
+                'key' => 'about-page',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Halaman Tentang EduFunHub',
+                    'en' => 'About EduFunHub page',
+                ],
+                'body' => [
+                    'id' => 'Footer landing page kini punya tautan Tentang EduFunHub yang membuka halaman latar belakang EduFunHub dengan gaya yang sama seperti landing page.',
+                    'en' => 'The landing page footer now has an About EduFunHub link that opens a page on the background of EduFunHub, styled like the landing page.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.13.0',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'database-backup',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Backup database lokal dan FTP',
+                    'en' => 'Local and FTP database backups',
+                ],
+                'body' => [
+                    'id' => 'Superadmin kini punya halaman Backup Database (/admin/backups) untuk full backup seluruh database ke file .sql.gz: backup manual dengan sekali klik dan backup otomatis terjadwal (harian atau mingguan). Tujuan backup bisa lokal, server FTP/FTPS, atau keduanya, lengkap dengan tes koneksi, batas jumlah file yang disimpan, riwayat, unduh, dan hapus. Kata sandi FTP disimpan terenkripsi.',
+                    'en' => 'Superadmins now have a Database Backup page (/admin/backups) for full backups of the whole database to a .sql.gz file: one-click manual backups and scheduled automatic backups (daily or weekly). Backups go to local storage, an FTP/FTPS server, or both, with a connection test, retention limit, history, download and delete. The FTP password is stored encrypted.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.12.0',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'profile-photo-upload',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Unggah foto profil',
+                    'en' => 'Profile photo upload',
+                ],
+                'body' => [
+                    'id' => 'Pemain bisa mengunggah, mengganti, atau menghapus foto profil di halaman Profil (JPG, PNG, atau WEBP, maks. 2 MB, otomatis dipotong persegi). Foto tampil di daftar pengguna dan halaman detail pengguna di panel admin.',
+                    'en' => 'Players can upload, change or remove a profile photo on the Profile page (JPG, PNG or WEBP, max 2 MB, cropped to a square automatically). The photo shows in the user list and on the user detail page in the admin panel.',
+                ],
+            ],
+            [
+                'key' => 'admin-game-play-detail',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Detail permainan di riwayat game pengguna',
+                    'en' => 'Game details in the user game history',
+                ],
+                'body' => [
+                    'id' => 'Baris di tab Riwayat game pada detail pengguna kini bisa diklik untuk membuka halaman detail permainan: poin, akurasi, durasi, benar beruntun, peringkat, soal per mata pelajaran, tingkat soal, perbandingan dengan permainan lain, pertandingan, dan daftar soal beserta kunci jawabannya.',
+                    'en' => 'Rows in the Game history tab of the user detail page now open a game details page: points, accuracy, duration, streak, rank, questions by subject, question levels, comparison with other plays, the match, and the list of questions with their answer key.',
+                ],
+            ],
+            [
+                'key' => 'admin-breadcrumbs',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Breadcrumb di panel admin',
+                    'en' => 'Breadcrumbs in the admin panel',
+                ],
+                'body' => [
+                    'id' => 'Setiap halaman admin kini menampilkan jejak navigasi (Dasbor › menu › halaman) sehingga halaman sebelumnya bisa dibuka dengan sekali klik.',
+                    'en' => 'Every admin page now shows a navigation trail (Dashboard › menu › page), so earlier pages are one click away.',
+                ],
+            ],
+            [
+                'key' => 'chart-tooltip-sticks',
+                'type' => 'fix',
+                'title' => [
+                    'id' => 'Tooltip grafik tidak lagi menempel',
+                    'en' => 'Chart tooltips no longer stick',
+                ],
+                'body' => [
+                    'id' => 'Tooltip grafik di panel admin tidak lagi tetap muncul setelah mengurutkan tabel atau mengklik, walaupun kursor sudah tidak di atas grafik. Avatar pengguna di daftar pengguna admin juga kini tampil, dan label kolom Dimainkan diperbaiki.',
+                    'en' => 'Chart tooltips in the admin panel no longer stay visible after sorting a table or clicking once the pointer has left the chart. User avatars now show in the admin user list, and the Played column label is fixed.',
+                ],
+            ],
+        ],
+    ],
+    [
         'version' => '0.11.0',
         'date' => '2026-10-09',
         'changes' => [

@@ -662,7 +662,7 @@ function GameModal({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
             data-testid="lb-game-modal"
         >
             {/* Backdrop */}
@@ -674,7 +674,7 @@ function GameModal({
             {/* Panel */}
             <div
                 className={cn(
-                    'relative z-10 flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border-2 sm:rounded-2xl',
+                    'relative z-10 flex max-h-[min(calc(100dvh-1.5rem),92dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border-2',
                     INK,
                     'bg-white',
                 )}

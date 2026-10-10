@@ -6,8 +6,10 @@ import {
     Panel,
 } from '@/components/admin/game-stats';
 import { tr } from '@/lib/admin-i18n';
+import { Link } from '@inertiajs/react';
 import {
     AppWindow,
+    ArrowRight,
     Laptop,
     MonitorSmartphone,
     Smartphone,
@@ -52,7 +54,7 @@ export const DEVICE_META: Record<
     },
 };
 
-const DEVICE_ORDER: DeviceType[] = ['mobile', 'tablet', 'desktop'];
+export const DEVICE_ORDER: DeviceType[] = ['mobile', 'tablet', 'desktop'];
 
 const OS_COLORS = [
     'var(--color-bubble-green)',
@@ -63,8 +65,17 @@ const OS_COLORS = [
     'var(--muted-foreground)',
 ];
 
-function share(part: number, whole: number): string {
+export function share(part: number, whole: number): string {
     return whole > 0 ? `${Math.round((part / whole) * 100)}%` : '0%';
+}
+
+/** Games shown in the dashboard panel; the rest is on the "See all" page. */
+export const DASHBOARD_GAME_LIMIT = 5;
+
+export const DEVICE_GAMES_URL = '/admin/device-usage/games';
+
+function deviceTotal(row: Record<DeviceType, number>): number {
+    return row.mobile + row.tablet + row.desktop;
 }
 
 /** Device class, operating system and browser mix of game page opens. */
@@ -88,6 +99,10 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
             </Panel>
         );
     }
+
+    const topGames = [...devices.games]
+        .sort((a, b) => deviceTotal(b) - deviceTotal(a))
+        .slice(0, DASHBOARD_GAME_LIMIT);
 
     return (
         <div
@@ -182,18 +197,33 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
 
             <Panel
                 title={tr('Per game & browser')}
-                description={tr('Device split for each game')}
+                description={tr('Top {0} games by opens · device split', [
+                    DASHBOARD_GAME_LIMIT,
+                ])}
                 icon={Smartphone}
+                actions={
+                    <Link
+                        href={`${DEVICE_GAMES_URL}?days=${devices.days}`}
+                        className="inline-flex items-center gap-1 link text-xs"
+                        data-testid="device-games-all"
+                    >
+                        {tr('See all')}
+                        <ArrowRight className="size-3" aria-hidden="true" />
+                    </Link>
+                }
             >
                 <div className="flex flex-col gap-5">
-                    <ul className="flex flex-col gap-3">
-                        {devices.games.map((game) => {
-                            const total =
-                                game.mobile + game.tablet + game.desktop;
+                    <ul
+                        className="flex flex-col gap-3"
+                        data-testid="device-games"
+                    >
+                        {topGames.map((game) => {
+                            const total = deviceTotal(game);
                             return (
                                 <li
                                     key={game.game}
                                     className="flex flex-col gap-1.5"
+                                    data-testid="device-game-row"
                                 >
                                     <div className="flex items-center justify-between gap-2 text-sm">
                                         <span className="truncate font-medium text-foreground">
@@ -232,7 +262,7 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
     );
 }
 
-function SplitBar({
+export function SplitBar({
     row,
     total,
 }: {
@@ -263,7 +293,7 @@ function SplitBar({
     );
 }
 
-function DeviceLegend() {
+export function DeviceLegend() {
     return (
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {DEVICE_ORDER.map((type) => (

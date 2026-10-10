@@ -9,28 +9,51 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 
 /**
- * Super admin correction of a learner's grade and school from the admin
- * user detail page.
+ * Super admin edit of a learner's grade, school and birth date from the admin
+ * user detail page. Creates the learner profile when it does not exist yet;
+ * the first-login wizard stays pending so the learner still confirms it.
  */
 class PlayerSchoolGradeController extends Controller
 {
     /** Profile fields this action may change and logs. */
-    private const FIELDS = ['grade', 'school_name', 'school_city', 'school_level', 'school_npsn'];
+    private const FIELDS = ['grade', 'birth_date', 'school_name', 'school_city', 'school_level', 'school_npsn'];
 
     public function update(UpdatePlayerSchoolGradeRequest $request, User $user): RedirectResponse
     {
-        $profile = $user->playerProfile()->firstOrFail();
-        $old = $profile->only(self::FIELDS);
+        $existing = $user->playerProfile()->first();
+        $old = $existing
+            ? $this->snapshot($existing->only(self::FIELDS))
+            : array_fill_keys(self::FIELDS, null);
 
-        $profile->fill(School::officialDetails($request->safe()->only(self::FIELDS)))->save();
+        $changes = School::officialDetails($request->safe()->only(['grade', 'school_name', 'school_city', 'school_level', 'school_npsn']));
+
+        if ($request->validated('birth_date') !== null) {
+            $changes['birth_date'] = $request->validated('birth_date');
+        }
+
+        $profile = $user->playerProfile()->updateOrCreate([], $changes);
 
         activity()
             ->causedBy($request->user())
             ->performedOn($user)
-            ->event('updated')
-            ->withProperties(['old' => $old, 'attributes' => $profile->only(self::FIELDS)])
-            ->log('Updated learner grade and school');
+            ->event($existing ? 'updated' : 'created')
+            ->withProperties(['old' => $old, 'attributes' => $this->snapshot($profile->only(self::FIELDS))])
+            ->log('Updated learner grade, school and birth date');
 
-        return back()->with('success', 'Grade and school updated.');
+        return back()->with('success', 'Learner details updated.');
+    }
+
+    /**
+     * Plain values for the activity log (dates as Y-m-d).
+     *
+     * @param  array<string, mixed>  $values
+     * @return array<string, mixed>
+     */
+    private function snapshot(array $values): array
+    {
+        return array_map(
+            fn (mixed $value): mixed => $value instanceof \DateTimeInterface ? $value->format('Y-m-d') : $value,
+            $values,
+        );
     }
 }

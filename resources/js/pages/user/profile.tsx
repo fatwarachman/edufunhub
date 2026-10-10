@@ -9,6 +9,7 @@ import {
     PlayerDetailsCard,
     type PlayerDetails,
 } from '@/components/player-details-card';
+import { ProfilePhotoCard } from '@/components/profile-photo-card';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { gradeLabel, hasGrade } from '@/lib/grade';
@@ -34,6 +35,7 @@ interface ProfileProps {
         name: string;
         email: string;
         email_verified: boolean;
+        avatar_url: string | null;
         joined_at: string | null;
         last_seen_at: string | null;
         password_updated_at: string | null;
@@ -160,6 +162,11 @@ export default function Profile({
 
             <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-start">
                 <div className="flex min-w-0 flex-col gap-6">
+                    <ProfilePhotoCard
+                        photoUrl={account.avatar_url}
+                        name={displayName}
+                        className={CARD}
+                    />
                     <AccountCard account={account} />
                     <PasswordCard
                         needsCurrent={needsCurrentPassword}

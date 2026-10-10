@@ -980,14 +980,14 @@ function RewardModal({
     };
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-[#1f2a44]/55 p-3 backdrop-blur-[2px] sm:items-center"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f2a44]/55 p-3 backdrop-blur-[2px]"
             data-testid="bb-reward"
         >
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="bb-reward-title"
-                className="bb-pop w-full max-w-md rounded-3xl border-3 border-[#1f2a44] bg-[#FFFDF7] p-4 shadow-[6px_6px_0px_#1f2a44]"
+                className="bb-pop max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-3xl border-3 border-[#1f2a44] bg-[#FFFDF7] p-4 shadow-[6px_6px_0px_#1f2a44]"
             >
                 <div className="flex items-center justify-between gap-2">
                     <h2

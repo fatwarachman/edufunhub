@@ -1,5 +1,6 @@
 import {
     axisTick,
+    chartEvents,
     chartTooltipStyle,
     KpiCard,
     LEVEL_COLORS,
@@ -323,6 +324,7 @@ export default function UserStatistics({ filters, stats }: Props) {
                         <div className="h-56">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
+                                    {...chartEvents}
                                     barGap={2}
                                     data={stats.byGrade.filter(
                                         (row) => row.label !== 'unknown',
@@ -403,6 +405,7 @@ export default function UserStatistics({ filters, stats }: Props) {
                         <div className="h-56">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
+                                    {...chartEvents}
                                     data={stats.byAge.filter(
                                         (row) => row.label !== 'unknown',
                                     )}

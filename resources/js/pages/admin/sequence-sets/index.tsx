@@ -607,7 +607,7 @@ function SetEditor({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4"
             onPointerDown={(event) => {
                 if (event.target === event.currentTarget && !processing) {
                     onClose();
@@ -620,7 +620,7 @@ function SetEditor({
                 aria-modal="true"
                 aria-labelledby="sequence-editor-title"
                 data-testid="sequence-editor"
-                className="flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-border bg-card shadow-xl sm:rounded-2xl dark:border-white/15 dark:shadow-[0_0_24px_rgb(255_255_255/0.06)]"
+                className="flex max-h-[min(calc(100dvh-1.5rem),92dvh)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl dark:border-white/15 dark:shadow-[0_0_24px_rgb(255_255_255/0.06)]"
             >
                 <header className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
                     <h2

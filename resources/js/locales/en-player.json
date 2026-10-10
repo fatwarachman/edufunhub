@@ -158,6 +158,9 @@
         "details": "Participant details",
         "detailsNote": "Complete your date of birth and last school.",
         "birthDate": "Date of birth",
+        "birthDay": "Day",
+        "birthMonth": "Month",
+        "birthYear": "Year",
         "whatsapp": "WhatsApp number (optional)",
         "whatsappPlaceholder": "Example: 081234567890",
         "whatsappHint": "A parent's number is fine. Used for learning analysis results, friend requests and important news. Never shown to other players.",
@@ -2757,6 +2760,20 @@
             "hide": "Hide password",
             "saved": "Password changed.",
             "submit": "Save password"
+        },
+        "photo": {
+            "title": "Profile photo",
+            "help": "Upload a JPG, PNG or WEBP photo (max 2 MB). It is cropped to a square.",
+            "choose": "Choose a profile photo",
+            "upload": "Upload photo",
+            "change": "Change photo",
+            "save": "Save photo",
+            "remove": "Remove photo",
+            "saved": "Profile photo saved.",
+            "removed": "Profile photo removed.",
+            "alt": "Profile photo of {{name}}",
+            "errorType": "The photo must be a JPG, PNG or WEBP image.",
+            "errorSize": "The photo may be at most 2 MB."
         }
     },
     "questionLevel": {
