@@ -57,6 +57,7 @@ export interface AdminUser extends User {
     badges?: import('@/components/badges').EarnedBadge[];
     disabled_at?: string | null;
     current_game?: string | null;
+    whatsapp_number?: string | null;
 }
 
 export interface PaginatedData<T> {
