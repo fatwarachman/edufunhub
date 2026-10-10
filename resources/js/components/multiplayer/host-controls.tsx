@@ -88,7 +88,7 @@ export function HostExitDialog({
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[70] flex items-end justify-center bg-[#1f2a44]/60 p-3 backdrop-blur-sm sm:items-center"
+            className="fixed inset-0 z-[70] flex items-center justify-center bg-[#1f2a44]/60 p-3 backdrop-blur-sm"
             onClick={onClose}
         >
             <div
@@ -96,7 +96,7 @@ export function HostExitDialog({
                 aria-modal="true"
                 aria-labelledby={titleId}
                 onClick={(event) => event.stopPropagation()}
-                className="relative w-full max-w-md rounded-3xl border-[3px] border-[#1f2a44] bg-[#FFFDF7] p-5 text-[#1f2a44] shadow-[6px_6px_0px_#1f2a44]"
+                className="relative max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-3xl border-[3px] border-[#1f2a44] bg-[#FFFDF7] p-5 text-[#1f2a44] shadow-[6px_6px_0px_#1f2a44]"
                 data-testid="host-exit-dialog"
             >
                 <button

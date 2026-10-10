@@ -222,14 +222,14 @@ function Modal({
         return () => window.removeEventListener('keydown', onKey);
     }, [onClose]);
     return (
-        <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
             <div className="fixed inset-0 bg-black/50" onClick={onClose} />
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-label={title}
                 data-testid={testId}
-                className="relative z-10 flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border-3 border-[#151b2e] bg-white shadow-[6px_6px_0_#151b2e] sm:rounded-3xl"
+                className="relative z-10 flex max-h-[min(calc(100dvh-1.5rem),90dvh)] w-full max-w-lg flex-col overflow-hidden rounded-3xl border-3 border-[#151b2e] bg-white shadow-[6px_6px_0_#151b2e]"
             >
                 <div className="flex items-center justify-between gap-3 border-b-2 border-[#151b2e]/10 px-5 py-3">
                     <h2 className="text-lg font-bold">{title}</h2>

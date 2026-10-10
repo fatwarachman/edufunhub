@@ -358,7 +358,7 @@ function FinaleModal({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-3 backdrop-blur-sm sm:items-center sm:p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4"
             onPointerDown={(event) => {
                 if (event.target === event.currentTarget) {
                     onClose();
@@ -370,7 +370,7 @@ function FinaleModal({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
-                className="relative flex max-h-[min(92dvh,44rem)] w-full max-w-lg animate-in flex-col overflow-hidden rounded-3xl border-4 border-[#1f2a44] bg-[#FFF9E6] text-[#1f2a44] shadow-[8px_8px_0px_#1f2a44] duration-200 zoom-in-90"
+                className="relative flex max-h-[min(calc(100dvh-1.5rem),44rem)] w-full max-w-lg animate-in flex-col overflow-hidden rounded-3xl border-4 border-[#1f2a44] bg-[#FFF9E6] text-[#1f2a44] shadow-[8px_8px_0px_#1f2a44] duration-200 zoom-in-90"
             >
                 <button
                     ref={closeRef}

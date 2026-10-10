@@ -1,3 +1,4 @@
+import { BirthDateSelect } from '@/components/birth-date-select';
 import { EditableCardHeader, ReadOnlyFields } from '@/components/editable-card';
 import InputError from '@/components/input-error';
 import { SchoolPicker } from '@/components/school-picker';
@@ -58,7 +59,6 @@ export function PlayerDetailsCard({ details }: { details: PlayerDetails }) {
         whatsapp_number: details.whatsapp_number ?? '',
         whatsapp_notifications: details.whatsapp_notifications ?? true,
     });
-    const today = new Date().toISOString().slice(0, 10);
     const complete = Boolean(details.birth_date && details.school_name);
     const [editing, setEditing] = useState(!complete);
     const [saved, setSaved] = useState(false);
@@ -184,16 +184,13 @@ export function PlayerDetailsCard({ details }: { details: PlayerDetails }) {
                     >
                         {t('player.birthDate')}
                     </label>
-                    <input
+                    <BirthDateSelect
                         id="birth-date-input"
-                        type="date"
-                        name="birth_date"
                         value={form.data.birth_date}
-                        max={today}
-                        onChange={(event) =>
-                            form.setData('birth_date', event.target.value)
-                        }
-                        className="min-h-11 w-full rounded-xl border-2 border-[#151b2e] bg-white px-3.5 font-semibold"
+                        onChange={(value) => form.setData('birth_date', value)}
+                        invalid={Boolean(form.errors.birth_date)}
+                        className="min-h-11 w-full rounded-xl border-2 border-[#151b2e] bg-white px-2.5 font-semibold"
+                        testId="player-details-birth-date"
                     />
                     <InputError message={form.errors.birth_date} />
                     <SchoolPicker

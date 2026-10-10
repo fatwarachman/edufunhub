@@ -209,7 +209,7 @@ export default function ChallengeDialog({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-[#151b2e]/55 p-2 pb-[max(8px,env(safe-area-inset-bottom))] backdrop-blur-[2px] sm:items-center sm:p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#151b2e]/55 p-2 py-[max(8px,env(safe-area-inset-bottom))] backdrop-blur-[2px] sm:p-4"
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
