@@ -158,6 +158,18 @@
             "title": "Tambah pengiklan",
             "superadminOnly": true,
             "teacherOnly": false
+        },
+        "whatsappNotifications": {
+            "href": "/admin/whatsapp",
+            "title": "Hubungkan WhatsApp notifikasi (scan QR)",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "whatsappLog": {
+            "href": "/admin/whatsapp/log",
+            "title": "Log pesan WhatsApp (riwayat kirim & gagal)",
+            "superadminOnly": true,
+            "teacherOnly": false
         }
     }
 }

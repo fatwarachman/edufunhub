@@ -103,6 +103,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'ads_disabled' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
             'onboarded_at' => 'datetime',
+            'profile_completed_at' => 'datetime',
             'notification_preferences' => 'array',
             'onboarding_checklist_dismissed_at' => 'datetime',
             'tour_completed_at' => 'datetime',
@@ -110,6 +111,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'experience_feedback_at' => 'datetime',
             'password_updated_at' => 'datetime',
             'last_seen_at' => 'datetime',
+            'whatsapp_notifications' => 'boolean',
+            'whatsapp_welcomed_at' => 'datetime',
         ];
     }
 
@@ -184,6 +187,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class)->withTimestamps();
+    }
+
+    /**
+     * Saved a WhatsApp number, did not opt out and the account is active.
+     */
+    public function canReceiveWhatsApp(): bool
+    {
+        return $this->whatsapp_number !== null && $this->whatsapp_number !== ''
+            && $this->whatsapp_notifications
+            && $this->disabled_at === null;
     }
 
     /**

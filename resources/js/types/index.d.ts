@@ -1,3 +1,4 @@
+import { type ProfileWizardPrefill } from '@/components/profile-wizard';
 import { InertiaLinkProps } from '@inertiajs/react';
 import { LucideIcon } from 'lucide-react';
 
@@ -118,6 +119,8 @@ export interface GameMenuGame {
     maxPlayers: number;
     awardsPoints: boolean;
     guestPlayable: boolean;
+    /** Multiplayer game best played against classmates of the same grade. */
+    sameGradeMatch?: boolean;
 }
 
 export interface GameMenuCategory {
@@ -138,6 +141,7 @@ export interface SharedData {
     locale?: string;
     features?: Record<string, boolean>;
     show_experience_survey?: boolean;
+    profileWizard?: ProfileWizardPrefill | null;
     [key: string]: unknown;
 }
 

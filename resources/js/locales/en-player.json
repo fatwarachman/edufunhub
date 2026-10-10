@@ -158,6 +158,13 @@
         "details": "Participant details",
         "detailsNote": "Complete your date of birth and last school.",
         "birthDate": "Date of birth",
+        "whatsapp": "WhatsApp number (optional)",
+        "whatsappPlaceholder": "Example: 081234567890",
+        "whatsappHint": "A parent's number is fine. Used for learning analysis results, friend requests and important news. Never shown to other players.",
+        "whatsappOptIn": "Send notifications on WhatsApp",
+        "whatsappLabel": "WhatsApp number",
+        "whatsappEmpty": "Not set",
+        "whatsappOff": "WhatsApp notifications off",
         "schoolName": "Last school",
         "schoolNamePlaceholder": "Example: SDN 1 Bogor",
         "age_one": "{{count}} year old",
@@ -824,6 +831,10 @@
         "headingAccent": "Games",
         "intro": "Games are grouped by type. Games labelled \"Earns points\" are verified by the server and add points to your account.",
         "play": "Play now",
+        "sameGrade": {
+            "badge": "Best with same grade",
+            "hint": "Multiplayer game: questions follow the youngest grade in the room, so it is fairest with classmates of the same grade. Mixed grades can still play together."
+        },
         "latest": {
             "title": "Latest games",
             "intro_one": "Games released in the last day. Be the first to try them!",
@@ -2379,6 +2390,31 @@
         "manualHint": "Type the full school name, e.g. SDN 1 Bogor.",
         "legacy": "Saved: {{name}}. Pick your school from the list so it matches the official data."
     },
+    "profileWizard": {
+        "title": "Let's complete your profile first!",
+        "description": "Just once. This helps us match questions to you and share your learning progress.",
+        "progress": "Step {{step}} of {{total}}",
+        "steps": {
+            "identity": "About you",
+            "school": "School",
+            "contact": "WhatsApp"
+        },
+        "name": "Full name",
+        "namePlaceholder": "Example: Rani Putri",
+        "grade": "Grade",
+        "back": "Back",
+        "next": "Next",
+        "finish": "Save & start",
+        "saving": "Saving…",
+        "logout": "Not your account? Log out",
+        "errors": {
+            "name": "Enter your full name (at least 2 letters).",
+            "birthDate": "Enter your date of birth.",
+            "grade": "Choose your grade.",
+            "school": "Pick or type your last school.",
+            "whatsapp": "The WhatsApp number must start with 0, 62 or +62. Example: 081234567890."
+        }
+    },
     "playerDash": {
         "title": "Player dashboard",
         "badge": "STATS & RANKING",
@@ -2685,6 +2721,8 @@
         },
         "editCharacter": "Edit character",
         "openDashboard": "Open dashboard",
+        "edit": "Edit",
+        "cancel": "Cancel",
         "info": {
             "title": "Account details",
             "grade": "Grade",
@@ -3091,7 +3129,7 @@
         "mute": "Mute sponsor audio",
         "unavailable": "The arena is not available yet. Learn how to play while you wait.",
         "intro": "Hi {{name}}! Play alone or invite up to 3 friends.",
-        "rules": "Your snake starts with a 15-segment tail. The question shows in the panel and options A–D lie on the grid as food. Eat the right answer: the tail loses 3 segments. Wrong or too slow: it grows 4. No tail left = you win!",
+        "rules": "Your snake starts with a 15-segment tail. Every question: 30 seconds to read first (snakes stay still), then steer to eat the answer ball A–D. Right: the tail loses 3 segments. Wrong or too slow: it grows 4. After every bite the snakes freeze again for the next question. No tail left = you win!",
         "soloHint": "Start alone to practise, or share the PIN so friends can join (up to 4 players).",
         "modeLabel": "Game mode",
         "modes": {
@@ -3109,6 +3147,14 @@
         "opponentBoard": "{{name}}'s grid",
         "gameLeft": "{{time}} left",
         "getReady": "Get ready…",
+        "read": {
+            "title": "Read the question first",
+            "body": "The snakes are still. Find the right answer ball on the grid.",
+            "ready": "I'm ready, let's go!",
+            "waitOthers": "Waiting for the other players…",
+            "status": "Reading time: snakes are not moving yet",
+            "left": "Read {{count}} s"
+        },
         "out": "Your snake is out. Watch until the end!",
         "controlsHint": "Controls: arrow keys or W A S D. On phones: swipe on the grid or use the arrow pad.",
         "steer": "Steer to the right answer",
@@ -3191,16 +3237,16 @@
                     "body": "Play alone or share the PIN with friends (up to 4). The host picks Shared Arena or Split Arenas, the subject and the answer time."
                 },
                 "read": {
-                    "title": "Read the question, find the food",
-                    "body": "The question shows in the panel. Options A, B, C, D lie on the grid as coloured food. Steer with arrows, WASD, swipes or the arrow pad."
+                    "title": "Read the question for 30 seconds",
+                    "body": "With every new question all snakes stay still for 30 seconds so you can read it and see where answer balls A, B, C, D lie. Tap \"I'm ready\" to start sooner; in a shared room the snakes move once every player is ready."
                 },
                 "cut": {
-                    "title": "Eat the right answer",
-                    "body": "Your tail loses 3 segments and you earn question points. The next question appears at once. In Shared Arena the fastest correct bite wins the question."
+                    "title": "Eat the right answer ball",
+                    "body": "Your tail loses 3 segments and you earn question points. The snakes freeze again and the next question appears to read. In Shared Arena the fastest correct bite wins the question."
                 },
                 "grow": {
                     "title": "Wrong or too slow? The tail grows",
-                    "body": "A wrong answer or a timeout adds 4 segments and the grid gets crowded. Hitting a wall, yourself or another snake costs one of 3 lives."
+                    "body": "A wrong answer ball or a timeout adds 4 segments, then the next question appears. Hitting a wall, yourself or another snake costs one of 3 lives."
                 },
                 "junk": {
                     "title": "Junk attack (Split Arenas)",

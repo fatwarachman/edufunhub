@@ -158,6 +158,13 @@
         "details": "Data peserta",
         "detailsNote": "Lengkapi tanggal lahir dan sekolah terakhir kamu.",
         "birthDate": "Tanggal lahir",
+        "whatsapp": "Nomor WhatsApp (opsional)",
+        "whatsappPlaceholder": "Contoh: 081234567890",
+        "whatsappHint": "Boleh nomor orang tua. Dipakai untuk kabar hasil analisa belajar, permintaan pertemanan, dan info penting. Tidak ditampilkan ke pemain lain.",
+        "whatsappOptIn": "Kirim notifikasi lewat WhatsApp",
+        "whatsappLabel": "Nomor WhatsApp",
+        "whatsappEmpty": "Belum diisi",
+        "whatsappOff": "Notifikasi WhatsApp dimatikan",
         "schoolName": "Sekolah terakhir",
         "schoolNamePlaceholder": "Contoh: SDN 1 Bogor",
         "age": "{{count}} tahun",
@@ -823,6 +830,10 @@
         "headingAccent": "Edukatif",
         "intro": "Permainan dikelompokkan per jenis. Game berlabel \"Dapat poin\" diverifikasi server dan menambah poin akunmu.",
         "play": "Mainkan sekarang",
+        "sameGrade": {
+            "badge": "Disarankan sekelas",
+            "hint": "Game multiplayer: soal menyesuaikan kelas termuda di ruang, jadi paling adil dimainkan bersama teman sekelas. Beda kelas tetap boleh main bersama."
+        },
         "latest": {
             "title": "Game terbaru",
             "intro_one": "Game yang baru dirilis dalam {{count}} hari terakhir. Ayo jadi yang pertama mencoba!",
@@ -2378,6 +2389,31 @@
         "manualHint": "Ketik nama sekolah lengkap, contoh: SDN 1 Bogor.",
         "legacy": "Tersimpan: {{name}}. Pilih sekolahmu dari daftar agar datanya resmi."
     },
+    "profileWizard": {
+        "title": "Lengkapi profilmu dulu, yuk!",
+        "description": "Cuma sekali. Data ini membantu kami menyesuaikan soal dan mengabari perkembangan belajarmu.",
+        "progress": "Langkah {{step}} dari {{total}}",
+        "steps": {
+            "identity": "Data diri",
+            "school": "Sekolah",
+            "contact": "WhatsApp"
+        },
+        "name": "Nama lengkap",
+        "namePlaceholder": "Contoh: Rani Putri",
+        "grade": "Kelas",
+        "back": "Kembali",
+        "next": "Lanjut",
+        "finish": "Simpan & mulai",
+        "saving": "Menyimpan…",
+        "logout": "Bukan akunmu? Keluar",
+        "errors": {
+            "name": "Isi nama lengkap (minimal 2 huruf).",
+            "birthDate": "Isi tanggal lahir.",
+            "grade": "Pilih kelas.",
+            "school": "Pilih atau ketik sekolah terakhir.",
+            "whatsapp": "Nomor WhatsApp harus diawali 0, 62, atau +62. Contoh: 081234567890."
+        }
+    },
     "playerDash": {
         "title": "Beranda pemain",
         "badge": "STATISTIK & PERINGKAT",
@@ -2684,6 +2720,8 @@
         },
         "editCharacter": "Ubah karakter",
         "openDashboard": "Buka dasbor",
+        "edit": "Ubah",
+        "cancel": "Batal",
         "info": {
             "title": "Detail akun",
             "grade": "Kelas",
@@ -3090,7 +3128,7 @@
         "mute": "Bisukan suara sponsor",
         "unavailable": "Arena belum tersedia. Pelajari cara bermain sambil menunggu.",
         "intro": "Halo {{name}}! Main sendiri atau undang sampai 3 teman.",
-        "rules": "Ularmu mulai dengan ekor 15 ruas. Soal muncul di panel, pilihan A–D tersebar sebagai makanan di arena. Makan jawaban benar: ekor terpotong 3 ruas. Salah atau waktu habis: ekor bertambah 4 ruas. Ekor habis = menang!",
+        "rules": "Ularmu mulai dengan ekor 15 ruas. Setiap soal: 30 detik baca soal dulu (ular diam), lalu arahkan ular memakan bola jawaban A–D. Benar: ekor terpotong 3 ruas. Salah atau waktu habis: ekor bertambah 4 ruas. Setelah makan, ular diam lagi untuk soal berikutnya. Ekor habis = menang!",
         "soloHint": "Mulai sendiri untuk latihan, atau bagikan PIN agar teman ikut (maks. 4 pemain).",
         "modeLabel": "Mode permainan",
         "modes": {
@@ -3108,6 +3146,14 @@
         "opponentBoard": "Arena {{name}}",
         "gameLeft": "Sisa {{time}}",
         "getReady": "Bersiap…",
+        "read": {
+            "title": "Baca soalnya dulu",
+            "body": "Ular diam. Cari bola jawaban yang benar di arena.",
+            "ready": "Sudah siap, ayo jalan!",
+            "waitOthers": "Menunggu pemain lain…",
+            "status": "Waktu membaca: ular belum bergerak",
+            "left": "Baca {{count}} dtk"
+        },
         "out": "Ularmu tersingkir. Tonton sampai selesai!",
         "controlsHint": "Kendali: tombol panah atau W A S D. Di ponsel: geser di arena atau pakai tombol arah.",
         "steer": "Arahkan ular ke jawaban yang benar",
@@ -3190,16 +3236,16 @@
                     "body": "Main sendiri atau bagikan PIN ke teman (maks. 4). Host memilih Satu Arena atau Arena Terpisah, mata pelajaran, dan waktu menjawab."
                 },
                 "read": {
-                    "title": "Baca soal, cari makanannya",
-                    "body": "Soal muncul di panel. Pilihan A, B, C, D tersebar sebagai makanan berwarna di arena. Gerakkan ular dengan panah, WASD, geser layar, atau tombol arah."
+                    "title": "Baca soal 30 detik",
+                    "body": "Setiap soal baru, semua ular diam 30 detik supaya kamu bisa membaca soal dan melihat letak bola jawaban A, B, C, D. Tekan \"Sudah siap\" untuk mulai lebih cepat; di ruang bersama, ular bergerak saat semua pemain siap."
                 },
                 "cut": {
-                    "title": "Makan jawaban benar",
-                    "body": "Ekor terpotong 3 ruas dan kamu mendapat poin soal. Soal berikutnya langsung muncul. Di Satu Arena, yang tercepat makan jawaban benar yang menang soal itu."
+                    "title": "Makan bola jawaban benar",
+                    "body": "Ekor terpotong 3 ruas dan kamu mendapat poin soal. Ular langsung diam lagi dan soal berikutnya muncul untuk dibaca. Di Satu Arena, yang tercepat makan jawaban benar yang menang soal itu."
                 },
                 "grow": {
                     "title": "Salah atau waktu habis? Ekor memanjang",
-                    "body": "Makan jawaban salah atau terlambat menambah 4 ruas. Ekor panjang membuat arena makin sempit. Menabrak dinding, badan sendiri, atau badan lawan mengurangi satu dari 3 nyawa."
+                    "body": "Makan bola jawaban salah atau terlambat menambah 4 ruas, lalu soal berikutnya muncul. Menabrak dinding, badan sendiri, atau badan lawan mengurangi satu dari 3 nyawa."
                 },
                 "junk": {
                     "title": "Serangan beban (Arena Terpisah)",
