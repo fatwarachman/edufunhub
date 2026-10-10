@@ -1,5 +1,6 @@
 import {
     axisTick,
+    chartEvents,
     chartTooltipStyle,
     GAME_COLORS,
     GameDot,
@@ -330,6 +331,7 @@ export default function PlayingTime({
                         <div className="h-56" data-testid="playing-time-daily">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
+                                    {...chartEvents}
                                     data={report.daily.map((day) => ({
                                         ...day,
                                         minutes:

@@ -1,3 +1,4 @@
+import { AdminBreadcrumbs } from '@/components/admin/admin-breadcrumbs';
 import { AdminFeatureSearch } from '@/components/search/admin-feature-search';
 import { isGroup, navItems, type NavItem, type NavGroup } from '@/lib/admin-navigation';
 import { LanguageToggle } from '@/components/language-toggle';
@@ -458,7 +459,10 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                 </header>
 
                 {/* Page content */}
-                <main className="flex-1 p-4 md:p-6">{children}</main>
+                <main className="min-w-0 flex-1 p-4 md:p-6">
+                    <AdminBreadcrumbs />
+                    {children}
+                </main>
             </div>
         </div>
     );

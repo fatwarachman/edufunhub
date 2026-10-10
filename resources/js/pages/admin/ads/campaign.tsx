@@ -20,6 +20,7 @@ import {
     type PlacementSpec,
     type SizeSpec,
 } from '@/components/admin/ads/shared';
+import { chartEvents } from '@/components/admin/dashboard-kit';
 import {
     EmptyState,
     Panel,
@@ -312,6 +313,7 @@ export default function CampaignShow(props: Props) {
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
+                                    {...chartEvents}
                                     data={report.daily}
                                     margin={{ left: -20, right: 8, top: 8 }}
                                 >
