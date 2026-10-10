@@ -1,3 +1,4 @@
+import { PinForm } from '@/components/join-by-pin';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { Button } from '@/components/ui/button';
 import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
@@ -10,7 +11,6 @@ import {
     Crown,
     DoorOpen,
     Link2,
-    LogIn,
     MonitorSmartphone,
     Play,
     Plus,
@@ -24,6 +24,7 @@ import {
     type FormEvent,
     type ReactNode,
     useEffect,
+    useMemo,
     useRef,
     useState,
 } from 'react';
@@ -163,9 +164,12 @@ function Panel({ children }: { children: ReactNode }) {
 
 /**
  * Before a room exists: create a room (optionally with game settings in
- * `children`, e.g. a level picker) or join a friend's room by PIN.
+ * `children`, e.g. a level picker) or join by PIN. The PIN field is the
+ * shared PinForm: a PIN of this game joins here, any other game's PIN opens
+ * that game.
  */
 export function RoomEntry({
+    game,
     status,
     error,
     intro,
@@ -174,6 +178,8 @@ export function RoomEntry({
     onJoin,
     children,
 }: {
+    /** Catalog key of this game (config/game-catalog.php). */
+    game: string;
     status: GameSocketStatus | null;
     error: string | null;
     intro: string;
@@ -183,14 +189,7 @@ export function RoomEntry({
     children?: ReactNode;
 }) {
     const { t } = useTranslations();
-    const [pin, setPin] = useState('');
     const online = status === 'online';
-    const submit = (event: FormEvent) => {
-        event.preventDefault();
-        if (pin.length === 6) {
-            onJoin(pin);
-        }
-    };
 
     return (
         <Panel>
@@ -213,46 +212,52 @@ export function RoomEntry({
                 {t('room.or')}
                 <span className="h-0.5 flex-1 bg-[#1f2a44]/15" />
             </div>
-            <form
-                onSubmit={submit}
-                className="mx-auto flex max-w-sm items-end gap-2 text-left"
-            >
-                <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs font-black">
-                    {t('room.pinLabel')}
-                    <input
-                        value={pin}
-                        onChange={(event) =>
-                            setPin(
-                                event.target.value
-                                    .replace(/\D/g, '')
-                                    .slice(0, 6),
-                            )
-                        }
-                        inputMode="numeric"
-                        autoComplete="off"
-                        maxLength={6}
-                        placeholder={t('room.pinPlaceholder')}
-                        aria-label={t('room.pinLabel')}
-                        data-testid="room-pin-input"
-                        className="min-h-12 rounded-xl border-2 border-[#1f2a44] bg-white px-3.5 text-center font-display text-xl tracking-[0.3em] outline-none focus-visible:ring-4 focus-visible:ring-[#FF9E44]/40"
-                    />
-                </label>
-                <Button
-                    type="submit"
-                    disabled={!online || pin.length !== 6}
-                    data-testid="room-join"
-                    className="min-h-12 shrink-0 rounded-xl border-2 border-[#1f2a44] bg-[#1f2a44] px-4 font-display font-black text-white shadow-[3px_3px_0px_#FF9E44] disabled:opacity-50"
-                >
-                    <LogIn className="size-4" />
-                    {t('room.join')}
-                </Button>
-            </form>
+            <GamePinForm game={game} online={online} onJoin={onJoin} />
             {error && (
                 <div className="mt-4">
                     <RoomError code={error} />
                 </div>
             )}
         </Panel>
+    );
+}
+
+/**
+ * PIN field for game join panels: the same form as the header and portal,
+ * so a PIN from any game works on any game page.
+ */
+export function GamePinForm({
+    game,
+    online,
+    onJoin,
+    initialPin,
+}: {
+    game: string;
+    online: boolean;
+    onJoin: (pin: string) => void;
+    initialPin?: string;
+}) {
+    const { t } = useTranslations();
+    const join = useRef(onJoin);
+    useEffect(() => {
+        join.current = onJoin;
+    }, [onJoin]);
+    const here = useMemo(
+        () => ({ game, join: (pin: string) => join.current(pin) }),
+        [game],
+    );
+
+    return (
+        <div className="mx-auto w-full max-w-sm" data-testid="room-pin-form">
+            <PinForm
+                compact
+                here={here}
+                disabled={!online}
+                initialPin={initialPin}
+                autoJoin={false}
+                label={t('room.pinLabel')}
+            />
+        </div>
     );
 }
 

@@ -143,6 +143,7 @@ export default function PingPong({ player, serviceReady, wsUrl, pin }: Props) {
                     </div>
                 ) : !state ? (
                     <RoomEntry
+                        game="ping-pong"
                         status={status}
                         error={game.error}
                         intro={t('pingPong.intro', { name: player.name })}

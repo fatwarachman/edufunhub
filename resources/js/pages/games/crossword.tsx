@@ -351,6 +351,7 @@ export default function Crossword({
     } else if (!state || state.phase === 'none' || !state.pin) {
         body = (
             <RoomEntry
+                game="crossword"
                 status={connection.status}
                 error={error}
                 intro={t('crossword.intro', { name: player.name })}

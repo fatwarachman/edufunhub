@@ -404,6 +404,7 @@ export function RoomGame({
             <>
                 {noticeBanner}
                 <RoomEntry
+                    game="snakes-and-ladders"
                     status={connection.status}
                     error={error}
                     intro={t('snakes.online.intro', {

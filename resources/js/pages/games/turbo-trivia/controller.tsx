@@ -1,7 +1,11 @@
 import AdSlot from '@/components/ads/ad-slot';
 import GameAdStrip from '@/components/ads/game-ad-strip';
 import { GameFinale, podiumStandings } from '@/components/game-finale';
-import { ConnectionBadge, RoomError } from '@/components/multiplayer/room';
+import {
+    ConnectionBadge,
+    GamePinForm,
+    RoomError,
+} from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { HowToPlay } from '@/components/turbo-trivia/how-to-play';
 import {
@@ -31,18 +35,11 @@ import {
     DoorOpen,
     Flag,
     Gauge,
-    LogIn,
     Package,
     Trophy,
     WifiOff,
 } from 'lucide-react';
-import {
-    type FormEvent,
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import '../../../../css/turbo-trivia.css';
 
 interface ControllerProps {
@@ -394,51 +391,21 @@ function JoinPanel({
     onJoin: (pin: string) => void;
 }) {
     const { t } = useTranslations();
-    const [value, setValue] = useState(initialPin);
     const online = status === 'online';
-    const submit = (event: FormEvent) => {
-        event.preventDefault();
-        if (value.length === 6) {
-            onJoin(value);
-        }
-    };
     return (
         <Panel className="flex flex-col items-center gap-4 text-center">
             <ConnectionBadge status={status} />
             <p className="text-sm font-bold text-slate-700">
                 {t('turboTrivia.controller.playerIntro', { name })}
             </p>
-            <form
-                onSubmit={submit}
-                className="flex w-full max-w-sm items-end gap-2 text-left"
-            >
-                <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs font-black">
-                    {t('turboTrivia.controller.pinLabel')}
-                    <input
-                        value={value}
-                        onChange={(e) =>
-                            setValue(
-                                e.target.value.replace(/\D/g, '').slice(0, 6),
-                            )
-                        }
-                        inputMode="numeric"
-                        autoComplete="off"
-                        maxLength={6}
-                        placeholder={t('turboTrivia.controller.pinPlaceholder')}
-                        data-testid="tt-pin-input"
-                        className="min-h-14 rounded-xl border-2 border-[#1f2a44] bg-white px-3.5 text-center font-display text-2xl tracking-[0.3em] outline-none focus-visible:ring-4 focus-visible:ring-[#e11d48]/40"
-                    />
-                </label>
-                <Button
-                    type="submit"
-                    disabled={!online || value.length !== 6}
-                    data-testid="tt-join"
-                    className="min-h-14 shrink-0 rounded-xl border-2 border-[#1f2a44] bg-[#1f2a44] px-4 font-display font-black text-white shadow-[3px_3px_0px_#e11d48] disabled:opacity-50"
-                >
-                    <LogIn className="size-4" />
-                    {t('turboTrivia.controller.join')}
-                </Button>
-            </form>
+            <div className="w-full max-w-sm">
+                <GamePinForm
+                    game="turbo-trivia"
+                    online={online}
+                    onJoin={onJoin}
+                    initialPin={initialPin}
+                />
+            </div>
             {closed && closed !== 'idle' && (
                 <p className="text-xs font-bold text-slate-600">
                     {t('turboTrivia.arena.roomClosed')}
