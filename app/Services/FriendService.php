@@ -6,6 +6,7 @@ use App\Models\Friendship;
 use App\Models\User;
 use App\Notifications\PlayerNotification;
 use App\Services\Chat\ChatServiceClient;
+use App\Services\WhatsApp\WhatsAppNotifier;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -21,6 +22,7 @@ class FriendService
     public function __construct(
         private ChatServiceClient $client,
         private CharacterShop $shop,
+        private WhatsAppNotifier $whatsApp,
     ) {}
 
     /** Send a request; accepts at once when the other player already asked us. */
@@ -55,6 +57,7 @@ class FriendService
 
             $to->notify(PlayerNotification::system('friend', 'player_notifications.friend_request', ['name' => $this->name($from)], '/friends?tab=requests'));
             $this->push($to, 'request', $from, $friendship);
+            $this->whatsApp->notify($to, 'friend_request', ['from' => $this->name($from), 'link' => url('/friends?tab=requests')]);
 
             return $friendship;
         });

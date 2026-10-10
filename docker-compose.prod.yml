@@ -66,6 +66,35 @@ services:
     networks:
       - edufunhub-net
 
+  # GOWA (go-whatsapp-web-multidevice): WhatsApp notifications. Internal only;
+  # Laravel calls its REST API, the admin links a number on /admin/whatsapp.
+  whatsapp:
+    image: aldinokemal2104/go-whatsapp-web-multidevice:v9.6.0
+    container_name: edufunhub-whatsapp
+    restart: unless-stopped
+    command: ["rest"]
+    environment:
+      APP_PORT: "3000"
+      APP_OS: ${WHATSAPP_DEVICE_NAME:-EduFunHub}
+      APP_BASIC_AUTH: ${WHATSAPP_GOWA_USER:-edufunhub}:${WHATSAPP_GOWA_PASSWORD:?WHATSAPP_GOWA_PASSWORD is required}
+      APP_UI_ENABLED: "false"
+      MCP_ENABLED: "false"
+      WHATSAPP_AUTO_REJECT_CALL: "true"
+      WHATSAPP_AUTO_DOWNLOAD_MEDIA: "false"
+      WHATSAPP_PRESENCE_ON_CONNECT: unavailable
+    volumes:
+      - edufunhub-whatsapp:/app/storages
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - edufunhub-net
+
   gateway:
     image: nginx:alpine
     container_name: edufunhub-gateway
@@ -126,3 +155,4 @@ networks:
 volumes:
   edufunhub-storage:
   edufunhub-db:
+  edufunhub-whatsapp:
