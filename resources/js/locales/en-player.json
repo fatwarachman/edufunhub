@@ -931,6 +931,12 @@
             "tab": "Hottest",
             "title": "Hottest games",
             "intro": "Games ordered by how often they were played in the last {{days}} days."
+        },
+        "tkj": {
+            "badge": "TKJ",
+            "tab": "TKJ edition",
+            "title": "TKJ edition games",
+            "hint": "Computer and network engineering (SMK TKJ): cabling, topology, IP and protocols."
         }
     },
     "snakes": {
@@ -3276,5 +3282,12 @@
             }
         },
         "soloOut": "Game over — tail not cleared yet. Try again!"
+    },
+    "questionMedia": {
+        "imageAlt": "Question picture",
+        "cableLabel": "{{count}} wires in order, number 1 on the left",
+        "fiberLabel": "{{count}} fibre cores in order, number 1 on the left",
+        "topologyLabel": "Network topology diagram",
+        "terminal": "Terminal"
     }
 }

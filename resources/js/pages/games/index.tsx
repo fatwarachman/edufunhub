@@ -1,8 +1,8 @@
 import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
-import { JoinByPinCard } from '@/components/join-by-pin';
 import { PlayerCountBadge } from '@/components/player-count-badge';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
+import { isTkjGame, TkjBadge } from '@/components/tkj-badge';
 import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import { useTranslations } from '@/hooks/use-translations';
 import { gameIcon } from '@/lib/games';
@@ -23,6 +23,7 @@ import {
     List,
     LogIn,
     type LucideIcon,
+    Network,
     PaintBucket,
     Play,
     Rocket,
@@ -126,6 +127,9 @@ interface GameListProps {
 /** Pseudo filter: every game ordered by plays (most played first). */
 const HOT = 'hot';
 
+/** Pseudo filter: games flagged for SMK TKJ (Teknik Komputer dan Jaringan). */
+const TKJ = 'tkj';
+
 export default function GameList({
     popularity = {},
     popularityDays = 30,
@@ -173,6 +177,7 @@ export default function GameList({
                               t(game.titleKey),
                               game.descriptionKey ? t(game.descriptionKey) : '',
                               categoryText,
+                              isTkjGame(game) ? t('gameList.tkj.badge') : '',
                           ].join(' '),
                       );
                       return terms.every((term) => haystack.includes(term));
@@ -201,6 +206,11 @@ export default function GameList({
                 (order.get(a.key) ?? 0) - (order.get(b.key) ?? 0),
         );
     }, [matched, popularity]);
+    /** Games flagged TKJ, in catalog order. */
+    const tkjGames = useMemo(
+        () => matched.flatMap((category) => category.games).filter(isTkjGame),
+        [matched],
+    );
     const categoryOf = useMemo(
         () =>
             new Map(
@@ -245,11 +255,21 @@ export default function GameList({
                       },
                   ]
                 : []
-            : matched.filter(
-                  (category) =>
-                      (filter === 'all' || category.key === filter) &&
-                      category.games.length > 0,
-              );
+            : filter === TKJ
+              ? tkjGames.length > 0
+                  ? [
+                        {
+                            key: TKJ,
+                            titleKey: 'gameList.tkj.title',
+                            games: tkjGames,
+                        },
+                    ]
+                  : []
+              : matched.filter(
+                    (category) =>
+                        (filter === 'all' || category.key === filter) &&
+                        category.games.length > 0,
+                );
     const shownCount = shown.reduce(
         (sum, category) => sum + category.games.length,
         0,
@@ -425,9 +445,14 @@ export default function GameList({
                         />
                         <BrandLink variant="mark" />
                         <div className="flex min-w-0 flex-col">
-                            <span className="truncate font-display text-xl font-black text-[#1f2a44] sm:text-2xl">
-                                {t('gameList.arena')}{' '}
-                                <span className="text-[#FF9E44]">
+                            <span
+                                className="font-display text-base leading-tight font-black text-[#1f2a44] sm:truncate sm:text-2xl"
+                                data-testid="gamelist-header-title"
+                            >
+                                <span className="block text-[15px] whitespace-nowrap min-[360px]:text-base sm:inline sm:text-2xl">
+                                    {t('gameList.arena')}
+                                </span>{' '}
+                                <span className="block text-sm text-[#FF9E44] sm:inline sm:text-2xl">
                                     EduFunHub
                                 </span>
                             </span>
@@ -458,8 +483,6 @@ export default function GameList({
                         {t('gameList.intro')}
                     </p>
                 </div>
-
-                <JoinByPinCard className="mx-auto mt-8 max-w-3xl" />
 
                 <div className="mx-auto mt-8 flex max-w-3xl items-stretch gap-2 sm:gap-3">
                     <div className="relative min-w-0 flex-1">
@@ -559,6 +582,11 @@ export default function GameList({
                             titleKey: 'gameList.hot.tab',
                             count: matchedTotal,
                         },
+                        {
+                            key: TKJ,
+                            titleKey: 'gameList.tkj.tab',
+                            count: tkjGames.length,
+                        },
                         ...matched.map((category) => ({
                             key: category.key,
                             titleKey: category.titleKey,
@@ -591,6 +619,17 @@ export default function GameList({
                                             active
                                                 ? 'text-[#FFD93D]'
                                                 : 'text-[#FF6584]',
+                                        )}
+                                        aria-hidden
+                                    />
+                                )}
+                                {category.key === TKJ && (
+                                    <Network
+                                        className={cn(
+                                            'size-4 shrink-0',
+                                            active
+                                                ? 'text-[#5eead4]'
+                                                : 'text-[#0f766e]',
                                         )}
                                         aria-hidden
                                     />
@@ -876,6 +915,12 @@ export default function GameList({
                                                     className="flex min-w-0 flex-wrap items-center gap-1.5 px-3 pt-2 pb-3 sm:pr-4 sm:pb-4 sm:pl-[76px]"
                                                     data-testid={`gamelist-row-badges-${game.key}`}
                                                 >
+                                                    {isTkjGame(game) && (
+                                                        <TkjBadge
+                                                            className={rowBadge}
+                                                            testId={`gamelist-tkj-${game.key}`}
+                                                        />
+                                                    )}
                                                     {gradeBadge(game, rowBadge)}
                                                     {sameGradeBadge(
                                                         game,
@@ -988,6 +1033,14 @@ export default function GameList({
                                                             <Icon className="h-7 w-7 stroke-[2.5]" />
                                                         </div>
                                                         <div className="flex min-w-0 flex-wrap justify-end gap-1.5">
+                                                            {isTkjGame(
+                                                                game,
+                                                            ) && (
+                                                                <TkjBadge
+                                                                    className="px-3 text-xs shadow-[1.5px_1.5px_0px_#1f2a44]"
+                                                                    testId={`gamelist-tkj-${game.key}`}
+                                                                />
+                                                            )}
                                                             {gradeBadge(game)}
                                                             {sameGradeBadge(
                                                                 game,

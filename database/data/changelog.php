@@ -24,6 +24,120 @@
 
 return [
     [
+        'version' => '0.17.0',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'admin-hottest-games',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Halaman Game Terpopuler Hari Ini di admin',
+                    'en' => 'Hottest Games Today page in the admin panel',
+                ],
+                'body' => [
+                    'id' => 'Menu baru Analitik > Game terpopuler menampilkan peringkat game hari ini (zona waktu Asia/Jakarta): jumlah dimainkan, jumlah pemain, akurasi, durasi rata-rata, dan jam terakhir dimainkan, plus 3 game teratas untuk 14 hari sebelumnya. Tanggal bisa dipilih atau digeser per hari. Klik game untuk membuka detail game itu pada hari tersebut: grafik per jam, daftar pemain, sekolah, dan setiap permainan yang bisa dibuka sampai soalnya. Dasbor admin juga punya tautan "Terpopuler hari ini".',
+                    'en' => 'A new Analytics > Hottest games menu ranks today\'s games (Asia/Jakarta time): plays, players, accuracy, average duration and last played time, plus the top 3 games of each of the 14 previous days. Pick any day or step day by day. Click a game to open its detail for that day: plays per hour, players, schools and every play, down to its questions. The admin dashboard links to it with "Hottest today".',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.16.0',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'admin-users-search-fields',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Cari pengguna berdasarkan nama, sekolah, email, atau nomor telepon',
+                    'en' => 'Search users by name, school, email or phone number',
+                ],
+                'body' => [
+                    'id' => 'Halaman Pengguna di admin kini punya pilihan "Cari berdasarkan": semua kolom, nama (termasuk nama panggilan pemain), sekolah, email, atau nomor telepon. Nomor bisa diketik dengan format 0812…, +62 812-…, atau 62812…, dan nomor WhatsApp pengguna tampil di bawah email.',
+                    'en' => 'The admin Users page now has a "Search by" option: all fields, name (including the player nickname), school, email or phone number. Numbers can be typed as 0812…, +62 812-… or 62812…, and the user WhatsApp number is shown under the email.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.15.1',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'gamelist-header-mobile-two-lines',
+                'type' => 'improvement',
+                'title' => [
+                    'id' => 'Judul Arena Game rapi di HP',
+                    'en' => 'Tidier Arena Game title on phones',
+                ],
+                'body' => [
+                    'id' => 'Di HP, judul "Arena Game" dan "EduFunHub" pada halaman daftar game kini tampil dalam dua baris dengan huruf lebih kecil, sehingga terbaca utuh tanpa terpotong. Tampilan tablet dan desktop tidak berubah.',
+                    'en' => 'On phones, the "Arena Game" and "EduFunHub" title on the game list now shows on two lines in a smaller size, so it is read in full without being cut off. Tablet and desktop layouts are unchanged.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.15.0',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'tkj-game-flag',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Tanda TKJ pada game jaringan',
+                    'en' => 'TKJ flag on networking games',
+                ],
+                'body' => [
+                    'id' => 'Order Rush dan Pilah Port & Protokol kini ditandai lencana TKJ di daftar game, menu game, dan portal. Daftar game punya filter baru "Edisi TKJ" untuk menampilkan semua game Teknik Komputer dan Jaringan sekaligus.',
+                    'en' => 'Order Rush and Port Sorter now carry a TKJ badge in the game list, the game menu and the portal. The game list has a new "TKJ edition" filter that shows every computer and network engineering game at once.',
+                ],
+            ],
+            [
+                'key' => 'tkj-visual-questions',
+                'type' => 'feature',
+                'title' => [
+                    'id' => '18 soal TKJ bergambar',
+                    'en' => '18 illustrated TKJ questions',
+                ],
+                'body' => [
+                    'id' => 'Mata pelajaran baru TKJ untuk kelas 10–12 dengan 18 soal bervisual: susunan kabel UTP T568A/T568B dan core fiber, diagram topologi (star, bus, ring, mesh, tree), serta tampilan terminal (ping, ipconfig, tracert, nslookup, MikroTik). Soal dibagikan ke semua game kuis.',
+                    'en' => 'A new TKJ subject for grades 10–12 with 18 illustrated questions: UTP T568A/T568B wiring and fibre cores, topology diagrams (star, bus, ring, mesh, tree) and console output (ping, ipconfig, tracert, nslookup, MikroTik). The questions go to every quiz game.',
+                ],
+            ],
+            [
+                'key' => 'question-visual-editor',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Buat soal bergambar di Bank Soal',
+                    'en' => 'Create illustrated questions in the Question Bank',
+                ],
+                'body' => [
+                    'id' => 'Form soal admin punya bagian Visual: unggah gambar (JPG/PNG/WEBP), atau susun kabel dengan templat T568A/T568B/fiber, pilih topologi, atau tulis keluaran terminal, lengkap dengan pratinjau persis seperti di game. Visual tampil di atas soal pada semua game kuis, dan layanan game Go meneruskannya tanpa membocorkan kunci jawaban.',
+                    'en' => 'The admin question form has a Visual section: upload a picture (JPG/PNG/WEBP), or build a cable with T568A/T568B/fibre presets, pick a topology or write console output, with a preview identical to the game. Visuals appear above the question in every quiz game, and the Go game service passes them on without leaking the answer.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.14.1',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'gamelist-remove-pin-join',
+                'type' => 'improvement',
+                'title' => [
+                    'id' => 'Kartu masuk dengan PIN dihapus dari daftar game',
+                    'en' => 'PIN join card removed from the game list',
+                ],
+                'body' => [
+                    'id' => 'Halaman daftar game tidak lagi menampilkan kartu masuk permainan dengan PIN agar pemain baru tidak bingung dan bisa langsung memilih game untuk main sendiri. Masuk dengan PIN tetap tersedia lewat tombol di menu navigasi.',
+                    'en' => 'The game list no longer shows the join-by-PIN card so new players are not confused and can pick a game to play solo right away. Joining by PIN is still available from the navigation menu button.',
+                ],
+            ],
+        ],
+    ],
+    [
         'version' => '0.14.0',
         'date' => '2026-10-10',
         'changes' => [
