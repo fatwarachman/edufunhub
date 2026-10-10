@@ -1,4 +1,5 @@
 import { playerCountLabel } from '@/components/player-count-badge';
+import { isTkjGame, TkjBadge } from '@/components/tkj-badge';
 import { useTranslations } from '@/hooks/use-translations';
 import { gameIcon } from '@/lib/games';
 import { gradeShortLabel } from '@/lib/grade';
@@ -141,6 +142,12 @@ export function GameMenu({ active }: { active: boolean }) {
                                                 <span className="edu-game-menu-text">
                                                     <span className="edu-game-menu-title">
                                                         {t(game.titleKey)}
+                                                        {isTkjGame(game) && (
+                                                            <TkjBadge
+                                                                className="ml-1.5 px-1.5 align-[1px] text-[10px]"
+                                                                testId={`game-menu-tkj-${game.key}`}
+                                                            />
+                                                        )}
                                                     </span>
                                                     <span className="edu-game-menu-meta">
                                                         {t('nav.gradeRange', {

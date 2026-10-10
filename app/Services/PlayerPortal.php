@@ -19,6 +19,9 @@ class PlayerPortal
     /** Window (days) used for the "most played" ranking on the portal. */
     public const POPULARITY_DAYS = 30;
 
+    /** Programme flags a catalog game may carry ('tkj' = SMK Teknik Komputer dan Jaringan). */
+    public const TAGS = ['tkj'];
+
     /** A game counts as new on /gamelist for this many days after its catalog released_at. */
     public const NEW_GAME_DAYS = 3;
 
@@ -67,6 +70,7 @@ class PlayerPortal
                 'requiresGrade' => (bool) ($game['requires_grade'] ?? false),
                 'guestPlayable' => (bool) ($game['guest_playable'] ?? false),
                 'sameGradeMatch' => $this->isSameGradeMatch($game),
+                'tags' => array_values(array_intersect($game['tags'] ?? [], self::TAGS)),
                 'recommended' => $grade !== null
                     && $grade >= ($game['min_grade'] ?? 1)
                     && $grade <= ($game['max_grade'] ?? 12),
@@ -165,14 +169,14 @@ class PlayerPortal
     /**
      * Lightweight catalog for the site navigation menu and the public game list.
      *
-     * @return list<array{key: string, titleKey: string, games: list<array{key: string, titleKey: string, descriptionKey: ?string, url: string, icon: string, accent: string, minGrade: int, maxGrade: int, minPlayers: int, maxPlayers: int, awardsPoints: bool, guestPlayable: bool, sameGradeMatch: bool}>}>
+     * @return list<array{key: string, titleKey: string, games: list<array{key: string, titleKey: string, descriptionKey: ?string, url: string, icon: string, accent: string, minGrade: int, maxGrade: int, minPlayers: int, maxPlayers: int, awardsPoints: bool, guestPlayable: bool, sameGradeMatch: bool, tags: list<string>}>}>
      */
     public function menu(): array
     {
         return collect($this->catalog())->map(fn (array $category): array => [
             ...$category,
             'games' => collect($category['games'])->map(fn (array $game): array => collect($game)->only([
-                'key', 'titleKey', 'descriptionKey', 'url', 'icon', 'accent', 'minGrade', 'maxGrade', 'minPlayers', 'maxPlayers', 'awardsPoints', 'guestPlayable', 'sameGradeMatch',
+                'key', 'titleKey', 'descriptionKey', 'url', 'icon', 'accent', 'minGrade', 'maxGrade', 'minPlayers', 'maxPlayers', 'awardsPoints', 'guestPlayable', 'sameGradeMatch', 'tags',
             ])->all())->values()->all(),
         ])->values()->all();
     }

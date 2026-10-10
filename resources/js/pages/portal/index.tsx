@@ -9,6 +9,7 @@ import PlayerCharacter, {
 } from '@/components/player-character';
 import { PlayerCountBadge } from '@/components/player-count-badge';
 import { NavButton } from '@/components/site-nav';
+import { isTkjGame, TkjBadge } from '@/components/tkj-badge';
 import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useTranslations } from '@/hooks/use-translations';
@@ -74,6 +75,7 @@ interface PortalGame {
     recommended: boolean;
     plays: number;
     popularRank: number | null;
+    tags?: string[];
 }
 
 interface ActiveGame {
@@ -347,6 +349,11 @@ export default function Portal({
                                                 <Icon className="size-7" />
                                             </span>
                                             <div className="flex flex-wrap justify-end gap-1.5">
+                                                {isTkjGame(game) && (
+                                                    <TkjBadge
+                                                        testId={`portal-tkj-${game.key}`}
+                                                    />
+                                                )}
                                                 {game.recommended && (
                                                     <span className="inline-flex items-center gap-1 rounded-full border-2 border-[#151b2e] bg-[#dff7ea] px-2 py-0.5 text-[11px] font-bold text-[#0d5a48]">
                                                         <Sparkles className="size-3" />
