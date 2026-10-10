@@ -12,6 +12,7 @@ use App\Services\FriendService;
 use App\Services\GameSounds;
 use App\Services\PlayerNotifications;
 use App\Services\PlayerPortal;
+use App\Services\ProfileWizard;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -112,6 +113,9 @@ class HandleInertiaRequests extends Middleware
                 ? ['wsUrl' => (string) config('chat-service.public_ws_url')]
                 : null,
             'show_experience_survey' => $showExperienceSurvey,
+            'profileWizard' => fn (): ?array => $user && ! $request->session()->has('impersonated_by')
+                ? app(ProfileWizard::class)->pendingFor($user)
+                : null,
             'locale' => $locale,
             'currentWorkspace' => $currentWorkspace ? [
                 'id' => $currentWorkspace->id,

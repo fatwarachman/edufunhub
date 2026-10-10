@@ -1,8 +1,13 @@
 // Package edusnake referees Main Ular, the "tail cut" quiz snake game.
 //
-// Every snake starts with a long tail. Answer options are food on the grid:
+// Every snake starts with a long tail. Each question has two phases: a
+// reading phase (Read, 30 s) in which every snake on the board is frozen so
+// players can read the question and see where the answers lie, then a hunt
+// in which the snakes move. Answer options are big (2x2) food on the grid:
 // eating the correct option cuts the tail, a wrong option or a timeout
-// grows it. The first snake whose tail is gone clears the stage and wins.
+// grows it. Every bite or timeout freezes the board again and loads the
+// next question. The first snake whose tail is gone clears the stage and
+// wins.
 // Rooms follow the standard invite flow (package lobby); playing alone is a
 // room with one seat. Two modes:
 //
@@ -43,7 +48,9 @@ const (
 	ModeSplit  = "split"
 
 	// Grid is the width and height of every board.
-	Grid = 24
+	Grid = 20
+	// FoodSize is the width and height (in cells) of one answer food.
+	FoodSize = 2
 	// InitialTail is the tail length every snake starts with.
 	InitialTail = 15
 	// Cut is how many tail segments a correct answer removes.
@@ -75,9 +82,10 @@ var (
 type Config struct {
 	// Step is the time between two snake moves.
 	Step time.Duration
-	// Countdown freezes every snake when a game starts.
-	Countdown time.Duration
-	// Answer is the default time per question.
+	// Read freezes the snakes of a board at every new question so players
+	// can read it (ends early once every player there is ready).
+	Read time.Duration
+	// Answer is the default hunt time per question, after reading.
 	Answer time.Duration
 	// Game is the longest a game can run; the shortest tail then wins.
 	Game time.Duration
@@ -89,12 +97,12 @@ type Config struct {
 
 // Defaults are the production timings.
 var Defaults = Config{
-	Step:      180 * time.Millisecond,
-	Countdown: 3 * time.Second,
-	Answer:    25 * time.Second,
-	Game:      5 * time.Minute,
-	Respawn:   1500 * time.Millisecond,
-	Obstacle:  10 * time.Second,
+	Step:     180 * time.Millisecond,
+	Read:     30 * time.Second,
+	Answer:   25 * time.Second,
+	Game:     15 * time.Minute,
+	Respawn:  1500 * time.Millisecond,
+	Obstacle: 10 * time.Second,
 }
 
 // Point is a grid cell.
@@ -127,9 +135,24 @@ func dirName(d Point) string {
 // Message is a generic event.
 type Message = map[string]any
 
+// food is one answer option covering FoodSize x FoodSize cells from at.
 type food struct {
 	option int
 	at     Point
+}
+
+func (f food) covers(c Point) bool {
+	return c.X >= f.at.X && c.Y >= f.at.Y && c.X < f.at.X+FoodSize && c.Y < f.at.Y+FoodSize
+}
+
+func (f food) cells() []Point {
+	out := make([]Point, 0, FoodSize*FoodSize)
+	for dy := range FoodSize {
+		for dx := range FoodSize {
+			out = append(out, Point{f.at.X + dx, f.at.Y + dy})
+		}
+	}
+	return out
 }
 
 type obstacle struct {
@@ -138,13 +161,24 @@ type obstacle struct {
 }
 
 // board is one grid's question round: the live question and its food.
+// Until readUntil every snake on the board is frozen (reading phase).
 type board struct {
 	gen       *questions.Generator
 	q         questions.Question
 	round     int
+	readUntil time.Time
 	deadline  time.Time
 	foods     []food
 	obstacles []obstacle
+}
+
+func (b *board) reading(now time.Time) bool { return now.Before(b.readUntil) }
+
+func (b *board) phase(now time.Time) string {
+	if b.reading(now) {
+		return "read"
+	}
+	return "hunt"
 }
 
 // player is the per seat state.
@@ -162,6 +196,7 @@ type player struct {
 	paid        int
 	answers     []questions.Answer
 	reported    bool
+	ready       bool   // done reading the current question
 	board       *board // split mode only
 }
 
@@ -338,8 +373,8 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 		g := game{
 			mode: mode, cfg: h.cfg, winner: -1, level: level, grade: grade,
 			rng:     rand.New(rand.NewPCG(h.seed, h.seed^0x5a4e)),
-			started: now, deadline: now.Add(h.cfg.Countdown + h.cfg.Game),
-			nextStep: now.Add(h.cfg.Countdown), answer: r.AnswerTime(h.cfg.Answer),
+			started: now, deadline: now.Add(h.cfg.Game),
+			nextStep: now.Add(h.cfg.Step), answer: r.AnswerTime(h.cfg.Answer),
 		}
 		r.Game = g
 		for i, s := range r.Seats {
@@ -348,7 +383,7 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 			if mode == ModeSplit {
 				at, dir = Point{Grid / 2, Grid / 2}, Point{1, 0}
 			}
-			*p = player{lives: Lives, alive: true, dir: dir, body: laid(at, dir, InitialTail), frozenUntil: g.nextStep}
+			*p = player{lives: Lives, alive: true, dir: dir, body: laid(at, dir, InitialTail)}
 			if mode == ModeSplit {
 				h.seed++
 				p.board = &board{gen: questions.NewFor(GameKey, s.Claims.Grade, h.seed).For(r.Subject, s.ID()).AtLevel(level)}
@@ -406,7 +441,9 @@ func respawnBody(r *room, b *board, seat, tail int) ([]Point, Point) {
 		}
 	}
 	for _, f := range b.foods {
-		taken[f.at] = true
+		for _, c := range f.cells() {
+			taken[c] = true
+		}
 	}
 	for _, o := range b.obstacles {
 		taken[o.at] = true
@@ -485,6 +522,41 @@ func (h *Hub) Turn(uid int64, dir string, now time.Time) ([]int64, error) {
 	})
 }
 
+// Ready ends the reading phase early for the player; the board starts
+// moving once every living player on it is ready.
+func (h *Hub) Ready(uid int64, now time.Time) ([]int64, error) {
+	return h.rooms.Act(uid, now, func(r *room) error {
+		if r.Phase != lobby.PhasePlaying {
+			return lobby.ErrPhase
+		}
+		i := r.SeatIndex(uid)
+		if i < 0 {
+			return lobby.ErrNoRoom
+		}
+		b := boardOf(r, i)
+		if b == nil || !b.reading(now) {
+			return nil
+		}
+		r.Seats[i].Data.ready = true
+		for _, j := range seatsOn(r, b) {
+			if s := r.Seats[j]; s.Data.alive && !s.Left && !s.Data.ready {
+				return nil
+			}
+		}
+		b.readUntil = now
+		b.deadline = now.Add(r.Game.answer)
+		return nil
+	})
+}
+
+// boardOf is the board seat i plays on.
+func boardOf(r *room, i int) *board {
+	if r.Game.mode == ModeShared {
+		return r.Game.shared
+	}
+	return r.Seats[i].Data.board
+}
+
 // Tick advances every playing room; call it often (it steps on time).
 func (h *Hub) Tick(now time.Time) []int64 {
 	return h.rooms.Tick(func(r *room) {
@@ -503,7 +575,7 @@ func (h *Hub) Tick(now time.Time) []int64 {
 			}
 			changed = changed || len(kept) != len(b.obstacles)
 			b.obstacles = kept
-			if !now.Before(g.nextStep) && b.q.Prompt.ID != "" && !now.Before(b.deadline) {
+			if b.q.Prompt.ID != "" && !b.reading(now) && !now.Before(b.deadline) {
 				h.timeout(r, b, now)
 				changed = true
 				if r.Phase != lobby.PhasePlaying {
@@ -575,6 +647,9 @@ func (h *Hub) stepBoard(r *room, b *board, seats []int, now time.Time) {
 		seat int
 		head Point
 	}
+	if b.reading(now) {
+		return
+	}
 	moves := []move{}
 	for _, i := range seats {
 		p := &r.Seats[i].Data
@@ -638,7 +713,7 @@ func (h *Hub) stepBoard(r *room, b *board, seats []int, now time.Time) {
 		}
 		head := r.Seats[m.seat].Data.body[0]
 		for k, f := range b.foods {
-			if f.at == head {
+			if f.covers(head) {
 				b.foods = append(b.foods[:k], b.foods[k+1:]...)
 				h.bite(r, b, m.seat, f, now)
 				break
@@ -680,6 +755,7 @@ func (h *Hub) bite(r *room, b *board, seat int, f food, now time.Time) {
 		p.wrong++
 		p.grow += Grow
 		h.event(r, fb)
+		nextQuestion(r, b, now)
 		return
 	}
 	p.correct++
@@ -765,23 +841,90 @@ func (h *Hub) event(r *room, f *feedback) {
 	r.Game.feedback = f
 }
 
-// nextQuestion loads a new question and scatters its options as food.
+// nextQuestion loads a new question, scatters its options as food and
+// freezes the board for the reading phase.
 func nextQuestion(r *room, b *board, now time.Time) {
 	b.round++
 	b.q = b.gen.Present(b.gen.Choice(), Options)
-	b.deadline = now.Add(r.Game.answer)
-	if now.Before(r.Game.nextStep) {
-		b.deadline = r.Game.nextStep.Add(r.Game.answer)
-	}
+	b.readUntil = now.Add(r.Game.cfg.Read)
+	b.deadline = b.readUntil.Add(r.Game.answer)
 	b.foods = b.foods[:0]
 	for i := range b.q.Options {
-		b.foods = append(b.foods, food{option: i, at: freeCell(r, b, 3)})
+		b.foods = append(b.foods, food{option: i, at: foodCell(r, b)})
+	}
+	for _, i := range seatsOn(r, b) {
+		r.Seats[i].Data.ready = false
+		r.Seats[i].Data.queue = nil
 	}
 }
 
-// freeCell picks a random empty cell of board b, preferring cells at least
-// gap cells away from every snake head.
-func freeCell(r *room, b *board, gap int) Point {
+// foodCell picks the top-left cell of a free FoodSize x FoodSize block,
+// preferring blocks away from snake heads and the lane in front of them.
+func foodCell(r *room, b *board) Point {
+	taken, heads := occupied(r, b)
+	// near: cells next to other food or a snake body, kept free when
+	// possible so every ball stands apart.
+	near := map[Point]bool{}
+	for _, f := range b.foods {
+		for y := f.at.Y - 1; y <= f.at.Y+FoodSize; y++ {
+			for x := f.at.X - 1; x <= f.at.X+FoodSize; x++ {
+				near[Point{x, y}] = true
+			}
+		}
+	}
+	for _, i := range seatsOn(r, b) {
+		if p := &r.Seats[i].Data; p.alive {
+			for _, c := range p.body {
+				for _, d := range []Point{{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}} {
+					near[c.add(d)] = true
+				}
+			}
+		}
+	}
+	fits := func(at Point) bool {
+		for _, c := range (food{at: at}).cells() {
+			if !inside(c) || taken[c] {
+				return false
+			}
+		}
+		return true
+	}
+	apart := func(at Point) bool {
+		for _, c := range (food{at: at}).cells() {
+			if near[c] {
+				return false
+			}
+		}
+		return true
+	}
+	far := func(at Point) bool {
+		for _, c := range (food{at: at}).cells() {
+			if !farFromHeads(heads, c, 4) {
+				return false
+			}
+		}
+		return true
+	}
+	rng := r.Game.rng
+	for try := range 400 {
+		at := Point{1 + rng.IntN(Grid-FoodSize-1), 1 + rng.IntN(Grid-FoodSize-1)}
+		if fits(at) && (try > 300 || apart(at)) && (try > 200 || far(at)) {
+			return at
+		}
+	}
+	for y := 0; y <= Grid-FoodSize; y++ {
+		for x := 0; x <= Grid-FoodSize; x++ {
+			if at := (Point{x, y}); fits(at) {
+				return at
+			}
+		}
+	}
+	return freeCell(r, b, 0)
+}
+
+// occupied lists the cells used by living snakes, food and blocks of board
+// b, plus the living snake heads.
+func occupied(r *room, b *board) (map[Point]bool, []Point) {
 	taken := map[Point]bool{}
 	heads := []Point{}
 	for _, i := range seatsOn(r, b) {
@@ -795,23 +938,35 @@ func freeCell(r *room, b *board, gap int) Point {
 		}
 	}
 	for _, f := range b.foods {
-		taken[f.at] = true
+		for _, c := range f.cells() {
+			taken[c] = true
+		}
 	}
 	for _, o := range b.obstacles {
 		taken[o.at] = true
 	}
-	far := func(c Point) bool {
-		for _, hd := range heads {
-			if abs(hd.X-c.X)+abs(hd.Y-c.Y) < gap {
-				return false
-			}
-			// Keep the lane straight ahead clear so nobody eats by accident.
-			if (hd.X == c.X && abs(hd.Y-c.Y) <= 2*gap) || (hd.Y == c.Y && abs(hd.X-c.X) <= 2*gap) {
-				return false
-			}
+	return taken, heads
+}
+
+// farFromHeads keeps c at least gap cells from every head and off the lane
+// straight ahead of it, so nobody eats by accident.
+func farFromHeads(heads []Point, c Point, gap int) bool {
+	for _, hd := range heads {
+		if abs(hd.X-c.X)+abs(hd.Y-c.Y) < gap {
+			return false
 		}
-		return true
+		if (hd.X == c.X && abs(hd.Y-c.Y) <= 2*gap) || (hd.Y == c.Y && abs(hd.X-c.X) <= 2*gap) {
+			return false
+		}
 	}
+	return true
+}
+
+// freeCell picks a random empty cell of board b, preferring cells at least
+// gap cells away from every snake head.
+func freeCell(r *room, b *board, gap int) Point {
+	taken, heads := occupied(r, b)
+	far := func(c Point) bool { return farFromHeads(heads, c, gap) }
 	rng := r.Game.rng
 	for try := range 400 {
 		c := Point{1 + rng.IntN(Grid-2), 1 + rng.IntN(Grid-2)}
@@ -1017,7 +1172,7 @@ func points2(ps []Point) [][2]int {
 func boardView(r *room, b *board, locale string, now time.Time) Message {
 	foods := make([]Message, 0, len(b.foods))
 	for _, f := range b.foods {
-		foods = append(foods, Message{"label": Labels[f.option], "x": f.at.X, "y": f.at.Y})
+		foods = append(foods, Message{"label": Labels[f.option], "x": f.at.X, "y": f.at.Y, "size": FoodSize})
 	}
 	blocks := make([][2]int, 0, len(b.obstacles))
 	for _, o := range b.obstacles {
@@ -1026,7 +1181,7 @@ func boardView(r *room, b *board, locale string, now time.Time) Message {
 	snakes := []Message{}
 	for _, i := range seatsOn(r, b) {
 		p := &r.Seats[i].Data
-		snakes = append(snakes, Message{"seat": i, "body": points2(p.body), "dir": dirName(p.dir), "alive": p.alive && !r.Seats[i].Left, "frozen": now.Before(p.frozenUntil)})
+		snakes = append(snakes, Message{"seat": i, "body": points2(p.body), "dir": dirName(p.dir), "alive": p.alive && !r.Seats[i].Left, "frozen": now.Before(p.frozenUntil), "ready": p.ready})
 	}
 	opts := make([]string, len(b.q.Options))
 	for i, o := range b.q.Options {
@@ -1038,6 +1193,8 @@ func boardView(r *room, b *board, locale string, now time.Time) Message {
 			"id": fmt.Sprintf("%s-%p-%d", r.Pin, b, b.round), "text": b.q.Prompt.Get(locale), "options": opts,
 			"labels": Labels[:len(opts)], "subject": b.q.Subject, "worth": b.q.Worth(),
 			"remaining_ms": max(int64(0), b.deadline.Sub(now).Milliseconds()),
+			"phase":        b.phase(now), "read_ms": max(int64(0), b.readUntil.Sub(now).Milliseconds()),
+			"hunt_ms": max(int64(0), min(b.deadline.Sub(now), r.Game.answer).Milliseconds()),
 		}
 	}
 	return Message{"snakes": snakes, "foods": foods, "blocks": blocks, "question": question}
@@ -1050,7 +1207,8 @@ func (h *Hub) State(c auth.Claims, now time.Time) Message {
 		"min_players": MinPlayers, "max_players": MaxPlayers, "local_seats": false, "answer_seconds": 0,
 		"answer_times": append([]int{}, lobby.AnswerTimes...), "subject": "mix", "subject_fallback": false,
 		"mode": ModeShared, "grid": Grid, "initial_tail": InitialTail, "lives": Lives,
-		"cut": Cut, "grow": Grow, "board": nil, "boards": []Message{}, "countdown_ms": int64(0),
+		"cut": Cut, "grow": Grow, "food_size": FoodSize, "read_seconds": int(h.cfg.Read / time.Second),
+		"board": nil, "boards": []Message{},
 		"remaining_ms": int64(0), "feedback": nil, "winner": nil, "reason": "", "stopped": false, "result": nil,
 	}
 	h.rooms.View(c.Subject, func(r *room) {
@@ -1097,7 +1255,6 @@ func (h *Hub) State(c auth.Claims, now time.Time) Message {
 			msg["boards"] = boards
 		}
 		if r.Phase == lobby.PhasePlaying {
-			msg["countdown_ms"] = max(int64(0), g.started.Add(g.cfg.Countdown).Sub(now).Milliseconds())
 			msg["remaining_ms"] = max(int64(0), g.deadline.Sub(now).Milliseconds())
 		}
 		if f := g.feedback; f != nil {

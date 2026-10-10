@@ -3,6 +3,7 @@
 use App\Http\Controllers\AbilityController;
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\Admin\ImpersonationController;
+use App\Http\Controllers\AndroidAssetLinksController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\PlayerPageController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\PortSorterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileWizardController;
 use App\Http\Controllers\QuizDuelController;
 use App\Http\Controllers\RegencyController;
 use App\Http\Controllers\SchoolListController;
@@ -57,6 +59,8 @@ use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 Route::get('/', function () {
     return response()->file(public_path('new-landing/index.html'));
 })->name('home');
+
+Route::get('/.well-known/assetlinks.json', AndroidAssetLinksController::class)->name('android.asset-links');
 
 Route::get('/landing/stats', LandingStatsController::class)->middleware('throttle:60,1,landing.stats')->name('landing.stats');
 Route::get('/player-details/regencies', RegencyController::class)->middleware('throttle:30,1,player-details.regencies')->name('player-details.regencies');
@@ -86,6 +90,7 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::get('/players/online/count', [OnlinePlayersController::class, 'count'])->middleware('throttle:30,1,players.online.count')->name('players.online.count');
     Route::get('/players/{user}', PlayerPageController::class)->whereNumber('user')->middleware('throttle:60,1,players.show')->name('players.show');
     Route::patch('/player-details', [PlayerDetailsController::class, 'update'])->name('player-details.update');
+    Route::post('/profile/wizard', [ProfileWizardController::class, 'store'])->middleware('throttle:20,1,profile-wizard')->name('profile-wizard.store');
     Route::post('/screen-time/beat', [ScreenTimeController::class, 'beat'])->middleware('throttle:10,1,screen-time.beat')->name('screen-time.beat');
     Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
     Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('throttle:feedback')->name('feedback.store');

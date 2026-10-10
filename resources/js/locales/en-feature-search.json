@@ -158,6 +158,18 @@
             "title": "Add advertiser",
             "superadminOnly": true,
             "teacherOnly": false
+        },
+        "whatsappNotifications": {
+            "href": "/admin/whatsapp",
+            "title": "Link WhatsApp notifications (scan QR)",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "whatsappLog": {
+            "href": "/admin/whatsapp/log",
+            "title": "WhatsApp message log (sent & failed history)",
+            "superadminOnly": true,
+            "teacherOnly": false
         }
     }
 }

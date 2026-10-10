@@ -12,8 +12,10 @@ import {
     ListChecks,
     Lock,
     Megaphone,
+    MessageCircle,
     MessageSquarePlus,
     MonitorSmartphone,
+    ScrollText,
     Server,
     Settings,
     ShieldCheck,
@@ -49,7 +51,12 @@ export function isGroup(entry: NavEntry): entry is NavGroup {
 
 export const navItems: NavEntry[] = [
     { title: 'Dashboard', href: '/admin/dashboard', icon: Gauge, exact: true },
-    { title: 'AI Assistant', href: '/admin/ai-assistant', icon: Bot, superadminOnly: true },
+    {
+        title: 'AI Assistant',
+        href: '/admin/ai-assistant',
+        icon: Bot,
+        superadminOnly: true,
+    },
     { title: 'Users', href: '/admin/users', icon: Users },
     { title: 'Roles', href: '/admin/roles', icon: ShieldCheck },
     { title: 'Permissions', href: '/admin/permissions', icon: Lock },
@@ -164,6 +171,19 @@ export const navItems: NavEntry[] = [
                 title: 'AI Settings',
                 href: '/admin/ai-settings',
                 icon: Bot,
+                superadminOnly: true,
+            },
+            {
+                title: 'WhatsApp Notifications',
+                href: '/admin/whatsapp',
+                icon: MessageCircle,
+                exact: true,
+                superadminOnly: true,
+            },
+            {
+                title: 'WhatsApp Log',
+                href: '/admin/whatsapp/log',
+                icon: ScrollText,
                 superadminOnly: true,
             },
             {

@@ -442,6 +442,7 @@ export default function QuizDuel({
                                     {t('duel.inviteTitle')}
                                 </h3>
                                 <RoomEntry
+                                    game="quiz-duel"
                                     status={connection.status}
                                     error={roomError}
                                     intro={t('duel.inviteIntro')}

@@ -82,9 +82,12 @@ export function initials(name: string | null | undefined): string {
 export function Delta({
     value,
     suffix = 'vs prev. 7d',
+    lowerIsBetter = false,
 }: {
     value: number | null | undefined;
     suffix?: string;
+    /** For counts where a rise is bad (failures): rises turn red, drops green. */
+    lowerIsBetter?: boolean;
 }) {
     if (value === null || value === undefined) {
         return (
@@ -94,15 +97,17 @@ export function Delta({
         );
     }
     const Icon = value > 0 ? ArrowUpRight : value < 0 ? ArrowDownRight : Minus;
+    const good = lowerIsBetter ? value < 0 : value > 0;
+    const bad = lowerIsBetter ? value > 0 : value < 0;
 
     return (
         <span className="inline-flex items-center gap-1 text-xs">
             <span
                 className={cn(
                     'inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-semibold tabular-nums',
-                    value > 0 &&
+                    good &&
                         'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-                    value < 0 && 'bg-red-500/10 text-red-700 dark:text-red-300',
+                    bad && 'bg-red-500/10 text-red-700 dark:text-red-300',
                     value === 0 && 'bg-muted text-muted-foreground',
                 )}
             >

@@ -11,6 +11,7 @@ import { Toaster } from 'sonner';
 import { ChatLive } from './components/chat-live';
 import { FriendLive } from './components/friend-live';
 import { ImpersonationBanner } from './components/impersonation-banner';
+import { ProfileWizard } from './components/profile-wizard';
 import { ToastProvider } from './components/ui/toast';
 import { initializeTheme } from './hooks/use-appearance';
 import i18n from './lib/i18n';
@@ -123,6 +124,14 @@ createInertiaApp({
                             }
                         />
                         <FriendLive />
+                        <ProfileWizard
+                            initialProps={
+                                props.initialPage.props as Record<
+                                    string,
+                                    unknown
+                                >
+                            }
+                        />
                         <Toaster position="bottom-right" richColors />
                     </ToastProvider>
                 </I18nextProvider>

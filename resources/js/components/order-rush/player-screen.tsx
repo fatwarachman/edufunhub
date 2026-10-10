@@ -77,6 +77,7 @@ export function PlayerScreen({
     if (state.phase === 'NONE' || !state.pin) {
         return (
             <RoomEntry
+                game="order-rush"
                 status={status}
                 error={error}
                 intro={t('orderRush.playerIntro', { name })}

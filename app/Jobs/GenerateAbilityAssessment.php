@@ -5,6 +5,8 @@ namespace App\Jobs;
 use App\Models\UserAbilityAssessment;
 use App\Services\AbilityComparison;
 use App\Services\Ai\AbilityAnalyzer;
+use App\Services\WhatsApp\AbilityReportMessage;
+use App\Services\WhatsApp\WhatsAppNotifier;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
@@ -44,6 +46,33 @@ class GenerateAbilityAssessment implements ShouldQueue
         } catch (Throwable $exception) {
             report($exception);
             $assessment->markFailed(self::readable($exception));
+
+            return;
+        }
+
+        $this->notifyPlayer($assessment);
+    }
+
+    /**
+     * Send the full analysis to the player's WhatsApp right away. The job
+     * already runs in a worker, so delivery happens in this process.
+     */
+    private function notifyPlayer(UserAbilityAssessment $assessment): void
+    {
+        $user = $assessment->user()->with('playerProfile')->first();
+        if ($user === null || ! $user->canReceiveWhatsApp()) {
+            return;
+        }
+
+        try {
+            app(WhatsAppNotifier::class)->notifyText(
+                $user,
+                'ability_analysis',
+                app(AbilityReportMessage::class)->build($user, $assessment),
+                now: true,
+            );
+        } catch (Throwable $exception) {
+            report($exception);
         }
     }
 

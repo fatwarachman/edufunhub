@@ -159,6 +159,7 @@ export function PlayerScreen({
     if (state.phase === 'NONE' || (!state.pin && !isSolo)) {
         return (
             <RoomEntry
+                game="monster-cafe"
                 status={status}
                 error={error}
                 intro={t('monsterCafe.player.intro', { name })}

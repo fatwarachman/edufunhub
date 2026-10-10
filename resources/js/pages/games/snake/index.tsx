@@ -99,7 +99,7 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
     const subjectName = useSubjectName();
     const [muted, setMuted] = useState(false);
     const game = useSnake(serviceReady ? wsUrl : null, i18n.language);
-    const { state, send, status, turn } = game;
+    const { state, send, status, turn, ready } = game;
     const join = (code: string) => {
         send({ t: 'join', pin: code });
     };
@@ -110,8 +110,12 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
     const isHost = Boolean(state && state.host === state.you);
     useAdMoments(playing ? 'playing' : done ? 'done' : 'idle', { muted, won });
     const me = state?.players.find((p) => p.seat === state.you);
+    const question = state?.board?.question ?? null;
+    const reading = Boolean(playing && question?.phase === 'read');
+    const meOnBoard = state?.board?.snakes.find((s) => s.seat === state.you);
+    const imReady = Boolean(meOnBoard?.ready);
     const canSteer = Boolean(
-        playing && status === 'online' && me?.alive && state.countdown_ms <= 0,
+        playing && status === 'online' && me?.alive && !reading,
     );
     const boardRef = useRef<HTMLDivElement>(null);
     useSnakeControls(canSteer, turn, boardRef);
@@ -124,9 +128,17 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
         }
         gridRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
     }, [startKey]);
+    const markReady = () => {
+        ready();
+        if (window.matchMedia('(max-width: 760px)').matches) {
+            boardRef.current?.scrollIntoView({
+                block: 'center',
+                behavior: 'smooth',
+            });
+        }
+    };
     const leave = () => send({ t: 'leave' });
     const playAgain = () => send({ t: 'start' });
-    const question = state?.board?.question ?? null;
     const feedback = state?.feedback ?? null;
     const shownFeedback =
         feedback &&
@@ -198,6 +210,7 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
                     </div>
                 ) : !state ? (
                     <RoomEntry
+                        game="snake"
                         status={status}
                         error={game.error}
                         intro={t('snake.intro', { name: player.name })}
@@ -311,14 +324,6 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
                                         label={t('snake.boardLabel')}
                                     />
                                 )}
-                                {playing && state.countdown_ms > 0 && (
-                                    <div className="sn-overlay" role="status">
-                                        <div>
-                                            {seconds(state.countdown_ms)}
-                                            <small>{t('snake.getReady')}</small>
-                                        </div>
-                                    </div>
-                                )}
                                 {playing && me && !me.alive && (
                                     <div className="sn-overlay" role="status">
                                         <small>{t('snake.out')}</small>
@@ -372,24 +377,34 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
                                 <>
                                     <div className="sn-status">
                                         <div className="sn-turn" role="status">
-                                            {canSteer
-                                                ? t('snake.steer')
-                                                : state.countdown_ms > 0
-                                                  ? t('snake.getReady')
+                                            {reading
+                                                ? t('snake.read.status')
+                                                : canSteer
+                                                  ? t('snake.steer')
                                                   : t('snake.waiting')}
                                         </div>
                                         {question && (
-                                            <div className="sn-clock">
+                                            <div
+                                                className="sn-clock"
+                                                data-phase={question.phase}
+                                            >
                                                 <Timer
                                                     size={18}
                                                     aria-hidden="true"
                                                 />
                                                 <span data-testid="sn-question-time">
-                                                    {t('snake.seconds', {
-                                                        count: seconds(
-                                                            question.remaining_ms,
-                                                        ),
-                                                    })}
+                                                    {t(
+                                                        reading
+                                                            ? 'snake.read.left'
+                                                            : 'snake.seconds',
+                                                        {
+                                                            count: seconds(
+                                                                reading
+                                                                    ? question.read_ms
+                                                                    : question.hunt_ms,
+                                                            ),
+                                                        },
+                                                    )}
                                                 </span>
                                             </div>
                                         )}
@@ -407,6 +422,38 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
                                         options={question?.options ?? []}
                                         labels={question?.labels ?? []}
                                     />
+                                    {reading && question && me?.alive && (
+                                        <div
+                                            className="sn-read"
+                                            role="status"
+                                            data-testid="sn-read-overlay"
+                                        >
+                                            <div className="sn-read-card">
+                                                <strong>
+                                                    {t('snake.read.title')}
+                                                </strong>
+                                                <small>
+                                                    {t('snake.read.body')}
+                                                </small>
+                                                <button
+                                                    type="button"
+                                                    className="sn-read-ready"
+                                                    onClick={markReady}
+                                                    disabled={
+                                                        imReady ||
+                                                        status !== 'online'
+                                                    }
+                                                    data-testid="sn-ready"
+                                                >
+                                                    {imReady
+                                                        ? t(
+                                                              'snake.read.waitOthers',
+                                                          )
+                                                        : t('snake.read.ready')}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                     {me && (
                                         <TailGauge
                                             tail={me.tail ?? 0}

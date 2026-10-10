@@ -22,9 +22,12 @@ import {
 } from '@/components/block-battle/shared';
 import { GameFinale, podiumStandings } from '@/components/game-finale';
 import { RoomLeaveControl } from '@/components/multiplayer/host-controls';
-import { ConnectionBadge, RoomError } from '@/components/multiplayer/room';
+import {
+    ConnectionBadge,
+    GamePinForm,
+    RoomError,
+} from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { Button } from '@/components/ui/button';
 import {
     type BBAction,
     type BBBoard,
@@ -45,7 +48,6 @@ import {
     Coins,
     Eye,
     Hammer,
-    LogIn,
     RotateCw,
     Skull,
     Swords,
@@ -54,7 +56,6 @@ import {
     WifiOff,
 } from 'lucide-react';
 import {
-    type FormEvent,
     type PointerEvent as ReactPointerEvent,
     useCallback,
     useEffect,
@@ -465,51 +466,21 @@ function JoinPanel({
     onJoin: (pin: string) => void;
 }) {
     const { t } = useTranslations();
-    const [value, setValue] = useState(initialPin);
     const online = status === 'online';
-    const submit = (event: FormEvent) => {
-        event.preventDefault();
-        if (value.length === 6) {
-            onJoin(value);
-        }
-    };
     return (
         <Panel className="flex flex-col items-center gap-4 text-center">
             <ConnectionBadge status={status} />
             <p className="text-sm font-bold text-slate-700">
                 {t('blockBattle.controller.playerIntro', { name })}
             </p>
-            <form
-                onSubmit={submit}
-                className="flex w-full max-w-sm flex-col gap-2 text-left min-[400px]:flex-row min-[400px]:items-end"
-            >
-                <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs font-black">
-                    {t('blockBattle.controller.pinLabel')}
-                    <input
-                        value={value}
-                        onChange={(e) =>
-                            setValue(
-                                e.target.value.replace(/\D/g, '').slice(0, 6),
-                            )
-                        }
-                        inputMode="numeric"
-                        autoComplete="off"
-                        maxLength={6}
-                        placeholder={t('blockBattle.controller.pinPlaceholder')}
-                        data-testid="bb-pin-input"
-                        className="min-h-14 w-full min-w-0 rounded-xl border-2 border-[#1f2a44] bg-white px-3.5 text-center font-display text-2xl tracking-[0.3em] outline-none focus-visible:ring-4 focus-visible:ring-[#ca8a04]/40"
-                    />
-                </label>
-                <Button
-                    type="submit"
-                    disabled={!online || value.length !== 6}
-                    data-testid="bb-join"
-                    className="min-h-14 shrink-0 rounded-xl border-2 border-[#1f2a44] bg-[#1f2a44] px-4 font-display font-black text-white shadow-[3px_3px_0px_#ca8a04] disabled:opacity-50"
-                >
-                    <LogIn className="size-4" />
-                    {t('blockBattle.controller.join')}
-                </Button>
-            </form>
+            <div className="w-full max-w-sm">
+                <GamePinForm
+                    game="block-battle"
+                    online={online}
+                    onJoin={onJoin}
+                    initialPin={initialPin}
+                />
+            </div>
             {closed && closed !== 'idle' && (
                 <p className="text-xs font-bold text-slate-600">
                     {t('blockBattle.arena.roomClosed')}

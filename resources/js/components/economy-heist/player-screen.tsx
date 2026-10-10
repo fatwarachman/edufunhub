@@ -87,6 +87,7 @@ export function PlayerScreen({
     if (state.phase === 'NONE' || !state.pin) {
         return (
             <RoomEntry
+                game="economy-heist"
                 status={status}
                 error={error}
                 intro={t('economyHeist.playerIntro', { name })}

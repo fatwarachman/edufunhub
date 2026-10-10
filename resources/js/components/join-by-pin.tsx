@@ -29,6 +29,8 @@ interface PinRoom {
     phase: string;
     open: boolean;
     url: string;
+    /** PIN the room was found with (added client-side). */
+    pin: string;
 }
 
 type LookupState =
@@ -40,17 +42,36 @@ type LookupState =
 
 const PIN_PATTERN = /^\d{6}$/;
 
+/**
+ * Game page context for the PIN form: a PIN of a room in this game joins
+ * over the open socket (no reload); any other game's PIN opens that game.
+ */
+export interface PinFormHere {
+    /** Catalog key of the game page the form sits on. */
+    game: string;
+    /** Joins a room of this game over its socket. */
+    join: (pin: string) => void;
+}
+
 /** Joins the room of `pin`, or explains why it cannot. */
-function usePinLookup() {
+function usePinLookup(here?: PinFormHere) {
     const { t } = useTranslations();
     const { props } = usePage<SharedData>();
     const signedIn = Boolean(props.auth?.user);
     const [state, setState] = useState<LookupState>({ kind: 'idle' });
 
-    const go = useCallback((room: PinRoom) => {
-        setState({ kind: 'going', room });
-        router.visit(room.url);
-    }, []);
+    const go = useCallback(
+        (room: PinRoom) => {
+            if (here && room.game_key === here.game) {
+                setState({ kind: 'idle' });
+                here.join(room.pin);
+                return;
+            }
+            setState({ kind: 'going', room });
+            router.visit(room.url);
+        },
+        [here],
+    );
 
     const lookup = useCallback(
         async (pin: string) => {
@@ -65,14 +86,28 @@ function usePinLookup() {
             setState({ kind: 'searching' });
             try {
                 const { data, response } = await http.get<{
-                    rooms: PinRoom[];
+                    rooms: Omit<PinRoom, 'pin'>[];
                 }>(`/join/${pin}/rooms`);
                 if (!response.ok) {
+                    if (here) {
+                        /* Lookup unavailable: let this game's socket try. */
+                        setState({ kind: 'idle' });
+                        here.join(pin);
+                        return;
+                    }
                     setState({ kind: 'error', message: t('joinPin.error') });
                     return;
                 }
-                const rooms = data?.rooms ?? [];
-                if (rooms.length === 0) {
+                const rooms = (data?.rooms ?? []).map((room) => ({
+                    ...room,
+                    pin,
+                }));
+                const local = here
+                    ? rooms.find((room) => room.game_key === here.game)
+                    : undefined;
+                if (local) {
+                    go(local);
+                } else if (rooms.length === 0) {
                     setState({
                         kind: 'error',
                         message: t('joinPin.notFound', { pin }),
@@ -83,10 +118,15 @@ function usePinLookup() {
                     setState({ kind: 'choose', rooms });
                 }
             } catch {
+                if (here) {
+                    setState({ kind: 'idle' });
+                    here.join(pin);
+                    return;
+                }
                 setState({ kind: 'error', message: t('joinPin.error') });
             }
         },
-        [go, signedIn, t],
+        [go, here, signedIn, t],
     );
 
     const reset = useCallback(() => setState({ kind: 'idle' }), []);
@@ -94,24 +134,39 @@ function usePinLookup() {
     return { state, lookup, go, reset };
 }
 
-function PinForm({
+/**
+ * The one PIN form of the app (header dialog, portal and game list card,
+ * and every game's join panel). Any game's PIN works anywhere.
+ */
+export function PinForm({
     initialPin = '',
+    autoJoin = true,
     autoFocus,
     onSubmitted,
     compact,
+    here,
+    disabled,
+    label,
 }: {
     initialPin?: string;
+    /** Look the initial PIN up right away (dialog opened from `?join=`). */
+    autoJoin?: boolean;
     autoFocus?: boolean;
     onSubmitted?: () => void;
     /** Inline card variant: input and button in one row. */
     compact?: boolean;
+    /** Set on game pages, see PinFormHere. */
+    here?: PinFormHere;
+    disabled?: boolean;
+    /** Visible label above the input (screen-reader only when absent). */
+    label?: string;
 }) {
     const { t } = useTranslations();
     const inputId = useId();
     const messageId = useId();
     const [pin, setPin] = useState(initialPin);
-    const { state, lookup, go, reset } = usePinLookup();
-    const autoRun = useRef(initialPin);
+    const { state, lookup, go, reset } = usePinLookup(here);
+    const autoRun = useRef(autoJoin ? initialPin : '');
     const busy = state.kind === 'searching' || state.kind === 'going';
 
     useEffect(() => {
@@ -135,8 +190,15 @@ function PinForm({
             data-testid="join-pin-form"
             noValidate
         >
-            <label htmlFor={inputId} className="sr-only">
-                {t('joinPin.label')}
+            <label
+                htmlFor={inputId}
+                className={
+                    label
+                        ? 'text-left text-xs font-black text-[#1f2a44]'
+                        : 'sr-only'
+                }
+            >
+                {label ?? t('joinPin.label')}
             </label>
             <div
                 className={cn(
@@ -165,12 +227,12 @@ function PinForm({
                     autoFocus={autoFocus}
                     aria-invalid={state.kind === 'error'}
                     aria-describedby={messageId}
-                    className="h-12 min-w-0 flex-1 rounded-xl border-2 border-[#1f2a44] bg-white px-3 text-center font-display text-xl font-black tracking-[0.25em] text-[#1f2a44] placeholder:text-sm placeholder:tracking-normal placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#FF9E44] focus-visible:outline-none"
+                    className="h-12 min-h-12 min-w-0 flex-1 rounded-xl border-2 border-[#1f2a44] bg-white px-3 text-center font-display text-xl font-black tracking-[0.25em] text-[#1f2a44] placeholder:text-sm placeholder:tracking-normal placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#FF9E44] focus-visible:outline-none"
                     data-testid="join-pin-input"
                 />
                 <button
                     type="submit"
-                    disabled={busy || pin.length !== 6}
+                    disabled={disabled || busy || pin.length !== 6}
                     className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#1f2a44] px-5 font-display text-sm font-black text-white shadow-[3px_3px_0px_#FF9E44] hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-[#FF9E44] focus-visible:outline-none disabled:translate-y-0 disabled:border-[#1f2a44]/40 disabled:bg-[#e8e4d6] disabled:text-[#1f2a44]/70 disabled:shadow-none"
                     data-testid="join-pin-submit"
                 >

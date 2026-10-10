@@ -18,6 +18,7 @@ import {
     Flame,
     FlaskConical,
     Gamepad2,
+    GraduationCap,
     LayoutGrid,
     List,
     LogIn,
@@ -297,6 +298,27 @@ export default function GameList({
             })}
         </span>
     );
+
+    /**
+     * Info only (never blocks play): multiplayer games are fairest against
+     * players of the same grade, so a grade 1 player is not matched up with
+     * grade 12 by surprise.
+     */
+    const sameGradeBadge = (game: GameMenuGame, className?: string) =>
+        game.sameGradeMatch ? (
+            <span
+                className={cn(
+                    'inline-flex items-center gap-1 rounded-full border-2 border-[#1f2a44] bg-[#c9f5e5] px-3 py-0.5 text-xs font-black whitespace-nowrap text-[#1f2a44] shadow-[1.5px_1.5px_0px_#1f2a44]',
+                    className,
+                )}
+                title={t('gameList.sameGrade.hint')}
+                data-testid={`gamelist-same-grade-${game.key}`}
+            >
+                <GraduationCap className="size-3 shrink-0" aria-hidden />
+                {t('gameList.sameGrade.badge')}
+                <span className="sr-only"> {t('gameList.sameGrade.hint')}</span>
+            </span>
+        ) : null;
 
     /** Row variant: icon-only (with screen-reader label) on phones, labelled from sm. */
     const rowButtonClass =
@@ -855,6 +877,10 @@ export default function GameList({
                                                     data-testid={`gamelist-row-badges-${game.key}`}
                                                 >
                                                     {gradeBadge(game, rowBadge)}
+                                                    {sameGradeBadge(
+                                                        game,
+                                                        rowBadge,
+                                                    )}
                                                     {pointsBadge(
                                                         game,
                                                         rowBadge,
@@ -963,6 +989,9 @@ export default function GameList({
                                                         </div>
                                                         <div className="flex min-w-0 flex-wrap justify-end gap-1.5">
                                                             {gradeBadge(game)}
+                                                            {sameGradeBadge(
+                                                                game,
+                                                            )}
                                                             {pointsBadge(game)}
                                                             <PlayerCountBadge
                                                                 minPlayers={

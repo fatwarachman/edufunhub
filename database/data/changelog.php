@@ -24,6 +24,228 @@
 
 return [
     [
+        'version' => '0.11.0',
+        'date' => '2026-10-09',
+        'changes' => [
+            [
+                'key' => 'android-play-store-app',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Aplikasi Android untuk Google Play',
+                    'en' => 'Android app for Google Play',
+                ],
+                'body' => [
+                    'id' => 'EduFunHub kini punya aplikasi Android (Trusted Web Activity) yang terbuka layar penuh tanpa bilah alamat Chrome, siap diunggah ke Google Play. Situs menerbitkan /.well-known/assetlinks.json dari pengaturan ANDROID_PACKAGE_NAME dan ANDROID_SHA256_CERT_FINGERPRINTS sebagai bukti kepemilikan aplikasi, dan manifest web menautkan aplikasi Play Store.',
+                    'en' => 'EduFunHub now has an Android app (Trusted Web Activity) that opens full screen without the Chrome address bar, ready to upload to Google Play. The site publishes /.well-known/assetlinks.json from the ANDROID_PACKAGE_NAME and ANDROID_SHA256_CERT_FINGERPRINTS settings to prove app ownership, and the web manifest links the Play Store app.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.10.1',
+        'date' => '2026-10-09',
+        'changes' => [
+            [
+                'key' => 'whatsapp-skipped-log',
+                'type' => 'fix',
+                'title' => [
+                    'id' => 'Pesan WhatsApp yang tertahan saklar kini tercatat di log',
+                    'en' => 'WhatsApp messages blocked by a switch are now logged',
+                ],
+                'body' => [
+                    'id' => 'Saat notifikasi WhatsApp atau jenis pesannya dimatikan, pesan tidak lagi hilang tanpa jejak: tercatat berstatus Dilewati beserta alasannya, dan halaman Notifikasi WhatsApp menampilkan peringatan selama saklar utama mati. Sapaan selamat datang yang tertahan tetap menunggu dan bisa dikirim susulan dengan perintah whatsapp:send-pending-welcome.',
+                    'en' => 'When WhatsApp notifications or a message type are switched off, messages no longer vanish silently: they are logged as Skipped with the reason, and the WhatsApp Notifications page shows a warning while the master switch is off. A blocked welcome greeting stays pending and can be sent later with the whatsapp:send-pending-welcome command.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.10.0',
+        'date' => '2026-10-09',
+        'changes' => [
+            [
+                'key' => 'whatsapp-log-page',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Halaman Log WhatsApp dengan detail pesan',
+                    'en' => 'WhatsApp Log page with message details',
+                ],
+                'body' => [
+                    'id' => 'Menu baru Log WhatsApp di bawah Notifikasi WhatsApp. Tabel semua pesan dengan tab status, filter peristiwa dan tanggal, serta pencarian nama, email, nomor, atau isi pesan. Klik baris untuk membuka modal detail: penerima, nomor tersamar, isi pesan, waktu dibuat/terkirim, ID pesan penyedia, alasan gagal, dan tombol kirim ulang.',
+                    'en' => 'New WhatsApp Log menu under WhatsApp Notifications. A table of every message with status tabs, event and date filters and a search on name, email, number or message text. Click a row to open the detail modal: recipient, masked number, message text, created/sent times, provider message ID, failure reason and a retry button.',
+                ],
+            ],
+            [
+                'key' => 'whatsapp-settings-cards',
+                'type' => 'improvement',
+                'title' => [
+                    'id' => 'Kartu ringkasan WhatsApp yang lebih informatif',
+                    'en' => 'More informative WhatsApp summary cards',
+                ],
+                'body' => [
+                    'id' => 'Halaman Notifikasi WhatsApp kini memakai kartu bergaya dashboard: grafik harian terkirim dan gagal 7 hari, perbandingan dengan 7 hari sebelumnya, tingkat terkirim, porsi pemain yang menerima pesan, dan isi antrean. Daftar pesan terbaru diringkas menjadi 5 baris yang bisa diklik untuk melihat detail.',
+                    'en' => 'The WhatsApp Notifications page now uses dashboard-style cards: 7-day daily sent and failed charts, the change against the 7 days before, the delivery rate, the share of players receiving messages and the queue. Recent messages are trimmed to 5 clickable rows that open the detail.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.9.0',
+        'date' => '2026-10-09',
+        'changes' => [
+            [
+                'key' => 'whatsapp-number-unique',
+                'type' => 'improvement',
+                'title' => [
+                    'id' => 'Nomor WhatsApp wajib diawali 0, 62, atau +62 dan tidak boleh dipakai dua akun',
+                    'en' => 'WhatsApp numbers must start with 0, 62 or +62 and cannot be shared by two accounts',
+                ],
+                'body' => [
+                    'id' => 'Nomor di wizard profil dan halaman profil hanya diterima dengan awalan 0, 62, atau +62, lalu disimpan dalam format 62. Satu nomor hanya boleh dimiliki satu akun, apa pun format penulisannya. Nomor ganda yang sudah ada tetap dipegang akun terlama; akun lainnya diminta mengisi nomor baru lewat wizard.',
+                    'en' => 'The profile wizard and profile page only accept numbers starting with 0, 62 or +62, stored in the 62 form. One number can belong to one account only, whatever way it is written. Existing duplicates stay with the oldest account; the others are asked for a new number through the wizard.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.8.0',
+        'date' => '2026-10-09',
+        'changes' => [
+            [
+                'key' => 'first-login-profile-wizard',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Wizard profil wajib saat pertama kali masuk',
+                    'en' => 'Mandatory profile wizard on first login',
+                ],
+                'body' => [
+                    'id' => 'Pemain yang baru daftar langsung melihat jendela isian 3 langkah: nama lengkap dan tanggal lahir, kelas dan sekolah terakhir, lalu nomor WhatsApp. Jendela ini tidak bisa ditutup sampai data tersimpan (pilihan lain hanya keluar akun). Akun lama, admin, dan guru tidak terkena.',
+                    'en' => 'Newly registered players see a 3-step form right away: full name and date of birth, grade and last school, then a WhatsApp number. It cannot be closed until the data is saved (the only other option is logging out). Existing, admin and teacher accounts are not affected.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.7.0',
+        'date' => '2026-10-09',
+        'changes' => [
+            [
+                'key' => 'snake-read-then-hunt',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Main Ular: baca soal 30 detik dulu, baru ular bergerak',
+                    'en' => 'Snake: read the question for 30 seconds before the snakes move',
+                ],
+                'body' => [
+                    'id' => 'Setiap soal baru, semua ular diam 30 detik supaya pemain bisa membaca soal dan melihat letak jawaban. Setelah itu ular bergerak dan pemain mengarahkannya ke bola jawaban yang benar. Begitu ular memakan jawaban (benar atau salah) atau waktu habis, ular diam lagi untuk soal berikutnya. Tombol "Sudah siap" memulai lebih cepat; di ruang bersama ular bergerak saat semua pemain siap.',
+                    'en' => 'With every new question all snakes stay still for 30 seconds so players can read it and see where the answers are. Then the snakes move and players steer to the right answer ball. As soon as a snake eats an answer (right or wrong) or time runs out, the snakes freeze again for the next question. "I\'m ready" starts sooner; in a shared room the snakes move once every player is ready.',
+                ],
+            ],
+            [
+                'key' => 'snake-cartoon-look',
+                'type' => 'improvement',
+                'title' => [
+                    'id' => 'Main Ular: arena lebih besar, bola jawaban besar, ular kartun',
+                    'en' => 'Snake: bigger arena, big answer balls, cartoon snakes',
+                ],
+                'body' => [
+                    'id' => 'Arena bermain diperbesar (kotak lebih sedikit dan lebih lebar), bola jawaban A–D kini bulat besar berwarna dengan huruf jelas, dan ular digambar kartun: badan menyambung mulus dan meruncing ke ekor, bercorak, dengan kepala bermata besar, pipi, senyum, dan lidah bercabang.',
+                    'en' => 'The play area is bigger (fewer, larger cells), answer balls A–D are big coloured circles with clear letters, and the snakes are cartoon style: one smooth body tapering to the tail, with patterns and a head with big eyes, cheeks, a smile and a forked tongue.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.6.0',
+        'date' => '2026-10-09',
+        'changes' => [
+            [
+                'key' => 'ability-analysis-whatsapp-report',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Hasil analisa kemampuan langsung dikirim lengkap ke WhatsApp',
+                    'en' => 'Ability analysis results go straight to WhatsApp in full',
+                ],
+                'body' => [
+                    'id' => 'Begitu analisa kemampuan (AI) selesai, sistem langsung mengirim hasilnya ke nomor WhatsApp pemain: ringkasan, nilai per mapel, kekuatan, yang perlu ditingkatkan, saran belajar bernomor, gaya belajar, perkembangan, dan link halaman analisa. Pesan ditulis sesuai bahasa pemain.',
+                    'en' => 'As soon as an AI ability analysis finishes, the result is sent to the player\'s WhatsApp number: summary, score per subject, strengths, room to grow, numbered study tips, learning style, progress and the link to the analysis page. The message follows the player\'s language.',
+                ],
+            ],
+            [
+                'key' => 'profile-edit-button',
+                'type' => 'improvement',
+                'title' => [
+                    'id' => 'Tombol Ubah di halaman profil agar data tidak berubah tanpa sengaja',
+                    'en' => 'Edit button on the profile page so data is not changed by accident',
+                ],
+                'body' => [
+                    'id' => 'Data akun, data peserta (tanggal lahir, sekolah, nomor WhatsApp) serta kelas dan level soal kini tampil sebagai data saja. Formulir baru terbuka setelah menekan Ubah, dan Batal mengembalikan isian semula. Bila data belum lengkap, formulir langsung terbuka.',
+                    'en' => 'Account data, participant details (date of birth, school, WhatsApp number) and grade and question level are now shown read-only. The form opens only after tapping Edit, and Cancel restores the saved values. When details are incomplete, the form opens right away.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.5.0',
+        'date' => '2026-10-09',
+        'changes' => [
+            [
+                'key' => 'whatsapp-notifications',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Notifikasi WhatsApp: sapaan pemain baru, hasil analisa, dan permintaan pertemanan',
+                    'en' => 'WhatsApp notifications: new player greeting, analysis results and friend requests',
+                ],
+                'body' => [
+                    'id' => 'Pemain bisa mengisi nomor WhatsApp (boleh nomor orang tua) bersama data sekolah. Nomor itu menerima sapaan selamat datang, ringkasan analisa kemampuan belajar beserta link-nya, dan kabar saat ada yang ingin berteman. Pemain bisa mematikan pesan WhatsApp kapan saja.',
+                    'en' => 'Players can enter a WhatsApp number (a parent\'s number is fine) together with their school details. It receives a welcome greeting, a summary of the learning ability analysis with its link, and a message when someone wants to be their friend. Players can turn WhatsApp messages off at any time.',
+                ],
+            ],
+            [
+                'key' => 'whatsapp-admin-page',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Halaman admin Notifikasi WhatsApp dengan scan QR',
+                    'en' => 'WhatsApp Notifications admin page with QR scan',
+                ],
+                'body' => [
+                    'id' => 'Super admin menghubungkan nomor WhatsApp pengirim dengan scan QR code atau kode pairing, menyalakan atau mematikan tiap jenis pesan, mengirim pesan uji, dan melihat log pengiriman dengan nomor yang disamarkan. Pesan gagal bisa dikirim ulang. Sistem ini siap ditambah jenis notifikasi baru.',
+                    'en' => 'Super admins link the sender WhatsApp number by scanning a QR code or with a pairing code, switch each message type on or off, send a test message and see the delivery log with masked numbers. Failed messages can be retried. New notification types can be added to the same system.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.4.0',
+        'date' => '2026-10-09',
+        'changes' => [
+            [
+                'key' => 'universal-game-pin',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Kolom PIN di setiap game menerima PIN game apa pun',
+                    'en' => 'The PIN field in every game accepts any game\'s PIN',
+                ],
+                'body' => [
+                    'id' => 'Kolom PIN di halaman game kini sama dengan kolom PIN di menu. PIN ruang game ini langsung bergabung di tempat, sedangkan PIN milik game lain langsung membuka game tersebut, jadi pemain tidak perlu tahu PIN itu untuk game apa.',
+                    'en' => 'The PIN field on game pages now matches the one in the menu. A PIN of this game joins right there, while a PIN from another game opens that game straight away, so players do not need to know which game a PIN belongs to.',
+                ],
+            ],
+            [
+                'key' => 'same-grade-badge',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Badge "Disarankan sekelas" di daftar game',
+                    'en' => '"Best with same grade" badge in the game list',
+                ],
+                'body' => [
+                    'id' => 'Game multiplayer di daftar game memberi badge informasi bahwa permainan paling adil dimainkan bersama teman sekelas, supaya murid kelas 1 tidak tiba-tiba melawan kelas 12. Ini hanya informasi; pemain beda kelas tetap boleh bermain bersama.',
+                    'en' => 'Multiplayer games in the game list show an info badge that they play fairest with classmates of the same grade, so a grade 1 pupil is not matched against grade 12 by surprise. It is information only; mixed grades can still play together.',
+                ],
+            ],
+        ],
+    ],
+    [
         'version' => '0.3.1',
         'date' => '2026-10-09',
         'changes' => [

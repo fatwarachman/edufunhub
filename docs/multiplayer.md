@@ -69,7 +69,8 @@ Pemain tidak perlu membuka game dulu: kartu **Masuk ke permainan dengan PIN** (p
 1. Laravel `GET /join/{pin}/rooms` (`JoinByPinController`, `RoomPinLookup`) bertanya ke Go `GET /internal/room?pin=` (HMAC sama dengan `/internal/presence`).
 2. Go memeriksa semua hub dan membalas `{rooms: [{game, phase, open}]}`; ruang yang sudah selesai tidak dihitung.
 3. Satu game cocok → langsung ke halaman pemain dengan `?pin=` (Turbo Trivia: `/play/turbo-trivia/{pin}`). Beberapa game memakai PIN yang sama → pemain memilih. Tidak ada → pesan "PIN tidak ditemukan".
-4. Rate limit sendiri `join-pin` (20/menit per akun) supaya PIN tidak bisa ditebak cepat.
+4. Kolom PIN di halaman game (`RoomEntry`, panel gabung Turbo Trivia/Block Battle) memakai komponen yang sama (`PinForm` lewat `GamePinForm`, wajib prop `game`). PIN ruang game ini bergabung lewat socket yang sudah terbuka; PIN milik game lain membuka game itu. Bila lookup gagal, PIN dicoba di game ini.
+5. Rate limit sendiri `join-pin` (20/menit per akun) supaya PIN tidak bisa ditebak cepat.
 
 ### Akhir permainan: selebrasi + papan peringkat
 

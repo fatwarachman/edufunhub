@@ -36,7 +36,18 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => Str::random(10),
             'two_factor_confirmed_at' => now(),
             'onboarded_at' => now(),
+            'profile_completed_at' => now(),
         ];
+    }
+
+    /**
+     * New account that still has to finish the first-login profile wizard.
+     */
+    public function profilePending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'profile_completed_at' => null,
+        ]);
     }
 
     /**

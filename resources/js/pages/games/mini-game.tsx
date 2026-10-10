@@ -492,6 +492,7 @@ export default function MiniGame({
     } else if (!state || state.phase === 'none' || !state.pin) {
         body = (
             <RoomEntry
+                game={game}
                 status={connection.status}
                 error={error}
                 intro={t('mini.intro', { name: player.name })}

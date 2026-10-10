@@ -1221,6 +1221,7 @@ function PlayerScreen({
         return (
             <div className="flex flex-col gap-3">
                 <RoomEntry
+                    game="floor-drop"
                     status={status}
                     error={error}
                     intro={t('floorDrop.playerIntro', { name })}

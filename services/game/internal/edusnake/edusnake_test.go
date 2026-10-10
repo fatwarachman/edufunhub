@@ -11,13 +11,16 @@ import (
 var t0 = time.Date(2026, 10, 30, 10, 0, 0, 0, time.UTC)
 
 var fast = Config{
-	Step:      100 * time.Millisecond,
-	Countdown: time.Second,
-	Answer:    20 * time.Second,
-	Game:      5 * time.Minute,
-	Respawn:   500 * time.Millisecond,
-	Obstacle:  2 * time.Second,
+	Step:     100 * time.Millisecond,
+	Read:     time.Second,
+	Answer:   20 * time.Second,
+	Game:     5 * time.Minute,
+	Respawn:  500 * time.Millisecond,
+	Obstacle: 2 * time.Second,
 }
+
+// hunt is when the first question's reading phase is over.
+var hunt = t0.Add(fast.Read)
 
 func claims(id int64, grade int) auth.Claims {
 	return auth.Claims{Subject: id, Name: "P", Grade: grade, Game: GameKey}
@@ -69,16 +72,68 @@ func TestStartShowsQuestionAndFood(t *testing.T) {
 	}
 }
 
-func TestSnakesFrozenDuringCountdown(t *testing.T) {
+func TestSnakesFrozenWhileReading(t *testing.T) {
 	h, r := setup(t, 1, ModeShared)
 	head := r.Seats[0].Data.body[0]
 	h.Tick(t0.Add(500 * time.Millisecond))
 	if r.Seats[0].Data.body[0] != head {
-		t.Fatal("moved during countdown")
+		t.Fatal("moved while reading")
 	}
-	h.Tick(t0.Add(fast.Countdown))
+	st := h.State(claims(1, 4), t0.Add(500*time.Millisecond))["board"].(Message)["question"].(Message)
+	if st["phase"] != "read" || st["read_ms"].(int64) != 500 {
+		t.Fatalf("phase %v read_ms %v", st["phase"], st["read_ms"])
+	}
+	h.Tick(hunt)
 	if r.Seats[0].Data.body[0] == head {
-		t.Fatal("did not move after countdown")
+		t.Fatal("did not move after reading")
+	}
+}
+
+func TestReadingLastsThirtySecondsByDefault(t *testing.T) {
+	if Defaults.Read != 30*time.Second {
+		t.Fatalf("read %v", Defaults.Read)
+	}
+}
+
+func TestAnswerTimeStartsAfterReading(t *testing.T) {
+	h, r := setup(t, 1, ModeShared)
+	b := r.Game.shared
+	if !b.deadline.Equal(hunt.Add(fast.Answer)) {
+		t.Fatalf("deadline %v", b.deadline)
+	}
+	round := b.round
+	h.Tick(hunt.Add(fast.Answer - time.Millisecond))
+	if b.round != round {
+		t.Fatal("reading time counted as answer time")
+	}
+}
+
+func TestReadyEveryoneSkipsReading(t *testing.T) {
+	h, r := setup(t, 2, ModeShared)
+	b := r.Game.shared
+	now := t0.Add(200 * time.Millisecond)
+	if _, err := h.Ready(1, now); err != nil {
+		t.Fatal(err)
+	}
+	if !b.reading(now) {
+		t.Fatal("one ready player must not start the hunt")
+	}
+	_, _ = h.Ready(2, now)
+	if b.reading(now) || !b.deadline.Equal(now.Add(fast.Answer)) {
+		t.Fatal("all ready must start the hunt now")
+	}
+}
+
+func TestTurnDuringReadingIsKeptForTheHunt(t *testing.T) {
+	h, r := setup(t, 1, ModeShared)
+	_, _ = h.Turn(1, "up", t0)
+	h.Tick(t0.Add(500 * time.Millisecond))
+	if len(r.Seats[0].Data.queue) != 1 {
+		t.Fatal("turn lost while reading")
+	}
+	h.Tick(hunt)
+	if r.Seats[0].Data.dir != (Point{0, -1}) {
+		t.Fatal("queued turn not applied on the first move")
 	}
 }
 
@@ -90,17 +145,22 @@ func place(r *room, b *board, correct bool) {
 		if (b.foods[i].option == b.q.Answer) == correct {
 			b.foods[i].at = front
 		} else {
-			b.foods[i].at = Point{0, 0}
+			b.foods[i].at = Point{-10, -10}
 		}
 	}
 }
 
-func TestCorrectBiteCutsTailAndLoadsNextQuestion(t *testing.T) {
+// skipReading ends the reading phase of board b at now.
+func skipReading(b *board, now time.Time) {
+	b.readUntil = now
+}
+
+func TestCorrectBiteCutsTailAndFreezesForNextQuestion(t *testing.T) {
 	h, r := setup(t, 1, ModeShared)
 	b := r.Game.shared
 	place(r, b, true)
 	round := b.round
-	h.Tick(t0.Add(fast.Countdown))
+	h.Tick(hunt)
 	p := &r.Seats[0].Data
 	if p.tail() != InitialTail-Cut || p.correct != 1 || p.earned == 0 {
 		t.Fatalf("tail %d correct %d earned %d", p.tail(), p.correct, p.earned)
@@ -108,23 +168,106 @@ func TestCorrectBiteCutsTailAndLoadsNextQuestion(t *testing.T) {
 	if b.round != round+1 || b.q.Prompt.ID == "" {
 		t.Fatal("next question not loaded")
 	}
+	if !b.reading(hunt) || !b.readUntil.Equal(hunt.Add(fast.Read)) {
+		t.Fatal("board must freeze to read the next question")
+	}
+	head := p.body[0]
+	h.Tick(hunt.Add(fast.Step))
+	if p.body[0] != head {
+		t.Fatal("snake moved while reading the next question")
+	}
 }
 
-func TestWrongBiteGrowsTail(t *testing.T) {
+func TestWrongBiteGrowsTailAndFreezesForNextQuestion(t *testing.T) {
 	h, r := setup(t, 1, ModeShared)
 	b := r.Game.shared
 	place(r, b, false)
 	round := b.round
-	h.Tick(t0.Add(fast.Countdown))
+	h.Tick(hunt)
 	p := &r.Seats[0].Data
 	if p.tail() != InitialTail+Grow || p.wrong != 1 {
 		t.Fatalf("tail %d wrong %d", p.tail(), p.wrong)
 	}
-	if b.round != round {
-		t.Fatal("wrong answer must keep the question")
+	if b.round != round+1 || !b.reading(hunt) {
+		t.Fatal("wrong answer must load the next question and freeze")
 	}
-	if len(b.foods) != len(b.q.Options)-1 {
-		t.Fatal("eaten wrong option leaves the board")
+	if len(b.foods) != len(b.q.Options) {
+		t.Fatal("new question needs all its food")
+	}
+	if r.Game.feedback == nil || r.Game.feedback.correct {
+		t.Fatal("wrong feedback")
+	}
+}
+
+func TestFoodIsBigAndEatenByAnyCoveredCell(t *testing.T) {
+	h, r := setup(t, 1, ModeShared)
+	b := r.Game.shared
+	for _, f := range b.foods {
+		for _, c := range f.cells() {
+			if !inside(c) {
+				t.Fatalf("food %v outside", f.at)
+			}
+		}
+	}
+	p := &r.Seats[0].Data
+	front := p.body[0].add(p.dir)
+	for i := range b.foods {
+		b.foods[i].at = Point{-10, -10}
+		if b.foods[i].option == b.q.Answer {
+			// The head enters the food's lower-right cell.
+			b.foods[i].at = Point{front.X - (FoodSize - 1), front.Y - (FoodSize - 1)}
+		}
+	}
+	h.Tick(hunt)
+	if p.correct != 1 {
+		t.Fatal("covered cell must count as a bite")
+	}
+}
+
+func TestFoodKeepsAGapBetweenBalls(t *testing.T) {
+	for seed := uint64(1); seed <= 60; seed++ {
+		h := NewHub(fast, seed)
+		h.Join(claims(1, 4), "id")
+		h.Create(claims(1, 4), t0)
+		if _, err := h.Start(1, t0); err != nil {
+			t.Fatal(err)
+		}
+		var r *room
+		h.rooms.View(1, func(rm *room) { r = rm })
+		foods := r.Game.shared.foods
+		for i := range foods {
+			for j := i + 1; j < len(foods); j++ {
+				a, b := foods[i].at, foods[j].at
+				if abs(a.X-b.X) <= FoodSize && abs(a.Y-b.Y) <= FoodSize {
+					t.Fatalf("seed %d: balls %v and %v touch", seed, a, b)
+				}
+			}
+		}
+	}
+}
+
+func TestFoodNeverOverlaps(t *testing.T) {
+	for seed := uint64(1); seed <= 60; seed++ {
+		h := NewHub(fast, seed)
+		h.Join(claims(1, 4), "id")
+		h.Create(claims(1, 4), t0)
+		if _, err := h.Start(1, t0); err != nil {
+			t.Fatal(err)
+		}
+		var r *room
+		h.rooms.View(1, func(rm *room) { r = rm })
+		seen := map[Point]bool{}
+		for _, c := range r.Seats[0].Data.body {
+			seen[c] = true
+		}
+		for _, f := range r.Game.shared.foods {
+			for _, c := range f.cells() {
+				if seen[c] || !inside(c) {
+					t.Fatalf("seed %d: food cell %v overlaps or is outside", seed, c)
+				}
+				seen[c] = true
+			}
+		}
 	}
 }
 
@@ -133,7 +276,7 @@ func TestTimeoutGrowsAndChangesQuestion(t *testing.T) {
 	b := r.Game.shared
 	round := b.round
 	h.Tick(b.deadline)
-	if r.Seats[0].Data.tail() != InitialTail+Grow || b.round != round+1 {
+	if r.Seats[0].Data.tail() != InitialTail+Grow || b.round != round+1 || !b.reading(b.readUntil.Add(-time.Millisecond)) {
 		t.Fatalf("tail %d round %d", r.Seats[0].Data.tail(), b.round)
 	}
 	if fb := r.Game.feedback; fb == nil || !fb.timeout {
@@ -143,9 +286,10 @@ func TestTimeoutGrowsAndChangesQuestion(t *testing.T) {
 
 func TestClearingTailWinsAndReports(t *testing.T) {
 	h, r := setup(t, 1, ModeShared)
-	now := t0.Add(fast.Countdown)
+	now := hunt
 	for i := 0; r.Phase == lobby.PhasePlaying && i < 20; i++ {
 		place(r, r.Game.shared, true)
+		skipReading(r.Game.shared, now)
 		h.Tick(now)
 		now = now.Add(fast.Step)
 	}
@@ -163,7 +307,7 @@ func TestClearingTailWinsAndReports(t *testing.T) {
 
 func TestWallCrashCostsLifeThenOut(t *testing.T) {
 	h, r := setup(t, 1, ModeShared)
-	now := t0.Add(fast.Countdown)
+	now := hunt
 	p := &r.Seats[0].Data
 	for i := 0; r.Phase == lobby.PhasePlaying && i < 400; i++ {
 		// Hide food so the snake only crashes.
@@ -238,7 +382,7 @@ func TestSplitBoardsAndJunkAttack(t *testing.T) {
 	}
 	place(r, r.Seats[0].Data.board, true)
 	r.Seats[1].Data.frozenUntil = t0.Add(time.Hour)
-	h.Tick(t0.Add(fast.Countdown))
+	h.Tick(hunt)
 	if r.Seats[1].Data.tail() != InitialTail+Junk {
 		t.Fatalf("junk tail %d", r.Seats[1].Data.tail())
 	}
@@ -246,11 +390,12 @@ func TestSplitBoardsAndJunkAttack(t *testing.T) {
 		t.Fatal("attack feedback")
 	}
 	place(r, r.Seats[0].Data.board, true)
-	h.Tick(t0.Add(fast.Countdown + fast.Step))
+	skipReading(r.Seats[0].Data.board, hunt.Add(fast.Step))
+	h.Tick(hunt.Add(fast.Step))
 	if len(r.Seats[1].Data.board.obstacles) != JunkBlocks {
 		t.Fatal("second attack drops blocks")
 	}
-	h.Tick(t0.Add(fast.Countdown + fast.Obstacle + time.Second))
+	h.Tick(hunt.Add(fast.Obstacle + time.Second))
 	if len(r.Seats[1].Data.board.obstacles) != 0 {
 		t.Fatal("blocks expire")
 	}
@@ -262,7 +407,7 @@ func TestLastSnakeStandingWins(t *testing.T) {
 	r.Seats[1].Data.dir = Point{0, -1}
 	r.Seats[1].Data.body = stacked(Point{20, 0}, 3)
 	r.Seats[0].Data.frozenUntil = t0.Add(time.Hour)
-	h.Tick(t0.Add(fast.Countdown))
+	h.Tick(hunt)
 	if r.Phase != lobby.PhaseDone || r.Game.winner != 0 {
 		t.Fatalf("phase %s winner %d", r.Phase, r.Game.winner)
 	}
@@ -279,7 +424,7 @@ func TestHeadOnBodyCollision(t *testing.T) {
 	a.body = []Point{{11, 9}, {11, 8}}
 	a.dir = Point{0, 1}
 	lives := a.lives
-	h.Tick(t0.Add(fast.Countdown))
+	h.Tick(hunt)
 	if a.lives != lives-1 {
 		t.Fatal("hitting another body costs a life")
 	}
@@ -288,8 +433,8 @@ func TestHeadOnBodyCollision(t *testing.T) {
 func TestLeaveMidGamePays(t *testing.T) {
 	h, r := setup(t, 2, ModeShared)
 	place(r, r.Game.shared, true)
-	h.Tick(t0.Add(fast.Countdown))
-	_, paid := h.Leave(1, t0.Add(2*time.Second))
+	h.Tick(hunt)
+	_, paid := h.Leave(1, hunt.Add(time.Second))
 	if paid <= 0 {
 		t.Fatalf("paid %d", paid)
 	}

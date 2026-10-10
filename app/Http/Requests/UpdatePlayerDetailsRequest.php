@@ -3,13 +3,14 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\PlayerDetailsRules;
+use App\Http\Requests\Concerns\WhatsAppNumberRules;
 use App\Models\School;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 
 class UpdatePlayerDetailsRequest extends FormRequest
 {
-    use PlayerDetailsRules;
+    use PlayerDetailsRules, WhatsAppNumberRules;
 
     public function authorize(): bool
     {
@@ -29,17 +30,31 @@ class UpdatePlayerDetailsRequest extends FormRequest
             'school_level' => $level === '' ? null : $level,
             'school_npsn' => $npsn === '' ? null : $npsn,
         ]);
+
+        if ($this->has('whatsapp_number')) {
+            $this->merge([
+                'whatsapp_number' => $this->normalizedWhatsAppNumber(),
+                'whatsapp_notifications' => $this->boolean('whatsapp_notifications', true),
+            ]);
+        }
     }
 
     /** @return array<string, array<mixed>> */
     public function rules(): array
     {
-        return $this->playerDetailsRules();
+        return [
+            ...$this->playerDetailsRules(),
+            'whatsapp_number' => $this->whatsAppNumberRules(required: false),
+            'whatsapp_notifications' => ['sometimes', 'boolean'],
+        ];
     }
 
     /** @return array<string, string> */
     public function messages(): array
     {
-        return $this->playerDetailsMessages();
+        return [
+            ...$this->playerDetailsMessages(),
+            ...$this->whatsAppNumberMessages(),
+        ];
     }
 }

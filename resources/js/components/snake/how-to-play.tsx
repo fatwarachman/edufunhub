@@ -38,10 +38,10 @@ function body(length: number): Cell[] {
 }
 
 const FOODS = [
-    { label: 'A', x: 9, y: 2 },
-    { label: 'B', x: 9, y: 5 },
-    { label: 'C', x: 2, y: 9 },
-    { label: 'D', x: 10, y: 10 },
+    { label: 'A', x: 9, y: 1, size: 2 },
+    { label: 'B', x: 9, y: 4, size: 2 },
+    { label: 'C', x: 1, y: 9, size: 2 },
+    { label: 'D', x: 9, y: 9, size: 2 },
 ];
 
 function demoBoard(scene: (typeof SCENES)[number]): SnakeBoard {
@@ -54,7 +54,7 @@ function demoBoard(scene: (typeof SCENES)[number]): SnakeBoard {
                 body: body(length),
                 dir: 'right',
                 alive: true,
-                frozen: false,
+                frozen: scene === 'read',
             },
         ],
         foods:
