@@ -56,7 +56,7 @@ it('puts sign in and sign up at the top of the guest phone menu', function (): v
         ->and($css)->toMatch('/\\.edu-nav-more-auth \\{[^}]*position: sticky;/');
 });
 
-it('puts sign in and sign up at the top of the landing phone menu', function (string $file): void {
+it('puts the start playing button at the top of the landing phone menu', function (string $file): void {
     $html = file_get_contents(public_path('new-landing/'.$file));
     $menu = substr($html, strpos($html, '<div id="mobile-nav"'));
     $menu = substr($menu, 0, strpos($menu, '</header>'));
@@ -64,7 +64,7 @@ it('puts sign in and sign up at the top of the landing phone menu', function (st
     expect($html)->toContain('.mobile-nav-auth{position:sticky')
         ->and($menu)->toContain('class="mobile-nav-auth"')
         ->and(strpos($menu, 'href="/register"'))->toBeLessThan(strpos($menu, 'href="/gamelist"') ?: strpos($menu, 'games.html'))
-        ->and(strpos($menu, 'href="/login"'))->toBeLessThan(strpos($menu, 'href="/register"'));
+        ->and($menu)->not->toContain('href="/login"');
 })->with(['index.html', 'games.html']);
 
 it('paints "fun" in the brand wordmark amber', function (): void {
@@ -99,12 +99,13 @@ it('shows the EduFunHub brand logo in the admin sidebar', function (): void {
 
 it('groups the admin settings pages under one Settings sub menu', function (): void {
     $layout = file_get_contents(resource_path('js/layouts/admin-layout.tsx'));
-    $group = substr($layout, strpos($layout, "title: 'Settings',"));
+    $navigation = file_get_contents(resource_path('js/lib/admin-navigation.ts'));
+    $group = substr($navigation, strpos($navigation, "title: 'Settings',"));
     $group = substr($group, 0, strpos($group, '],'));
 
     foreach (['/admin/settings', '/admin/sound-settings', '/admin/ai-settings', '/admin/point-rules'] as $href) {
         expect($group)->toContain("href: '{$href}'")
-            ->and(substr_count($layout, "href: '{$href}'"))->toBe(1);
+            ->and(substr_count($navigation, "href: '{$href}'"))->toBe(1);
     }
 
     expect($layout)->toContain('data-testid="admin-nav-group"')
@@ -112,13 +113,13 @@ it('groups the admin settings pages under one Settings sub menu', function (): v
 });
 
 it('groups the admin analytics pages under one Analytics sub menu', function (): void {
-    $layout = file_get_contents(resource_path('js/layouts/admin-layout.tsx'));
-    $group = substr($layout, strpos($layout, "title: 'Analytics',"));
+    $navigation = file_get_contents(resource_path('js/lib/admin-navigation.ts'));
+    $group = substr($navigation, strpos($navigation, "title: 'Analytics',"));
     $group = substr($group, 0, strpos($group, '],'));
 
     foreach (['/admin/user-statistics', '/admin/playing-time', '/admin/screen-time', '/admin/games', '/admin/leaderboard'] as $href) {
         expect($group)->toContain("href: '{$href}'")
-            ->and(substr_count($layout, "href: '{$href}'"))->toBe(1);
+            ->and(substr_count($navigation, "href: '{$href}'"))->toBe(1);
     }
 });
 

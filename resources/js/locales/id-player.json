@@ -158,6 +158,9 @@
         "details": "Data peserta",
         "detailsNote": "Lengkapi tanggal lahir dan sekolah terakhir kamu.",
         "birthDate": "Tanggal lahir",
+        "birthDay": "Tanggal",
+        "birthMonth": "Bulan",
+        "birthYear": "Tahun",
         "whatsapp": "Nomor WhatsApp (opsional)",
         "whatsappPlaceholder": "Contoh: 081234567890",
         "whatsappHint": "Boleh nomor orang tua. Dipakai untuk kabar hasil analisa belajar, permintaan pertemanan, dan info penting. Tidak ditampilkan ke pemain lain.",
@@ -2756,6 +2759,20 @@
             "hide": "Sembunyikan kata sandi",
             "saved": "Kata sandi berhasil diganti.",
             "submit": "Simpan kata sandi"
+        },
+        "photo": {
+            "title": "Foto profil",
+            "help": "Unggah foto JPG, PNG, atau WEBP (maks. 2 MB). Foto akan dipotong persegi.",
+            "choose": "Pilih foto profil",
+            "upload": "Unggah foto",
+            "change": "Ganti foto",
+            "save": "Simpan foto",
+            "remove": "Hapus foto",
+            "saved": "Foto profil tersimpan.",
+            "removed": "Foto profil dihapus.",
+            "alt": "Foto profil {{name}}",
+            "errorType": "Foto harus berformat JPG, PNG, atau WEBP.",
+            "errorSize": "Ukuran foto maksimal 2 MB."
         }
     },
     "questionLevel": {

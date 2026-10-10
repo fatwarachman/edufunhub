@@ -36,7 +36,12 @@
         "googleOnly": "New accounts are created with a Google account. One click, no new password.",
         "google": "Sign up with Google",
         "googleUnavailable": "Google sign-up is not available yet. Please try again later.",
-        "googleWhy": "Google verifies your email, so your account is safer. After signing in, fill in your birth date and school."
+        "googleWhy": "Google verifies your email, so your account is safer. After signing in, fill in your birth date and school.",
+        "googleOrEmail": "Sign up with your Google account, or create an account with email and password.",
+        "emailDivider": "or sign up with email",
+        "submit": "Create account",
+        "wizardNote": "After your account is created, you will be asked for your birth date, grade and school.",
+        "honeypot": "Leave this field empty"
     },
     "login": {
         "adminTitle": "Admin Sign In",

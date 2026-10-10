@@ -52,6 +52,7 @@ use App\Http\Middleware\EnsurePlayerIsActive;
 use App\Http\Middleware\EnsureTeacher;
 use App\Http\Middleware\RecordGameAccess;
 use App\Services\Ads\AdMedia;
+use App\Services\ProfilePhoto;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
@@ -59,6 +60,10 @@ use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 Route::get('/', function () {
     return response()->file(public_path('new-landing/index.html'));
 })->name('home');
+
+Route::get('/about', function () {
+    return response()->file(public_path('new-landing/about.html'));
+})->name('about');
 
 Route::get('/.well-known/assetlinks.json', AndroidAssetLinksController::class)->name('android.asset-links');
 
@@ -86,6 +91,9 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/profile', [ProfileController::class, 'update'])->middleware('throttle:profile')->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'password'])->middleware('throttle:profile-password')->name('profile.password');
+    Route::post('/profile/photo', [ProfileController::class, 'photo'])->middleware('throttle:profile-photo')->name('profile.photo.update');
+    Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->middleware('throttle:profile-photo')->name('profile.photo.destroy');
+    Route::get('/profile/photo/{file}', [ProfileController::class, 'showPhoto'])->where('file', ProfilePhoto::FILE_PATTERN)->name('profile.photo.show');
     Route::get('/players/online', OnlinePlayersController::class)->middleware('throttle:60,1,players.online')->name('players.online');
     Route::get('/players/online/count', [OnlinePlayersController::class, 'count'])->middleware('throttle:30,1,players.online.count')->name('players.online.count');
     Route::get('/players/{user}', PlayerPageController::class)->whereNumber('user')->middleware('throttle:60,1,players.show')->name('players.show');
@@ -202,6 +210,7 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:10,1,google')->name('google.callback');
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:5,1,register.store')->name('register.store');
     Route::get('/register/schools', SchoolSuggestionController::class)->middleware('throttle:30,1,register.schools')->name('register.schools');
 });
 

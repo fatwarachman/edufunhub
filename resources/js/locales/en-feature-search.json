@@ -170,6 +170,12 @@
             "title": "WhatsApp message log (sent & failed history)",
             "superadminOnly": true,
             "teacherOnly": false
+        },
+        "databaseBackups": {
+            "href": "/admin/backups",
+            "title": "Database backups (manual, scheduled, FTP)",
+            "superadminOnly": true,
+            "teacherOnly": false
         }
     }
 }

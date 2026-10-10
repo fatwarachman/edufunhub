@@ -170,6 +170,12 @@
             "title": "Log pesan WhatsApp (riwayat kirim & gagal)",
             "superadminOnly": true,
             "teacherOnly": false
+        },
+        "databaseBackups": {
+            "href": "/admin/backups",
+            "title": "Backup database (manual, terjadwal, FTP)",
+            "superadminOnly": true,
+            "teacherOnly": false
         }
     }
 }

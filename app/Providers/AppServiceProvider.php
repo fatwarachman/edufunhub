@@ -118,6 +118,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(6)->by('profile-password:'.$request->user()?->id);
         });
 
+        RateLimiter::for('profile-photo', function (Request $request) {
+            return Limit::perMinute(10)->by('profile-photo:'.$request->user()?->id);
+        });
+
         RateLimiter::for('join-pin', function (Request $request) {
             return Limit::perMinute(20)->by('join-pin:'.($request->user()?->id ?: $request->ip()));
         });

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\RegistrationSettingsRequest;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\RegistrationSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -27,6 +29,10 @@ class SettingsController extends Controller
             'general' => Setting::group('general'),
             'mail' => Setting::group('mail'),
             'security' => Setting::group('security'),
+            'registration' => [
+                'email_enabled' => app(RegistrationSettings::class)->emailEnabled(),
+            ],
+            'canManageRegistration' => (bool) $request->user()->is_superadmin,
             'profile' => $request->user()->only('id', 'name', 'email', 'avatar_url', 'bio', 'timezone'),
         ]);
     }
@@ -110,6 +116,28 @@ class SettingsController extends Controller
             ->log('Updated security settings');
 
         return back()->with('success', 'Security settings updated.');
+    }
+
+    /**
+     * Turn sign-up with email + password on or off (super admin only).
+     */
+    public function updateRegistration(RegistrationSettingsRequest $request, RegistrationSettings $settings): RedirectResponse
+    {
+        $old = $settings->emailEnabled();
+        $new = $request->boolean('email_enabled');
+
+        $settings->setEmailEnabled($new);
+
+        activity()
+            ->causedBy($request->user())
+            ->withProperties([
+                'group' => RegistrationSettings::GROUP,
+                'old' => ['email_enabled' => $old],
+                'attributes' => ['email_enabled' => $new],
+            ])
+            ->log('Updated registration settings');
+
+        return back()->with('success', __('registration.flash.settings_saved'));
     }
 
     /**

@@ -14,6 +14,7 @@ import {
     Save,
     Shield,
     User,
+    UserPlus,
 } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 
@@ -33,6 +34,8 @@ interface SettingsProps {
     general: Record<string, string>;
     mail: Record<string, string>;
     security: Record<string, string>;
+    registration: { email_enabled: boolean };
+    canManageRegistration: boolean;
     profile: ProfileData;
 }
 
@@ -42,6 +45,7 @@ const TABS = [
     { key: 'general',  label: 'General',  icon: Building2 },
     { key: 'mail',     label: 'Mail',      icon: Mail      },
     { key: 'security', label: 'Security',  icon: Shield    },
+    { key: 'registration', label: 'Registration', icon: UserPlus },
     { key: 'profile',  label: 'Profile',   icon: User      },
 ] as const;
 
@@ -441,6 +445,46 @@ function SecurityTab({ data }: { data: Record<string, string> }) {
     );
 }
 
+// ─── Tab: Registration ───────────────────────────────────────────────────────
+
+function RegistrationTab({ data, canManage }: { data: { email_enabled: boolean }; canManage: boolean }) {
+    const { data: form, setData, put, processing } = useForm({
+        email_enabled: data.email_enabled,
+    });
+
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        put('/admin/settings/registration', { preserveScroll: true });
+    };
+
+    return (
+        <form onSubmit={submit} className="space-y-6" data-testid="registration-settings">
+            <Section title={tr("Sign-up with email and password")} description={tr("How new players can create an account.")}>
+                <div className="space-y-3">
+                    {canManage ? (
+                        <Toggle
+                            checked={form.email_enabled}
+                            onChange={v => setData('email_enabled', v)}
+                            label={tr("Allow sign-up with email and password")}
+                        />
+                    ) : (
+                        <p className="text-sm text-muted-foreground">{tr("Only super admins can change this setting.")}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                        {tr("Off by default: new accounts are created only with a Google account. When on, the sign-up page also shows a form for name, email and password. New players always complete birth date, grade and school in the first-login wizard.")}
+                    </p>
+                </div>
+            </Section>
+
+            {canManage && (
+                <div className="flex justify-end">
+                    <SaveButton processing={processing} />
+                </div>
+            )}
+        </form>
+    );
+}
+
 // ─── Tab: Profile ────────────────────────────────────────────────────────────
 
 function ProfileTab({ profile }: { profile: ProfileData }) {
@@ -600,7 +644,7 @@ function ProfileTab({ profile }: { profile: ProfileData }) {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-export default function Settings({ tab, general, mail, security, profile }: SettingsProps) {
+export default function Settings({ tab, general, mail, security, registration, canManageRegistration, profile }: SettingsProps) {
     const { props } = usePage<SharedData>();
     const flash = (props as unknown as { flash?: { success?: string } }).flash;
 
@@ -654,6 +698,7 @@ export default function Settings({ tab, general, mail, security, profile }: Sett
                     {activeTab === 'general'  && <GeneralTab  data={general}  />}
                     {activeTab === 'mail'     && <MailTab     data={mail}     />}
                     {activeTab === 'security' && <SecurityTab data={security} />}
+                    {activeTab === 'registration' && <RegistrationTab data={registration} canManage={canManageRegistration} />}
                     {activeTab === 'profile'  && <ProfileTab  profile={profile} />}
                 </div>
             </div>
