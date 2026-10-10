@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\GameAccess;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 /**
  * Device, operating system and browser mix of game page opens.
@@ -58,6 +59,38 @@ class DeviceAnalytics
                 ->groupBy('game_key')->orderByDesc('accesses')->get()
                 ->map(fn (GameAccess $row): array => ['game' => $row->game_key, ...$this->split($row)])->all(),
         ];
+    }
+
+    /**
+     * Every game opened in the window, busiest first, with its device split
+     * and browser mix. Two grouped queries, no per-game lookups.
+     *
+     * @return list<array{game: string, accesses: int, users: int, mobile: int, tablet: int, desktop: int, browsers: list<array{name: string, accesses: int}>}>
+     */
+    public function gameBreakdown(int $days = self::DAYS): array
+    {
+        $since = now()->subDays($days);
+        $window = fn (): Builder => GameAccess::query()->where('accessed_at', '>=', $since);
+
+        $browsers = $window()->selectRaw('game_key, browser, COUNT(*) as accesses')
+            ->groupBy('game_key', 'browser')->get()
+            ->map(fn (GameAccess $row): array => ['game' => (string) $row->game_key, 'name' => (string) $row->browser, 'accesses' => (int) $row->accesses])
+            ->groupBy('game')
+            ->map(fn (Collection $rows): array => $rows
+                ->sortBy([['accesses', 'desc'], ['name', 'asc']])
+                ->map(fn (array $row): array => ['name' => $row['name'], 'accesses' => $row['accesses']])
+                ->values()->all());
+
+        return $window()
+            ->selectRaw($this->splitColumns().', game_key, COUNT(*) as accesses, COUNT(DISTINCT user_id) as users')
+            ->groupBy('game_key')->orderByDesc('accesses')->orderBy('game_key')->get()
+            ->map(fn (GameAccess $row): array => [
+                'game' => $row->game_key,
+                'accesses' => (int) $row->accesses,
+                'users' => (int) $row->users,
+                ...$this->split($row),
+                'browsers' => $browsers->get($row->game_key, []),
+            ])->values()->all();
     }
 
     private function splitColumns(): string
