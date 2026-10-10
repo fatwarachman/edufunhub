@@ -8,13 +8,14 @@ import { useEffect, useRef } from 'react';
 import './snake.css';
 
 /** Seat colours, matching the avatar seat palette order. */
-export const SEAT_COLORS = ['#fff9dc', '#fb923c', '#a78bfa', '#f43f5e'];
+export const SEAT_COLORS = ['#34c759', '#fb923c', '#a78bfa', '#f43f5e'];
 const FOOD_COLORS: Record<string, string> = {
     A: '#ffc356',
-    B: '#bfeaf4',
-    C: '#f9b4c9',
-    D: '#c9efd8',
+    B: '#7dd3fc',
+    C: '#f9a8d4',
+    D: '#86efac',
 };
+const INK = '#1f2a44';
 
 function roundRect(
     ctx: CanvasRenderingContext2D,
@@ -31,6 +32,293 @@ function roundRect(
     ctx.arcTo(x, y + h, x, y, r);
     ctx.arcTo(x, y, x + w, y, r);
     ctx.closePath();
+}
+
+/** Mix a #rrggbb colour with white (amount > 0) or black (amount < 0). */
+function shade(hex: string, amount: number): string {
+    const n = parseInt(hex.slice(1), 16);
+    const mix = (c: number) =>
+        Math.round(amount >= 0 ? c + (255 - c) * amount : c * (1 + amount));
+    const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(mix);
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+type Point = [number, number];
+
+/** Cell centres of a body from head to tail, without coiled duplicates. */
+function spine(body: [number, number][], cell: number): Point[] {
+    const points: Point[] = [];
+    for (const [x, y] of body) {
+        const px = x * cell + cell / 2;
+        const py = y * cell + cell / 2;
+        const last = points[points.length - 1];
+        if (!last || last[0] !== px || last[1] !== py) {
+            points.push([px, py]);
+        }
+    }
+    return points;
+}
+
+/** Chaikin corner cutting: rounds every bend, keeps both ends. */
+function smooth(points: Point[], rounds = 3): Point[] {
+    let out = points;
+    for (let n = 0; n < rounds && out.length > 2; n++) {
+        const next: Point[] = [out[0]];
+        for (let i = 0; i < out.length - 1; i++) {
+            const [ax, ay] = out[i];
+            const [bx, by] = out[i + 1];
+            next.push([ax * 0.75 + bx * 0.25, ay * 0.75 + by * 0.25]);
+            next.push([ax * 0.25 + bx * 0.75, ay * 0.25 + by * 0.75]);
+        }
+        next.push(out[out.length - 1]);
+        out = next;
+    }
+    return out;
+}
+
+/** Half body width at t (0 = head, 1 = tail tip): full neck, pointed tail. */
+function halfWidth(t: number, cell: number): number {
+    const full = cell * 0.44;
+    if (t < 0.3) return full;
+    const k = (t - 0.3) / 0.7;
+    return full * (1 - k * k * 0.55);
+}
+
+/** Strokes path in short pieces so the width can follow t (round joins). */
+function strokeTapered(
+    ctx: CanvasRenderingContext2D,
+    path: Point[],
+    width: (t: number) => number,
+    color: string,
+) {
+    const lengths = [0];
+    for (let i = 1; i < path.length; i++) {
+        lengths.push(
+            lengths[i - 1] +
+                Math.hypot(
+                    path[i][0] - path[i - 1][0],
+                    path[i][1] - path[i - 1][1],
+                ),
+        );
+    }
+    const total = lengths[lengths.length - 1] || 1;
+    ctx.strokeStyle = color;
+    ctx.lineCap = 'round';
+    for (let i = path.length - 1; i > 0; i--) {
+        ctx.lineWidth = 2 * width(lengths[i] / total);
+        ctx.beginPath();
+        ctx.moveTo(path[i][0], path[i][1]);
+        ctx.lineTo(path[i - 1][0], path[i - 1][1]);
+        ctx.stroke();
+    }
+}
+
+/**
+ * Cartoon snake: one smooth tapering body with an outline, a light belly
+ * stripe and soft spots, and a big round head with eyes, cheeks, a smile
+ * and a forked tongue.
+ */
+function drawSnake(
+    ctx: CanvasRenderingContext2D,
+    snake: Board['snakes'][number],
+    cell: number,
+    isYou: boolean,
+    mini: boolean,
+) {
+    const color = SEAT_COLORS[snake.seat % SEAT_COLORS.length];
+    const points = spine(snake.body, cell);
+    const [hx, hy] = points[0];
+    const dirs: Record<string, Point> = {
+        up: [0, -1],
+        down: [0, 1],
+        left: [-1, 0],
+        right: [1, 0],
+    };
+    const [dx, dy] = dirs[snake.dir] ?? [1, 0];
+    const outline = Math.max(1.5, cell * 0.12);
+    const width = (t: number) => halfWidth(t, cell);
+
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    if (points.length > 1) {
+        const path = smooth(points, 4);
+        strokeTapered(
+            ctx,
+            path,
+            (t) => width(t) + outline * (0.3 + (0.7 * width(t)) / width(0)),
+            INK,
+        );
+        strokeTapered(ctx, path, width, color);
+        if (!mini) {
+            strokeTapered(
+                ctx,
+                path.slice(0, Math.ceil(path.length * 0.9)),
+                (t) => width(t * 0.9) * 0.34,
+                shade(color, 0.5),
+            );
+            ctx.fillStyle = shade(color, -0.2);
+            const every = 8;
+            for (let i = every * 2; i < path.length - every * 2; i += every) {
+                const [ax, ay] = path[i];
+                const [bx, by] = path[i + 1];
+                const len = Math.hypot(bx - ax, by - ay) || 1;
+                const t = i / (path.length - 1);
+                const w = width(t);
+                const side = (i / every) % 2 === 0 ? 1 : -1;
+                ctx.beginPath();
+                ctx.arc(
+                    ax + (-(by - ay) / len) * side * w * 0.62,
+                    ay + ((bx - ax) / len) * side * w * 0.62,
+                    w * 0.2,
+                    0,
+                    Math.PI * 2,
+                );
+                ctx.fill();
+            }
+        }
+    }
+
+    const headR = cell * 0.6;
+    ctx.translate(hx, hy);
+    ctx.rotate(Math.atan2(dy, dx));
+    if (!mini) {
+        ctx.strokeStyle = '#e11d48';
+        ctx.lineWidth = Math.max(2, cell * 0.1);
+        ctx.beginPath();
+        ctx.moveTo(headR * 0.8, 0);
+        ctx.lineTo(headR * 1.55, 0);
+        ctx.lineTo(headR * 1.8, -headR * 0.24);
+        ctx.moveTo(headR * 1.55, 0);
+        ctx.lineTo(headR * 1.8, headR * 0.24);
+        ctx.stroke();
+    }
+    if (isYou && !mini) {
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = cell * 0.5;
+    }
+    ctx.beginPath();
+    ctx.ellipse(headR * 0.1, 0, headR * 1.1, headR * 0.95, 0, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = outline * 1.5;
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    if (!mini) {
+        ctx.fillStyle = shade(color, 0.35);
+        ctx.beginPath();
+        ctx.ellipse(
+            -headR * 0.25,
+            0,
+            headR * 0.45,
+            headR * 0.3,
+            0,
+            0,
+            Math.PI * 2,
+        );
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255, 110, 140, 0.85)';
+        for (const side of [-1, 1]) {
+            ctx.beginPath();
+            ctx.ellipse(
+                headR * 0.58,
+                side * headR * 0.56,
+                headR * 0.18,
+                headR * 0.12,
+                0,
+                0,
+                Math.PI * 2,
+            );
+            ctx.fill();
+        }
+    }
+    for (const side of [-1, 1]) {
+        const ex = headR * 0.12;
+        const ey = side * headR * 0.4;
+        const er = headR * (mini ? 0.3 : 0.34);
+        ctx.beginPath();
+        ctx.arc(ex, ey, er, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.lineWidth = Math.max(1, outline * 0.8);
+        ctx.strokeStyle = INK;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(ex + er * 0.35, ey, er * 0.55, 0, Math.PI * 2);
+        ctx.fillStyle = INK;
+        ctx.fill();
+        if (!mini) {
+            ctx.beginPath();
+            ctx.arc(ex + er * 0.5, ey - er * 0.25, er * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+        }
+    }
+    if (!mini) {
+        ctx.strokeStyle = INK;
+        ctx.lineWidth = Math.max(1.5, outline);
+        ctx.beginPath();
+        ctx.arc(headR * 0.5, 0, headR * 0.4, -0.7, 0.7);
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
+/** Big round answer token covering size x size cells. */
+function drawFood(
+    ctx: CanvasRenderingContext2D,
+    food: Board['foods'][number],
+    cell: number,
+    mini: boolean,
+) {
+    const size = food.size ?? 1;
+    const cx = (food.x + size / 2) * cell;
+    const cy = (food.y + size / 2) * cell;
+    const r = (size * cell) / 2 - Math.max(1, cell * 0.04);
+    const color = FOOD_COLORS[food.label] ?? '#fff9dc';
+    ctx.save();
+    ctx.fillStyle = 'rgba(31, 42, 68, 0.25)';
+    ctx.beginPath();
+    ctx.arc(cx + r * 0.08, cy + r * 0.12, r, 0, Math.PI * 2);
+    ctx.fill();
+    const gradient = ctx.createRadialGradient(
+        cx - r * 0.35,
+        cy - r * 0.4,
+        r * 0.1,
+        cx,
+        cy,
+        r,
+    );
+    gradient.addColorStop(0, shade(color, 0.6));
+    gradient.addColorStop(1, color);
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.lineWidth = Math.max(2, cell * 0.12);
+    ctx.strokeStyle = INK;
+    ctx.stroke();
+    if (!mini) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.beginPath();
+        ctx.ellipse(
+            cx - r * 0.4,
+            cy - r * 0.48,
+            r * 0.22,
+            r * 0.12,
+            -0.6,
+            0,
+            Math.PI * 2,
+        );
+        ctx.fill();
+        ctx.fillStyle = INK;
+        ctx.font = `900 ${Math.round(r * 1.1)}px system-ui, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(food.label, cx, cy + r * 0.06);
+    }
+    ctx.restore();
 }
 
 /**
@@ -62,19 +350,19 @@ export function SnakeCanvas({
         if (!ctx) return;
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
         const cell = size / grid;
-        ctx.fillStyle = '#156653';
+        ctx.fillStyle = '#c4e89c';
         ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = '#b4dc86';
         for (let y = 0; y < grid; y++) {
             for (let x = 0; x < grid; x++) {
                 if ((x + y) % 2 === 0) {
-                    ctx.fillStyle = '#17705b';
                     ctx.fillRect(x * cell, y * cell, cell, cell);
                 }
             }
         }
         for (const [x, y] of board.blocks) {
-            ctx.fillStyle = '#1f2a44';
-            roundRect(ctx, x * cell + 1, y * cell + 1, cell - 2, cell - 2, 3);
+            ctx.fillStyle = INK;
+            roundRect(ctx, x * cell + 1, y * cell + 1, cell - 2, cell - 2, 4);
             ctx.fill();
             ctx.strokeStyle = '#ff9e44';
             ctx.lineWidth = 2;
@@ -84,82 +372,26 @@ export function SnakeCanvas({
             ctx.stroke();
         }
         for (const food of board.foods) {
-            const cx = food.x * cell + cell / 2;
-            const cy = food.y * cell + cell / 2;
-            ctx.fillStyle = FOOD_COLORS[food.label] ?? '#fff9dc';
-            ctx.strokeStyle = '#1f2a44';
-            ctx.lineWidth = Math.max(1.5, cell * 0.08);
-            ctx.beginPath();
-            ctx.arc(cx, cy, cell * 0.47, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-            if (!mini) {
-                ctx.fillStyle = '#1f2a44';
-                ctx.font = `900 ${Math.round(cell * 0.62)}px system-ui, sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(food.label, cx, cy + 1);
-            }
+            drawFood(ctx, food, cell, mini);
         }
         for (const snake of board.snakes) {
-            if (!snake.alive) continue;
-            const color = SEAT_COLORS[snake.seat % SEAT_COLORS.length];
-            ctx.globalAlpha = snake.frozen ? 0.45 : 1;
-            for (let i = snake.body.length - 1; i >= 0; i--) {
-                const [x, y] = snake.body[i];
-                const pad = i === 0 ? 0.5 : cell * 0.12;
-                ctx.fillStyle = i === 0 ? '#1f2a44' : color;
-                ctx.strokeStyle = '#1f2a44';
-                ctx.lineWidth = Math.max(1, cell * 0.08);
-                roundRect(
-                    ctx,
-                    x * cell + pad,
-                    y * cell + pad,
-                    cell - pad * 2,
-                    cell - pad * 2,
-                    cell * 0.3,
-                );
-                ctx.fill();
-                if (i > 0) ctx.stroke();
+            if (!snake.alive || snake.body.length === 0) continue;
+            if (!snake.frozen) {
+                drawSnake(ctx, snake, cell, snake.seat === you, mini);
+                continue;
             }
-            const [hx, hy] = snake.body[0];
-            ctx.fillStyle = color;
-            roundRect(
-                ctx,
-                hx * cell + cell * 0.14,
-                hy * cell + cell * 0.14,
-                cell * 0.72,
-                cell * 0.72,
-                cell * 0.25,
-            );
-            ctx.fill();
-            if (snake.seat === you && !mini) {
-                ctx.strokeStyle = '#fff9dc';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
-            ctx.fillStyle = '#1f2a44';
-            const eye = cell * 0.09;
-            const [ex, ey] =
-                snake.dir === 'up' || snake.dir === 'down'
-                    ? [cell * 0.2, 0]
-                    : [0, cell * 0.2];
-            const ox =
-                snake.dir === 'left' ? -0.12 : snake.dir === 'right' ? 0.12 : 0;
-            const oy =
-                snake.dir === 'up' ? -0.12 : snake.dir === 'down' ? 0.12 : 0;
-            for (const s of [-1, 1]) {
-                ctx.beginPath();
-                ctx.arc(
-                    hx * cell + cell / 2 + s * ex + ox * cell,
-                    hy * cell + cell / 2 + s * ey + oy * cell,
-                    eye,
-                    0,
-                    Math.PI * 2,
-                );
-                ctx.fill();
-            }
-            ctx.globalAlpha = 1;
+            const layer = document.createElement('canvas');
+            layer.width = canvas.width;
+            layer.height = canvas.height;
+            const layerCtx = layer.getContext('2d');
+            if (!layerCtx) continue;
+            layerCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+            drawSnake(layerCtx, snake, cell, snake.seat === you, mini);
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.globalAlpha = 0.5;
+            ctx.drawImage(layer, 0, 0);
+            ctx.restore();
         }
     }, [board, grid, you, mini]);
     return (

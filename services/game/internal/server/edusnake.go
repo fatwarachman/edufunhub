@@ -138,6 +138,8 @@ func (s *Server) serveEduSnake(w http.ResponseWriter, r *http.Request) {
 			ids = []int64{claims.Subject}
 		case "start":
 			ids, err = s.snake.Start(claims.Subject, now)
+		case "ready":
+			ids, err = s.snake.Ready(claims.Subject, now)
 		case "turn":
 			ids, err = s.snake.Turn(claims.Subject, in.Direction, now)
 			// Turns take effect on the next step, which pushes the state.

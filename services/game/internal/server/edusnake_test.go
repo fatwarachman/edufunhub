@@ -65,7 +65,7 @@ func TestEduSnakeWebSocketRoom(t *testing.T) {
 	defer laravel.Close()
 
 	cfg := edusnake.Defaults
-	cfg.Countdown, cfg.Step = 50*time.Millisecond, 40*time.Millisecond
+	cfg.Read, cfg.Step = 50*time.Millisecond, 40*time.Millisecond
 	srv := New(Config{Secret: secret, ResultURL: laravel.URL, EduSnake: cfg})
 	ts := httptest.NewServer(srv.Handler())
 	defer ts.Close()
@@ -96,6 +96,10 @@ func TestEduSnakeWebSocketRoom(t *testing.T) {
 	if len(board["foods"].([]any)) != len(q["options"].([]any)) {
 		t.Fatal("one food per option")
 	}
+	if q["phase"] != "read" {
+		t.Fatalf("new question must start in the reading phase: %v", q["phase"])
+	}
+	host.send(map[string]any{"t": "ready"})
 	host.send(map[string]any{"t": "turn", "direction": "up"})
 	host.until("snake_state", func(m map[string]any) bool {
 		b, _ := m["board"].(map[string]any)

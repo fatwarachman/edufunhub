@@ -21,6 +21,7 @@ export interface SnakeOnBoard {
     dir: SnakeDirection;
     alive: boolean;
     frozen: boolean;
+    ready?: boolean;
 }
 
 export interface SnakeQuestion {
@@ -31,12 +32,16 @@ export interface SnakeQuestion {
     subject: string;
     worth: number;
     remaining_ms: number;
+    /** `read`: every snake frozen while players read; `hunt`: snakes move. */
+    phase: 'read' | 'hunt';
+    read_ms: number;
+    hunt_ms: number;
 }
 
 export interface SnakeBoard {
     seat?: number;
     snakes: SnakeOnBoard[];
-    foods: { label: string; x: number; y: number }[];
+    foods: { label: string; x: number; y: number; size?: number }[];
     blocks: Cell[];
     question?: SnakeQuestion | null;
 }
@@ -52,7 +57,8 @@ export interface SnakeState extends RoomPayload<SnakeSeat> {
     subject_fallback?: boolean;
     board: SnakeBoard | null;
     boards: SnakeBoard[];
-    countdown_ms: number;
+    food_size: number;
+    read_seconds: number;
     remaining_ms: number;
     feedback: null | {
         seq: number;
@@ -98,5 +104,6 @@ export function useSnake(wsUrl: string | null, locale: string) {
         (direction: SnakeDirection) => send({ t: 'turn', direction }),
         [send],
     );
-    return { ...connection, state, error, turn };
+    const ready = useCallback(() => send({ t: 'ready' }), [send]);
+    return { ...connection, state, error, turn, ready };
 }
