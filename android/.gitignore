@@ -1,0 +1,9 @@
+# Signing keys and build output never go to git.
+*.keystore
+*.jks
+keystore.password
+dist/
+build/
+app/build/
+.gradle/
+local.properties

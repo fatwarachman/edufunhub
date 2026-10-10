@@ -1,0 +1,63 @@
+{
+  "packageId": "com.edufunhub.app",
+  "host": "edufunhub.com",
+  "name": "EduFunHub",
+  "launcherName": "EduFunHub",
+  "display": "standalone",
+  "themeColor": "#FFD93D",
+  "themeColorDark": "#1A1D24",
+  "navigationColor": "#FFFAF0",
+  "navigationColorDark": "#1A1D24",
+  "navigationDividerColor": "#FFFAF0",
+  "navigationDividerColorDark": "#1A1D24",
+  "backgroundColor": "#FFFAF0",
+  "enableNotifications": true,
+  "startUrl": "/dashboard?source=twa",
+  "iconUrl": "https://edufunhub.com/pwa-512.png",
+  "maskableIconUrl": "https://edufunhub.com/pwa-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./edufunhub-upload.keystore",
+    "alias": "edufunhub"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Portal",
+      "shortName": "Portal",
+      "url": "https://edufunhub.com/portal?source=twa",
+      "chosenIconUrl": "https://edufunhub.com/pwa-192.png"
+    },
+    {
+      "name": "Daftar Game",
+      "shortName": "Daftar Game",
+      "url": "https://edufunhub.com/gamelist?source=twa",
+      "chosenIconUrl": "https://edufunhub.com/pwa-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://edufunhub.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://edufunhub.com/",
+  "minSdkVersion": 24,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "appVersion": "1.0.0"
+}
