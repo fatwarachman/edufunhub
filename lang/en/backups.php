@@ -1,0 +1,35 @@
+<?php
+
+return [
+    'started' => 'Backup started. This page refreshes when it is done.',
+    'already_running' => 'Another backup is still running. Wait until it finishes.',
+    'still_running' => 'This backup is still running and cannot be deleted yet.',
+    'settings_saved' => 'Backup settings saved.',
+    'deleted' => 'Backup deleted.',
+    'remote_delete_failed' => 'The copy on the FTP server could not be deleted: :error',
+    'local_missing' => 'The local backup file could not be read.',
+    'ftp' => [
+        'not_configured' => 'Fill in the FTP host, username and password first and save the settings.',
+        'ok' => 'FTP connection to :host works: a test file was written and removed.',
+        'password_removed' => 'FTP password removed.',
+        'upload_failed' => 'The FTP upload failed: :error',
+        'resolve' => 'FTP host :host could not be found.',
+        'connect' => 'Could not connect to :host on port :port (check host, port, firewall or passive mode).',
+        'login' => 'The FTP server rejected the username or password.',
+        'tls' => 'The TLS (FTPS) handshake failed. Check whether the server supports explicit TLS.',
+        'denied' => 'The FTP server refused the file operation. Check the folder and write permission.',
+        'failed' => 'The FTP request failed.',
+    ],
+    'validation' => [
+        'frequency' => 'Choose daily or weekly.',
+        'time' => 'Enter a time as HH:MM, for example 02:00.',
+        'weekday' => 'Choose a day of the week.',
+        'destination' => 'Choose local, FTP or both.',
+        'keep' => 'Keep between 1 and 100 backups.',
+        'ftp_host' => 'Enter the FTP host name or IP address (without ftp://).',
+        'ftp_port' => 'Enter a port between 1 and 65535 (usually 21).',
+        'ftp_username' => 'Enter the FTP username.',
+        'ftp_password' => 'Enter the FTP password.',
+        'ftp_directory' => 'Use a folder path with letters, numbers, dots, dashes and slashes only.',
+    ],
+];

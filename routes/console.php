@@ -22,3 +22,6 @@ Schedule::command('app:send-plan-usage-alerts')->dailyAt('10:00')->withoutOverla
 
 // Send API key expiry alerts daily at 08:00 UTC
 Schedule::command('app:send-api-key-expiry-alerts')->dailyAt('08:00')->withoutOverlapping();
+
+// Full database backup: runs every minute but only backs up when the schedule on /admin/backups is due
+Schedule::command('backup:database --trigger=scheduled')->everyMinute()->withoutOverlapping(180)->runInBackground();

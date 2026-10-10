@@ -31,6 +31,7 @@
         <env name="AI_GENERATION_QUEUE_CONNECTION" value="sync"/>
         <env name="AI_ASSESSMENT_QUEUE_CONNECTION" value="sync"/>
         <env name="WHATSAPP_QUEUE_CONNECTION" value="sync"/>
+        <env name="BACKUP_QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
