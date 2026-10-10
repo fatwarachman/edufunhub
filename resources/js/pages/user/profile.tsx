@@ -1,4 +1,5 @@
 import { Google } from '@/components/brand-icons';
+import { EditableCardHeader, ReadOnlyFields } from '@/components/editable-card';
 import { GradeCard } from '@/components/grade-card';
 import InputError from '@/components/input-error';
 import PlayerCharacter, {
@@ -295,77 +296,125 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
 function AccountCard({ account }: { account: ProfileProps['account'] }) {
     const { t } = useTranslations();
     const form = useForm({ name: account.name });
+    const [editing, setEditing] = useState(false);
+    const [saved, setSaved] = useState(false);
 
     return (
         <section className={CARD} data-testid="profile-account">
-            <h2 className="flex items-center gap-2 text-xl font-bold">
-                <UserRound className="size-5" aria-hidden />
-                {t('profile.account.title')}
-            </h2>
-            <form
-                className="flex flex-col gap-3"
-                onSubmit={(event) => {
-                    event.preventDefault();
-                    form.patch('/profile', { preserveScroll: true });
+            <EditableCardHeader
+                icon={<UserRound className="size-5" aria-hidden />}
+                title={t('profile.account.title')}
+                editing={editing}
+                onEdit={() => {
+                    setSaved(false);
+                    setEditing(true);
                 }}
-            >
-                <label htmlFor="profile-name" className="text-sm font-semibold">
-                    {t('profile.account.name')}
-                </label>
-                <input
-                    id="profile-name"
-                    name="name"
-                    value={form.data.name}
-                    onChange={(event) =>
-                        form.setData('name', event.target.value)
-                    }
-                    autoComplete="name"
-                    maxLength={80}
-                    className={FIELD}
-                />
-                <InputError message={form.errors.name} />
-                <label
-                    htmlFor="profile-email"
-                    className="text-sm font-semibold"
-                >
-                    {t('profile.account.email')}
-                </label>
-                <input
-                    id="profile-email"
-                    value={account.email}
-                    disabled
-                    className={FIELD}
-                    aria-describedby="profile-email-hint"
-                />
+                onCancel={() => {
+                    form.reset();
+                    form.clearErrors();
+                    setEditing(false);
+                }}
+                testId="profile-account"
+            />
+            {saved && !editing && (
                 <p
-                    id="profile-email-hint"
-                    className="text-xs text-muted-foreground"
+                    role="status"
+                    className="text-sm font-semibold text-[#116a56]"
                 >
-                    {account.email_verified
-                        ? t('profile.account.emailVerified')
-                        : t('profile.account.emailLocked')}
+                    {t('profile.account.saved')}
                 </p>
-                {form.recentlySuccessful && (
-                    <p
-                        role="status"
-                        className="text-sm font-semibold text-[#116a56]"
-                    >
-                        {t('profile.account.saved')}
+            )}
+            {!editing ? (
+                <>
+                    <ReadOnlyFields
+                        testId="profile-account-view"
+                        rows={[
+                            {
+                                label: t('profile.account.name'),
+                                value: account.name,
+                                testId: 'profile-account-view-name',
+                            },
+                            {
+                                label: t('profile.account.email'),
+                                value: account.email,
+                                testId: 'profile-account-view-email',
+                            },
+                        ]}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        {account.email_verified
+                            ? t('profile.account.emailVerified')
+                            : t('profile.account.emailLocked')}
                     </p>
-                )}
-                <button
-                    type="submit"
-                    disabled={
-                        form.processing ||
-                        form.data.name.trim() === '' ||
-                        form.data.name.trim() === account.name
-                    }
-                    className="px-5 py-2.5 font-bold disabled:opacity-50"
-                    data-testid="profile-save"
+                </>
+            ) : (
+                <form
+                    className="flex flex-col gap-3"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        form.patch('/profile', {
+                            preserveScroll: true,
+                            onSuccess: () => {
+                                form.setDefaults();
+                                setSaved(true);
+                                setEditing(false);
+                            },
+                        });
+                    }}
                 >
-                    {t('profile.account.save')}
-                </button>
-            </form>
+                    <label
+                        htmlFor="profile-name"
+                        className="text-sm font-semibold"
+                    >
+                        {t('profile.account.name')}
+                    </label>
+                    <input
+                        id="profile-name"
+                        name="name"
+                        value={form.data.name}
+                        onChange={(event) =>
+                            form.setData('name', event.target.value)
+                        }
+                        autoComplete="name"
+                        maxLength={80}
+                        className={FIELD}
+                    />
+                    <InputError message={form.errors.name} />
+                    <label
+                        htmlFor="profile-email"
+                        className="text-sm font-semibold"
+                    >
+                        {t('profile.account.email')}
+                    </label>
+                    <input
+                        id="profile-email"
+                        value={account.email}
+                        disabled
+                        className={FIELD}
+                        aria-describedby="profile-email-hint"
+                    />
+                    <p
+                        id="profile-email-hint"
+                        className="text-xs text-muted-foreground"
+                    >
+                        {account.email_verified
+                            ? t('profile.account.emailVerified')
+                            : t('profile.account.emailLocked')}
+                    </p>
+                    <button
+                        type="submit"
+                        disabled={
+                            form.processing ||
+                            form.data.name.trim() === '' ||
+                            form.data.name.trim() === account.name
+                        }
+                        className="px-5 py-2.5 font-bold disabled:opacity-50"
+                        data-testid="profile-save"
+                    >
+                        {t('profile.account.save')}
+                    </button>
+                </form>
+            )}
         </section>
     );
 }

@@ -52,6 +52,8 @@ class ProfileController extends Controller
                 'school_city' => $profile?->school_city,
                 'school_level' => $profile?->school_level,
                 'school_npsn' => $profile?->school_npsn,
+                'whatsapp_number' => $user->whatsapp_number,
+                'whatsapp_notifications' => (bool) $user->whatsapp_notifications,
                 'character' => $profile?->character(),
             ],
             'stats' => [

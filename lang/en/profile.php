@@ -10,4 +10,6 @@ return [
     'password_required' => 'Enter a new password.',
     'password_mismatch' => 'The password confirmation does not match.',
     'password_expired' => 'Your password has expired. Please update it now.',
+    'whatsapp_required' => 'Enter your WhatsApp number.',
+    'wizard_saved' => 'Your profile is complete. Have fun learning!',
 ];

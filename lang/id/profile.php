@@ -10,4 +10,6 @@ return [
     'password_required' => 'Masukkan kata sandi baru.',
     'password_mismatch' => 'Konfirmasi kata sandi tidak sama.',
     'password_expired' => 'Kata sandi kamu sudah kedaluwarsa. Ganti sekarang, ya.',
+    'whatsapp_required' => 'Isi nomor WhatsApp.',
+    'wizard_saved' => 'Profil kamu sudah lengkap. Selamat belajar!',
 ];
