@@ -124,3 +124,9 @@ it('renders the latest section only when there are new games', function (): void
         ->and($page)->toContain("const showLatest = filter === 'all' && !searching && latest.length > 0;")
         ->and($page)->toContain('{showLatest && (');
 });
+
+it('does not render the join by pin card on the game list', function (): void {
+    $page = file_get_contents(resource_path('js/pages/games/index.tsx'));
+
+    expect($page)->not->toContain('JoinByPinCard');
+});

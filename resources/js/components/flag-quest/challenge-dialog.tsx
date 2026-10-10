@@ -1,4 +1,5 @@
 import SnakesChallenge from '@/components/flag-quest/snakes-challenge';
+import { QuestionMedia } from '@/components/question-media';
 import { useTranslations } from '@/hooks/use-translations';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import type { ChallengeState } from '@/lib/flag-quest/world';
@@ -101,6 +102,7 @@ export default function ChallengeDialog({
             <p className="text-xs font-bold text-[#6c5ce7] uppercase">
                 {subjectName(challenge.question.subject)}
             </p>
+            <QuestionMedia media={challenge.question.media} size="sm" />
             <p className="text-lg leading-snug font-bold break-words sm:text-xl">
                 {challenge.question.prompt}
             </p>

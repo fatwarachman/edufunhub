@@ -20,6 +20,8 @@ use App\Services\MatchHistory;
 use App\Services\PlayerBadges;
 use App\Services\PlayerNotifications;
 use App\Services\UserAnalytics;
+use App\Services\WhatsApp\PhoneNumber;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,8 +29,11 @@ use Inertia\Response;
 
 class UserController extends Controller
 {
+    /** Fields the user list search can target ("all" searches every one). */
+    public const SEARCH_FIELDS = ['all', 'name', 'school', 'email', 'phone'];
+
     /**
-     * Paginated user list with search, role filter, and sort.
+     * Paginated user list with search (name, school, email, phone), filters and sort.
      */
     public function index(Request $request, PlayerBadges $badges): Response
     {
@@ -41,12 +46,11 @@ class UserController extends Controller
             })
             ->when($request->activity === 'joined_today', fn ($q) => $q->where('created_at', '>=', now()->startOfDay()))
             ->when($request->activity === 'online', fn ($q) => $q->where('last_seen_at', '>=', now()->subMinutes(User::ONLINE_MINUTES)))
-            ->when($request->search, function ($q, string $search): void {
-                $q->where(function ($q) use ($search): void {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                });
-            })
+            ->when(is_string($request->search) && trim($request->search) !== '', fn ($q) => $this->applySearch(
+                $q,
+                mb_substr(trim((string) $request->search), 0, 100),
+                in_array($request->search_by, self::SEARCH_FIELDS, true) ? $request->search_by : 'all',
+            ))
             ->when($request->role, function ($q, string $roleSlug): void {
                 $q->whereHas('roles', fn ($r) => $r->where('slug', $roleSlug));
             })
@@ -81,7 +85,7 @@ class UserController extends Controller
         return Inertia::render('admin/users/index', [
             'users' => $users,
             'roles' => Role::query()->select('id', 'name', 'slug')->get(),
-            'filters' => (object) $request->only(['search', 'role', 'signup', 'activity', 'sort', 'direction']),
+            'filters' => (object) $request->only(['search', 'search_by', 'role', 'signup', 'activity', 'sort', 'direction']),
             'canImpersonate' => $request->user()->hasPermission(ImpersonationController::PERMISSION)
                 && ! $request->session()->has('impersonated_by'),
             'viewerIsSuperadmin' => (bool) $request->user()->is_superadmin,
@@ -331,5 +335,38 @@ class UserController extends Controller
             ->log($action);
 
         return back()->with('success', "User {$action} successfully.");
+    }
+
+    /**
+     * Name (account name or player nickname), last school, email or WhatsApp
+     * number. Phone input may be local (0812…, +62 812-…): it is reduced to
+     * digits and matched in the stored 62… form.
+     *
+     * @param  Builder<User>  $query
+     */
+    private function applySearch(Builder $query, string $search, string $field): void
+    {
+        $like = '%'.addcslashes($search, '%_\\').'%';
+        $digits = preg_replace('/\D+/', '', $search) ?? '';
+        $phone = preg_match('/^\s*(\+?62|0|8)/', $search) === 1 ? (PhoneNumber::normalize($digits) ?? $digits) : $digits;
+        $looksLikePhone = strlen($digits) >= 4 && preg_match('/^[\d\s+().-]+$/', $search) === 1;
+
+        $query->where(function (Builder $q) use ($field, $like, $phone, $looksLikePhone): void {
+            if ($field === 'all' || $field === 'name') {
+                $q->orWhere('name', 'like', $like)
+                    ->orWhereHas('playerProfile', fn (Builder $p) => $p->where('nickname', 'like', $like));
+            }
+            if ($field === 'all' || $field === 'school') {
+                $q->orWhereHas('playerProfile', fn (Builder $p) => $p->where('school_name', 'like', $like));
+            }
+            if ($field === 'all' || $field === 'email') {
+                $q->orWhere('email', 'like', $like);
+            }
+            if ($field === 'phone' || ($field === 'all' && $looksLikePhone)) {
+                $phone === ''
+                    ? $q->whereRaw('1 = 0')
+                    : $q->orWhere('whatsapp_number', 'like', '%'.$phone.'%');
+            }
+        });
     }
 }

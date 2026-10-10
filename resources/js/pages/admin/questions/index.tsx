@@ -84,7 +84,16 @@ interface QuestionRow {
     source: string;
     points: number | null;
     author: string | null;
+    visual_kind?: string | null;
 }
+
+/** Admin labels per question visual kind. */
+const VISUAL_LABELS: Record<string, string> = {
+    image: 'Picture',
+    cable: 'Cable',
+    topology: 'Topology',
+    terminal: 'Terminal',
+};
 
 interface SubjectStat {
     subject: string;
@@ -939,6 +948,18 @@ function QuestionList({
                                             <QuestionLevelBadge
                                                 level={question.level ?? 1}
                                             />
+                                            {question.visual_kind && (
+                                                <Badge>
+                                                    {tr('Visual')}
+                                                    {': '}
+                                                    {tr(
+                                                        VISUAL_LABELS[
+                                                            question.visual_kind
+                                                        ] ??
+                                                            question.visual_kind,
+                                                    )}
+                                                </Badge>
+                                            )}
                                             {(question.points ?? 0) > 0 && (
                                                 <Badge tone="amber">
                                                     {tr('Bonus +')}

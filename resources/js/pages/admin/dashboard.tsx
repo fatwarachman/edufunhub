@@ -526,9 +526,14 @@ export default function Dashboard(props: DashboardProps) {
                         icon={Gamepad2}
                         actions={
                             superadmin ? (
-                                <PanelLink href="/admin/games">
-                                    {tr('Details')}
-                                </PanelLink>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <PanelLink href="/admin/hot-games">
+                                        {tr('Hottest today')}
+                                    </PanelLink>
+                                    <PanelLink href="/admin/games">
+                                        {tr('Details')}
+                                    </PanelLink>
+                                </div>
                             ) : undefined
                         }
                     >

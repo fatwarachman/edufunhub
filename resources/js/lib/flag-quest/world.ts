@@ -1,3 +1,5 @@
+import { type QuestionMediaData } from '@/components/question-media';
+
 /**
  * Shared Flag Quest protocol types and a client-side mirror of the Go collision
  * rules (services/game/internal/world). The Go service stays authoritative; this
@@ -68,7 +70,12 @@ export interface ChallengeState {
     resumed?: boolean;
     deadline_ms?: number;
     ends_ms?: number;
-    question?: { prompt: string; subject: string; options: string[] };
+    question?: {
+        prompt: string;
+        media?: QuestionMediaData | null;
+        subject: string;
+        options: string[];
+    };
     feedback?: ChallengeFeedback;
     board?: {
         size: number;

@@ -739,7 +739,7 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 			}
 			q := Message{
 				"id": fmt.Sprintf("%s-%d", r.Pin, g.round), "subject": g.question.Subject, "worth": g.question.Worth(),
-				"text": g.question.Prompt.Get(locale), "options": opts, "target": g.landing,
+				"text": g.question.Prompt.Get(locale), "media": g.question.Media(), "options": opts, "target": g.landing,
 			}
 			if g.step == StepQuestion {
 				q["remaining_ms"] = max(0, (answerTime(g) - elapsed).Milliseconds())

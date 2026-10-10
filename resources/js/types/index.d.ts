@@ -121,6 +121,8 @@ export interface GameMenuGame {
     guestPlayable: boolean;
     /** Multiplayer game best played against classmates of the same grade. */
     sameGradeMatch?: boolean;
+    /** Programme flags, e.g. 'tkj' (SMK Teknik Komputer dan Jaringan). */
+    tags?: string[];
 }
 
 export interface GameMenuCategory {

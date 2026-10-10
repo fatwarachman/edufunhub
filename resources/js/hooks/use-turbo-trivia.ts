@@ -1,3 +1,4 @@
+import { type QuestionMediaData } from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { useCallback, useReducer } from 'react';
@@ -85,7 +86,12 @@ export interface TurboQuiz {
     stage: 'QUESTION' | 'REVEAL' | 'DONE';
     time_limit: number;
     remaining_ms: number;
-    question: { text: string; subject: string; worth: number };
+    question: {
+        text: string;
+        media?: QuestionMediaData | null;
+        subject: string;
+        worth: number;
+    };
     options: string[];
     correct_index?: number;
     hint?: string;

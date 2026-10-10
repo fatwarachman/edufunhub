@@ -1172,7 +1172,7 @@ func (r *Room) questionView(p *Player, locale string) Message {
 	}
 	return Message{
 		"question_id": p.questionID, "ingredient": p.ingredient, "number": p.asked,
-		"text": q.Prompt.Get(locale), "subject": q.Subject, "options": opts,
+		"text": q.Prompt.Get(locale), "media": q.Media(), "subject": q.Subject, "options": opts,
 	}
 }
 

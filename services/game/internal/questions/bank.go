@@ -32,6 +32,9 @@ type Item struct {
 	Points int `json:"points"`
 	// Level is the difficulty: 1 easy, 2 medium, 3 expert (0 = easy).
 	Level int `json:"level"`
+	// Visual is an optional illustration (image, cable, topology, terminal)
+	// passed through to clients as is; it never contains the answer index.
+	Visual json.RawMessage `json:"visual,omitempty"`
 }
 
 // ForGame reports whether the item is distributed to game ("" matches every item).
@@ -105,10 +108,30 @@ func Validate(items []Item) error {
 			return fmt.Errorf("%s: points out of range", it.Key)
 		case it.Level < 0 || it.Level > points.LevelExpert:
 			return fmt.Errorf("%s: level out of range", it.Key)
+		case !validVisual(it.Visual):
+			return fmt.Errorf("%s: visual must be an object with a kind", it.Key)
 		}
 		seen[it.Key] = true
 	}
 	return nil
+}
+
+// MaxVisualBytes caps one question illustration payload.
+const MaxVisualBytes = 8 << 10
+
+// validVisual accepts no visual (empty or null) or a JSON object with a
+// non-empty string kind, up to MaxVisualBytes.
+func validVisual(raw json.RawMessage) bool {
+	if len(raw) == 0 || string(raw) == "null" {
+		return true
+	}
+	if len(raw) > MaxVisualBytes {
+		return false
+	}
+	var head struct {
+		Kind string `json:"kind"`
+	}
+	return json.Unmarshal(raw, &head) == nil && head.Kind != ""
 }
 
 func validGrades(grades []int) bool {

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\DeviceUsageController;
 use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\GameSoundsController;
 use App\Http\Controllers\Admin\GameStatisticsController;
+use App\Http\Controllers\Admin\HotGamesController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\LeaderboardController;
 use App\Http\Controllers\Admin\MatchHistoryController;
@@ -36,6 +37,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserGamePlayController;
 use App\Http\Controllers\Admin\UserStatisticsController;
 use App\Http\Controllers\Admin\WhatsAppController;
+use App\Http\Controllers\QuestionMediaController;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureSuperadmin;
 use Illuminate\Http\RedirectResponse;
@@ -85,6 +87,8 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
 
         // Super admin: game statistics, leaderboard and question bank
         Route::middleware(EnsureSuperadmin::class)->group(function (): void {
+            Route::get('/hot-games', [HotGamesController::class, 'index'])->name('hot-games.index');
+            Route::get('/hot-games/{game}', [HotGamesController::class, 'show'])->where('game', '[a-z0-9-]+')->name('hot-games.show');
             Route::get('/games', [GameStatisticsController::class, 'index'])->name('games.index');
             Route::get('/games/{game}', [GameStatisticsController::class, 'show'])->where('game', '[a-z0-9-]+')->name('games.show');
             Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard.index');
@@ -97,6 +101,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::post('/users/{user}/ability-assessments', [AbilityAssessmentController::class, 'store'])->middleware('throttle:5,1,users.ability-assessments.store')->name('users.ability-assessments.store');
             Route::post('/questions/bulk', [QuestionController::class, 'bulk'])->middleware('throttle:30,1,questions.bulk')->name('questions.bulk');
             Route::patch('/questions/{question}/toggle', [QuestionController::class, 'toggle'])->name('questions.toggle');
+            Route::post('/questions/media', [QuestionMediaController::class, 'store'])->middleware('throttle:30,1,questions.media')->name('questions.media.store');
             Route::get('/notifications', [PlayerNotificationController::class, 'index'])->name('notifications.index');
             Route::post('/notifications', [PlayerNotificationController::class, 'store'])->middleware('throttle:20,1,notifications.store')->name('notifications.store');
             Route::get('/point-rules', [PointRulesController::class, 'index'])->name('point-rules.index');

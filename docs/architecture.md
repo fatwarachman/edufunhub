@@ -127,6 +127,19 @@ mengelolanya di `/admin/subjects`: tambah, ubah nama/ikon/warna, sembunyikan, ur
   Mapel tanpa soal untuk kelas pemain otomatis memakai campuran dan menampilkan catatan fallback.
 - Kolom `ai_hint` dipakai sebagai deskripsi mapel untuk generator soal AI.
 
+### Visual soal (gambar, kabel, topologi, terminal)
+
+- `questions.visual` (JSON, opsional) dikelola `App\Services\QuestionVisual`: `image` (`src` hasil unggah
+  `POST /admin/questions/media`, disajikan `GET /games/question-media/{file}` untuk pemain login), `cable`
+  (`style` utp/fiber + `wires[{color, stripe?}]`, pin 1 dulu), `topology` (`shape` star/bus/ring/mesh/tree/point),
+  `terminal` (`lines`, maks. 12). Semua jenis boleh punya `caption{id,en}`.
+- Bank soal mengirim `visual` apa adanya; Go (`questions.Item.Visual`) memvalidasi (objek dengan `kind`, maks.
+  8 KB), lalu setiap game mengirimnya ke klien sebagai `media` di pesan soal. Visual tidak pernah berisi kunci jawaban.
+- React merender lewat satu komponen bersama `QuestionMedia` (`resources/js/components/question-media.tsx`);
+  game baru wajib memasangnya di atas teks soal.
+- Mapel `tkj` (kelas 10–12) dan 18 soal TKJ bervisual di-seed dari `database/data/tkj-visual-questions.php`.
+  Game bertanda TKJ memakai `tags: ['tkj']` di `config/game-catalog.php` (lencana `TkjBadge`, filter "Edisi TKJ").
+
 ## Chat service (`services/chat`)
 
 Chat antar pemain berjalan di container Go terpisah, `edufunhub-chat` (`docker compose build chat`, port internal 8091). Laravel tetap pemilik data: keanggotaan, penyimpanan pesan, notifikasi lonceng. Go hanya mengantar event secara live. Go tidak menyimpan riwayat, dan klien melakukan resync dari Laravel setiap kali tersambung ulang.

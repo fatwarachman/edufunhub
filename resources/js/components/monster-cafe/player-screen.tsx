@@ -31,6 +31,7 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { QuestionMedia } from '@/components/question-media';
 import { Button } from '@/components/ui/button';
 import {
     type Ingredient,
@@ -1130,6 +1131,7 @@ function QuestionCard({
                     </h2>
                 </div>
             </div>
+            <QuestionMedia media={question.media} size="sm" />
             <div
                 className="grid grid-cols-1 gap-2 sm:grid-cols-2"
                 role="group"

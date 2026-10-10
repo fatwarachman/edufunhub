@@ -1,4 +1,5 @@
 import { type RoomPayload, type RoomSeat } from '@/components/multiplayer/room';
+import { type QuestionMediaData } from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 import { useCallback, useState } from 'react';
 
@@ -27,6 +28,7 @@ export interface SnakeOnBoard {
 export interface SnakeQuestion {
     id: string;
     text: string;
+    media?: QuestionMediaData | null;
     options: string[];
     labels: string[];
     subject: string;

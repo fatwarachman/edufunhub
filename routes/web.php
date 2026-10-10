@@ -36,6 +36,7 @@ use App\Http\Controllers\PortalController;
 use App\Http\Controllers\PortSorterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileWizardController;
+use App\Http\Controllers\QuestionMediaController;
 use App\Http\Controllers\QuizDuelController;
 use App\Http\Controllers\RegencyController;
 use App\Http\Controllers\SchoolListController;
@@ -53,6 +54,7 @@ use App\Http\Middleware\EnsureTeacher;
 use App\Http\Middleware\RecordGameAccess;
 use App\Services\Ads\AdMedia;
 use App\Services\ProfilePhoto;
+use App\Services\QuestionVisual;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
@@ -94,6 +96,7 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::post('/profile/photo', [ProfileController::class, 'photo'])->middleware('throttle:profile-photo')->name('profile.photo.update');
     Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->middleware('throttle:profile-photo')->name('profile.photo.destroy');
     Route::get('/profile/photo/{file}', [ProfileController::class, 'showPhoto'])->where('file', ProfilePhoto::FILE_PATTERN)->name('profile.photo.show');
+    Route::get('/games/question-media/{file}', [QuestionMediaController::class, 'show'])->where('file', QuestionVisual::FILE_PATTERN)->name('games.question-media');
     Route::get('/players/online', OnlinePlayersController::class)->middleware('throttle:60,1,players.online')->name('players.online');
     Route::get('/players/online/count', [OnlinePlayersController::class, 'count'])->middleware('throttle:30,1,players.online.count')->name('players.online.count');
     Route::get('/players/{user}', PlayerPageController::class)->whereNumber('user')->middleware('throttle:60,1,players.show')->name('players.show');

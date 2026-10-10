@@ -15,6 +15,9 @@ return [
     | quiz-duel starts with one player because a bot joins when nobody else waits.
     | released_at: date (Y-m-d, app timezone) the game became playable. /gamelist
     | shows it under "Game terbaru" for PlayerPortal::NEW_GAME_DAYS days.
+    | tags: optional programme flags shown as badges and filters on /gamelist
+    | and the portal (PlayerPortal::TAGS), e.g. 'tkj' for SMK Teknik Komputer
+    | dan Jaringan material.
     */
     'categories' => [
         [
@@ -148,6 +151,7 @@ return [
                     'requires_grade' => false,
                     'guest_playable' => false,
                     'multiplayer' => true,
+                    'tags' => ['tkj'],
                     'released_at' => '2026-10-05',
                 ],
                 [
@@ -277,6 +281,7 @@ return [
                     'awards_points' => true,
                     'requires_grade' => false,
                     'guest_playable' => false,
+                    'tags' => ['tkj'],
                     'released_at' => '2026-10-05',
                 ],
                 [

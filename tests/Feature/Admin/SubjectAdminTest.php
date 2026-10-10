@@ -38,9 +38,9 @@ function subjectPayload(array $overrides = []): array
     ];
 }
 
-it('ships the six built-in subjects', function (): void {
-    expect(Subject::activeKeys())->toBe(['math', 'science', 'language', 'social', 'english', 'civics'])
-        ->and(Subject::query()->where('is_system', true)->count())->toBe(6);
+it('ships the seven built-in subjects', function (): void {
+    expect(Subject::activeKeys())->toBe(['math', 'science', 'language', 'social', 'english', 'civics', 'tkj'])
+        ->and(Subject::query()->where('is_system', true)->count())->toBe(7);
 });
 
 it('lists subjects with question counts for super admins only', function (): void {
@@ -53,7 +53,7 @@ it('lists subjects with question counts for super admins only', function (): voi
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/subjects/index')
-            ->has('subjects', 6)
+            ->has('subjects', 7)
             ->where('subjects.0.key', 'math')
             ->where('subjects.0.questions', $total + 3)
             ->where('subjects.0.active_questions', $active + 2)
@@ -92,17 +92,17 @@ it('shares active subjects with every page and the Go bank', function (): void {
 
     $this->actingAs($this->admin)->get('/admin/subjects')
         ->assertInertia(fn (Assert $page) => $page
-            ->has('subjects', 8)
-            ->where('subjects.6.key', 'music'));
+            ->has('subjects', 9)
+            ->where('subjects.7.key', 'music'));
 
     $this->actingAs(User::factory()->create())->get('/terms')
         ->assertInertia(fn (Assert $page) => $page
-            ->where('subjects.6.key', 'music')
-            ->where('subjects.6.name.en', 'Music')
-            ->has('subjects', 7));
+            ->where('subjects.7.key', 'music')
+            ->where('subjects.7.name.en', 'Music')
+            ->has('subjects', 8));
 
     $bank = subjectBank()->assertOk();
-    expect($bank->json('subjects'))->toBe(['math', 'science', 'language', 'social', 'english', 'civics', 'music']);
+    expect($bank->json('subjects'))->toBe(['math', 'science', 'language', 'social', 'english', 'civics', 'tkj', 'music']);
 
     $version = $bank->json('version');
     Subject::query()->where('key', 'dance')->update(['is_active' => true]);

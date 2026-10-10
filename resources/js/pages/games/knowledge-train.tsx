@@ -10,6 +10,7 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { QuestionMedia } from '@/components/question-media';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useGameAudio } from '@/hooks/use-game-audio';
@@ -624,6 +625,11 @@ export default function KnowledgeTrain({
                     >
                         <div className="kt-board__frame rounded-2xl border-2 border-[#20364a] p-1.5 shadow-[3px_4px_0_#20364a]">
                             <div className="rounded-xl border-2 border-[#5a3d22]/40 bg-[#fff4d6] px-3 py-2 text-center sm:px-4 sm:py-2.5">
+                                <QuestionMedia
+                                    media={state?.question?.media}
+                                    size="sm"
+                                    className="mb-1.5"
+                                />
                                 <p
                                     className={cn(
                                         'font-display leading-snug font-bold text-balance break-words',

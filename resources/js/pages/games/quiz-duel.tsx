@@ -17,6 +17,7 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { QuestionMedia } from '@/components/question-media';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { useMyUserId } from '@/hooks/use-chat-socket';
 import { type DuelState, useDuelConnection } from '@/hooks/use-duel-connection';
@@ -538,6 +539,7 @@ export default function QuizDuel({
                                     }}
                                 />
                             </div>
+                            <QuestionMedia media={question.media} />
                             <h2
                                 className="text-center font-display text-xl leading-snug font-bold sm:text-2xl"
                                 data-testid="duel-question"

@@ -1,5 +1,5 @@
-import { BadgeChips } from '@/components/badges';
 import { gameLabel } from '@/components/admin/game-stats';
+import { BadgeChips } from '@/components/badges';
 import { OnlineDot } from '@/components/online-dot';
 import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
@@ -121,6 +121,29 @@ function SignupBadge({ google }: { google: boolean }) {
     );
 }
 
+/** Fields the search box can target (mirrors UserController::SEARCH_FIELDS). */
+type SearchField = 'all' | 'name' | 'school' | 'email' | 'phone';
+
+const SEARCH_FIELDS: {
+    value: SearchField;
+    label: string;
+    placeholder: string;
+}[] = [
+    {
+        value: 'all',
+        label: 'All fields',
+        placeholder: 'Search name, school, email or phone…',
+    },
+    { value: 'name', label: 'Name', placeholder: 'Search by name…' },
+    { value: 'school', label: 'School', placeholder: 'Search by school…' },
+    { value: 'email', label: 'Email', placeholder: 'Search by email…' },
+    {
+        value: 'phone',
+        label: 'Phone number',
+        placeholder: 'e.g. 0812 3456 or 62812…',
+    },
+];
+
 interface UsersIndexProps {
     users: PaginatedData<AdminUser>;
     roles: Role[];
@@ -128,6 +151,7 @@ interface UsersIndexProps {
     viewerIsSuperadmin: boolean;
     filters: {
         search?: string;
+        search_by?: SearchField;
         role?: string;
         signup?: string;
         activity?: string;
@@ -267,6 +291,7 @@ export default function UsersIndex({
     viewerIsSuperadmin,
 }: UsersIndexProps) {
     const [search, setSearch] = useState(filters.search ?? '');
+    const searchBy: SearchField = filters.search_by ?? 'all';
     const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
@@ -301,6 +326,10 @@ export default function UsersIndex({
         (params: Record<string, string | undefined>) => {
             const query = {
                 search: params.search ?? filters.search,
+                search_by:
+                    'search_by' in params
+                        ? params.search_by
+                        : filters.search_by,
                 role: 'role' in params ? params.role : filters.role,
                 signup: 'signup' in params ? params.signup : filters.signup,
                 activity:
@@ -386,15 +415,46 @@ export default function UsersIndex({
 
                 {/* Filters */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <div className="relative flex-1">
-                        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                        <input
-                            type="text"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder={tr('Search users…')}
-                            className="h-9 w-full rounded-lg border border-input bg-background pr-3 pl-9 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                        />
+                    <div className="flex min-w-0 flex-1 gap-2">
+                        <select
+                            aria-label={tr('Search by')}
+                            value={searchBy}
+                            onChange={(e) =>
+                                updateFilters({
+                                    search_by:
+                                        e.target.value === 'all'
+                                            ? undefined
+                                            : e.target.value,
+                                })
+                            }
+                            className="h-9 shrink-0 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                            data-testid="users-search-by"
+                        >
+                            {SEARCH_FIELDS.map((field) => (
+                                <option key={field.value} value={field.value}>
+                                    {tr(field.label)}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="relative min-w-0 flex-1">
+                            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                            <input
+                                type="search"
+                                inputMode={
+                                    searchBy === 'phone' ? 'tel' : undefined
+                                }
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder={tr(
+                                    SEARCH_FIELDS.find(
+                                        (field) => field.value === searchBy,
+                                    )?.placeholder ?? 'Search users…',
+                                )}
+                                aria-label={tr('Search users…')}
+                                className="h-9 w-full rounded-lg border border-input bg-background pr-3 pl-9 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                data-testid="users-search"
+                            />
+                        </div>
                     </div>
                     <select
                         value={filters.role ?? ''}
@@ -605,6 +665,14 @@ export default function UsersIndex({
                                             {user.email.split('@')[0]}
                                             <wbr />@{user.email.split('@')[1]}
                                         </span>
+                                        {user.whatsapp_number && (
+                                            <span
+                                                className="w-full text-xs text-muted-foreground tabular-nums"
+                                                data-testid={`users-phone-${user.id}`}
+                                            >
+                                                +{user.whatsapp_number}
+                                            </span>
+                                        )}
                                         {user.ads_disabled && (
                                             <span
                                                 className="inline-flex items-center rounded-full border border-border px-1.5 text-[11px] font-medium text-muted-foreground"
@@ -712,8 +780,7 @@ export default function UsersIndex({
                                           key: 'current_activity' as const,
                                           header: tr('Current activity'),
                                           summary: true,
-                                          cellClassName:
-                                              'whitespace-nowrap',
+                                          cellClassName: 'whitespace-nowrap',
                                           cell: (user: AdminUser) =>
                                               user.current_game ? (
                                                   <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">

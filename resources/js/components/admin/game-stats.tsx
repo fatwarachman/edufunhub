@@ -23,6 +23,7 @@ export const GAME_LABELS: Record<string, string> = {
     'block-battle': 'Block Battle',
     'monster-cafe': 'Monster Café',
     'ping-pong': 'Ping Pong',
+    snake: 'Snake (Main Ular)',
 };
 
 /**

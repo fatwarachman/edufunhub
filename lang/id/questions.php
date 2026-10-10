@@ -13,6 +13,15 @@ return [
     'grades_required' => 'Pilih minimal satu kelas.',
     'grades_invalid' => 'Kelas harus TK atau 1 sampai 12.',
     'prompt_required' => 'Tulis pertanyaan minimal 3 karakter.',
+    'visual' => [
+        'image_required' => 'Unggah gambar untuk visual bergambar.',
+        'image_missing' => 'Gambar soal tidak ditemukan. Unggah ulang gambarnya.',
+        'image_file' => 'Gambar harus JPG, PNG, atau WEBP, maksimal 2 MB, sisi 64–4096 px.',
+        'wires_required' => 'Kabel membutuhkan 2–12 warna inti.',
+        'color_invalid' => 'Warna harus berformat hex, contoh #2563eb.',
+        'shape_required' => 'Pilih bentuk topologi.',
+        'lines_required' => 'Tulis minimal satu baris terminal.',
+    ],
     'bulk' => [
         'activate' => ':count soal diaktifkan.',
         'deactivate' => ':count soal dinonaktifkan.',

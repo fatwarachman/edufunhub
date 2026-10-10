@@ -930,6 +930,12 @@
             "tab": "Terpanas",
             "title": "Game terpanas",
             "intro": "Urutan game yang paling sering dimainkan dalam {{days}} hari terakhir."
+        },
+        "tkj": {
+            "badge": "TKJ",
+            "tab": "Edisi TKJ",
+            "title": "Game edisi TKJ",
+            "hint": "Materi Teknik Komputer dan Jaringan (SMK): kabel, topologi, IP, dan protokol."
         }
     },
     "snakes": {
@@ -3275,5 +3281,12 @@
             }
         },
         "soloOut": "Permainan selesai — ekor belum habis. Coba lagi!"
+    },
+    "questionMedia": {
+        "imageAlt": "Gambar soal",
+        "cableLabel": "Susunan {{count}} kabel, nomor 1 di kiri",
+        "fiberLabel": "Susunan {{count}} core fiber, nomor 1 di kiri",
+        "topologyLabel": "Diagram topologi jaringan",
+        "terminal": "Terminal"
     }
 }

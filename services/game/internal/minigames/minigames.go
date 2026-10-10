@@ -549,7 +549,7 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 			}
 			question := Message{
 				"id": fmt.Sprintf("%s-%d", r.Pin, g.round), "subject": q.Subject, "worth": q.Worth(),
-				"text": q.Prompt.Get(locale), "options": opts, "choice": choice,
+				"text": q.Prompt.Get(locale), "media": q.Media(), "options": opts, "choice": choice,
 				"visual": localize(g.current.Visual, locale), "round_ms": g.roundTime.Milliseconds(),
 			}
 			if g.step == StepQuestion {

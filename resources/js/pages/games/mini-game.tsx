@@ -16,6 +16,7 @@ import {
     useRoomPin,
 } from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { QuestionMedia } from '@/components/question-media';
 import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import { useGameAudio } from '@/hooks/use-game-audio';
@@ -626,6 +627,7 @@ export default function MiniGame({
                                 accent={theme.accent}
                                 soft={theme.soft}
                             />
+                            <QuestionMedia media={question.media} />
                             <h2
                                 className="text-center font-display text-xl leading-snug font-black sm:text-2xl"
                                 data-testid="mini-question"

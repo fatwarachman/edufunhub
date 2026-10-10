@@ -8,6 +8,7 @@ import {
     Clock,
     Coins,
     DatabaseBackup,
+    Flame,
     Gauge,
     History,
     ListChecks,
@@ -81,6 +82,12 @@ export const navItems: NavEntry[] = [
                 title: 'Screen Time',
                 href: '/admin/screen-time',
                 icon: MonitorSmartphone,
+                superadminOnly: true,
+            },
+            {
+                title: 'Hottest games',
+                href: '/admin/hot-games',
+                icon: Flame,
                 superadminOnly: true,
             },
             {
