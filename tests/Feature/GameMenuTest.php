@@ -55,6 +55,20 @@ it('shares the grouped game menu with every catalog game', function (): void {
         ->missing('gameMenu.0.games.0.recommended'));
 });
 
+it('flags multiplayer games as best played with the same grade', function (): void {
+    $this->get('/gamelist')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('gameMenu.0.games.0.key', 'flag-quest')
+        ->where('gameMenu.0.games.0.sameGradeMatch', false)
+        ->where('gameMenu.1.games.0.key', 'snakes-and-ladders')
+        ->where('gameMenu.1.games.0.sameGradeMatch', true)
+        ->where('gameMenu.2.games.0.key', 'sky-quiz')
+        ->where('gameMenu.2.games.0.sameGradeMatch', false)
+        ->where('gameMenu.2.games.1.key', 'quiz-duel')
+        ->where('gameMenu.2.games.1.sameGradeMatch', true)
+        ->where('gameMenu.4.games.0.key', 'knowledge-train')
+        ->where('gameMenu.4.games.0.sameGradeMatch', false));
+});
+
 it('shares the game menu on player pages too', function (): void {
     $player = User::factory()->withPlayerDetails()->create();
 

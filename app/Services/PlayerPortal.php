@@ -66,11 +66,24 @@ class PlayerPortal
                 'awardsPoints' => (bool) ($game['awards_points'] ?? false),
                 'requiresGrade' => (bool) ($game['requires_grade'] ?? false),
                 'guestPlayable' => (bool) ($game['guest_playable'] ?? false),
+                'sameGradeMatch' => $this->isSameGradeMatch($game),
                 'recommended' => $grade !== null
                     && $grade >= ($game['min_grade'] ?? 1)
                     && $grade <= ($game['max_grade'] ?? 12),
             ])->values()->all(),
         ])->values()->all();
+    }
+
+    /**
+     * Multiplayer games pit players against each other with questions sized
+     * to the youngest grade in the room, so they play fairest with
+     * classmates of the same grade. Mixed grades stay allowed.
+     *
+     * @param  array<string, mixed>  $game
+     */
+    private function isSameGradeMatch(array $game): bool
+    {
+        return (bool) ($game['multiplayer'] ?? false) && (int) ($game['max_players'] ?? 1) > 1;
     }
 
     /**
@@ -152,14 +165,14 @@ class PlayerPortal
     /**
      * Lightweight catalog for the site navigation menu and the public game list.
      *
-     * @return list<array{key: string, titleKey: string, games: list<array{key: string, titleKey: string, descriptionKey: ?string, url: string, icon: string, accent: string, minGrade: int, maxGrade: int, minPlayers: int, maxPlayers: int, awardsPoints: bool, guestPlayable: bool}>}>
+     * @return list<array{key: string, titleKey: string, games: list<array{key: string, titleKey: string, descriptionKey: ?string, url: string, icon: string, accent: string, minGrade: int, maxGrade: int, minPlayers: int, maxPlayers: int, awardsPoints: bool, guestPlayable: bool, sameGradeMatch: bool}>}>
      */
     public function menu(): array
     {
         return collect($this->catalog())->map(fn (array $category): array => [
             ...$category,
             'games' => collect($category['games'])->map(fn (array $game): array => collect($game)->only([
-                'key', 'titleKey', 'descriptionKey', 'url', 'icon', 'accent', 'minGrade', 'maxGrade', 'minPlayers', 'maxPlayers', 'awardsPoints', 'guestPlayable',
+                'key', 'titleKey', 'descriptionKey', 'url', 'icon', 'accent', 'minGrade', 'maxGrade', 'minPlayers', 'maxPlayers', 'awardsPoints', 'guestPlayable', 'sameGradeMatch',
             ])->all())->values()->all(),
         ])->values()->all();
     }
