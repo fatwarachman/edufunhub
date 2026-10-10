@@ -28,6 +28,7 @@ import {
     RoomError,
 } from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { QuestionMedia } from '@/components/question-media';
 import {
     type BBAction,
     type BBBoard,
@@ -865,6 +866,7 @@ function QuizPanel({
                     {answer ? '–' : Math.ceil(left / 1000)}
                 </span>
             </div>
+            <QuestionMedia media={question.media} size="sm" />
             <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
                 <div
                     className="h-full rounded-full bg-[#ca8a04] transition-[width] duration-200 ease-linear"

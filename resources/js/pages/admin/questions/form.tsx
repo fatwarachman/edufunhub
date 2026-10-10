@@ -8,7 +8,13 @@ import {
     rateTone,
     useSubjectLabel,
 } from '@/components/admin/game-stats';
+import {
+    QuestionVisualEditor,
+    visualDraft,
+    visualPayload,
+} from '@/components/admin/question-visual-editor';
 import InputError from '@/components/input-error';
+import { type QuestionMediaData } from '@/components/question-media';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -31,6 +37,7 @@ interface QuestionData {
     prompt_id: string;
     prompt_en: string | null;
     options: { id: string; en?: string }[] | null;
+    visual: QuestionMediaData | null;
     answer: number;
     hint_id: string | null;
     hint_en: string | null;
@@ -94,6 +101,7 @@ export default function QuestionForm({
         is_active: question?.is_active ?? true,
         bonus: (question?.points ?? 0) > 0,
         points: question?.points ?? perCorrect * 2,
+        visual: visualDraft(question?.visual ?? null),
     });
     const { data, setData, errors, processing } = form;
     const isChoice = data.type === 'choice';
@@ -102,9 +110,10 @@ export default function QuestionForm({
 
     const submit: FormEventHandler = (event) => {
         event.preventDefault();
-        form.transform(({ bonus, points, ...rest }) => ({
+        form.transform(({ bonus, points, visual, ...rest }) => ({
             ...rest,
             points: bonus ? points : null,
+            visual: visualPayload(visual),
         }));
         if (editing) {
             form.put(`/admin/questions/${question.id}`);
@@ -405,6 +414,19 @@ export default function QuestionForm({
                             />
                         </Field>
                     </div>
+                </Section>
+
+                <Section
+                    title={tr('Visual')}
+                    description={tr(
+                        'Optional picture shown above the question in every game: upload an image, or draw a cable, topology or terminal output (great for TKJ).',
+                    )}
+                >
+                    <QuestionVisualEditor
+                        value={data.visual}
+                        onChange={(visual) => setData('visual', visual)}
+                        errors={errors as Record<string, string>}
+                    />
                 </Section>
 
                 <Section

@@ -639,6 +639,7 @@ func (h *Hub) stateLocked(uid int64, claims auth.Claims, now time.Time) Message 
 			"subject": m.question.Subject,
 			"worth":   m.question.Worth(),
 			"text":    m.question.Prompt.Get(locale),
+			"media":   m.question.Media(),
 			"options": opts,
 			"choice":  me.choice,
 		}

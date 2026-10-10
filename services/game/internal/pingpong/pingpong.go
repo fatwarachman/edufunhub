@@ -383,7 +383,7 @@ func (h *Hub) State(c auth.Claims, now time.Time) Message {
 				opts[i] = o.Get(locale)
 			}
 			msg["subject_fallback"] = g.gen.Fallback()
-			msg["question"] = Message{"id": fmt.Sprintf("%s-%d", r.Pin, g.round), "text": q.Prompt.Get(locale), "options": opts, "subject": q.Subject, "worth": q.Worth()}
+			msg["question"] = Message{"id": fmt.Sprintf("%s-%d", r.Pin, g.round), "text": q.Prompt.Get(locale), "media": q.Media(), "options": opts, "subject": q.Subject, "worth": q.Worth()}
 		}
 		if r.Phase == lobby.PhasePlaying {
 			msg["remaining_ms"] = max(int64(0), g.deadline.Sub(now).Milliseconds())

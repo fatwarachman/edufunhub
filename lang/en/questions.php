@@ -13,6 +13,15 @@ return [
     'grades_required' => 'Choose at least one grade.',
     'grades_invalid' => 'Grades must be kindergarten (TK) or 1 to 12.',
     'prompt_required' => 'Write a question of at least 3 characters.',
+    'visual' => [
+        'image_required' => 'Upload a picture for an image visual.',
+        'image_missing' => 'The question picture was not found. Upload it again.',
+        'image_file' => 'The picture must be JPG, PNG or WEBP, at most 2 MB, 64–4096 px per side.',
+        'wires_required' => 'A cable needs 2–12 core colours.',
+        'color_invalid' => 'Colours must be hex, e.g. #2563eb.',
+        'shape_required' => 'Choose a topology shape.',
+        'lines_required' => 'Write at least one terminal line.',
+    ],
     'bulk' => [
         'activate' => ':count question(s) activated.',
         'deactivate' => ':count question(s) deactivated.',

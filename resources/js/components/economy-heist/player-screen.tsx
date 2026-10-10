@@ -19,6 +19,7 @@ import {
     RoomError,
 } from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { QuestionMedia } from '@/components/question-media';
 import { Button } from '@/components/ui/button';
 import {
     type HeistBoardEntry,
@@ -429,6 +430,7 @@ function QuestionCard({
                 <span className="text-xs font-black text-slate-600 uppercase">
                     {t('economyHeist.question', { number: question.number })}
                 </span>
+                <QuestionMedia media={question.media} size="sm" />
                 <h2 className="font-display text-xl leading-snug font-black sm:text-2xl">
                     {question.text}
                 </h2>

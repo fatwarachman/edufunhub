@@ -569,7 +569,7 @@ func (r *Room) questionMsg(p *Player, now time.Time) Message {
 		opts[i] = o.Get(locale)
 	}
 	return Message{
-		"t": "question", "qid": p.q.ID, "text": q.Prompt.Get(locale), "options": opts,
+		"t": "question", "qid": p.q.ID, "text": q.Prompt.Get(locale), "media": q.Media(), "options": opts,
 		"subject": q.Subject, "worth": q.Worth(), "time_limit_ms": p.q.Limit.Milliseconds(),
 		"remaining_ms": max(0, p.q.Deadline.Sub(now).Milliseconds()),
 	}

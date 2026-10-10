@@ -1,3 +1,5 @@
+import { type QuestionMediaData } from '@/components/question-media';
+
 export interface SkyQuestion {
     grade: number;
     subject: string;
@@ -302,6 +304,7 @@ export interface SkyRoundState {
         id: string;
         subject: string;
         text: string;
+        media?: QuestionMediaData | null;
         options: string[];
         removed: number[];
         delay: number;

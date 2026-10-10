@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Models\Question;
 use App\Models\Subject;
+use App\Services\QuestionVisual;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -28,6 +29,7 @@ class QuestionRequest extends FormRequest
             'prompt_id' => trim((string) $this->input('prompt_id')),
             'is_active' => $this->boolean('is_active'),
             'points' => $this->filled('points') && (int) $this->input('points') > 0 ? (int) $this->input('points') : null,
+            'visual' => is_array($this->input('visual')) && filled($this->input('visual.kind')) ? $this->input('visual') : null,
         ]);
     }
 
@@ -53,6 +55,7 @@ class QuestionRequest extends FormRequest
             'games.*' => ['required', Rule::in(Question::GAMES)],
             'is_active' => ['boolean'],
             'points' => ['nullable', 'integer', 'between:1,'.Question::MAX_POINTS],
+            ...QuestionVisual::rules(),
         ];
     }
 
@@ -68,8 +71,28 @@ class QuestionRequest extends FormRequest
                 if ($options->count() !== $options->unique()->count()) {
                     $validator->errors()->add('options', __('Answer options must be unique.'));
                 }
+
+                $src = $this->input('visual.src');
+                if ($this->input('visual.kind') === 'image' && is_string($src) && ! $validator->errors()->has('visual.src') && ! QuestionVisual::imageExists($src)) {
+                    $validator->errors()->add('visual.src', __('questions.visual.image_missing'));
+                }
             },
         ];
+    }
+
+    /**
+     * Validated data with the visual reduced to its kind's fields.
+     *
+     * @param  array-key|null  $key
+     * @param  mixed  $default
+     * @return mixed
+     */
+    public function validated($key = null, $default = null)
+    {
+        $data = parent::validated();
+        $data['visual'] = QuestionVisual::normalize($data['visual'] ?? null);
+
+        return data_get($data, $key, $default);
     }
 
     /** @return array<string, string> */
@@ -80,6 +103,14 @@ class QuestionRequest extends FormRequest
             'options.min' => __('Multiple choice questions need at least 3 options.'),
             'answer.max' => __('Choose a correct answer from the options.'),
             'games.required' => __('Distribute the question to at least one game.'),
+            'visual.src.required_if' => __('questions.visual.image_required'),
+            'visual.src.regex' => __('questions.visual.image_missing'),
+            'visual.wires.required_if' => __('questions.visual.wires_required'),
+            'visual.wires.min' => __('questions.visual.wires_required'),
+            'visual.wires.*.color.regex' => __('questions.visual.color_invalid'),
+            'visual.wires.*.stripe.regex' => __('questions.visual.color_invalid'),
+            'visual.shape.required_if' => __('questions.visual.shape_required'),
+            'visual.lines.required_if' => __('questions.visual.lines_required'),
         ];
     }
 

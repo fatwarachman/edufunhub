@@ -266,6 +266,7 @@ export default function PingPong({ player, serviceReady, wsUrl, pin }: Props) {
                                                   )
                                                 : undefined
                                         }
+                                        media={state.question?.media}
                                     />
                                     {state.question && (
                                         <OptionPads

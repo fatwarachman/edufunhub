@@ -1,3 +1,4 @@
+import { type QuestionMediaData } from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { useCallback, useReducer } from 'react';
@@ -91,7 +92,12 @@ export interface FloorState {
     receivedAt: number;
     ready_ms?: number;
     next_time_limit?: number;
-    question?: { text: string; subject: string; worth: number };
+    question?: {
+        text: string;
+        media?: QuestionMediaData | null;
+        subject: string;
+        worth: number;
+    };
     options?: string[];
     tiles?: number[];
     correct_index?: number;

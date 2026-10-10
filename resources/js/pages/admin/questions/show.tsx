@@ -18,6 +18,10 @@ import {
     rateTone,
     useSubjectLabel,
 } from '@/components/admin/game-stats';
+import {
+    QuestionMedia,
+    type QuestionMediaData,
+} from '@/components/question-media';
 import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
@@ -119,6 +123,7 @@ interface Props {
         prompt_id: string;
         prompt_en: string | null;
         options: { id: string; en?: string }[] | null;
+        visual: QuestionMediaData | null;
         answer: number;
         hint_id: string | null;
         hint_en: string | null;
@@ -305,6 +310,11 @@ export default function QuestionShow({ question, stats }: Props) {
                                 </p>
                             )}
                         </div>
+                        {question.visual && (
+                            <div className="w-full max-w-md rounded-xl bg-[#fff9e6] p-3">
+                                <QuestionMedia media={question.visual} />
+                            </div>
+                        )}
                         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             {options.map((option, index) => {
                                 const isCorrect = index === correctIndex;

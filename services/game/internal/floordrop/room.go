@@ -1031,7 +1031,7 @@ func character(c auth.Claims) any {
 
 func (r *Room) questionView(locale string) Message {
 	q := r.round.Question
-	return Message{"text": q.Prompt.Get(locale), "subject": q.Subject, "worth": q.Worth()}
+	return Message{"text": q.Prompt.Get(locale), "media": q.Media(), "subject": q.Subject, "worth": q.Worth()}
 }
 
 func (r *Room) optionsView(locale string) []string {

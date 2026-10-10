@@ -10,6 +10,7 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { QuestionMedia } from '@/components/question-media';
 import {
     BackButton,
     NavButton,
@@ -1300,6 +1301,13 @@ export default function SkyQuiz({
                     {subjectFallback && screen !== 'ended' && (
                         <SubjectFallbackNote
                             subject={subjectFallback}
+                            className="my-1"
+                        />
+                    )}
+                    {screen !== 'ended' && (
+                        <QuestionMedia
+                            media={question?.media}
+                            size="sm"
                             className="my-1"
                         />
                     )}

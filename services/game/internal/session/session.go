@@ -428,7 +428,7 @@ func (s *Session) challengeLocked(fb *challenge.Feedback) Message {
 		for i, o := range q.Options {
 			options[i] = o.Get(s.Locale)
 		}
-		msg["question"] = Message{"prompt": q.Prompt.Get(s.Locale), "subject": q.Subject, "options": options}
+		msg["question"] = Message{"prompt": q.Prompt.Get(s.Locale), "media": q.Media(), "subject": q.Subject, "options": options}
 	}
 	if fb != nil {
 		msg["feedback"] = fb

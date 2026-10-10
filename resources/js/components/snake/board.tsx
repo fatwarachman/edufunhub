@@ -1,4 +1,8 @@
 import {
+    QuestionMedia,
+    type QuestionMediaData,
+} from '@/components/question-media';
+import {
     type SnakeBoard as Board,
     type SnakeDirection,
 } from '@/hooks/use-snake';
@@ -515,11 +519,13 @@ export function QuestionBar({
     subject,
     options,
     labels,
+    media,
 }: {
     text: string;
     subject?: string;
     options: string[];
     labels: string[];
+    media?: QuestionMediaData | null;
 }) {
     const { t } = useTranslations();
     return (
@@ -528,6 +534,7 @@ export function QuestionBar({
                 <p>{t('snake.question')}</p>
                 {subject && <span className="sn-subject-chip">{subject}</span>}
             </div>
+            <QuestionMedia media={media} size="sm" className="my-2" />
             <h2>{text}</h2>
             <ul className="sn-options" aria-label={t('snake.options')}>
                 {options.map((option, index) => (

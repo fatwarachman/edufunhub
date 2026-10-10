@@ -1190,7 +1190,7 @@ func boardView(r *room, b *board, locale string, now time.Time) Message {
 	var question any
 	if b.q.Prompt.ID != "" {
 		question = Message{
-			"id": fmt.Sprintf("%s-%p-%d", r.Pin, b, b.round), "text": b.q.Prompt.Get(locale), "options": opts,
+			"id": fmt.Sprintf("%s-%p-%d", r.Pin, b, b.round), "text": b.q.Prompt.Get(locale), "media": b.q.Media(), "options": opts,
 			"labels": Labels[:len(opts)], "subject": b.q.Subject, "worth": b.q.Worth(),
 			"remaining_ms": max(int64(0), b.deadline.Sub(now).Milliseconds()),
 			"phase":        b.phase(now), "read_ms": max(int64(0), b.readUntil.Sub(now).Milliseconds()),

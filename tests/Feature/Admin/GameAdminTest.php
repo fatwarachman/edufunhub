@@ -194,11 +194,11 @@ test('leaderboard filters by game, level, grade, age and school', function (): v
 });
 
 test('built-in question bank is seeded and served to the go service', function (): void {
-    expect(Question::query()->count())->toBe(94);
+    expect(Question::query()->count())->toBe(112);
     Question::factory()->inactive()->create(['key' => 'q-hidden']);
 
     $response = signedBankRequest($this)->assertOk();
-    expect($response->json('questions'))->toHaveCount(94)
+    expect($response->json('questions'))->toHaveCount(112)
         ->and(collect($response->json('questions'))->pluck('key'))->not->toContain('q-hidden')
         ->and($response->json('questions.0'))->toMatchArray(['key' => 'mc-0-0', 'type' => 'choice', 'band' => 0, 'answer' => 0])
         ->and($response->json('questions.0.games'))->toBe(['flag-quest', 'sky-quiz', 'turbo-trivia', 'quiz-duel', 'knowledge-train', 'snakes-and-ladders', 'market-math', 'number-garden', 'explore-indonesia', 'mini-lab', 'floor-drop', 'economy-heist', 'block-battle', 'monster-cafe', 'ping-pong', 'snake'])
@@ -304,7 +304,7 @@ test('question list filters by game, band and status', function (): void {
     $this->actingAs($this->superadmin)->get('/admin/questions?subject=all&status=inactive')->assertInertia(fn (Assert $page) => $page
         ->component('admin/questions/index')->where('questions.total', 1)->where('questions.data.0.prompt_id', 'Soal nonaktif unik'));
     $this->actingAs($this->superadmin)->get('/admin/questions?subject=all&game=sky-quiz&band=0')->assertInertia(fn (Assert $page) => $page
-        ->where('questions.total', 10)->where('summary.total', 95)->where('summary.active', 94));
+        ->where('questions.total', 10)->where('summary.total', 113)->where('summary.active', 112));
     $this->actingAs($this->superadmin)->get('/admin/questions?search=Soal%20nonaktif')->assertInertia(fn (Assert $page) => $page
         ->where('questions.total', 1));
 });

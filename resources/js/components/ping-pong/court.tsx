@@ -1,4 +1,8 @@
 import { PlayerAvatar } from '@/components/player-avatar';
+import {
+    QuestionMedia,
+    type QuestionMediaData,
+} from '@/components/question-media';
 import { type PingPongSeat } from '@/hooks/use-ping-pong';
 import { useTranslations } from '@/hooks/use-translations';
 import './ping-pong.css';
@@ -74,9 +78,11 @@ export function Court({
 export function QuestionCard({
     text,
     subject,
+    media,
 }: {
     text: string;
     subject?: string;
+    media?: QuestionMediaData | null;
 }) {
     const { t } = useTranslations();
     return (
@@ -85,6 +91,7 @@ export function QuestionCard({
                 <p>{t('pingPong.question')}</p>
                 {subject && <span className="pp-subject-chip">{subject}</span>}
             </div>
+            <QuestionMedia media={media} size="sm" className="my-2" />
             <h2>{text}</h2>
         </div>
     );

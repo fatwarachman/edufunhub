@@ -980,7 +980,7 @@ func (r *Room) questionView(p *Player, locale string) Message {
 	for i, o := range q.Options {
 		opts[i] = o.Get(locale)
 	}
-	return Message{"id": p.questionID, "number": p.asked, "text": q.Prompt.Get(locale), "subject": q.Subject, "options": opts}
+	return Message{"id": p.questionID, "number": p.asked, "text": q.Prompt.Get(locale), "media": q.Media(), "subject": q.Subject, "options": opts}
 }
 
 // you is the private state of one player.

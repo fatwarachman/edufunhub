@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\ActivityLogPresenter;
 use App\Services\PointRules;
 use App\Services\QuestionAnalytics;
+use App\Services\QuestionVisual;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -217,6 +218,7 @@ class QuestionController extends Controller
             ->through(fn (Question $question): array => [
                 ...$question->only(['id', 'key', 'type', 'band', 'grades', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
                 'author' => $question->author?->name,
+                'visual_kind' => $question->visual['kind'] ?? null,
                 'success_rate' => $question->successRate(),
             ]);
     }
@@ -252,7 +254,7 @@ class QuestionController extends Controller
 
         return Inertia::render('admin/questions/show', [
             'question' => [
-                ...$question->only(['id', 'key', 'type', 'band', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
+                ...$question->only(['id', 'key', 'type', 'band', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'visual', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
                 'created_at' => $question->created_at?->toIso8601String(),
                 'updated_at' => $question->updated_at?->toIso8601String(),
                 'author' => $question->author ? [
@@ -272,7 +274,7 @@ class QuestionController extends Controller
     {
         return Inertia::render('admin/questions/form', [
             'question' => [
-                ...$question->only(['id', 'key', 'type', 'band', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'points', 'times_answered', 'times_correct']),
+                ...$question->only(['id', 'key', 'type', 'band', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'visual', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'points', 'times_answered', 'times_correct']),
                 'success_rate' => $question->successRate(),
             ],
             ...$this->options(),
@@ -344,6 +346,8 @@ class QuestionController extends Controller
             'maxPoints' => Question::MAX_POINTS,
             'levels' => collect(Question::LEVELS)->map(fn (int $multiplier, int $level): array => ['value' => $level, 'multiplier' => $multiplier])->values(),
             'bands' => collect(Question::BANDS)->map(fn (array $range, int $band): array => ['value' => $band, 'min' => $range[0], 'max' => $range[1]])->values(),
+            'visualKinds' => QuestionVisual::KINDS,
+            'topologies' => QuestionVisual::TOPOLOGIES,
         ];
     }
 }

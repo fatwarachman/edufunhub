@@ -63,7 +63,7 @@ class Question extends Model
 
     /** @var list<string> */
     protected $fillable = [
-        'key', 'type', 'band', 'grades', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer',
+        'key', 'type', 'band', 'grades', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'visual', 'answer',
         'hint_id', 'hint_en', 'games', 'is_active', 'source', 'created_by', 'updated_by', 'points', 'generation_id',
     ];
 
@@ -76,6 +76,7 @@ class Question extends Model
             'answer' => 'integer',
             'points' => 'integer',
             'options' => 'array',
+            'visual' => 'array',
             'games' => 'array',
             'grades' => 'array',
             'is_active' => 'boolean',
@@ -177,6 +178,7 @@ class Question extends Model
             'games' => array_values($this->games ?? []),
             'points' => $this->points ?? 0,
             'level' => self::normalizeLevel($this->level),
+            'visual' => $this->visual ?: null,
         ];
     }
 

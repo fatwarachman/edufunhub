@@ -2,6 +2,7 @@
 package questions
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand/v2"
 
@@ -43,6 +44,17 @@ type Question struct {
 	// Order maps each displayed option index to its index in the original
 	// bank item (filled by shuffle and Trim; nil means identity).
 	Order []int
+	// Visual is the bank item's illustration (nil when none); games send it
+	// to clients as the question's "media".
+	Visual json.RawMessage
+}
+
+// Media returns the illustration for a client message (nil when none).
+func (q Question) Media() json.RawMessage {
+	if len(q.Visual) == 0 || string(q.Visual) == "null" {
+		return nil
+	}
+	return q.Visual
 }
 
 // Original returns the original bank option index of the displayed option
@@ -410,7 +422,7 @@ func (g *Generator) BankChoice(subjects ...string) (Question, bool) {
 	}
 	g.used[best.Key] = true
 	History.Mark(g.Players, best.Key)
-	q := Question{Key: best.Key, Subject: best.Subject, Prompt: best.Prompt, Hint: best.Hint, Options: append([]Text(nil), best.Options...), Answer: best.Answer, FromBank: true, Points: best.Points, Level: points.Level(best.Level)}
+	q := Question{Key: best.Key, Subject: best.Subject, Prompt: best.Prompt, Hint: best.Hint, Options: append([]Text(nil), best.Options...), Answer: best.Answer, FromBank: true, Points: best.Points, Level: points.Level(best.Level), Visual: best.Visual}
 	g.shuffle(&q)
 	return q, true
 }
@@ -427,7 +439,7 @@ func containsString(list []string, s string) bool {
 // Choice returns a multiple choice question: bank question or generated arithmetic.
 func (g *Generator) Choice() Question {
 	if it, ok := g.pick(g.items(TypeChoice)); ok {
-		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level)}
+		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level), Visual: it.Visual}
 		g.shuffle(&q)
 		return q
 	}
@@ -461,7 +473,7 @@ func (g *Generator) Choice() Question {
 // TrueFalse returns a statement question.
 func (g *Generator) TrueFalse() Question {
 	if it, ok := g.pick(g.items(TypeTrueFalse)); ok {
-		return Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level)}
+		return Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level), Visual: it.Visual}
 	}
 	a, b, op, ans := g.arithmetic()
 	shown, truth := ans, 1

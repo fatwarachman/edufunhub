@@ -17,6 +17,7 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { QuestionMedia } from '@/components/question-media';
 import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
@@ -787,6 +788,10 @@ function HostScreen({
                 ) : (
                     <>
                         <TimerBar state={state} />
+                        <QuestionMedia
+                            media={state.question?.media}
+                            size="lg"
+                        />
                         <h2
                             className="text-center font-display text-2xl leading-snug font-black sm:text-3xl"
                             data-testid="fd-question"
@@ -1393,6 +1398,10 @@ function PlayerScreen({
                             </div>
                         )}
                         <TimerBar state={state} />
+                        <QuestionMedia
+                            media={state.question?.media}
+                            size="sm"
+                        />
                         <h2
                             className="text-center font-display text-xl leading-snug font-black sm:text-2xl"
                             data-testid="fd-question"

@@ -7,6 +7,7 @@ import {
     RoomError,
 } from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { QuestionMedia } from '@/components/question-media';
 import { HowToPlay } from '@/components/turbo-trivia/how-to-play';
 import {
     ACCENT,
@@ -597,6 +598,7 @@ function RacePad({
                             }}
                         />
                     </div>
+                    <QuestionMedia media={quiz.question.media} size="sm" />
                     <p
                         className="font-display text-xl leading-snug font-black sm:text-2xl"
                         data-testid="tt-prompt"

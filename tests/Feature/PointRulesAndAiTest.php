@@ -166,11 +166,12 @@ describe('question generation', function (): void {
             ->assertRedirect('/admin/questions/generate')->assertSessionHasNoErrors();
 
         $generation = QuestionGeneration::query()->sole();
+        $jobs = count(Subject::activeKeys()) * count(Question::GRADES);
         expect($generation->subjects)->toBe(Subject::activeKeys())
             ->and($generation->grades)->toBe(Question::GRADES)
-            ->and($generation->total_jobs)->toBe(6 * 13)
+            ->and($generation->total_jobs)->toBe($jobs)
             ->and($generation->model)->toBe('gpt-4o-mini');
-        Queue::assertPushed(GenerateQuestions::class, 6 * 13);
+        Queue::assertPushed(GenerateQuestions::class, $jobs);
         Queue::assertPushedOn('low', GenerateQuestions::class);
     });
 

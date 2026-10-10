@@ -1,4 +1,8 @@
 import { PlayerAvatar } from '@/components/player-avatar';
+import {
+    QuestionMedia,
+    type QuestionMediaData,
+} from '@/components/question-media';
 import { useTranslations } from '@/hooks/use-translations';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { cn } from '@/lib/utils';
@@ -86,6 +90,7 @@ export interface QuestionView {
     subject: string;
     level?: string;
     text: string;
+    media?: QuestionMediaData | null;
     options: string[];
 }
 
@@ -172,6 +177,11 @@ export function QuestionDialog({
                             {t('snakes.question.target', { square: target })}
                         </span>
                     </div>
+                    <QuestionMedia
+                        media={question.media}
+                        size="sm"
+                        className="mt-2"
+                    />
                     <h3
                         id="snakes-question-text"
                         className="mt-2 font-display text-base leading-snug font-black text-[#1f2a44] sm:text-xl"

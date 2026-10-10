@@ -4,6 +4,7 @@ import { GameFinale, podiumStandings } from '@/components/game-finale';
 import { ConnectionBadge, RoomError } from '@/components/multiplayer/room';
 import { SubjectPicker } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { QuestionMedia } from '@/components/question-media';
 import { HowToPlay } from '@/components/turbo-trivia/how-to-play';
 import {
     ACCENT,
@@ -653,6 +654,7 @@ function QuestionBanner({
                     })}
                 </span>
             </div>
+            <QuestionMedia media={quiz.question.media} size="lg" tone="dark" />
             <div className="h-2 overflow-hidden rounded-full bg-white/20">
                 <div
                     className="h-full rounded-full bg-[#facc15] transition-[width] duration-200 ease-linear"

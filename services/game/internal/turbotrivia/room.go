@@ -1277,7 +1277,7 @@ func (r *Room) remaining(now time.Time) int64 {
 
 func (r *Room) questionView(locale string) Message {
 	q := r.q.Question
-	return Message{"text": q.Prompt.Get(locale), "subject": q.Subject, "worth": q.Worth()}
+	return Message{"text": q.Prompt.Get(locale), "media": q.Media(), "subject": q.Subject, "worth": q.Worth()}
 }
 
 func (r *Room) optionsView(locale string) []string {

@@ -1,3 +1,4 @@
+import { type QuestionMediaData } from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { useCallback, useReducer } from 'react';
@@ -113,6 +114,7 @@ export interface BBFortress {
 export interface BBQuestion {
     qid: number;
     text: string;
+    media?: QuestionMediaData | null;
     options: string[];
     subject: string;
     worth: number;
