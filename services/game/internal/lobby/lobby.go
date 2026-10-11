@@ -116,6 +116,23 @@ func (r *Room[S, P]) Humans() []int64 {
 	return ids
 }
 
+// Classroom is the teacher classroom whose questions the room plays: the
+// host's classroom claim, else the first human seat that has one (0 = none).
+func (r *Room[S, P]) Classroom() int64 {
+	claims := make([]auth.Claims, 0, len(r.Seats)+1)
+	for _, s := range r.Seats {
+		if s.ID() == r.Host && !s.Local {
+			claims = append(claims, s.Claims)
+		}
+	}
+	for _, s := range r.Seats {
+		if !s.Left && !s.Local {
+			claims = append(claims, s.Claims)
+		}
+	}
+	return auth.FirstClassroom(claims...)
+}
+
 // SeatIndex returns uid's own seat index or -1.
 func (r *Room[S, P]) SeatIndex(uid int64) int {
 	for i, s := range r.Seats {

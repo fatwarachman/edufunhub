@@ -2,6 +2,8 @@ package questions
 
 import (
 	"regexp"
+	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -40,12 +42,31 @@ func UseSubjects(keys []string) {
 // KnownSubject reports whether key is a subject players can pick now.
 func KnownSubject(key string) bool { return (*subjects.Load())[key] }
 
-// NormSubject returns a known subject or "" for the mix.
+// SubjectSeparator joins several chosen subjects in one subject value
+// ("math,science").
+const SubjectSeparator = ","
+
+// NormSubject returns the chosen subjects as a canonical value: known keys
+// only, deduplicated, sorted and joined by SubjectSeparator. A single
+// subject stays as is; "" means the mix (nothing known was chosen).
 func NormSubject(s string) string {
-	if KnownSubject(s) {
-		return s
+	return strings.Join(SplitSubjects(s), SubjectSeparator)
+}
+
+// SplitSubjects returns the known subjects in a subject value, deduplicated
+// and sorted (empty = the mix).
+func SplitSubjects(s string) []string {
+	seen := map[string]bool{}
+	out := []string{}
+	for _, part := range strings.Split(s, SubjectSeparator) {
+		key := strings.TrimSpace(part)
+		if KnownSubject(key) && !seen[key] {
+			seen[key] = true
+			out = append(out, key)
+		}
 	}
-	return ""
+	sort.Strings(out)
+	return out
 }
 
 // historyCap bounds the remembered questions per player.

@@ -462,14 +462,18 @@ func (r *Room) start(c *Client, now time.Time) error {
 	}
 	grade, level := r.players[0].Claims.Grade, points.Level(r.players[0].Claims.Level)
 	ids := make([]int64, 0, len(r.players))
+	classroom := auth.FirstClassroom(r.hostClaims)
 	for _, p := range r.players {
+		if classroom == 0 {
+			classroom = p.Claims.Classroom
+		}
 		grade = min(grade, p.Claims.Grade)
 		ids = append(ids, p.ID())
 		*p = Player{Claims: p.Claims, client: p.client, order: p.order, online: true, alive: true, lives: Lives, choice: -1}
 		level = min(level, points.Level(p.Claims.Level))
 	}
 	r.grade = grade
-	r.gen = questions.NewFor(GameKey, grade, r.rng.Uint64()).For(r.subject, ids...).AtLevel(level)
+	r.gen = questions.NewFor(GameKey, grade, r.rng.Uint64()).For(r.subject, ids...).AtLevel(level).InClassroom(classroom)
 	r.answerLimit = r.cfg.FirstLimit(grade)
 	r.round = RoundState{}
 	r.ranking = nil

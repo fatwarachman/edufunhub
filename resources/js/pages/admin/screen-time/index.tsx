@@ -14,6 +14,7 @@ import {
     gameLabel,
     Panel,
 } from '@/components/admin/game-stats';
+import { ScreenTimeCell } from '@/components/admin/screen-time-cell';
 import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLocale, tr } from '@/lib/admin-i18n';
@@ -677,6 +678,7 @@ function Heatmap({ cells }: { cells: Overview['heatmap'] }) {
         if (grid[cell.weekday]) grid[cell.weekday][cell.hour] += cell.seconds;
     }
     const max = Math.max(0, ...grid.flat());
+    const total = grid.flat().reduce((sum, seconds) => sum + seconds, 0);
     if (max === 0) {
         return (
             <EmptyState
@@ -692,17 +694,14 @@ function Heatmap({ cells }: { cells: Overview['heatmap'] }) {
                 {grid.map((row, weekday) => (
                     <HeatRow key={weekday} label={WEEKDAYS[weekday]}>
                         {row.map((seconds, hour) => (
-                            <span
+                            <ScreenTimeCell
                                 key={hour}
-                                title={`${tr(WEEKDAYS[weekday])} ${String(hour).padStart(2, '0')}:00 · ${formatScreenTime(seconds)}`}
-                                className="aspect-square min-w-0 rounded-[3px] bg-muted"
-                                style={
-                                    seconds > 0
-                                        ? {
-                                              background: `color-mix(in oklab, #6366f1 ${Math.round(15 + (seconds / max) * 85)}%, transparent)`,
-                                          }
-                                        : undefined
-                                }
+                                day={WEEKDAYS[weekday]}
+                                hour={hour}
+                                seconds={seconds}
+                                maximum={max}
+                                duration={formatScreenTime(seconds)}
+                                share={Math.round((seconds / total) * 1000) / 10}
                             />
                         ))}
                     </HeatRow>
@@ -724,7 +723,7 @@ function Heatmap({ cells }: { cells: Overview['heatmap'] }) {
                         key={pct}
                         className="size-3 rounded-[3px]"
                         style={{
-                            background: `color-mix(in oklab, #6366f1 ${pct}%, transparent)`,
+                            background: `color-mix(in oklab, var(--primary) ${pct}%, transparent)`,
                         }}
                     />
                 ))}

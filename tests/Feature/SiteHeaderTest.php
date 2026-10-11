@@ -301,3 +301,16 @@ it('left-aligns the time and date inside the header clock badge', function (): v
         ->and($rule)->toContain('text-align: left;')
         ->and($rule)->not->toContain('align-items: center;');
 });
+
+it('links the signed-in header to the landing page first', function (): void {
+    $source = file_get_contents(resource_path('js/components/site-nav.tsx'));
+    $indonesian = json_decode(file_get_contents(resource_path('js/locales/id-player.json')), true);
+    $english = json_decode(file_get_contents(resource_path('js/locales/en-player.json')), true);
+
+    expect($source)->toMatch("/const LANDING_ITEM: NavItem = \\{\\s*href: '\\/',\\s*labelKey: 'nav.landing',[^}]*external: true,/")
+        ->and(strpos($source, 'LANDING_ITEM,'))->toBeLessThan(strpos($source, "{ href: '/dashboard', labelKey: 'nav.dashboard'"))
+        ->and($indonesian['nav']['landing'])->toBe('Landing')
+        ->and($english['nav']['landing'])->toBe('Landing');
+
+    $this->get('/')->assertOk();
+});

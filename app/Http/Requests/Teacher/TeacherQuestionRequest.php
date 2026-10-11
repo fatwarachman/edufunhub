@@ -27,13 +27,15 @@ class TeacherQuestionRequest extends FormRequest
             'prompt_id' => trim((string) $this->input('prompt_id')),
             'grades' => collect((array) $this->input('grades', []))->map(fn ($grade): mixed => is_numeric($grade) ? (int) $grade : $grade)->values()->all(),
             'is_active' => $this->boolean('is_active'),
+            'level' => $this->parseLevel($this->input('level')),
+            'topic_id' => $this->filled('topic_id') ? (is_numeric($this->input('topic_id')) ? (int) $this->input('topic_id') : $this->input('topic_id')) : null,
         ]);
     }
 
     /** @return array<string, array<mixed>> */
     public function rules(): array
     {
-        return [...$this->questionContentRules($this->all()), ...$this->gradeRules()];
+        return [...$this->questionContentRules($this->all()), ...$this->levelAndTopicRules($this->all()), ...$this->gradeRules()];
     }
 
     /** @return array<int, callable> */
@@ -49,7 +51,8 @@ class TeacherQuestionRequest extends FormRequest
     }
 
     /**
-     * Validated attributes ready to persist, with the band derived from the grades.
+     * Validated attributes ready to persist, with the band derived from the grades
+     * and the level clamped to the shared question levels.
      *
      * @return array<string, mixed>
      */
@@ -58,6 +61,12 @@ class TeacherQuestionRequest extends FormRequest
         $data = $this->validated();
         $grades = collect($data['grades'])->map(fn ($grade): int => (int) $grade)->unique()->sort()->values()->all();
 
-        return [...$data, 'grades' => $grades, 'band' => Question::bandForGrades($grades)];
+        return [
+            ...$data,
+            'grades' => $grades,
+            'band' => Question::bandForGrades($grades),
+            'level' => Question::normalizeLevel($data['level']),
+            'topic_id' => $data['topic_id'] ?? null,
+        ];
     }
 }

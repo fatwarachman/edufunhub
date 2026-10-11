@@ -8,7 +8,9 @@ use App\Http\Requests\Teacher\TeacherQuestionRequest;
 use App\Models\Question;
 use App\Models\QuestionCompensationRate;
 use App\Models\Subject;
+use App\Models\SubjectTopic;
 use App\Services\ActivityLogPresenter;
+use App\Services\QuestionAnalytics;
 use App\Services\TeacherQuestionImporter;
 use App\Services\TeacherQuestionStats;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,6 +36,8 @@ class TeacherQuestionController extends Controller
             'search' => mb_substr(trim((string) $request->query('search')), 0, 100) ?: null,
             'grade' => is_numeric($request->query('grade')) && in_array((int) $request->query('grade'), Question::GRADES, true) ? (int) $request->query('grade') : null,
             'subject' => in_array($request->query('subject'), Subject::keys(), true) ? (string) $request->query('subject') : null,
+            'topic' => ctype_digit((string) $request->query('topic')) && (int) $request->query('topic') > 0 ? (int) $request->query('topic') : null,
+            'level' => ctype_digit((string) $request->query('level')) && array_key_exists((int) $request->query('level'), Question::LEVELS) ? (int) $request->query('level') : null,
         ];
 
         $questions = Question::query()
@@ -43,6 +47,9 @@ class TeacherQuestionController extends Controller
                 ->orWhere('prompt_en', 'like', '%'.addcslashes($search, '%_\\').'%')))
             ->when($filters['grade'] !== null, fn (Builder $q) => $q->whereJsonContains('grades', $filters['grade']))
             ->when($filters['subject'], fn (Builder $q, string $subject) => $q->where('subject', $subject))
+            ->when($filters['topic'], fn (Builder $q, int $topic) => $q->where('topic_id', $topic))
+            ->when($filters['level'], fn (Builder $q, int $level) => $q->where('level', $level))
+            ->with('topic:id,name_id,name_en')
             ->latest('id')
             ->paginate(15)
             ->withQueryString();
@@ -54,7 +61,9 @@ class TeacherQuestionController extends Controller
             'rates' => QuestionCompensationRate::amounts(),
             'filters' => (object) array_filter($filters, fn ($value): bool => $value !== null),
             'questions' => $questions->through(fn (Question $question): array => [
-                ...$question->only(['id', 'type', 'subject', 'prompt_id', 'prompt_en', 'games', 'is_active', 'source']),
+                ...$question->only(['id', 'type', 'subject', 'prompt_id', 'prompt_en', 'games', 'is_active', 'source', 'topic_id']),
+                'level' => Question::normalizeLevel($question->level),
+                'topic' => $question->topic?->only(['id', 'name_id', 'name_en']),
                 'grades' => $question->grades ?? [],
                 'created_at' => $question->created_at?->toIso8601String(),
                 'stats' => $perQuestion->get($question->id) ?? ['answered' => 0, 'correct' => 0, 'wrong' => 0, 'success_rate' => null, 'players' => 0, 'compensation' => 0, 'games' => [], 'grades' => []],
@@ -83,13 +92,40 @@ class TeacherQuestionController extends Controller
         return redirect()->route('teacher.questions.index')->with('success', __('questions.created'));
     }
 
+    /**
+     * Item analysis of one of the teacher's questions, identical to the admin
+     * analysis of AI questions but without personal data of players.
+     */
+    public function show(Question $question, QuestionAnalytics $analytics): Response
+    {
+        Gate::authorize('update', $question);
+
+        $question->loadMissing('topic:id,name_id,name_en');
+
+        return Inertia::render('teacher/show', [
+            'question' => [
+                ...$question->only(['id', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'source', 'topic_id']),
+                'level' => Question::normalizeLevel($question->level),
+                'topic' => $question->topic?->only(['id', 'name_id', 'name_en']),
+                'grades' => $question->grades ?? [],
+                'created_at' => $question->created_at?->toIso8601String(),
+            ],
+            'stats' => $analytics->detail($question, forTeacher: true),
+            'bands' => collect(Question::BANDS)->map(fn (array $range, int $band): array => ['value' => $band, 'min' => $range[0], 'max' => $range[1]])->values(),
+        ]);
+    }
+
     public function edit(Question $question): Response
     {
         Gate::authorize('update', $question);
 
+        $question->loadMissing('topic:id,name_id,name_en');
+
         return Inertia::render('teacher/form', [
             'question' => [
-                ...$question->only(['id', 'type', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active']),
+                ...$question->only(['id', 'type', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'topic_id']),
+                'level' => Question::normalizeLevel($question->level),
+                'topic' => $question->topic?->only(['id', 'name_id', 'name_en']),
                 'grades' => $question->grades ?? [],
             ],
             ...$this->options(),
@@ -154,6 +190,8 @@ class TeacherQuestionController extends Controller
             'choiceOnlyGames' => Question::CHOICE_ONLY_GAMES,
             'subjects' => Subject::activeKeys(),
             'grades' => Question::GRADES,
+            'topics' => SubjectTopic::forPicker(),
+            'levels' => array_keys(Question::LEVELS),
         ];
     }
 }

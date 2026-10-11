@@ -17,6 +17,7 @@ import {
     Loader2,
     PlugZap,
     RefreshCw,
+    Repeat,
     Search,
     Sparkles,
     Trash2,
@@ -38,16 +39,40 @@ interface Props {
     };
     models: AiModel[];
     modelsFetchedAt: string | null;
+    autoAssessment: AutoAssessment;
     errors?: Record<string, string>;
+}
+
+interface AutoAssessment {
+    enabled: boolean;
+    first: number;
+    next: number;
+    defaults: { first: number; next: number };
+    bounds: [number, number];
 }
 
 export default function AiSettings({
     connection,
     models,
     modelsFetchedAt,
+    autoAssessment,
     errors: pageErrors,
 }: Props) {
     const form = useForm({ base_url: connection.base_url, api_key: '' });
+    const autoForm = useForm({
+        enabled: autoAssessment.enabled,
+        first: autoAssessment.first,
+        next: autoAssessment.next,
+    });
+    const saveAuto = (event: FormEvent) => {
+        event.preventDefault();
+        autoForm.put('/admin/ai-settings/auto-assessment', {
+            preserveScroll: true,
+        });
+    };
+    const autoExample = [0, 1, 2].map(
+        (index) => autoForm.data.first + index * autoForm.data.next,
+    );
     const [query, setQuery] = useState('');
     const [refreshing, setRefreshing] = useState(false);
     const [choosing, setChoosing] = useState<string | null>(null);
@@ -345,6 +370,123 @@ export default function AiSettings({
                             </ul>
                         </div>
                     )}
+                </Panel>
+
+                <Panel
+                    title={tr('Automatic ability analysis')}
+                    icon={Repeat}
+                    description={tr(
+                        'Analyses a player after enough answered questions in one day (Asia/Jakarta) and sends the result to their WhatsApp, compared with the previous analysis.',
+                    )}
+                >
+                    <form
+                        onSubmit={saveAuto}
+                        className="flex flex-col gap-5"
+                        data-testid="ai-auto-form"
+                    >
+                        <label className="flex items-start gap-3">
+                            <input
+                                type="checkbox"
+                                checked={autoForm.data.enabled}
+                                onChange={(event) =>
+                                    autoForm.setData(
+                                        'enabled',
+                                        event.target.checked,
+                                    )
+                                }
+                                className="mt-0.5 size-4 rounded border-input accent-violet-600"
+                                data-testid="ai-auto-enabled"
+                            />
+                            <span className="flex flex-col gap-0.5">
+                                <span className="text-sm font-medium text-foreground">
+                                    {tr('Run the analysis automatically')}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                    {connection.configured
+                                        ? tr(
+                                              'Turn it off to stop every automatic analysis at once.',
+                                          )
+                                        : tr(
+                                              'Needs a configured AI connection and model.',
+                                          )}
+                                </span>
+                            </span>
+                        </label>
+                        <div className="grid gap-5 md:grid-cols-2">
+                            {(
+                                [
+                                    [
+                                        'first',
+                                        tr('First analysis of the day'),
+                                        tr(
+                                            'Questions answered since midnight (default {0}).',
+                                            [autoAssessment.defaults.first],
+                                        ),
+                                    ],
+                                    [
+                                        'next',
+                                        tr('Every next analysis that day'),
+                                        tr(
+                                            'More questions after the previous milestone (default {0}).',
+                                            [autoAssessment.defaults.next],
+                                        ),
+                                    ],
+                                ] as const
+                            ).map(([key, label, hint]) => (
+                                <label
+                                    key={key}
+                                    className="flex flex-col gap-1.5"
+                                >
+                                    <span className="text-sm font-medium text-foreground">
+                                        {label}
+                                    </span>
+                                    <input
+                                        type="number"
+                                        min={autoAssessment.bounds[0]}
+                                        max={autoAssessment.bounds[1]}
+                                        value={autoForm.data[key]}
+                                        onChange={(event) =>
+                                            autoForm.setData(
+                                                key,
+                                                Number(event.target.value),
+                                            )
+                                        }
+                                        className={`${fieldClass} tabular-nums`}
+                                        data-testid={`ai-auto-${key}`}
+                                        required
+                                    />
+                                    <span className="text-xs text-muted-foreground">
+                                        {hint}
+                                    </span>
+                                    <InputError
+                                        message={autoForm.errors[key]}
+                                    />
+                                </label>
+                            ))}
+                        </div>
+                        <p
+                            className="rounded-xl border border-border bg-muted/40 px-3.5 py-2.5 text-sm text-muted-foreground"
+                            data-testid="ai-auto-example"
+                        >
+                            {tr(
+                                'Each day: analysis at {0}, {1}, {2} … answered questions. The count restarts at midnight.',
+                                autoExample,
+                            )}
+                        </p>
+                        <div className="flex justify-end border-t border-border pt-4">
+                            <button
+                                type="submit"
+                                disabled={autoForm.processing}
+                                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                                data-testid="ai-auto-save"
+                            >
+                                {autoForm.processing && (
+                                    <Loader2 className="size-4 animate-spin" />
+                                )}
+                                {tr('Save')}
+                            </button>
+                        </div>
+                    </form>
                 </Panel>
 
                 {connection.configured && (

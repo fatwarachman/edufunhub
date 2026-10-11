@@ -176,6 +176,24 @@
             "title": "Backup database (manual, terjadwal, FTP)",
             "superadminOnly": true,
             "teacherOnly": false
+        },
+        "teacherClassrooms": {
+            "href": "/teacher/classrooms",
+            "title": "Ruang Kelas Guru (Live, Analisis)",
+            "superadminOnly": false,
+            "teacherOnly": true
+        },
+        "teacherTopics": {
+            "href": "/teacher/topics",
+            "title": "Materi Pelajaran",
+            "superadminOnly": false,
+            "teacherOnly": true
+        },
+        "portalClassroom": {
+            "href": "/portal/classrooms",
+            "title": "Ruang Kelas (Portal Pemain)",
+            "superadminOnly": false,
+            "teacherOnly": false
         }
     }
 }

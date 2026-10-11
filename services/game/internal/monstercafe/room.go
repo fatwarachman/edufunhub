@@ -454,7 +454,7 @@ func (r *Room) start(c *Client, now time.Time) error {
 // prepare opens a player's kitchen: own question stream at the table's
 // lowest grade, two monsters arriving now and the first rat scheduled.
 func (r *Room) prepare(p *Player, now time.Time) {
-	p.gen = questions.NewFor(GameKey, r.grade, r.rng.Uint64()).For(r.subject, p.ID()).AtLevel(p.Claims.Level)
+	p.gen = questions.NewFor(GameKey, r.grade, r.rng.Uint64()).For(r.subject, p.ID()).AtLevel(p.Claims.Level).InClassroom(auth.FirstClassroom(r.hostClaims, p.Claims))
 	p.oven = Oven{State: OvenEmpty}
 	p.due = []time.Time{now, now}
 	p.nextRat = now.Add(r.ratDelay())

@@ -37,8 +37,11 @@ type Claims struct {
 	// items). Go treats it as opaque and only echoes it to room players.
 	Character json.RawMessage `json:"character,omitempty"`
 	Game      string          `json:"game"`
-	Expires   int64           `json:"exp"`
-	Nonce     string          `json:"nonce"`
+	// Classroom is the teacher classroom the player is in for this game
+	// (0 = none); its picked questions replace the normal bank.
+	Classroom int64  `json:"classroom,omitempty"`
+	Expires   int64  `json:"exp"`
+	Nonce     string `json:"nonce"`
 }
 
 // Sign creates a token. Used by tests and tooling; Laravel issues production tokens.
@@ -90,8 +93,22 @@ func Verify(token string, secret []byte, game string, now time.Time) (Claims, er
 	if claims.Level < 0 || claims.Level > 3 {
 		claims.Level = 0
 	}
+	if claims.Classroom < 0 {
+		claims.Classroom = 0
+	}
 	if len(claims.Character) > MaxCharacterBytes || (len(claims.Character) > 0 && claims.Character[0] != '{') {
 		claims.Character = nil
 	}
 	return claims, nil
+}
+
+// FirstClassroom returns the first positive classroom claim in order (the
+// host or creating player first), or 0 when nobody is in a classroom.
+func FirstClassroom(claims ...Claims) int64 {
+	for _, c := range claims {
+		if c.Classroom > 0 {
+			return c.Classroom
+		}
+	}
+	return 0
 }

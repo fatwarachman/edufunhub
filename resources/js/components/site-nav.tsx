@@ -20,6 +20,7 @@ import {
     BrainCircuit,
     CircleUserRound,
     Gamepad2,
+    Globe,
     Home,
     KeyRound,
     LayoutDashboard,
@@ -146,7 +147,18 @@ export function BackButton({
     );
 }
 
+/** Public landing page (static HTML, so a full page load). */
+const LANDING_ITEM: NavItem = {
+    href: '/',
+    labelKey: 'nav.landing',
+    icon: Globe,
+    external: true,
+    mobileHide: true,
+    testId: 'nav-landing',
+};
+
 const PLAYER_ITEMS: NavItem[] = [
+    LANDING_ITEM,
     { href: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
     { href: '/gamelist', labelKey: 'nav.games', icon: Gamepad2 },
     { href: '/portal', labelKey: 'nav.portal', icon: Trophy, mobileHide: true },
@@ -268,7 +280,7 @@ function playerGroups({
 }
 
 /**
- * Main site navigation. Signed-in players get dashboard/games/portal/character,
+ * Main site navigation. Signed-in players get landing/dashboard/games/portal,
  * the notification bell and logout; guests get home/games/login/register.
  * Labels show while they fit; when the header gets tight they fold into icons
  * one by one from the rightmost button (useNavFold). In `compact` mode (every

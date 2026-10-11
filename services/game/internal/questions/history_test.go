@@ -168,3 +168,39 @@ func TestSubjectNeverTurnsIntoArithmetic(t *testing.T) {
 		t.Fatalf("mix with an empty game pool must still ask the bank question once: %d/40", bankDrawn)
 	}
 }
+
+func TestSeveralSubjectsAtOnce(t *testing.T) {
+	testBank(t, 10)
+	if got := NormSubject("social, science,social,hack,mix"); got != "science,social" {
+		t.Fatalf("normalised %q", got)
+	}
+	if NormSubject("hack,mix") != "" || NormSubject("english") != "english" {
+		t.Fatal("unknown keys only must be the mix; one key stays as is")
+	}
+	g := NewFor("sky-quiz", 5, 7).For("social,science", 1)
+	seen := map[string]bool{}
+	for i := 0; i < 10; i++ {
+		q := g.Choice()
+		if (q.Subject != "social" && q.Subject != "science") || !q.FromBank || g.Fallback() {
+			t.Fatalf("social+science game drew %q (bank %v, fallback %v)", q.Subject, q.FromBank, g.Fallback())
+		}
+		seen[q.Subject] = true
+	}
+	if !seen["social"] || !seen["science"] {
+		t.Fatalf("both chosen subjects must appear, got %v", seen)
+	}
+	// Without math in the choice, no generated arithmetic sneaks in.
+	g = NewFor("sky-quiz", 5, 11).For("civics,english", 1)
+	for i := 0; i < 20; i++ {
+		if q := g.Choice(); q.Subject != "civics" && q.Subject != "english" {
+			t.Fatalf("civics+english game drew %q", q.Subject)
+		}
+	}
+	// With math chosen, generated arithmetic may join the rotation.
+	g = NewFor("sky-quiz", 5, 3).For("math,social", 1)
+	for i := 0; i < 30; i++ {
+		if q := g.Choice(); q.Subject != "math" && q.Subject != "social" {
+			t.Fatalf("math+social game drew %q", q.Subject)
+		}
+	}
+}

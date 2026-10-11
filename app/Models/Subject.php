@@ -58,6 +58,12 @@ class Subject extends Model
         return $this->hasMany(Question::class, 'subject', 'key');
     }
 
+    /** @return HasMany<SubjectTopic, $this> */
+    public function topics(): HasMany
+    {
+        return $this->hasMany(SubjectTopic::class, 'subject_key', 'key');
+    }
+
     /** @param Builder<Subject> $query */
     public function scopeActive(Builder $query): void
     {

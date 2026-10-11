@@ -63,7 +63,7 @@ class Question extends Model
 
     /** @var list<string> */
     protected $fillable = [
-        'key', 'type', 'band', 'grades', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'visual', 'answer',
+        'key', 'type', 'band', 'grades', 'level', 'subject', 'topic_id', 'prompt_id', 'prompt_en', 'options', 'visual', 'answer',
         'hint_id', 'hint_en', 'games', 'is_active', 'source', 'created_by', 'updated_by', 'points', 'generation_id',
     ];
 
@@ -82,6 +82,7 @@ class Question extends Model
             'is_active' => 'boolean',
             'times_answered' => 'integer',
             'times_correct' => 'integer',
+            'topic_id' => 'integer',
         ];
     }
 
@@ -89,6 +90,12 @@ class Question extends Model
     public function subjectRecord(): BelongsTo
     {
         return $this->belongsTo(Subject::class, 'subject', 'key');
+    }
+
+    /** @return BelongsTo<SubjectTopic, $this> */
+    public function topic(): BelongsTo
+    {
+        return $this->belongsTo(SubjectTopic::class, 'topic_id');
     }
 
     /** @return HasMany<QuestionAnswer, $this> */

@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\UserAbilityAssessment;
 use App\Services\AbilityComparison;
 use App\Services\Ai\AbilityAnalyzer;
+use App\Services\Ai\AutoAbilityAssessment;
 use App\Services\WhatsApp\AbilityReportMessage;
 use App\Services\WhatsApp\WhatsAppNotifier;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -46,11 +47,31 @@ class GenerateAbilityAssessment implements ShouldQueue
         } catch (Throwable $exception) {
             report($exception);
             $assessment->markFailed(self::readable($exception));
+            $this->continueAutomatic($assessment);
 
             return;
         }
 
         $this->notifyPlayer($assessment);
+        $this->continueAutomatic($assessment);
+    }
+
+    /**
+     * A milestone reached while this analysis was running waited for it;
+     * start it now (only today's milestones, see AutoAbilityAssessment).
+     */
+    private function continueAutomatic(UserAbilityAssessment $assessment): void
+    {
+        $user = $assessment->user()->first();
+        if ($user === null) {
+            return;
+        }
+
+        try {
+            app(AutoAbilityAssessment::class)->check($user);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 
     /**

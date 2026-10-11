@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand/v2"
+	"strings"
 
 	"edufunhub/game/internal/points"
 )
@@ -228,17 +229,21 @@ type Generator struct {
 	Grade int
 	// Game limits bank questions to those distributed to this game ("" = any).
 	Game string
-	// Subject limits questions to one subject; "" (or Mix) mixes every subject.
+	// Subject limits questions to the chosen subjects (one key or several
+	// joined by SubjectSeparator); "" (or Mix) mixes every subject.
 	Subject string
 	// Players whose history steers the order: questions they have not seen
 	// (or saw longest ago) come first, so every game starts differently.
 	Players []int64
 	// Level is the chosen difficulty (1 easy, 2 medium, 3 expert). Bank
 	// questions of that level come first; generated arithmetic gets harder.
-	Level    int
-	Rand     *rand.Rand
-	used     map[string]bool
-	fellBack bool
+	Level int
+	// Classroom is the teacher classroom whose picked questions replace the
+	// bank for this game (0 = none, see InClassroom).
+	Classroom int64
+	Rand      *rand.Rand
+	used      map[string]bool
+	fellBack  bool
 	// shown remembers, per question key, every option arrangement already
 	// displayed in this game so a repeated question changes its order.
 	shown map[string][]arrangement
@@ -268,15 +273,18 @@ func (g *Generator) AtLevel(level int) *Generator {
 
 func (g *Generator) level() int { return points.Level(g.Level) }
 
-// For narrows the generator to a subject and the players at the table.
+// For narrows the generator to the chosen subjects (one key or several
+// joined by SubjectSeparator) and the players at the table.
 func (g *Generator) For(subject string, players ...int64) *Generator {
 	g.Subject = NormSubject(subject)
 	g.Players = players
 	return g
 }
 
-// mathAllowed reports whether generated arithmetic fits the chosen subject.
-func (g *Generator) mathAllowed() bool { return g.Subject == "" || g.Subject == "math" }
+// mathAllowed reports whether generated arithmetic fits the chosen subjects.
+func (g *Generator) mathAllowed() bool {
+	return g.Subject == "" || containsString(strings.Split(g.Subject, SubjectSeparator), "math")
+}
 
 // items returns the bank items for this generator's grade and subject. The
 // game's own pool comes first; when it has nothing for the subject (or for
@@ -285,6 +293,22 @@ func (g *Generator) mathAllowed() bool { return g.Subject == "" || g.Subject == 
 // generated arithmetic. Only when no pool has the subject does the game fall
 // back to the mix, and Fallback then reports it to the players.
 func (g *Generator) items(kind string) []Item {
+	items, _ := g.source(kind)
+	return items
+}
+
+// source returns the items to draw from and whether they are a teacher's
+// classroom pool. A classroom pool wins over everything: it is used as is
+// (no grade, level or subject filter, no fallback flag).
+func (g *Generator) source(kind string) ([]Item, bool) {
+	if pool := g.classroomItems(kind); len(pool) > 0 {
+		return pool, true
+	}
+	return g.bankItems(kind), false
+}
+
+// bankItems is the normal (non-classroom) bank selection described on items.
+func (g *Generator) bankItems(kind string) []Item {
 	pools := [][]Item{
 		Current().filter(kind, g.Grade, g.Game),
 		Current().filter(kind, g.Grade, ""),
@@ -295,7 +319,7 @@ func (g *Generator) items(kind string) []Item {
 			return g.byLevel(out)
 		}
 	}
-	if g.Subject == "" || g.Subject == "math" {
+	if g.mathAllowed() {
 		return nil
 	}
 	g.fellBack = true
@@ -326,14 +350,16 @@ func (g *Generator) byLevel(items []Item) []Item {
 	return items
 }
 
-// bySubject keeps the items of one subject ("" keeps every item).
+// bySubject keeps the items of the chosen subjects (one key or several
+// joined by SubjectSeparator; "" keeps every item).
 func bySubject(items []Item, subject string) []Item {
 	if subject == "" {
 		return items
 	}
+	chosen := strings.Split(subject, SubjectSeparator)
 	out := make([]Item, 0, len(items))
 	for _, it := range items {
-		if it.Subject == subject {
+		if containsString(chosen, it.Subject) {
 			out = append(out, it)
 		}
 	}
@@ -348,20 +374,21 @@ func (g *Generator) Fallback() bool { return g.fellBack }
 // first, ties broken randomly), never repeating within one game. Mixed and
 // math games continue with generated arithmetic once the pool is used up;
 // any other chosen subject starts its pool again instead of switching to
-// math.
-func (g *Generator) pick(items []Item) (Item, bool) {
+// math. A classroom pool (pooled) never mixes in arithmetic and always
+// starts again once used up.
+func (g *Generator) pick(items []Item, pooled bool) (Item, bool) {
 	if len(items) == 0 {
 		return Item{}, false
 	}
 	// Mixed play with arithmetic keeps some generated math in the rotation.
-	if g.mathAllowed() && g.Rand.IntN(4) == 0 {
+	if !pooled && g.mathAllowed() && g.Rand.IntN(4) == 0 {
 		return Item{}, false
 	}
 	exhausted := true
 	for _, it := range items {
 		exhausted = exhausted && g.used[it.Key]
 	}
-	if exhausted && !g.mathAllowed() {
+	if exhausted && (pooled || !g.mathAllowed()) {
 		for _, it := range items {
 			delete(g.used, it.Key)
 		}
@@ -392,7 +419,19 @@ func (g *Generator) pick(items []Item) (Item, bool) {
 // generator's game, limited to the given subjects (none = any subject). It
 // never falls back to generated arithmetic or other subjects, so games with
 // their own content mix in admin questions only when they exist.
+//
+// A classroom pool replaces it entirely (no subject or level filter) and
+// starts again once every picked question was asked.
 func (g *Generator) BankChoice(subjects ...string) (Question, bool) {
+	if pool := g.classroomItems(TypeChoice); len(pool) > 0 {
+		it, ok := g.pick(pool, true)
+		if !ok {
+			return Question{}, false
+		}
+		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level), Visual: it.Visual}
+		g.shuffle(&q)
+		return q, true
+	}
 	all := Current().filter(TypeChoice, g.Grade, g.Game)
 	items := make([]Item, 0, len(all))
 	for _, it := range all {
@@ -438,7 +477,7 @@ func containsString(list []string, s string) bool {
 
 // Choice returns a multiple choice question: bank question or generated arithmetic.
 func (g *Generator) Choice() Question {
-	if it, ok := g.pick(g.items(TypeChoice)); ok {
+	if it, ok := g.pick(g.source(TypeChoice)); ok {
 		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level), Visual: it.Visual}
 		g.shuffle(&q)
 		return q
@@ -472,7 +511,7 @@ func (g *Generator) Choice() Question {
 
 // TrueFalse returns a statement question.
 func (g *Generator) TrueFalse() Question {
-	if it, ok := g.pick(g.items(TypeTrueFalse)); ok {
+	if it, ok := g.pick(g.source(TypeTrueFalse)); ok {
 		return Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level), Visual: it.Visual}
 	}
 	a, b, op, ans := g.arithmetic()

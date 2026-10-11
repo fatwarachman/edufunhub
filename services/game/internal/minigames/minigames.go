@@ -236,7 +236,7 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 			step: StepCountdown, grade: grade, stepAt: now, started: now,
 			roundTime: r.AnswerTime(h.Spec.RoundTime(grade)),
 			rng:       rand.New(rand.NewPCG(h.seed, h.seed^0x6a09e667f3bcc909)),
-			bank:      questions.NewFor(h.Spec.Key, grade, h.seed).For("", r.Humans()...).AtLevel(level),
+			bank:      questions.NewFor(h.Spec.Key, grade, h.seed).For("", r.Humans()...).AtLevel(level).InClassroom(r.Classroom()),
 			seen:      map[string]bool{},
 		}
 		return nil
@@ -258,9 +258,10 @@ func (h *Hub) Stop(uid int64, now time.Time) ([]int64, error) {
 }
 
 // next draws the next round: sometimes an admin bank question, otherwise
-// server-generated content, never repeating a prompt within one game.
+// server-generated content, never repeating a prompt within one game. In a
+// classroom with picked questions for this game only those are asked.
 func (h *Hub) next(g *game) Round {
-	if h.Spec.BankShare > 0 && g.rng.IntN(h.Spec.BankShare) == 0 {
+	if g.bank.HasClassroomChoices() || (h.Spec.BankShare > 0 && g.rng.IntN(h.Spec.BankShare) == 0) {
 		if q, ok := g.bank.BankChoice(h.Spec.BankSubjects...); ok {
 			return Round{Question: g.bank.Present(q, Options)}
 		}

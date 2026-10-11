@@ -224,7 +224,7 @@ func (s *Session) Interact(now time.Time) Message {
 			return Message{"t": "error", "code": "cooldown", "retry_ms": until.Sub(now).Milliseconds()}
 		}
 		s.seed++
-		gen := questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject).AtLevel(s.Claims.Level)
+		gen := questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject).AtLevel(s.Claims.Level).InClassroom(s.Claims.Classroom)
 		if saved, ok := s.saved[cp.ID]; ok {
 			s.active = challenge.Resume(cp.Kind, cp.ID, s.mission.Difficulty, gen, saved, now)
 		} else {

@@ -20,6 +20,8 @@ use App\Http\Controllers\GameInviteController;
 use App\Http\Controllers\GameListController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\JoinByPinController;
+use App\Http\Controllers\ClassroomJoinController;
+use App\Http\Controllers\ClassroomReportController;
 use App\Http\Controllers\KnowledgeTrainController;
 use App\Http\Controllers\LandingStatsController;
 use App\Http\Controllers\LeaderboardController;
@@ -46,6 +48,8 @@ use App\Http\Controllers\SkyQuizController;
 use App\Http\Controllers\SnakeGameController;
 use App\Http\Controllers\SnakesAndLaddersController;
 use App\Http\Controllers\Teacher\TeacherQuestionController;
+use App\Http\Controllers\Teacher\ClassroomController;
+use App\Http\Controllers\Teacher\TeacherTopicController;
 use App\Http\Controllers\TurboTriviaController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Middleware\EnsurePlayerDetailsComplete;
@@ -103,6 +107,12 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::patch('/player-details', [PlayerDetailsController::class, 'update'])->name('player-details.update');
     Route::post('/profile/wizard', [ProfileWizardController::class, 'store'])->middleware('throttle:20,1,profile-wizard')->name('profile-wizard.store');
     Route::post('/screen-time/beat', [ScreenTimeController::class, 'beat'])->middleware('throttle:10,1,screen-time.beat')->name('screen-time.beat');
+
+    // Classrooms (player)
+    Route::get('/portal/classrooms/{pin}', [ClassroomJoinController::class, 'show'])->where('pin', '[0-9]{6}')->name('classrooms.show');
+    Route::post('/portal/classrooms/{pin}/join', [ClassroomJoinController::class, 'join'])->where('pin', '[0-9]{6}')->middleware('throttle:10,1,classrooms.join')->name('classrooms.join');
+    Route::post('/portal/classrooms/{pin}/leave', [ClassroomJoinController::class, 'leave'])->where('pin', '[0-9]{6}')->middleware('throttle:10,1,classrooms.leave')->name('classrooms.leave');
+    Route::get('/portal/classrooms/report/{member}', [ClassroomReportController::class, 'show'])->name('classrooms.report');
     Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
     Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('throttle:feedback')->name('feedback.store');
     Route::get('/player-details/schools', SchoolSuggestionController::class)->middleware('throttle:60,1,player-details.schools')->name('player-details.schools');
@@ -137,7 +147,31 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::get('/questions/import', [TeacherQuestionController::class, 'importForm'])->name('questions.import');
         Route::post('/questions/import', [TeacherQuestionController::class, 'import'])->middleware('throttle:10,1,questions.import.store')->name('questions.import.store');
         Route::get('/questions/template', [TeacherQuestionController::class, 'template'])->name('questions.template');
-        Route::resource('questions', TeacherQuestionController::class)->except(['show']);
+        Route::resource('questions', TeacherQuestionController::class)->except(['store', 'update']);
+        Route::post('/questions', [TeacherQuestionController::class, 'store'])->middleware('throttle:30,1,teacher.questions.store')->name('questions.store');
+        Route::put('/questions/{question}', [TeacherQuestionController::class, 'update'])->middleware('throttle:60,1,teacher.questions.update')->name('questions.update');
+
+        // Teacher topics
+        Route::get('/topics', [TeacherTopicController::class, 'index'])->name('topics.index');
+        Route::post('/topics', [TeacherTopicController::class, 'store'])->middleware('throttle:30,1,teacher.topics.store')->name('topics.store');
+        Route::put('/topics/{topic}', [TeacherTopicController::class, 'update'])->middleware('throttle:60,1,teacher.topics.update')->name('topics.update');
+        Route::delete('/topics/{topic}', [TeacherTopicController::class, 'destroy'])->middleware('throttle:30,1,teacher.topics.destroy')->name('topics.destroy');
+
+        // Teacher classrooms
+        Route::get('/classrooms', [ClassroomController::class, 'index'])->name('classrooms.index');
+        Route::get('/classrooms/create', [ClassroomController::class, 'create'])->name('classrooms.create');
+        Route::post('/classrooms', [ClassroomController::class, 'store'])->middleware('throttle:10,1,classrooms.store')->name('classrooms.store');
+        Route::get('/classrooms/{classroom}', [ClassroomController::class, 'show'])->name('classrooms.show');
+        Route::get('/classrooms/{classroom}/edit', [ClassroomController::class, 'edit'])->name('classrooms.edit');
+        Route::put('/classrooms/{classroom}', [ClassroomController::class, 'update'])->middleware('throttle:10,1,classrooms.update')->name('classrooms.update');
+        Route::delete('/classrooms/{classroom}', [ClassroomController::class, 'destroy'])->name('classrooms.destroy');
+        Route::post('/classrooms/{classroom}/end', [ClassroomController::class, 'end'])->middleware('throttle:10,1,classrooms.end')->name('classrooms.end');
+        Route::post('/classrooms/{classroom}/remove-member', [ClassroomController::class, 'removeMember'])->middleware('throttle:30,1,classrooms.remove')->name('classrooms.remove');
+        Route::post('/classrooms/{classroom}/analyze', [ClassroomController::class, 'analyze'])->middleware('throttle:5,1,classrooms.analyze')->name('classrooms.analyze');
+        Route::get('/classrooms/{classroom}/live', [ClassroomController::class, 'live'])->name('classrooms.live');
+        Route::get('/classrooms/questions', [ClassroomController::class, 'questionOptions'])->name('classrooms.questions');
+        Route::post('/classrooms/{classroom}/share', [ClassroomController::class, 'share'])->middleware('throttle:30,1,classrooms.share')->name('classrooms.share');
+        Route::post('/classrooms/{classroom}/share-all', [ClassroomController::class, 'shareAll'])->middleware('throttle:10,1,classrooms.share-all')->name('classrooms.share-all');
     });
 
     Route::middleware(EnsurePlayerDetailsComplete::class)->group(function (): void {

@@ -1,0 +1,101 @@
+<?php
+
+namespace App\Http\Requests\Teacher;
+
+use App\Models\Classroom;
+use App\Models\Question;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class ClassroomRequest extends FormRequest
+{
+    public const MAX_GAMES = 10;
+
+    public const MAX_QUESTIONS_PER_GAME = 100;
+
+    /** @return array<string, array<mixed>> */
+    public function rules(): array
+    {
+        $now = now();
+
+        return [
+            'name' => ['required', 'string', 'min:3', 'max:120'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'starts_at' => ['required', 'date', 'after:'.$now->copy()->subMinutes(5)->toIso8601String(), 'before:'.$now->copy()->addDays(60)->toIso8601String()],
+            'duration_minutes' => ['required', 'integer', 'between:'.Classroom::MIN_DURATION.','.Classroom::MAX_DURATION],
+            'max_members' => ['integer', 'min:1', 'max:'.Classroom::MAX_MEMBERS],
+            'games' => ['required', 'array', 'min:1', 'max:'.self::MAX_GAMES],
+            'games.*.game_key' => ['required', 'string', Rule::in(Question::GAMES)],
+            'games.*.question_ids' => ['array', 'max:'.self::MAX_QUESTIONS_PER_GAME],
+            'games.*.question_ids.*' => ['distinct', 'integer', 'exists:questions,id'],
+        ];
+    }
+
+    public function passedValidation(): void
+    {
+        $teacher = $this->user();
+        $games = (array) $this->validated('games');
+
+        foreach ($games as $i => $game) {
+            $gameKey = $game['game_key'];
+            $questionIds = $game['question_ids'] ?? [];
+
+            if ($questionIds === []) {
+                continue;
+            }
+
+            if (in_array($gameKey, Question::CHOICE_ONLY_GAMES, true)) {
+                $trueFalse = Question::query()
+                    ->whereIn('id', $questionIds)
+                    ->where('type', Question::TYPE_TRUE_FALSE)
+                    ->exists();
+
+                if ($trueFalse) {
+                    $this->validator->errors()->add(
+                        'games.'.$i.'.question_ids',
+                        __('classrooms.validation.true_false_not_allowed', ['game' => $gameKey])
+                    );
+                }
+            }
+
+            $accessible = Question::query()
+                ->whereIn('id', $questionIds)
+                ->where(function (Builder $q) use ($teacher): void {
+                    $q->where('created_by', $teacher->id)
+                        ->orWhere(fn (Builder $q): Builder => $q->where('is_active', true)
+                            ->where(fn (Builder $sub): Builder => $sub
+                                ->where('source', '!=', 'teacher')
+                                ->orWhere('is_active', true)
+                            )
+                        );
+                })
+                ->count();
+
+            if ($accessible !== count($questionIds)) {
+                $this->validator->errors()->add(
+                    'games.'.$i.'.question_ids',
+                    __('classrooms.validation.question_inaccessible')
+                );
+            }
+        }
+    }
+
+    /** @return array<string, mixed> */
+    public function questionAttributes(): array
+    {
+        return $this->only(['name', 'description', 'starts_at', 'max_members']);
+    }
+
+    /** @return list<array{game_key: string, sort_order: int, question_ids: list<int>}> */
+    public function games(): array
+    {
+        $games = (array) $this->validated('games');
+
+        return array_map(fn (int $i, array $game): array => [
+            'game_key' => $game['game_key'],
+            'sort_order' => $i,
+            'question_ids' => array_map('intval', $game['question_ids'] ?? []),
+        ], array_keys($games), $games);
+    }
+}

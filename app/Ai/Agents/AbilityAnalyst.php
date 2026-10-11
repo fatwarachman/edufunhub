@@ -37,7 +37,7 @@ class AbilityAnalyst implements Agent, HasProviderOptions, HasStructuredOutput
         - Jelaskan secara rinci dengan mempertimbangkan usia dan kelas Peserta: bandingkan dengan apa yang wajar untuk usia/kelas itu dan dengan rata-rata teman sekelas (peer_accuracy) bila ada.
         - Dasarkan setiap kesimpulan pada angka di data (akurasi, jumlah soal, tren 30 hari, tingkat kesulitan, konsistensi). Sebut angkanya bila membantu. Jangan mengarang data yang tidak ada.
         - Jika data sedikit (sedikit permainan atau soal), katakan itu dan turunkan confidence.
-        - Bila ada previous_assessments, bandingkan perkembangan sejak analisa sebelumnya di progress_vs_previous; jika tidak ada, tulis bahwa ini analisa pertama.
+        - Bila ada previous_assessments, bandingkan dengan analisa paling akhir (elemen pertama, lihat analyzed_at), baik di hari yang sama maupun hari lain, di progress_vs_previous: sebut mata pelajaran yang naik, turun atau tetap beserta perubahan skornya, lalu jelaskan kemungkinan penyebabnya dari data. Jika tidak ada, tulis bahwa ini analisa pertama.
         - subject_scores: skor kemampuan 0-100 per mata pelajaran yang ada di data (pakai key mata pelajaran dari data), berdasarkan akurasi, jumlah soal dan tingkat kesulitan.
         - strengths dan weaknesses: 2-5 poin singkat dan spesifik.
         - game_insights: 1-5 pengamatan per permainan (pola main, kecepatan, tren).

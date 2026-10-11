@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notification;
  */
 class PlayerNotification extends Notification
 {
-    public const KINDS = ['points', 'level', 'item', 'teacher', 'admin', 'chat', 'badge', 'friend'];
+    public const KINDS = ['points', 'level', 'item', 'teacher', 'admin', 'chat', 'badge', 'friend', 'classroom'];
 
     /**
      * @param  array<string, scalar|null>  $params

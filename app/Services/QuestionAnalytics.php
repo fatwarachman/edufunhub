@@ -20,9 +20,12 @@ class QuestionAnalytics
     public const MISCONCEPTION_SHARE = 30;
 
     /**
+     * Full analysis of a question. The teacher mode strips personal data
+     * (player ids, account names) and adds a comparison with AI questions.
+     *
      * @return array<string, mixed>
      */
-    public function detail(Question $question): array
+    public function detail(Question $question, bool $forTeacher = false): array
     {
         $answers = QuestionAnswer::query()
             ->where('question_answers.question_id', $question->id)
@@ -45,7 +48,7 @@ class QuestionAnalytics
         $users = $answers->groupBy('user_id');
         $firstTry = $users->map(fn (Collection $rows): bool => (bool) $rows->sortBy('id')->first()->correct);
 
-        return [
+        $detail = [
             'summary' => [
                 'answered' => $total,
                 'correct' => $correct,
@@ -78,6 +81,101 @@ class QuestionAnalytics
             ])->all(),
             'siblings' => $this->siblings($question),
             ...$this->choices($question, $answers),
+        ];
+
+        return $forTeacher ? $this->forTeacher($question, $detail) : $detail;
+    }
+
+    /**
+     * PII-safe variant for the question author: players become numbered
+     * nicknames (no user ids, account names or emails) and a comparison with
+     * AI questions of the same subject, grade band and topic is added.
+     *
+     * @param  array<string, mixed>  $detail
+     * @return array<string, mixed>
+     */
+    private function forTeacher(Question $question, array $detail): array
+    {
+        $numbers = collect($detail['players'])->pluck('user_id')->values()->flip()->map(fn (int $index): int => $index + 1);
+
+        $detail['players'] = collect($detail['players'])->map(fn (array $player): array => [
+            'number' => $numbers->get($player['user_id']),
+            'nickname' => $player['name'],
+            'grade' => $player['grade'],
+            'school_name' => $player['school_name'],
+            'attempts' => $player['attempts'],
+            'correct' => $player['correct'],
+            'wrong' => $player['wrong'],
+            'first_correct' => $player['first_correct'],
+            'last_correct' => $player['last_correct'],
+            'last_answered_at' => $player['last_answered_at'],
+        ])->all();
+
+        $detail['recent'] = collect($detail['recent'])->map(fn (array $answer): array => [
+            'id' => $answer['id'],
+            'player' => $numbers->get($answer['user_id']),
+            'game_key' => $answer['game_key'],
+            'correct' => $answer['correct'],
+            'answered_at' => $answer['answered_at'],
+        ])->all();
+
+        $detail['comparison'] = $this->comparison($question, $detail['summary']['success_rate']);
+
+        return $detail;
+    }
+
+    /**
+     * This question against AI-written questions of the same subject and grade
+     * band (and topic when set), aggregated in SQL with the same difficulty
+     * thresholds used for every question.
+     *
+     * @return array{scope: array{subject: string, band: int, topic_id: ?int}, question: array{success_rate: ?float, difficulty: ?string, level: int}, ai: array{questions: int, rated_questions: int, answered: int, correct: int, success_rate: ?float, difficulty: array{easy: int, medium: int, hard: int}, same_level: array{questions: int, answered: int, success_rate: ?float}}, delta: ?float}
+     */
+    private function comparison(Question $question, ?float $rate): array
+    {
+        $level = Question::normalizeLevel($question->level);
+        $tier = 'CASE WHEN times_answered = 0 THEN NULL'
+            ." WHEN times_correct * 100 < 40 * times_answered THEN 'hard'"
+            ." WHEN times_correct * 100 < 70 * times_answered THEN 'medium'"
+            ." ELSE 'easy' END";
+
+        $row = Question::query()
+            ->where('source', Question::SOURCE_AI)
+            ->where('subject', $question->subject)
+            ->where('band', $question->band)
+            ->when($question->topic_id !== null, fn ($query) => $query->where('topic_id', $question->topic_id))
+            ->selectRaw('COUNT(*) as questions')
+            ->selectRaw('SUM(CASE WHEN times_answered > 0 THEN 1 ELSE 0 END) as rated')
+            ->selectRaw('COALESCE(SUM(times_answered), 0) as answered')
+            ->selectRaw('COALESCE(SUM(times_correct), 0) as correct')
+            ->selectRaw("SUM(CASE WHEN ({$tier}) = 'easy' THEN 1 ELSE 0 END) as easy")
+            ->selectRaw("SUM(CASE WHEN ({$tier}) = 'medium' THEN 1 ELSE 0 END) as medium")
+            ->selectRaw("SUM(CASE WHEN ({$tier}) = 'hard' THEN 1 ELSE 0 END) as hard")
+            ->selectRaw('SUM(CASE WHEN level = ? THEN 1 ELSE 0 END) as level_questions', [$level])
+            ->selectRaw('COALESCE(SUM(CASE WHEN level = ? THEN times_answered ELSE 0 END), 0) as level_answered', [$level])
+            ->selectRaw('COALESCE(SUM(CASE WHEN level = ? THEN times_correct ELSE 0 END), 0) as level_correct', [$level])
+            ->toBase()
+            ->first();
+
+        $aiRate = $this->percent((int) $row->correct, (int) $row->answered);
+
+        return [
+            'scope' => ['subject' => $question->subject, 'band' => (int) $question->band, 'topic_id' => $question->topic_id],
+            'question' => ['success_rate' => $rate, 'difficulty' => $this->difficulty($rate), 'level' => $level],
+            'ai' => [
+                'questions' => (int) $row->questions,
+                'rated_questions' => (int) $row->rated,
+                'answered' => (int) $row->answered,
+                'correct' => (int) $row->correct,
+                'success_rate' => $aiRate,
+                'difficulty' => ['easy' => (int) $row->easy, 'medium' => (int) $row->medium, 'hard' => (int) $row->hard],
+                'same_level' => [
+                    'questions' => (int) $row->level_questions,
+                    'answered' => (int) $row->level_answered,
+                    'success_rate' => $this->percent((int) $row->level_correct, (int) $row->level_answered),
+                ],
+            ],
+            'delta' => $rate !== null && $aiRate !== null ? round($rate - $aiRate, 1) : null,
         ];
     }
 

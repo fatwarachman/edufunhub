@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Classroom;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
@@ -21,7 +22,26 @@ class RoomPinLookup
      */
     public function find(string $pin): array
     {
-        if (! preg_match('/^\d{6}$/', $pin) || ! $this->signer->isConfigured()) {
+        if (! preg_match('/^\d{6}$/', $pin)) {
+            return [];
+        }
+
+        $rooms = $this->findGameRooms($pin);
+
+        $classroom = $this->findClassroom($pin);
+        if ($classroom !== null) {
+            $rooms[] = $classroom;
+        }
+
+        return $rooms;
+    }
+
+    /**
+     * @return list<array{game_key: string, titleKey: string, icon: string, accent: string, phase: string, open: bool, url: string}>
+     */
+    private function findGameRooms(string $pin): array
+    {
+        if (! $this->signer->isConfigured()) {
             return [];
         }
 
@@ -64,6 +84,35 @@ class RoomPinLookup
             ->sortByDesc('open')
             ->values()
             ->all();
+    }
+
+    /**
+     * @return array{game_key: string, titleKey: string, icon: string, accent: string, phase: string, open: bool, url: string}|null
+     */
+    private function findClassroom(string $pin): ?array
+    {
+        $classroom = Classroom::query()
+            ->where('pin', $pin)
+            ->where(function ($q) {
+                $now = now();
+                $q->where(fn ($q) => $q->where('starts_at', '<=', $now)->where('ends_at', '>', $now))
+                    ->orWhere('starts_at', '>', $now);
+            })
+            ->first();
+
+        if ($classroom === null) {
+            return null;
+        }
+
+        return [
+            'game_key' => 'classroom',
+            'titleKey' => 'classroom.title',
+            'icon' => 'school',
+            'accent' => '#5ad1a6',
+            'phase' => $classroom->status(),
+            'open' => $classroom->isActive(),
+            'url' => route('classrooms.show', ['pin' => $pin], absolute: false),
+        ];
     }
 
     /**

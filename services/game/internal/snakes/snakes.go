@@ -366,7 +366,7 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 			s.Data = player{position: 1}
 		}
 		h.seed++
-		gen := questions.NewFor(GameKey, grade, h.seed).For(r.Subject, r.Humans()...).AtLevel(level)
+		gen := questions.NewFor(GameKey, grade, h.seed).For(r.Subject, r.Humans()...).AtLevel(level).InClassroom(r.Classroom())
 		r.Game = game{gen: gen, grade: grade, subject: r.Subject, winner: -1, first: -1, minutes: r.Game.minutes, started: now, answer: r.AnswerTime(AnswerTime)}
 		beginTurn(r, now)
 		return nil

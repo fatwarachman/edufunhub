@@ -6,18 +6,49 @@ import { Shuffle } from 'lucide-react';
 /** The "all subjects" choice; every other value is a subject key. */
 export const MIX_SUBJECT = 'mix';
 
-/** `mix` or a subject key from the admin-managed catalog. */
+/** Separator between several chosen subject keys ("math,science"). */
+export const SUBJECT_SEPARATOR = ',';
+
+/**
+ * `mix`, one subject key from the admin-managed catalog, or several keys
+ * joined by SUBJECT_SEPARATOR (the game service accepts all three).
+ */
 export type GameSubject = string;
 
 const STORAGE_KEY = 'edufunhub.subject';
 const KEY_PATTERN = /^[a-z][a-z0-9-]{1,29}$/;
 
-/** Whether a value looks like a subject choice (mix or a subject key). */
+/** Subject keys in a choice, deduplicated and sorted (empty = the mix). */
+export function splitSubjects(value: GameSubject | null | undefined): string[] {
+    if (!value || value === MIX_SUBJECT) {
+        return [];
+    }
+    return [
+        ...new Set(
+            value
+                .split(SUBJECT_SEPARATOR)
+                .map((key) => key.trim())
+                .filter((key) => KEY_PATTERN.test(key)),
+        ),
+    ].sort();
+}
+
+/** Joins subject keys into one choice value (no keys = the mix). */
+export function joinSubjects(keys: string[]): GameSubject {
+    const unique = splitSubjects(keys.join(SUBJECT_SEPARATOR));
+    return unique.length === 0 ? MIX_SUBJECT : unique.join(SUBJECT_SEPARATOR);
+}
+
+/** Whether a value looks like a subject choice (mix or subject keys). */
 export function isGameSubject(value: unknown): value is GameSubject {
-    return (
-        typeof value === 'string' &&
-        (value === MIX_SUBJECT || KEY_PATTERN.test(value))
-    );
+    if (typeof value !== 'string') {
+        return false;
+    }
+    if (value === MIX_SUBJECT) {
+        return true;
+    }
+    const parts = value.split(SUBJECT_SEPARATOR);
+    return parts.length > 0 && parts.every((key) => KEY_PATTERN.test(key));
 }
 
 /** Last subject the player picked on this device (defaults to the mix). */
@@ -39,9 +70,11 @@ export function rememberSubject(subject: GameSubject): void {
 }
 
 /**
- * Subject choice shown before every game starts. In rooms only the host
- * changes it; everyone else sees the host's choice. Subjects come from the
- * admin catalog, so new subjects appear without a code change.
+ * Subject choice shown before every game starts: the mix, or one or more
+ * subjects (each button toggles its subject; clearing them all returns to
+ * the mix). In rooms only the host changes it; everyone else sees the
+ * host's choice. Subjects come from the admin catalog, so new subjects
+ * appear without a code change.
  */
 export function SubjectPicker({
     value,
@@ -59,9 +92,26 @@ export function SubjectPicker({
     const { t } = useTranslations();
     const subjects = useSubjects();
     const subjectName = useSubjectName();
-    const known =
-        value === MIX_SUBJECT || subjects.some((s) => s.key === value);
-    const selectedValue = known ? value : MIX_SUBJECT;
+    const selectedKeys = splitSubjects(value).filter((key) =>
+        subjects.some((s) => s.key === key),
+    );
+    const selectedValue = joinSubjects(selectedKeys);
+    const isSelected = (key: string): boolean =>
+        key === MIX_SUBJECT
+            ? selectedKeys.length === 0
+            : selectedKeys.includes(key);
+    const choose = (key: string): void => {
+        let next: GameSubject = MIX_SUBJECT;
+        if (key !== MIX_SUBJECT) {
+            next = joinSubjects(
+                selectedKeys.includes(key)
+                    ? selectedKeys.filter((k) => k !== key)
+                    : [...selectedKeys, key],
+            );
+        }
+        rememberSubject(next);
+        onChange(next);
+    };
     const choices = [
         { key: MIX_SUBJECT, label: t('subjects.mix'), icon: null },
         ...subjects.map((subject) => ({
@@ -77,9 +127,16 @@ export function SubjectPicker({
             data-testid="subject-picker"
             data-subject={selectedValue}
         >
-            <legend className="mb-2 text-xs font-black text-slate-500 uppercase">
+            <legend className="mb-1 text-xs font-black text-slate-500 uppercase">
                 {t('subjects.label')}
             </legend>
+            <p className="mb-2 text-xs font-bold text-slate-500">
+                {selectedKeys.length > 1
+                    ? t('subjects.selectedCount', {
+                          count: selectedKeys.length,
+                      })
+                    : t('subjects.multiHint')}
+            </p>
             <div
                 className={cn(
                     'grid gap-2',
@@ -89,17 +146,14 @@ export function SubjectPicker({
                 )}
             >
                 {choices.map(({ key, label, icon }) => {
-                    const selected = selectedValue === key;
+                    const selected = isSelected(key);
                     return (
                         <button
                             key={key}
                             type="button"
                             disabled={disabled}
                             aria-pressed={selected}
-                            onClick={() => {
-                                rememberSubject(key);
-                                onChange(key);
-                            }}
+                            onClick={() => choose(key)}
                             data-testid={`subject-${key}`}
                             className={cn(
                                 'flex min-h-12 items-center gap-2 rounded-2xl border-2 border-[#1f2a44] px-3 py-2 text-left font-display text-sm leading-tight font-black transition-colors disabled:cursor-default',
@@ -148,7 +202,8 @@ export function SubjectFallbackNote({
 }) {
     const { t } = useTranslations();
     const subjectName = useSubjectName();
-    if (!isGameSubject(subject) || subject === MIX_SUBJECT) {
+    const keys = splitSubjects(isGameSubject(subject) ? subject : null);
+    if (keys.length === 0) {
         return null;
     }
     return (
@@ -160,7 +215,9 @@ export function SubjectFallbackNote({
                 className,
             )}
         >
-            {t('subjects.fallback', { subject: subjectName(subject) })}
+            {t('subjects.fallback', {
+                subject: keys.map((key) => subjectName(key)).join(', '),
+            })}
         </p>
     );
 }

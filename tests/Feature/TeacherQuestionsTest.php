@@ -5,7 +5,9 @@ use App\Models\Question;
 use App\Models\QuestionAnswer;
 use App\Models\QuestionCompensationRate;
 use App\Models\Role;
+use App\Models\SubjectTopic;
 use App\Models\User;
+use App\Services\PointRules;
 use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -33,6 +35,7 @@ function teacherQuestionPayload(array $overrides = []): array
         'answer' => 0,
         'games' => ['flag-quest', 'sky-quiz'],
         'is_active' => true,
+        'level' => 1,
         ...$overrides,
     ];
 }
@@ -108,7 +111,96 @@ test('teacher question validation', function (array $payload, string $field): vo
     'true/false in sky quiz' => [['type' => 'true_false', 'answer' => 1, 'games' => ['sky-quiz']], 'games'],
     'duplicate options' => [['options' => [['id' => 'A'], ['id' => 'a'], ['id' => 'B']]], 'options'],
     'unknown subject' => [['subject' => 'art'], 'subject'],
+    'missing level' => [['level' => null], 'level'],
+    'level out of range' => [['level' => 4], 'level'],
+    'level not a number' => [['level' => 'impossible'], 'level'],
+    'unknown topic' => [['topic_id' => 999999], 'topic_id'],
 ]);
+
+test('teacher stores level and topic of the chosen subject', function (): void {
+    $topic = SubjectTopic::factory()->create(['subject_key' => 'math', 'name_id' => 'Pecahan', 'name_en' => 'Fractions']);
+
+    $this->actingAs($this->teacher)->post('/teacher/questions', teacherQuestionPayload(['level' => 3, 'topic_id' => $topic->id]))
+        ->assertSessionHasNoErrors();
+
+    $question = Question::query()->where('source', 'teacher')->sole();
+    expect($question)->level->toBe(3)->topic_id->toBe($topic->id)
+        ->and($question->worth())->toBe(PointRules::current()['per_correct'] * 3)
+        ->and($question->toGamePayload()['level'])->toBe(3);
+
+    $this->actingAs($this->teacher)->get("/teacher/questions/{$question->id}/edit")->assertInertia(fn (Assert $page) => $page
+        ->where('question.level', 3)
+        ->where('question.topic_id', $topic->id)
+        ->where('question.topic.name_en', 'Fractions')
+        ->where('topics', fn ($topics): bool => collect($topics)->pluck('id')->contains($topic->id))
+        ->where('levels', [1, 2, 3]));
+
+    $this->actingAs($this->teacher)->put("/teacher/questions/{$question->id}", teacherQuestionPayload(['level' => 2, 'topic_id' => null]))
+        ->assertSessionHasNoErrors();
+    expect($question->fresh())->level->toBe(2)->topic_id->toBeNull();
+});
+
+test('teacher cannot attach a topic of another subject or an inactive topic', function (): void {
+    $english = SubjectTopic::factory()->create(['subject_key' => 'english']);
+    $inactive = SubjectTopic::factory()->inactive()->create(['subject_key' => 'math']);
+
+    $this->actingAs($this->teacher)->post('/teacher/questions', teacherQuestionPayload(['topic_id' => $english->id]))->assertSessionHasErrors('topic_id');
+    $this->actingAs($this->teacher)->post('/teacher/questions', teacherQuestionPayload(['topic_id' => $inactive->id]))->assertSessionHasErrors('topic_id');
+
+    expect(Question::query()->where('source', 'teacher')->count())->toBe(0);
+});
+
+test('teacher list filters by topic and level and exposes level and topic', function (): void {
+    $topic = SubjectTopic::factory()->create(['subject_key' => 'math']);
+    Question::factory()->byTeacher($this->teacher, [5])->create(['subject' => 'math', 'level' => 3, 'topic_id' => $topic->id, 'prompt_id' => 'Sulit bertopik']);
+    Question::factory()->byTeacher($this->teacher, [5])->create(['subject' => 'math', 'level' => 1, 'prompt_id' => 'Mudah']);
+
+    $this->actingAs($this->teacher)->get("/teacher/questions?topic={$topic->id}")->assertInertia(fn (Assert $page) => $page
+        ->where('questions.total', 1)
+        ->where('questions.data.0.prompt_id', 'Sulit bertopik')
+        ->where('questions.data.0.level', 3)
+        ->where('questions.data.0.topic.id', $topic->id)
+        ->where('filters.topic', $topic->id));
+
+    $this->actingAs($this->teacher)->get('/teacher/questions?level=1')->assertInertia(fn (Assert $page) => $page
+        ->where('questions.total', 1)
+        ->where('questions.data.0.prompt_id', 'Mudah')
+        ->where('questions.data.0.topic', null));
+
+    $this->actingAs($this->teacher)->get('/teacher/questions?level=9&topic=abc')->assertInertia(fn (Assert $page) => $page
+        ->where('questions.total', 2)
+        ->missing('filters.level')
+        ->missing('filters.topic'));
+});
+
+test('import reads optional level and topic columns', function (): void {
+    SubjectTopic::factory()->create(['subject_key' => 'math', 'name_id' => 'Pecahan', 'name_en' => 'Fractions']);
+    $csv = "type,grades,subject,question_id,option_1_id,option_2_id,option_3_id,answer,level,topic\n"
+        ."choice,5,math,Soal pecahan?,A,B,C,1,sulit,pecahan\n"
+        ."choice,5,math,Soal biasa?,A,B,C,1,2,\n"
+        ."choice,5,math,Soal tanpa level?,A,B,C,1,,Fractions\n";
+
+    $this->actingAs($this->teacher)->post('/teacher/questions/import', ['file' => teacherCsvUpload($csv)])->assertSessionHasNoErrors();
+
+    $imported = Question::query()->where('source', 'import')->orderBy('id')->get();
+    expect($imported->pluck('level')->all())->toBe([3, 2, 1])
+        ->and($imported[0]->topic_id)->not->toBeNull()
+        ->and($imported[1]->topic_id)->toBeNull()
+        ->and($imported[2]->topic_id)->toBe($imported[0]->topic_id);
+});
+
+test('import rejects unknown topics and levels', function (): void {
+    SubjectTopic::factory()->create(['subject_key' => 'english', 'name_id' => 'Pecahan']);
+    $csv = "type,grades,subject,question_id,option_1_id,option_2_id,option_3_id,answer,level,topic\n"
+        ."choice,5,math,Topik mapel lain?,A,B,C,1,1,Pecahan\n"
+        ."choice,5,math,Level salah?,A,B,C,1,super,\n";
+
+    $this->actingAs($this->teacher)->post('/teacher/questions/import', ['file' => teacherCsvUpload($csv)])
+        ->assertSessionHasErrors('file')
+        ->assertSessionHas('importErrors', fn (array $errors): bool => collect($errors)->pluck('row')->all() === [2, 3]);
+
+    expect(Question::query()->where('source', 'import')->count())->toBe(0);
+});
 
 test('teachers can only edit and delete their own questions', function (): void {
     $other = User::factory()->teacher()->create();
@@ -166,6 +258,7 @@ test('the downloaded template imports cleanly', function (): void {
 
     $imported = Question::query()->where('source', 'import')->orderBy('id')->get();
     expect($imported)->toHaveCount(3)
+        ->and($imported->pluck('level')->all())->toBe([1, 2, 3])
         ->and($imported[0]->grades)->toBe([0, 1])
         ->and($imported[0]->answer)->toBe(0)
         ->and($imported[0]->created_by)->toBe($this->teacher->id)

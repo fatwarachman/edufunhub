@@ -81,6 +81,8 @@ class AbilityAssessmentController extends Controller
                 'status' => $assessment->status,
                 'model' => $assessment->model,
                 'requested_by' => $assessment->requester?->name,
+                'trigger' => $assessment->trigger,
+                'trigger_answered' => $assessment->trigger_answered,
                 'created_at' => $assessment->created_at?->toIso8601String(),
                 'updated_at' => $assessment->updated_at?->toIso8601String(),
                 'error' => $assessment->error,

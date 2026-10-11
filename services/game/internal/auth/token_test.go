@@ -84,3 +84,24 @@ func TestVerifyKeepsCharacterAndDropsOversizedLook(t *testing.T) {
 		t.Fatal("oversized character should be dropped")
 	}
 }
+
+func TestVerifyKeepsClassroomAndClampsNegative(t *testing.T) {
+	now := time.Unix(1_800_000_000, 0)
+	for in, want := range map[int64]int64{12: 12, 0: 0, -5: 0} {
+		c := validClaims(now)
+		c.Classroom = in
+		token, _ := Sign(c, secret)
+		claims, err := Verify(token, secret, "flag-quest", now)
+		if err != nil {
+			t.Fatalf("classroom %d: %v", in, err)
+		}
+		if claims.Classroom != want {
+			t.Fatalf("classroom %d: got %d, want %d", in, claims.Classroom, want)
+		}
+	}
+	payload := `{"sub":7,"name":"A","grade":5,"game":"flag-quest","exp":1800003600}`
+	var c Claims
+	if err := json.Unmarshal([]byte(payload), &c); err != nil || c.Classroom != 0 {
+		t.Fatalf("missing claim must decode as 0: %v %d", err, c.Classroom)
+	}
+}
