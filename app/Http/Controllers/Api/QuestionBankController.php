@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Classroom;
+use App\Models\ClassroomGame;
 use App\Models\Question;
 use App\Models\Subject;
 use App\Services\GameServiceSigner;
 use App\Services\PointRules;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Signed internal endpoint the Go game service polls to load the active bank.
+ * Signed internal endpoint the Go game service polls to load the active bank
+ * and classrooms that have picked their own questions.
  */
 class QuestionBankController extends Controller
 {
@@ -26,13 +30,44 @@ class QuestionBankController extends Controller
         $questions = Question::query()->active()->orderBy('id')->get();
         $rules = PointRules::current();
         $subjects = Subject::activeKeys();
-        $version = sha1($questions->max('updated_at').'|'.$questions->count().'|'.$questions->pluck('id')->implode(',').'|'.implode(',', $rules).'|'.implode(',', $subjects));
+
+        $classrooms = Classroom::query()
+            ->where('ends_at', '>', now())
+            ->whereHas('games.questions')
+            ->with(['games' => fn ($q) => $q->with('questions'), 'members' => fn ($q) => $q->whereNull('left_at')])
+            ->get();
+
+        $classroomsPayload = $classrooms->map(fn (Classroom $c): array => [
+            'id' => $c->id,
+            'teacher_id' => $c->teacher_id,
+            'pin' => $c->pin,
+            'name' => $c->name,
+            'starts_at' => $c->starts_at->utc()->toIso8601String(),
+            'ends_at' => $c->ends_at->utc()->toIso8601String(),
+            'max_members' => $c->max_members,
+            'members' => $c->members->map(fn ($m): array => ['user_id' => $m->user_id])->values(),
+            'games' => $c->games->map(fn (ClassroomGame $cg): array => [
+                'game_key' => $cg->game_key,
+                'questions' => $cg->questions->map(fn (Question $q): array => $q->toGamePayload())->values(),
+            ])->values(),
+        ])->values()->all();
+
+        $classroomsUpdatedAt = $classrooms->isNotEmpty()
+            ? $classrooms->max(fn (Classroom $c) => max($c->updated_at->timestamp, ...$c->games->flatMap->questions->pluck('updated_at')->map->timestamp->all()))
+            : 0;
+
+        $version = sha1(
+            $questions->max('updated_at').'|'.$questions->count().'|'.$questions->pluck('id')->implode(',')
+            .'|'.implode(',', $rules).'|'.implode(',', $subjects)
+            .'|'.$classrooms->count().'|'.$classroomsUpdatedAt
+        );
 
         return response()->json([
             'version' => $version,
             'points' => $rules,
             'subjects' => $subjects,
             'questions' => $questions->map(fn (Question $question): array => $question->toGamePayload())->values(),
+            'classrooms' => $classroomsPayload,
         ]);
     }
 }

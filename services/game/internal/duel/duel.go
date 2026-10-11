@@ -274,7 +274,7 @@ func (h *Hub) startLocked(a, b auth.Claims, subject string, bot bool, now time.T
 	m := &match{
 		id:      fmt.Sprintf("%d", now.UnixNano()),
 		subject: questions.NormSubject(subject),
-		gen:     questions.NewFor(GameKey, grade, h.seed).For(subject, humans...).AtLevel(level),
+		gen:     questions.NewFor(GameKey, grade, h.seed).For(subject, humans...).AtLevel(level).InClassroom(auth.FirstClassroom(a, b)),
 		rng:     rand.New(rand.NewPCG(h.seed, h.seed^0x5bd1e995)),
 		grade:   grade,
 		phase:   PhaseCountdown,

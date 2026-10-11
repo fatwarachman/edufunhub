@@ -36,9 +36,17 @@ class GameServiceSigner
             'game' => $game,
             'exp' => now()->addSeconds((int) config('game-service.token_ttl'))->getTimestamp(),
             'nonce' => Str::random(16),
+            'classroom' => $this->getClassroomId($user, $game),
         ], JSON_UNESCAPED_UNICODE));
 
         return $payload.'.'.$this->base64UrlEncode(hash_hmac('sha256', $payload, $this->secret(), true));
+    }
+
+    private function getClassroomId(User $user, string $game): ?int
+    {
+        $classroom = app(\App\Services\Classrooms\ClassroomContext::class)->currentFor($user, $game);
+
+        return $classroom?->id;
     }
 
     public function verifyRequest(string $timestamp, string $signature, string $body): bool

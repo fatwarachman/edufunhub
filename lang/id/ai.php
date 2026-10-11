@@ -27,4 +27,6 @@ return [
     'assessment_failed' => 'Analisa AI gagal. Coba lagi nanti.',
     'assessment_incomplete' => 'Balasan AI tidak berisi analisa yang bisa dipakai.',
     'assessment_timed_out' => 'Analisa tidak selesai tepat waktu.',
+    'auto_saved' => 'Pengaturan analisa otomatis disimpan.',
+    'auto_bounds' => 'Isi angka antara :min dan :max soal.',
 ];

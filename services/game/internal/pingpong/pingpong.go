@@ -152,7 +152,7 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 			grade = min(grade, s.Claims.Grade)
 			level = min(level, points.Level(s.Claims.Level))
 		}
-		gen := questions.NewFor(GameKey, grade, h.seed).For(r.Subject, r.Humans()...).AtLevel(level)
+		gen := questions.NewFor(GameKey, grade, h.seed).For(r.Subject, r.Humans()...).AtLevel(level).InClassroom(r.Classroom())
 		r.Game = game{round: previousRound, firstRound: previousRound + 1, winner: -1, bot: len(r.Seats) == 1, level: level, grade: grade, gen: gen, started: now, answer: r.AnswerTime(AnswerTime), rng: rand.New(rand.NewPCG(h.seed, h.seed^0x9913))}
 		begin(r, now)
 		return nil

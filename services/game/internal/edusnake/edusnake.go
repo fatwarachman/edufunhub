@@ -386,12 +386,12 @@ func (h *Hub) Start(uid int64, now time.Time) ([]int64, error) {
 			*p = player{lives: Lives, alive: true, dir: dir, body: laid(at, dir, InitialTail)}
 			if mode == ModeSplit {
 				h.seed++
-				p.board = &board{gen: questions.NewFor(GameKey, s.Claims.Grade, h.seed).For(r.Subject, s.ID()).AtLevel(level)}
+				p.board = &board{gen: questions.NewFor(GameKey, s.Claims.Grade, h.seed).For(r.Subject, s.ID()).AtLevel(level).InClassroom(r.Classroom())}
 			}
 		}
 		if mode == ModeShared {
 			h.seed++
-			r.Game.shared = &board{gen: questions.NewFor(GameKey, grade, h.seed).For(r.Subject, r.Humans()...).AtLevel(level)}
+			r.Game.shared = &board{gen: questions.NewFor(GameKey, grade, h.seed).For(r.Subject, r.Humans()...).AtLevel(level).InClassroom(r.Classroom())}
 			nextQuestion(r, r.Game.shared, now)
 		} else {
 			for _, s := range r.Seats {

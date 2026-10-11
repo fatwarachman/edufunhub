@@ -480,7 +480,7 @@ func (r *Room) start(c *Client, now time.Time) error {
 	for _, p := range r.players {
 		*p = Player{Claims: p.Claims, Avatar: p.Avatar, client: p.client, order: p.order, online: true, alive: true}
 		p.limiter = Limiter{Max: MaxInputs, Window: time.Second}
-		p.gen = questions.NewFor(GameKey, grade, r.rng.Uint64()).For(r.subject, p.ID()).AtLevel(level)
+		p.gen = questions.NewFor(GameKey, grade, r.rng.Uint64()).For(r.subject, p.ID()).AtLevel(level).InClassroom(auth.FirstClassroom(r.hostClaims, p.Claims))
 		if r.mode != ModeFortress {
 			content := ""
 			if r.mode == ModeWords {

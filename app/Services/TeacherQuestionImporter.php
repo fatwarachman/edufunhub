@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Requests\Concerns\QuestionRules;
 use App\Models\Question;
+use App\Models\SubjectTopic;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -28,7 +29,7 @@ class TeacherQuestionImporter
         'question_id', 'question_en',
         'option_1_id', 'option_1_en', 'option_2_id', 'option_2_en', 'option_3_id', 'option_3_en',
         'option_4_id', 'option_4_en', 'option_5_id', 'option_5_en', 'option_6_id', 'option_6_en',
-        'answer', 'hint_id', 'hint_en',
+        'answer', 'hint_id', 'hint_en', 'level', 'topic',
     ];
 
     private const REQUIRED_COLUMNS = ['type', 'grades', 'subject', 'question_id', 'answer'];
@@ -41,9 +42,9 @@ class TeacherQuestionImporter
     public function sampleRows(): array
     {
         return [
-            ['choice', 'TK;1', 'math', 'flag-quest;sky-quiz', 'Berapa 2 + 3?', 'What is 2 + 3?', '5', '5', '4', '4', '6', '6', '7', '7', '', '', '', '', '1', '2 ditambah 3 sama dengan 5.', '2 plus 3 equals 5.'],
-            ['choice', '4;5;6', 'science', 'sky-quiz', 'Planet terbesar di tata surya adalah…', 'The largest planet in the solar system is…', 'Jupiter', 'Jupiter', 'Mars', 'Mars', 'Bumi', 'Earth', '', '', '', '', '', '', '1', '', ''],
-            ['true_false', '7;8;9', 'social', 'flag-quest', 'Ibu kota Indonesia adalah Jakarta.', 'The capital of Indonesia is Jakarta.', '', '', '', '', '', '', '', '', '', '', '', '', 'true', '', ''],
+            ['choice', 'TK;1', 'math', 'flag-quest;sky-quiz', 'Berapa 2 + 3?', 'What is 2 + 3?', '5', '5', '4', '4', '6', '6', '7', '7', '', '', '', '', '1', '2 ditambah 3 sama dengan 5.', '2 plus 3 equals 5.', 'mudah', ''],
+            ['choice', '4;5;6', 'science', 'sky-quiz', 'Planet terbesar di tata surya adalah…', 'The largest planet in the solar system is…', 'Jupiter', 'Jupiter', 'Mars', 'Mars', 'Bumi', 'Earth', '', '', '', '', '', '', '1', '', '', 'menengah', ''],
+            ['true_false', '7;8;9', 'social', 'flag-quest', 'Ibu kota Indonesia adalah Jakarta.', 'The capital of Indonesia is Jakarta.', '', '', '', '', '', '', '', '', '', '', '', '', 'true', '', '', 'sulit', ''],
         ];
     }
 
@@ -77,12 +78,26 @@ class TeacherQuestionImporter
             return ['imported' => 0, 'errors' => $parsed['errors']];
         }
 
+        $topics = $this->topicLookup();
         $errors = [];
         $records = [];
         foreach ($parsed['rows'] as $line => $row) {
             $attributes = $this->toAttributes($row);
-            $validator = Validator::make($attributes, [...$this->questionContentRules($attributes), ...$this->gradeRules()], $this->questionMessages());
-            $validator->after(fn ($v) => $this->validateQuestionConsistency($v, $attributes));
+            $topicName = mb_strtolower(trim($row['topic'] ?? ''));
+            $attributes['topic_id'] = $topicName === '' ? null : ($topics[$attributes['subject'].'|'.$topicName] ?? null);
+            $rules = [
+                ...$this->questionContentRules($attributes),
+                'level' => $this->levelAndTopicRules($attributes)['level'],
+                'topic_id' => ['nullable', 'integer'],
+                ...$this->gradeRules(),
+            ];
+            $validator = Validator::make($attributes, $rules, $this->questionMessages());
+            $validator->after(function ($v) use ($attributes, $topicName, $row): void {
+                $this->validateQuestionConsistency($v, $attributes);
+                if ($topicName !== '' && $attributes['topic_id'] === null) {
+                    $v->errors()->add('topic_id', __('questions.import.unknown_topic', ['topic' => trim($row['topic'] ?? '')]));
+                }
+            });
 
             if ($validator->fails()) {
                 $errors[] = ['row' => $line, 'messages' => array_values(array_unique($validator->errors()->all()))];
@@ -103,6 +118,8 @@ class TeacherQuestionImporter
 
                 Question::query()->create([
                     ...$data,
+                    'level' => Question::normalizeLevel($data['level']),
+                    'topic_id' => $data['topic_id'] ?? null,
                     'grades' => $grades,
                     'band' => Question::bandForGrades($grades),
                     'key' => 'q-'.Str::lower(Str::random(10)),
@@ -115,6 +132,23 @@ class TeacherQuestionImporter
         });
 
         return ['imported' => count($records), 'errors' => []];
+    }
+
+    /**
+     * Active topics keyed by "subject|lowercased name" (Indonesian and English names).
+     *
+     * @return array<string, int>
+     */
+    private function topicLookup(): array
+    {
+        $lookup = [];
+        foreach (SubjectTopic::query()->active()->get(['id', 'subject_key', 'name_id', 'name_en']) as $topic) {
+            foreach (array_filter([$topic->name_id, $topic->name_en]) as $name) {
+                $lookup[$topic->subject_key.'|'.mb_strtolower(trim($name))] ??= $topic->id;
+            }
+        }
+
+        return $lookup;
     }
 
     /**
@@ -192,6 +226,7 @@ class TeacherQuestionImporter
             'answer' => $this->parseAnswer($row['answer'] ?? '', $type),
             'hint_id' => ($row['hint_id'] ?? '') ?: null,
             'hint_en' => ($row['hint_en'] ?? '') ?: null,
+            'level' => $this->parseLevel($row['level'] ?? '') ?? Question::LEVEL_EASY,
             'is_active' => true,
         ];
     }

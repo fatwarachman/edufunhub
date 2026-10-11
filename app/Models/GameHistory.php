@@ -16,7 +16,7 @@ class GameHistory extends Model
     /** @var list<string> */
     protected $fillable = [
         'game_key', 'game_name', 'mission', 'grade', 'age', 'school_name', 'points',
-        'correct', 'wrong', 'duration_seconds', 'played_at', 'event_id',
+        'correct', 'wrong', 'duration_seconds', 'played_at', 'event_id', 'classroom_id',
     ];
 
     /** @return array<string, string> */

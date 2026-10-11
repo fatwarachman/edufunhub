@@ -24,6 +24,132 @@
 
 return [
     [
+        'version' => '0.23.0',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'solo-game-filter',
+                'type' => 'feature',
+                'title' => ['id' => 'Filter game sendiri di halaman game', 'en' => 'Solo game filter on gamelist page'],
+                'body' => ['id' => 'Tombol filter baru "Sendiri" di /gamelist menampilkan game yang bisa dimainkan solo (min_players=1).', 'en' => 'New "Solo" filter button on /gamelist shows games playable solo (min_players=1).'],
+            ],
+            [
+                'key' => 'piechart-hover-fix',
+                'type' => 'fix',
+                'title' => ['id' => 'Perbaikan efek hover PieChart', 'en' => 'PieChart hover effect fix'],
+                'body' => ['id' => 'Efek hover PieChart di halaman analisa subject diperbaiki jadi membesarkan slice saja tanpa merusak bentuk donut.', 'en' => 'PieChart hover effect on subject analysis pages fixed to only enlarge the slice without breaking the donut shape.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.22.0',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'subject-topics',
+                'type' => 'feature',
+                'title' => ['id' => 'Sub subject dan materi per pelajaran', 'en' => 'Subject topics and materials'],
+                'body' => ['id' => 'Setiap mata pelajaran kini bisa punya sub subject (materi) dengan deskripsi teks. Admin dan guru bisa menambah, mengedit, dan menghapus materi. AI membuat soal berdasarkan materi yang dipilih.', 'en' => 'Every subject can now have sub-subjects (topics) with descriptive text. Admins and teachers can add, edit and delete topics. The AI generates questions based on the chosen topic.'],
+            ],
+            [
+                'key' => 'teacher-level-topic-game-picker',
+                'type' => 'feature',
+                'title' => ['id' => 'Guru pilih level, sub subject, dan game saat buat soal', 'en' => 'Teacher picks level, topic and games when creating questions'],
+                'body' => ['id' => 'Guru bisa memilih tingkat kesulitan (Mudah/Menengah/Sulit), sub subject (materi), dan game mana yang memakai soal tersebut, plus halaman analisa soal guru identik dengan analisa soal AI tanpa data pribadi.', 'en' => 'Teachers can set question difficulty (Easy/Intermediate/Hard), choose a topic (material) and pick which games use the question, plus a teacher question analysis page identical to the AI analysis without personal data.'],
+            ],
+            [
+                'key' => 'teacher-classrooms',
+                'type' => 'feature',
+                'title' => ['id' => 'Ruang kelas guru dengan PIN, jadwal, dan pemantauan live', 'en' => 'Teacher classrooms with PIN, schedule and live monitoring'],
+                'body' => ['id' => 'Guru bisa membuat ruangan dengan PIN 6 digit, memilih game dan soal per game, menentukan jadwal aktif dan durasi. Pemantauan live: siapa masuk, sedang bermain apa, skor. Setelah selesai: analisa per game, per mapel, per topik, soal tersulit, wawasan, dan AI. Laporan per siswa bisa dibagikan ke masing-masing siswa lewat notifikasi in-app. Layanan game Go memakai soal pilihan guru secara eksklusif di ruangan.', 'en' => 'Teachers can create rooms with a 6-digit PIN, pick games and questions per game, set the active window and duration. Live monitoring: who is in, what they are playing, scores. Post-game: analysis per game, subject, topic, hardest questions, insights and AI. Per-student reports can be shared via in-app notification. The Go game service uses the teacher\'s picked questions exclusively in the room.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.21.0',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'classroom-pages',
+                'type' => 'feature',
+                'title' => ['id' => 'Halaman ruang kelas live & portal siswa', 'en' => 'Classroom live monitor & student portal pages'],
+                'body' => ['id' => 'Halaman baru: monitor live ruang kelas guru (KPI, tabel anggota, bagikan, analisis AI), portal siswa masuk PIN, laporan pribadi siswa, analisis soal guru, dan manajemen topik.', 'en' => 'New pages: teacher classroom live monitor (KPIs, member table, share, AI analysis), student PIN portal, student personal report, teacher question analysis, and topic management.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.20.0',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'subject-mastery-analysis',
+                'type' => 'feature',
+                'title' => ['id' => 'Analisa penguasaan materi per subject', 'en' => 'Subject mastery analysis'],
+                'body' => ['id' => 'Halaman analisa subject menampilkan penguasaan materi, kelas unggulan, perbandingan tingkat soal dan permainan, serta soal yang perlu perhatian berdasarkan jawaban tercatat.', 'en' => 'Subject analysis shows mastery rates, leading grades, question-level and game comparisons, and questions needing attention based on recorded answers.'],
+            ],
+            [
+                'key' => 'screen-time-cell-details',
+                'type' => 'improvement',
+                'title' => ['id' => 'Tooltip detail aktivitas layar', 'en' => 'Screen activity detail tooltips'],
+                'body' => ['id' => 'Kotak aktivitas layar menampilkan hari, rentang jam, total waktu aktif, dan porsi periode melalui hover, fokus keyboard, atau ketukan.', 'en' => 'Screen activity cells show weekday, hour range, total active time, and period share on hover, keyboard focus, or tap.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.19.1',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'nav-landing-link',
+                'type' => 'improvement',
+                'title' => [
+                    'id' => 'Menu Landing di navigasi pemain',
+                    'en' => 'Landing link in the player navigation',
+                ],
+                'body' => [
+                    'id' => 'Pemain yang sudah masuk kini punya menu Landing di urutan pertama navigasi atas (dan di panel Menu pada HP) untuk kembali ke halaman landing EduFunHub.',
+                    'en' => 'Signed-in players now get a Landing link first in the top navigation (and in the phone Menu panel) to go back to the EduFunHub landing page.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.19.0',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'auto-ability-analysis',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Analisa kemampuan AI otomatis per jumlah soal harian',
+                    'en' => 'Automatic AI ability analysis by daily answered questions',
+                ],
+                'body' => [
+                    'id' => 'AI kini menganalisa kemampuan pemain secara otomatis begitu ia menjawab 100 soal dalam satu hari (WIB), lalu setiap 150 soal berikutnya di hari yang sama (soal ke-100, 250, 400, …). Hitungan mulai lagi dari 0 setiap pukul 00.00. Hasilnya langsung dikirim ke WhatsApp pemain, lengkap dengan naik turun nilai per mata pelajaran dan rata-rata dibanding analisa terakhir (di hari yang sama maupun hari sebelumnya), plus cerita perkembangan dari AI. Super admin bisa menyalakan/mematikan fitur ini dan mengubah angka 100/150 di Pengaturan AI; riwayat analisa memberi label Otomatis.',
+                    'en' => 'The AI now analyses a player automatically once they answer 100 questions in one day (Jakarta time), then every 150 more on the same day (question 100, 250, 400, …). The count restarts at midnight. The result goes straight to the player\'s WhatsApp with the score change per subject and on average against the latest analysis (same day or earlier), plus the AI\'s progress story. Super admins can turn it on or off and change the 100/150 thresholds in AI Settings; the analysis history labels these runs Automatic.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.18.0',
+        'date' => '2026-10-10',
+        'changes' => [
+            [
+                'key' => 'multi-subject-games',
+                'type' => 'feature',
+                'title' => [
+                    'id' => 'Pilih beberapa mata pelajaran sekaligus di game',
+                    'en' => 'Pick several subjects at once in games',
+                ],
+                'body' => [
+                    'id' => 'Pemilih mata pelajaran di semua game kini bisa memilih lebih dari satu mata pelajaran (misalnya Matematika + IPA), tidak hanya satu atau Campuran (semua). Ketuk mata pelajaran untuk menambah atau melepasnya; jika semua dilepas, kembali ke Campuran. Soal hanya diambil dari mata pelajaran yang dipilih, dan soal hitungan otomatis hanya muncul bila Matematika ikut dipilih.',
+                    'en' => 'The subject picker in every game now accepts more than one subject (for example Math + Science), not just one or Mixed (all). Tap a subject to add or remove it; clearing them all returns to Mixed. Questions come only from the chosen subjects, and generated arithmetic appears only when Math is among them.',
+                ],
+            ],
+        ],
+    ],
+    [
         'version' => '0.17.0',
         'date' => '2026-10-10',
         'changes' => [

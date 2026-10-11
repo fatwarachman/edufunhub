@@ -160,6 +160,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(GameHistory::class);
     }
 
+    /** @return HasMany<ClassroomMember, $this> */
+    public function classroomMembers(): HasMany
+    {
+        return $this->hasMany(ClassroomMember::class);
+    }
+
     /** Character shop items the user bought. @return BelongsToMany<CharacterItem, $this> */
     public function characterItems(): BelongsToMany
     {

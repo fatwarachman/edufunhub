@@ -438,7 +438,7 @@ func (r *Room) start(c *Client, now time.Time) error {
 
 // prepare gives a player their own question stream at their own grade.
 func (r *Room) prepare(p *Player, now time.Time) {
-	p.gen = questions.NewFor(GameKey, p.Claims.Grade, r.rng.Uint64()).For(r.subject, p.ID()).AtLevel(p.Claims.Level)
+	p.gen = questions.NewFor(GameKey, p.Claims.Grade, r.rng.Uint64()).For(r.subject, p.ID()).AtLevel(p.Claims.Level).InClassroom(auth.FirstClassroom(r.hostClaims, p.Claims))
 	r.ask(p, now)
 }
 

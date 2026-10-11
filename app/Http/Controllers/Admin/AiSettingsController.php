@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AiConnectionRequest;
+use App\Http\Requests\Admin\AutoAssessmentRequest;
 use App\Services\Ai\AiSettings;
+use App\Services\Ai\AutoAbilityAssessment;
 use App\Services\Ai\OpenAiCompatibleClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,14 +16,15 @@ use Inertia\Response;
 use RuntimeException;
 
 /**
- * OpenAI-compatible AI connection: base URL, encrypted key, model list and
- * the model used to generate questions.
+ * OpenAI-compatible AI connection: base URL, encrypted key, model list, the
+ * model used to generate questions and the automatic ability analysis
+ * thresholds.
  */
 class AiSettingsController extends Controller
 {
     public function __construct(private AiSettings $settings, private OpenAiCompatibleClient $client) {}
 
-    public function index(): Response
+    public function index(AutoAbilityAssessment $auto): Response
     {
         return Inertia::render('admin/ai-settings', [
             'connection' => [
@@ -33,7 +36,17 @@ class AiSettingsController extends Controller
             ],
             'models' => $this->settings->cachedModels(),
             'modelsFetchedAt' => $this->settings->modelsFetchedAt(),
+            'autoAssessment' => $auto->toArray(),
         ]);
+    }
+
+    public function autoAssessment(AutoAssessmentRequest $request, AutoAbilityAssessment $auto): RedirectResponse
+    {
+        $data = $request->validated();
+        $auto->save((bool) $data['enabled'], (int) $data['first'], (int) $data['next']);
+        activity()->causedBy($request->user())->withProperties($data)->log('Updated automatic AI ability analysis');
+
+        return back()->with('success', __('ai.auto_saved'));
     }
 
     public function update(AiConnectionRequest $request): RedirectResponse

@@ -170,7 +170,7 @@ func (s *Session) Start(now time.Time) Message {
 	defer s.mu.Unlock()
 	s.LastSeen = now
 	s.seed++
-	s.gen = questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject).AtLevel(s.Claims.Level)
+	s.gen = questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject).AtLevel(s.Claims.Level).InClassroom(s.Claims.Classroom)
 	s.phase = PhaseQuestion
 	s.round, s.shields, s.score, s.earned, s.correct, s.wrong = 0, Shields, 0, 0, 0, 0
 	s.started = now

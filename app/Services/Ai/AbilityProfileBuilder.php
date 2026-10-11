@@ -358,7 +358,7 @@ class AbilityProfileBuilder
             ->all();
     }
 
-    /** @return list<array{date: ?string, summary: string, subject_scores: array<string, int>, confidence: ?string}> */
+    /** @return list<array{date: ?string, analyzed_at: ?string, summary: string, subject_scores: array<string, int>, confidence: ?string}> */
     private function previousAssessments(User $user, ?int $exceptId): array
     {
         return UserAbilityAssessment::query()
@@ -371,6 +371,7 @@ class AbilityProfileBuilder
             ->get(['id', 'result', 'created_at'])
             ->map(fn (UserAbilityAssessment $assessment): array => [
                 'date' => $assessment->created_at?->toDateString(),
+                'analyzed_at' => $assessment->created_at?->toIso8601String(),
                 'summary' => (string) ($assessment->result['summary'] ?? ''),
                 'subject_scores' => (array) ($assessment->result['subject_scores'] ?? []),
                 'confidence' => isset($assessment->result['confidence']) ? (string) $assessment->result['confidence'] : null,

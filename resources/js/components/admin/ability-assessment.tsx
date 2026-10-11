@@ -110,6 +110,10 @@ export interface AbilityAssessment {
     status: 'pending' | 'done' | 'failed';
     model: string | null;
     requested_by: string | null;
+    /** `auto` when started by the daily answered-questions milestone. */
+    trigger?: 'manual' | 'auto';
+    /** Questions answered that day when an automatic analysis started. */
+    trigger_answered?: number | null;
     created_at: string | null;
     updated_at: string | null;
     error: string | null;
@@ -315,7 +319,7 @@ export function AbilityAssessmentPanel({
     return (
         <Panel
             title="AI ability analysis"
-            description="Manual analysis of this player's results by the configured AI model, for teachers and parents."
+            description="Analysis of this player's results by the configured AI model, for teachers and parents. Runs on request and automatically after enough answered questions in a day."
             icon={BrainCircuit}
             actions={
                 data.can_run && (
@@ -547,8 +551,12 @@ function Meta({ assessment }: { assessment: AbilityAssessment }) {
             {[
                 formatDateTime(assessment.created_at),
                 assessment.model,
-                assessment.requested_by &&
-                    tr('by {0}', [assessment.requested_by]),
+                assessment.trigger === 'auto'
+                    ? tr('Automatic · {0} questions today', [
+                          assessment.trigger_answered ?? 0,
+                      ])
+                    : assessment.requested_by &&
+                      tr('by {0}', [assessment.requested_by]),
             ]
                 .filter(Boolean)
                 .join(' · ')}

@@ -15,6 +15,7 @@ import {
     Map as MapIcon,
     Network,
     Plane,
+    School,
     ShoppingCart,
     Swords,
     TrainFront,
@@ -41,6 +42,7 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
     kart: CarFront,
     blocks: Blocks,
     chef: ChefHat,
+    school: School,
 };
 
 export function gameIcon(icon: string): LucideIcon {

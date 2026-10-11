@@ -11,6 +11,7 @@ use App\Models\QuestionAnswer;
 use App\Models\QuestionCompensationRate;
 use App\Models\SequenceAttempt;
 use App\Models\User;
+use App\Services\Classrooms\ClassroomContext;
 use App\Services\MatchRecorder;
 use App\Services\PlayerBadges;
 use App\Services\PlayerNotifications;
@@ -19,6 +20,7 @@ use App\Services\UserActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class GameResultController extends Controller
 {
@@ -36,7 +38,9 @@ class GameResultController extends Controller
         $profile = $user->playerProfile;
         $totalBefore = $portal->totalPoints($user);
 
-        $history = DB::transaction(function () use ($user, $data, $locale, $profile, $matches): GameHistory {
+        $classroom = app(ClassroomContext::class)->currentFor($user, $data['game_key']);
+
+        $history = DB::transaction(function () use ($user, $data, $locale, $profile, $matches, $classroom): GameHistory {
             $history = $user->gameHistories()->create([
                 'game_key' => $data['game_key'],
                 'game_name' => $this->historyName($data['game_key'], $data['mission'], $locale),
@@ -50,6 +54,7 @@ class GameResultController extends Controller
                 'duration_seconds' => $data['duration_seconds'],
                 'played_at' => Carbon::parse($data['completed_at']),
                 'event_id' => $data['event_id'],
+                'classroom_id' => $classroom?->id,
             ]);
 
             $this->recordAnswers($history, $data['answers'] ?? []);
@@ -78,6 +83,12 @@ class GameResultController extends Controller
         );
 
         $badges->evaluate($user);
+
+        try {
+            app(\App\Services\Ai\AutoAbilityAssessment::class)->check($user, $history->played_at);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
 
         return response()->json(['status' => 'recorded'], 201);
     }

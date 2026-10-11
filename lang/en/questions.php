@@ -13,6 +13,8 @@ return [
     'grades_required' => 'Choose at least one grade.',
     'grades_invalid' => 'Grades must be kindergarten (TK) or 1 to 12.',
     'prompt_required' => 'Write a question of at least 3 characters.',
+    'level_invalid' => 'Choose a question level: Easy, Intermediate or Hard.',
+    'topic_invalid' => 'The topic was not found or does not belong to this subject.',
     'visual' => [
         'image_required' => 'Upload a picture for an image visual.',
         'image_missing' => 'The question picture was not found. Upload it again.',
@@ -38,6 +40,7 @@ return [
         'missing_columns' => 'Required columns are missing: :columns. Use the provided template.',
         'too_many_rows' => 'At most :max questions per file.',
         'empty' => 'The file contains no questions.',
+        'unknown_topic' => 'Topic ":topic" was not found for this subject.',
         'failed' => 'Import cancelled. Fix the rows with problems and upload again.',
         'success' => '{1} :count question imported.|[2,*] :count questions imported.',
     ],

@@ -32,7 +32,9 @@ use App\Http\Controllers\Admin\SequenceSetController;
 use App\Http\Controllers\Admin\ServerMonitorController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SorterSetController;
+use App\Http\Controllers\Admin\SubjectAnalyticsController;
 use App\Http\Controllers\Admin\SubjectController;
+use App\Http\Controllers\Admin\SubjectTopicController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserGamePlayController;
 use App\Http\Controllers\Admin\UserStatisticsController;
@@ -87,6 +89,8 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
 
         // Super admin: game statistics, leaderboard and question bank
         Route::middleware(EnsureSuperadmin::class)->group(function (): void {
+            Route::get('/subject-analysis', [SubjectAnalyticsController::class, 'index'])->name('subject-analysis.index');
+            Route::get('/subject-analysis/{subject}', [SubjectAnalyticsController::class, 'show'])->whereNumber('subject')->name('subject-analysis.show');
             Route::get('/hot-games', [HotGamesController::class, 'index'])->name('hot-games.index');
             Route::get('/hot-games/{game}', [HotGamesController::class, 'show'])->where('game', '[a-z0-9-]+')->name('hot-games.show');
             Route::get('/games', [GameStatisticsController::class, 'index'])->name('games.index');
@@ -118,6 +122,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::post('/ai-settings/models', [AiSettingsController::class, 'refresh'])->name('ai-settings.models');
             Route::put('/ai-settings/model', [AiSettingsController::class, 'model'])->name('ai-settings.model');
             Route::delete('/ai-settings/key', [AiSettingsController::class, 'forgetKey'])->name('ai-settings.key');
+            Route::put('/ai-settings/auto-assessment', [AiSettingsController::class, 'autoAssessment'])->name('ai-settings.auto-assessment');
             Route::get('/whatsapp', [WhatsAppController::class, 'index'])->name('whatsapp.index');
             Route::put('/whatsapp', [WhatsAppController::class, 'update'])->name('whatsapp.update');
             Route::get('/whatsapp/log', [WhatsAppController::class, 'log'])->name('whatsapp.log');
@@ -154,6 +159,11 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::patch('/subjects/{subject}/toggle', [SubjectController::class, 'toggle'])->name('subjects.toggle');
             Route::patch('/subjects/{subject}/move', [SubjectController::class, 'move'])->name('subjects.move');
             Route::resource('subjects', SubjectController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::get('/subjects/{subject}/topics', [SubjectTopicController::class, 'index'])->name('subjects.topics.index');
+            Route::post('/subjects/{subject}/topics', [SubjectTopicController::class, 'store'])->middleware('throttle:30,1,admin.topics.store')->name('subjects.topics.store');
+            Route::put('/subjects/{subject}/topics/{topic}', [SubjectTopicController::class, 'update'])->middleware('throttle:60,1,admin.topics.update')->name('subjects.topics.update');
+            Route::patch('/subjects/{subject}/topics/{topic}/toggle', [SubjectTopicController::class, 'toggle'])->name('subjects.topics.toggle');
+            Route::delete('/subjects/{subject}/topics/{topic}', [SubjectTopicController::class, 'destroy'])->name('subjects.topics.destroy');
             Route::get('/changelog', [ChangelogController::class, 'index'])->name('changelog.index');
             Route::post('/changelog', [ChangelogController::class, 'store'])->middleware('throttle:30,1,changelog.store')->name('changelog.store');
             Route::put('/changelog/{changelogEntry}', [ChangelogController::class, 'update'])->middleware('throttle:60,1,changelog.update')->name('changelog.update');

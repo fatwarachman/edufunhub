@@ -74,6 +74,7 @@ import {
     ShieldCheck,
     ShieldOff,
     ShoppingBag,
+    Smartphone,
     Swords,
     Target,
     Trash2,
@@ -98,6 +99,7 @@ interface UserDetail {
     id: number;
     name: string;
     email: string;
+    whatsapp_number: string | null;
     avatar_url: string | null;
     is_superadmin: boolean;
     created_at: string;
@@ -737,6 +739,14 @@ export default function ShowUser(props: Props) {
                                         user.email_verified_at
                                             ? formatDate(user.email_verified_at)
                                             : 'Not verified'
+                                    }
+                                />
+                                <Fact
+                                    icon={Smartphone}
+                                    label={tr('WhatsApp')}
+                                    value={user.whatsapp_number
+                                        ? user.whatsapp_number
+                                        : 'Belum input nomor WA'
                                     }
                                 />
                                 <Fact

@@ -58,6 +58,39 @@ trait QuestionRules
         ];
     }
 
+    /**
+     * Level (1 easy, 2 intermediate, 3 hard) and optional sub subject of the
+     * chosen subject. The topic must be active and belong to that subject.
+     *
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<mixed>>
+     */
+    protected function levelAndTopicRules(array $input): array
+    {
+        return [
+            'level' => ['required', 'integer', Rule::in(array_keys(Question::LEVELS))],
+            'topic_id' => ['nullable', 'integer', Rule::exists('subject_topics', 'id')
+                ->where('is_active', true)
+                ->where('subject_key', is_string($input['subject'] ?? null) ? $input['subject'] : '')],
+        ];
+    }
+
+    /**
+     * Reads a level from a form or CSV value: 1-3 or a level name.
+     */
+    protected function parseLevel(mixed $value): int|string|null
+    {
+        $value = mb_strtolower(trim((string) $value));
+
+        return match ($value) {
+            '' => null,
+            '1', 'mudah', 'easy' => Question::LEVEL_EASY,
+            '2', 'menengah', 'sedang', 'intermediate', 'medium' => Question::LEVEL_MEDIUM,
+            '3', 'sulit', 'sukar', 'hard', 'expert' => Question::LEVEL_EXPERT,
+            default => $value,
+        };
+    }
+
     /** @return array<string, array<mixed>> */
     protected function gradeRules(): array
     {
@@ -100,6 +133,11 @@ trait QuestionRules
             'grades.*.in' => __('questions.grades_invalid'),
             'prompt_id.required' => __('questions.prompt_required'),
             'prompt_id.min' => __('questions.prompt_required'),
+            'level.required' => __('questions.level_invalid'),
+            'level.integer' => __('questions.level_invalid'),
+            'level.in' => __('questions.level_invalid'),
+            'topic_id.integer' => __('questions.topic_invalid'),
+            'topic_id.exists' => __('questions.topic_invalid'),
         ];
     }
 }

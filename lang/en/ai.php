@@ -27,4 +27,6 @@ return [
     'assessment_failed' => 'The AI analysis failed. Try again later.',
     'assessment_incomplete' => 'The AI reply had no usable analysis.',
     'assessment_timed_out' => 'The analysis did not finish in time.',
+    'auto_saved' => 'Automatic analysis settings saved.',
+    'auto_bounds' => 'Enter a number between :min and :max questions.',
 ];

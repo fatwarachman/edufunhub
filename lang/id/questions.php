@@ -13,6 +13,8 @@ return [
     'grades_required' => 'Pilih minimal satu kelas.',
     'grades_invalid' => 'Kelas harus TK atau 1 sampai 12.',
     'prompt_required' => 'Tulis pertanyaan minimal 3 karakter.',
+    'level_invalid' => 'Pilih tingkat soal: Mudah, Menengah, atau Sulit.',
+    'topic_invalid' => 'Materi tidak ditemukan atau bukan bagian dari mata pelajaran ini.',
     'visual' => [
         'image_required' => 'Unggah gambar untuk visual bergambar.',
         'image_missing' => 'Gambar soal tidak ditemukan. Unggah ulang gambarnya.',
@@ -38,6 +40,7 @@ return [
         'missing_columns' => 'Kolom wajib tidak ditemukan: :columns. Gunakan template yang disediakan.',
         'too_many_rows' => 'Maksimal :max soal per file.',
         'empty' => 'File tidak berisi soal.',
+        'unknown_topic' => 'Materi ":topic" tidak ditemukan untuk mata pelajaran ini.',
         'failed' => 'Impor dibatalkan. Perbaiki baris yang bermasalah lalu unggah ulang.',
         'success' => '{1} :count soal berhasil diimpor.|[2,*] :count soal berhasil diimpor.',
     ],

@@ -176,6 +176,24 @@
             "title": "Database backups (manual, scheduled, FTP)",
             "superadminOnly": true,
             "teacherOnly": false
+        },
+        "teacherClassrooms": {
+            "href": "/teacher/classrooms",
+            "title": "Teacher Classrooms (Live, Analysis)",
+            "superadminOnly": false,
+            "teacherOnly": true
+        },
+        "teacherTopics": {
+            "href": "/teacher/topics",
+            "title": "Subject Topics",
+            "superadminOnly": false,
+            "teacherOnly": true
+        },
+        "portalClassroom": {
+            "href": "/portal/classrooms",
+            "title": "Classroom (Player Portal)",
+            "superadminOnly": false,
+            "teacherOnly": false
         }
     }
 }

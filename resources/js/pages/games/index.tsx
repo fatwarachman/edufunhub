@@ -32,6 +32,7 @@ import {
     Sparkles,
     Swords,
     TrendingUp,
+    User,
     X,
 } from 'lucide-react';
 import { type ReactNode, useMemo, useState, useSyncExternalStore } from 'react';
@@ -130,6 +131,9 @@ const HOT = 'hot';
 /** Pseudo filter: games flagged for SMK TKJ (Teknik Komputer dan Jaringan). */
 const TKJ = 'tkj';
 
+/** Pseudo filter: games playable solo (min_players === 1). */
+const SOLO = 'solo';
+
 export default function GameList({
     popularity = {},
     popularityDays = 30,
@@ -211,6 +215,11 @@ export default function GameList({
         () => matched.flatMap((category) => category.games).filter(isTkjGame),
         [matched],
     );
+    /** Games playable solo. */
+    const soloGames = useMemo(
+        () => matched.flatMap((category) => category.games).filter((g) => g.minPlayers === 1),
+        [matched],
+    );
     const categoryOf = useMemo(
         () =>
             new Map(
@@ -262,6 +271,16 @@ export default function GameList({
                             key: TKJ,
                             titleKey: 'gameList.tkj.title',
                             games: tkjGames,
+                        },
+                    ]
+                  : []
+              : filter === SOLO
+              ? soloGames.length > 0
+                  ? [
+                        {
+                            key: SOLO,
+                            titleKey: 'gameList.solo.title',
+                            games: soloGames,
                         },
                     ]
                   : []
@@ -587,6 +606,11 @@ export default function GameList({
                             titleKey: 'gameList.tkj.tab',
                             count: tkjGames.length,
                         },
+                        {
+                            key: SOLO,
+                            titleKey: 'gameList.solo.tab',
+                            count: soloGames.length,
+                        },
                         ...matched.map((category) => ({
                             key: category.key,
                             titleKey: category.titleKey,
@@ -630,6 +654,17 @@ export default function GameList({
                                             active
                                                 ? 'text-[#5eead4]'
                                                 : 'text-[#0f766e]',
+                                        )}
+                                        aria-hidden
+                                    />
+                                )}
+                                {category.key === SOLO && (
+                                    <User
+                                        className={cn(
+                                            'size-4 shrink-0',
+                                            active
+                                                ? 'text-[#FFD93D]'
+                                                : 'text-[#6366f1]',
                                         )}
                                         aria-hidden
                                     />

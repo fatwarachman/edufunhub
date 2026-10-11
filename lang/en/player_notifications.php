@@ -38,4 +38,8 @@ return [
         'invalid_url' => 'The link must start with / (an app page) or https://.',
         'grade_required' => 'Choose the target grade.',
     ],
+    'classroom_report' => [
+        'title' => 'Classroom report: :classroom',
+        'body' => 'Your teacher shared your learning report for :classroom.',
+    ],
 ];

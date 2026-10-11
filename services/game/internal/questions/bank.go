@@ -67,6 +67,9 @@ func (it Item) ForGrade(grade int) bool {
 type Bank struct {
 	Version string
 	items   []Item
+	// classrooms holds the teacher-picked pools: classroom id -> game key
+	// -> items (see classroom.go).
+	classrooms map[int64]map[string][]Item
 }
 
 // Len returns the number of items.
@@ -89,29 +92,41 @@ func (b *Bank) truths(grade int, game string) []Item  { return b.filter(TypeTrue
 func Validate(items []Item) error {
 	seen := map[string]bool{}
 	for _, it := range items {
-		switch {
-		case it.Key == "" || seen[it.Key]:
+		if it.Key == "" || seen[it.Key] {
 			return fmt.Errorf("invalid or duplicate key %q", it.Key)
-		case it.Band < 0 || it.Band > 3:
-			return fmt.Errorf("%s: band out of range", it.Key)
-		case !validGrades(it.Grades):
-			return fmt.Errorf("%s: grades must be between 0 and 12", it.Key)
-		case it.Prompt.ID == "":
-			return fmt.Errorf("%s: empty prompt", it.Key)
-		case it.Type == TypeChoice && (len(it.Options) < 3 || it.Answer < 0 || it.Answer >= len(it.Options)):
-			return fmt.Errorf("%s: choice needs at least 3 options and a valid answer", it.Key)
-		case it.Type == TypeTrueFalse && (it.Answer < 0 || it.Answer > 1):
-			return fmt.Errorf("%s: true/false answer must be 0 or 1", it.Key)
-		case it.Type != TypeChoice && it.Type != TypeTrueFalse:
-			return fmt.Errorf("%s: unknown type %q", it.Key, it.Type)
-		case it.Points < 0 || it.Points > points.MaxPerQuestion:
-			return fmt.Errorf("%s: points out of range", it.Key)
-		case it.Level < 0 || it.Level > points.LevelExpert:
-			return fmt.Errorf("%s: level out of range", it.Key)
-		case !validVisual(it.Visual):
-			return fmt.Errorf("%s: visual must be an object with a kind", it.Key)
+		}
+		if err := checkItem(it); err != nil {
+			return err
 		}
 		seen[it.Key] = true
+	}
+	return nil
+}
+
+// checkItem applies the per-item bank rules (everything except key
+// uniqueness, which depends on the surrounding list).
+func checkItem(it Item) error {
+	switch {
+	case it.Key == "":
+		return fmt.Errorf("invalid or duplicate key %q", it.Key)
+	case it.Band < 0 || it.Band > 3:
+		return fmt.Errorf("%s: band out of range", it.Key)
+	case !validGrades(it.Grades):
+		return fmt.Errorf("%s: grades must be between 0 and 12", it.Key)
+	case it.Prompt.ID == "":
+		return fmt.Errorf("%s: empty prompt", it.Key)
+	case it.Type == TypeChoice && (len(it.Options) < 3 || it.Answer < 0 || it.Answer >= len(it.Options)):
+		return fmt.Errorf("%s: choice needs at least 3 options and a valid answer", it.Key)
+	case it.Type == TypeTrueFalse && (it.Answer < 0 || it.Answer > 1):
+		return fmt.Errorf("%s: true/false answer must be 0 or 1", it.Key)
+	case it.Type != TypeChoice && it.Type != TypeTrueFalse:
+		return fmt.Errorf("%s: unknown type %q", it.Key, it.Type)
+	case it.Points < 0 || it.Points > points.MaxPerQuestion:
+		return fmt.Errorf("%s: points out of range", it.Key)
+	case it.Level < 0 || it.Level > points.LevelExpert:
+		return fmt.Errorf("%s: level out of range", it.Key)
+	case !validVisual(it.Visual):
+		return fmt.Errorf("%s: visual must be an object with a kind", it.Key)
 	}
 	return nil
 }
@@ -150,6 +165,8 @@ func Parse(body []byte) (*Bank, error) {
 		Questions []Item        `json:"questions"`
 		Points    *points.Rules `json:"points"`
 		Subjects  []string      `json:"subjects"`
+		// Classrooms are the teacher-picked pools of running classrooms.
+		Classrooms []classroomPayload `json:"classrooms"`
 	}
 	if err := json.Unmarshal(body, &payload); err != nil {
 		return nil, err
@@ -166,7 +183,7 @@ func Parse(body []byte) (*Bank, error) {
 	if payload.Subjects != nil {
 		UseSubjects(payload.Subjects)
 	}
-	return &Bank{Version: payload.Version, items: payload.Questions}, nil
+	return &Bank{Version: payload.Version, items: payload.Questions, classrooms: parseClassrooms(payload.Classrooms)}, nil
 }
 
 var current atomic.Pointer[Bank]

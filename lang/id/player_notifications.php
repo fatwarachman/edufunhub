@@ -38,4 +38,8 @@ return [
         'invalid_url' => 'Tautan harus diawali / (halaman aplikasi) atau https://.',
         'grade_required' => 'Pilih kelas tujuan.',
     ],
+    'classroom_report' => [
+        'title' => 'Laporan kelas :classroom',
+        'body' => 'Guru membagikan laporan hasil belajarmu di kelas :classroom.',
+    ],
 ];

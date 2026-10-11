@@ -67,6 +67,12 @@ export const navItems: NavEntry[] = [
         icon: ChartNoAxesCombined,
         children: [
             {
+                title: 'Subject Analysis',
+                href: '/admin/subject-analysis',
+                icon: BookMarked,
+                superadminOnly: true,
+            },
+            {
                 title: 'User Statistics',
                 href: '/admin/user-statistics',
                 icon: UsersRound,

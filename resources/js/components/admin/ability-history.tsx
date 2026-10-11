@@ -379,7 +379,16 @@ export function AbilityHistory({
             header: tr('Requested by'),
             cell: (row) => (
                 <span className="[overflow-wrap:anywhere] text-muted-foreground">
-                    {row.requested_by ?? '—'}
+                    {row.trigger === 'auto' ? (
+                        <span
+                            className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-semibold text-violet-700 dark:bg-violet-950/50 dark:text-violet-300"
+                            data-testid="ability-trigger-auto"
+                        >
+                            {tr('Automatic')}
+                        </span>
+                    ) : (
+                        (row.requested_by ?? '—')
+                    )}
                 </span>
             ),
         },
