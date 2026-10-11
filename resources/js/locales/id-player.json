@@ -50,21 +50,11 @@
             "demoInvite": "Solo dengan robot · Duel dengan teman",
             "demoWinner": "5 : 3 — Menang!",
             "demoQuestion": "Berapa hasil 7 × 8?",
-            "demoOptions": [
-                "54",
-                "56",
-                "63",
-                "48"
-            ],
+            "demoOptions": ["54", "56", "63", "48"],
             "demoAnswer": "Jawaban: 56",
             "demoRally": "Reli 6 · giliran bergantian",
             "demoRallyQuestion": "Planet terdekat dengan Matahari adalah…",
-            "demoRallyOptions": [
-                "Venus",
-                "Merkurius",
-                "Mars",
-                "Bumi"
-            ],
+            "demoRallyOptions": ["Venus", "Merkurius", "Mars", "Bumi"],
             "demo": {
                 "subject": "PILIH MAPEL",
                 "read": "BACA SOAL",
@@ -402,6 +392,46 @@
         "you": "kamu",
         "recent": "Hasil terakhir",
         "allHistory": "Lihat semua riwayat",
+        "bestSchools": "Sekolah terbaik",
+        "bestSchoolsEmpty": "Belum ada sekolah dengan poin.",
+        "schoolPlayers": "pemain",
+        "schoolPoints": "poin",
+        "news": {
+            "eyebrow": "BERITA DATA EDUFUNHUB",
+            "title": "Yang sedang terjadi di EduFunHub",
+            "intro": "Portal dinamis berisi tren permainan, skor terbaik, performa mata pelajaran, dan denyut aktivitas terbaru.",
+            "periodLabel": "Periode game paling banyak dimainkan",
+            "mostPlayed": "Game paling banyak dimainkan",
+            "highestScores": "All time highest score",
+            "bestSubjects": "Mata pelajaran dengan nilai terbaik",
+            "weakestSubjects": "Mata pelajaran yang perlu dikuatkan",
+            "playersShort": "pemain",
+            "empty": "Belum ada data untuk periode ini.",
+            "periods": {
+                "today": "Hari ini",
+                "threeDays": "3 hari",
+                "sevenDays": "7 hari"
+            },
+            "pulse": {
+                "games": "Game aktif",
+                "plays": "Total sesi bermain",
+                "players": "Pemain aktif",
+                "questions": "Soal aktif"
+            }
+        },
+        "subjectDetail": {
+            "back": "Kembali ke portal",
+            "eyebrow": "DETAIL MATA PELAJARAN",
+            "intro": "Lihat ringkasan penguasaan, distribusi performa, dan soal yang perlu diperhatikan.",
+            "accuracy": "Tingkat penguasaan",
+            "answers": "Jawaban tercatat",
+            "questions": "Jumlah soal",
+            "byGrade": "Performa berdasarkan kelas",
+            "byGame": "Performa berdasarkan game",
+            "weakestQuestions": "Soal yang perlu diperkuat",
+            "answersShort": "jawaban",
+            "unknown": "Tidak diketahui"
+        },
         "games": {
             "pingPong": "Kembalikan bola dengan menjawab soal kuis dari semua mata pelajaran. Main solo melawan robot atau undang teman lewat PIN.",
             "title": "Permainan edukasi",
@@ -465,6 +495,7 @@
         "backToDashboard": "Kembali ke beranda",
         "backToLogin": "Kembali masuk",
         "teacher": "Guru",
+        "classrooms": "Ruang Kelas",
         "allGames": "Lihat semua game",
         "gradeRange": "Kelas {{range}}",
         "loginToPlay": "Masuk untuk main",
@@ -476,6 +507,7 @@
         "ability": "Analisa kemampuan",
         "registerFree": "Daftar gratis",
         "profile": "Profil",
+        "about": "Tentang",
         "friends": "Teman",
         "social": "Sosial",
         "account": "Akun",
@@ -3293,12 +3325,7 @@
             "demoPin": "PIN contoh",
             "demoWinner": "Ekor habis — Juara!",
             "demoQuestion": "Berapa hasil 7 × 8?",
-            "demoOptions": [
-                "54",
-                "56",
-                "63",
-                "48"
-            ],
+            "demoOptions": ["54", "56", "63", "48"],
             "demo": {
                 "room": "BUAT RUANG & PILIH MODE",
                 "read": "BACA SOAL",
@@ -3500,6 +3527,16 @@
             "waText": "🎒 Ayo gabung ruang {{name}} di EduFunHub!\nPIN: {{pin}}\nLink: {{url}}"
         },
         "teacher": {
+            "title": "Ruang Kelas Guru",
+            "heading": "Ruang kelas",
+            "intro": "Buat sesi belajar, pilih permainan dan soal, lalu pantau peserta secara langsung.",
+            "create": "Buat ruang",
+            "listTitle": "Daftar ruang kelas",
+            "filterLabel": "Filter status ruang kelas",
+            "emptyTitle": "Belum ada ruang kelas",
+            "emptyHint": "Buat ruang pertama untuk mulai sesi belajar bersama peserta.",
+            "emptyFiltered": "Tidak ada ruang dengan status ini.",
+            "open": "Buka ruang",
             "edit": "Ubah",
             "endNow": "Akhiri sekarang"
         },

@@ -17,8 +17,11 @@ import PlayerLayout from '@/layouts/player-layout';
 import { gameIcon } from '@/lib/games';
 import { gradeLabel, hasGrade } from '@/lib/grade';
 import { absoluteUrl } from '@/lib/share';
+import { SubjectIcon } from '@/lib/subjects';
 import { Deferred, Link } from '@inertiajs/react';
 import {
+    BarChart3,
+    ChartNoAxesCombined,
     CircleAlert,
     Coins,
     Crown,
@@ -27,6 +30,7 @@ import {
     GraduationCap,
     History,
     IdCard,
+    Info,
     Medal,
     Play,
     Sparkles,
@@ -115,8 +119,68 @@ interface PortalProps {
         points: number;
         played_at: string;
     }[];
+    news: PortalNewsData;
+    schools: {
+        entries: {
+            rank: number;
+            name: string;
+            city: string | null;
+            players: number;
+            points: number;
+            isMine: boolean;
+        }[];
+    };
     /** Deferred: rooms the player is still seated in on the game service. */
     activeGames?: ActiveGame[];
+}
+
+interface PortalNewsGame {
+    key: string;
+    titleKey: string;
+    icon: string;
+    accent: string;
+    plays: number;
+    players: number;
+    url: string;
+}
+
+interface PortalNewsScore {
+    id: number;
+    gameKey: string;
+    gameName: string;
+    player: string;
+    points: number;
+    correct: number;
+    wrong: number;
+    playedAt: string;
+}
+
+interface PortalNewsSubject {
+    key: string;
+    nameId: string;
+    nameEn: string | null;
+    icon: string;
+    color: string;
+    answered: number;
+    correct: number;
+    accuracy: number;
+}
+
+interface PortalNewsData {
+    periods: {
+        today: PortalNewsGame[];
+        threeDays: PortalNewsGame[];
+        sevenDays: PortalNewsGame[];
+    };
+    highestScores: PortalNewsScore[];
+    subjects: { best: PortalNewsSubject[]; weakest: PortalNewsSubject[] };
+    pulse: {
+        totalGames: number;
+        totalPlays: number;
+        activePlayers: number;
+        questions: number;
+        playsSevenDays: number;
+    };
 }
 
 export default function Portal({
@@ -129,6 +193,8 @@ export default function Portal({
     leaderboards,
     recent,
     activeGames,
+    news,
+    schools,
 }: PortalProps) {
     const { t, i18n } = useTranslations();
     const myId = useMyUserId();
@@ -256,6 +322,10 @@ export default function Portal({
             </Deferred>
 
             <JoinByPinCard />
+
+            <PortalNewsWidgets news={news} numberFormat={numberFormat} />
+
+            <SchoolLeaderboard schools={schools} numberFormat={numberFormat} />
 
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
                 <section
@@ -385,9 +455,12 @@ export default function Portal({
                                                     max: game.maxGrade,
                                                 })}
                                             </p>
-                                            <h3 className="text-xl font-bold">
+                                            <Link
+                                                href={game.url}
+                                                className="text-xl font-bold hover:text-[#6c5ce7]"
+                                            >
                                                 {t(game.titleKey)}
-                                            </h3>
+                                            </Link>
                                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                                 <PlayerCountBadge
                                                     minPlayers={game.minPlayers}
@@ -520,32 +593,39 @@ export default function Portal({
                         ) : (
                             <ul className="flex flex-col divide-y divide-[#151b2e]/15">
                                 {recent.map((item) => (
-                                    <li
-                                        key={item.id}
-                                        className="flex items-center justify-between gap-3 py-2.5"
-                                    >
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm font-semibold">
-                                                {item.game_name}
-                                            </p>
-                                            <time
-                                                className="text-xs text-muted-foreground"
-                                                dateTime={item.played_at}
-                                            >
-                                                {new Intl.DateTimeFormat(
-                                                    i18n.language,
-                                                    {
-                                                        dateStyle: 'medium',
-                                                        timeStyle: 'short',
-                                                    },
-                                                ).format(
-                                                    new Date(item.played_at),
+                                    <li key={item.id}>
+                                        <Link
+                                            href={`/games/${item.game_key}`}
+                                            className="flex items-center justify-between gap-3 py-2.5 transition-colors hover:text-[#6c5ce7]"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="truncate text-sm font-semibold">
+                                                    {item.game_name}
+                                                </p>
+                                                <time
+                                                    className="text-xs text-muted-foreground"
+                                                    dateTime={item.played_at}
+                                                >
+                                                    {new Intl.DateTimeFormat(
+                                                        i18n.language,
+                                                        {
+                                                            dateStyle: 'medium',
+                                                            timeStyle: 'short',
+                                                        },
+                                                    ).format(
+                                                        new Date(
+                                                            item.played_at,
+                                                        ),
+                                                    )}
+                                                </time>
+                                            </div>
+                                            <span className="shrink-0 text-sm font-bold text-[#116a56] tabular-nums">
+                                                +
+                                                {numberFormat.format(
+                                                    item.points,
                                                 )}
-                                            </time>
-                                        </div>
-                                        <span className="shrink-0 text-sm font-bold text-[#116a56] tabular-nums">
-                                            +{numberFormat.format(item.points)}
-                                        </span>
+                                            </span>
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>
@@ -560,6 +640,392 @@ export default function Portal({
                 </aside>
             </div>
         </PlayerLayout>
+    );
+}
+
+function PortalNewsWidgets({
+    news,
+    numberFormat,
+}: {
+    news: PortalNewsData;
+    numberFormat: Intl.NumberFormat;
+}) {
+    const { t, i18n } = useTranslations();
+    const [period, setPeriod] = useState<'today' | 'threeDays' | 'sevenDays'>(
+        'today',
+    );
+    const periodLabels = {
+        today: t('portal.news.periods.today'),
+        threeDays: t('portal.news.periods.threeDays'),
+        sevenDays: t('portal.news.periods.sevenDays'),
+    };
+    const games = news.periods[period];
+
+    return (
+        <section
+            className="flex flex-col gap-5"
+            aria-labelledby="portal-news-title"
+        >
+            <div className="flex flex-wrap items-end justify-between gap-3">
+                <div className="flex min-w-0 flex-col gap-1">
+                    <span className="auth-badge self-start">
+                        {t('portal.news.eyebrow')}
+                    </span>
+                    <h2
+                        id="portal-news-title"
+                        className="text-2xl font-bold md:text-3xl"
+                    >
+                        {t('portal.news.title')}
+                    </h2>
+                    <p className="max-w-2xl text-sm text-muted-foreground">
+                        {t('portal.news.intro')}
+                    </p>
+                </div>
+                <Info
+                    className="size-6 shrink-0 text-[#6c5ce7]"
+                    aria-hidden="true"
+                />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <PortalPulseCard
+                    href="/gamelist"
+                    icon={Gamepad2}
+                    label={t('portal.news.pulse.games')}
+                    value={numberFormat.format(news.pulse.totalGames)}
+                    accent="#efeaff"
+                />
+                <PortalPulseCard
+                    href="/dashboard"
+                    icon={BarChart3}
+                    label={t('portal.news.pulse.plays')}
+                    value={numberFormat.format(news.pulse.totalPlays)}
+                    accent="#fff0cf"
+                />
+                <PortalPulseCard
+                    href="/players/online"
+                    icon={Users}
+                    label={t('portal.news.pulse.players')}
+                    value={numberFormat.format(news.pulse.activePlayers)}
+                    accent="#dff7ea"
+                />
+                <PortalPulseCard
+                    href="/gamelist"
+                    icon={GraduationCap}
+                    label={t('portal.news.pulse.questions')}
+                    value={numberFormat.format(news.pulse.questions)}
+                    accent="#ffe1e6"
+                />
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+                <section
+                    className="auth-card flex min-w-0 flex-col gap-4 !p-5"
+                    aria-labelledby="portal-popular-games-title"
+                >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h3
+                            id="portal-popular-games-title"
+                            className="flex items-center gap-2 text-xl font-bold"
+                        >
+                            <Flame className="size-5 text-[#e85d75]" />
+                            {t('portal.news.mostPlayed')}
+                        </h3>
+                        <div
+                            className="flex flex-wrap gap-1.5"
+                            role="tablist"
+                            aria-label={t('portal.news.periodLabel')}
+                        >
+                            {(
+                                Object.keys(periodLabels) as Array<
+                                    keyof typeof periodLabels
+                                >
+                            ).map((key) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={period === key}
+                                    onClick={() => setPeriod(key)}
+                                    className={`min-h-9 rounded-full border-2 border-[#151b2e] px-3 text-xs font-bold ${period === key ? 'bg-[#151b2e] text-white' : 'bg-white hover:bg-[#fff0cf]'}`}
+                                >
+                                    {periodLabels[key]}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    {games.length === 0 ? (
+                        <PortalEmpty text={t('portal.news.empty')} />
+                    ) : (
+                        <ol
+                            className="flex flex-col gap-2"
+                            data-testid="portal-news-most-played"
+                        >
+                            {games.map((game, index) => {
+                                const Icon = gameIcon(game.icon);
+                                return (
+                                    <li key={game.key}>
+                                        <Link
+                                            href={game.url}
+                                            className="flex min-w-0 items-center gap-3 rounded-xl border-2 border-[#151b2e] bg-white px-3 py-2.5 transition-transform hover:-translate-y-0.5"
+                                        >
+                                            <span className="grid size-8 shrink-0 place-items-center rounded-full border-2 border-[#151b2e] bg-[#ffd93d] text-sm font-bold">
+                                                {index + 1}
+                                            </span>
+                                            <span
+                                                className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#151b2e] text-white"
+                                                style={{
+                                                    background: game.accent,
+                                                }}
+                                            >
+                                                <Icon
+                                                    className="size-5"
+                                                    aria-hidden="true"
+                                                />
+                                            </span>
+                                            <span className="min-w-0 flex-1 truncate text-sm font-bold">
+                                                {t(game.titleKey)}
+                                            </span>
+                                            <span className="shrink-0 text-right">
+                                                <strong className="block text-sm tabular-nums">
+                                                    {numberFormat.format(
+                                                        game.plays,
+                                                    )}
+                                                    ×
+                                                </strong>
+                                                <small className="text-xs text-muted-foreground">
+                                                    {numberFormat.format(
+                                                        game.players,
+                                                    )}{' '}
+                                                    {t(
+                                                        'portal.news.playersShort',
+                                                    )}
+                                                </small>
+                                            </span>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+                    )}
+                </section>
+
+                <section
+                    className="auth-card flex min-w-0 flex-col gap-4 !p-5"
+                    aria-labelledby="portal-highest-score-title"
+                >
+                    <h3
+                        id="portal-highest-score-title"
+                        className="flex items-center gap-2 text-xl font-bold"
+                    >
+                        <Medal className="size-5 text-[#f5a623]" />
+                        {t('portal.news.highestScores')}
+                    </h3>
+                    {news.highestScores.length === 0 ? (
+                        <PortalEmpty text={t('portal.news.empty')} />
+                    ) : (
+                        <ol className="flex flex-col gap-2">
+                            {news.highestScores.map((score, index) => (
+                                <li key={score.id}>
+                                    <Link
+                                        href={`/leaderboard?game=${encodeURIComponent(score.gameKey)}`}
+                                        className="flex min-w-0 items-center gap-3 rounded-xl border-2 border-[#151b2e] bg-white px-3 py-2.5 transition-transform hover:-translate-y-0.5"
+                                    >
+                                        <span className="grid size-8 shrink-0 place-items-center rounded-full border-2 border-[#151b2e] bg-[#fff0cf] text-sm font-bold">
+                                            {index + 1}
+                                        </span>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-bold">
+                                                {score.player}
+                                            </p>
+                                            <p className="truncate text-xs text-muted-foreground">
+                                                {score.gameName}
+                                            </p>
+                                        </div>
+                                        <strong className="shrink-0 text-sm text-[#116a56] tabular-nums">
+                                            +{numberFormat.format(score.points)}
+                                        </strong>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ol>
+                    )}
+                </section>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-2">
+                <SubjectPerformance
+                    title={t('portal.news.bestSubjects')}
+                    subjects={news.subjects.best}
+                    numberFormat={numberFormat}
+                    language={i18n.language}
+                    positive
+                />
+                <SubjectPerformance
+                    title={t('portal.news.weakestSubjects')}
+                    subjects={news.subjects.weakest}
+                    numberFormat={numberFormat}
+                    language={i18n.language}
+                />
+            </div>
+        </section>
+    );
+}
+
+function SchoolLeaderboard({
+    schools,
+    numberFormat,
+}: {
+    schools: PortalProps['schools'];
+    numberFormat: Intl.NumberFormat;
+}) {
+    const { t } = useTranslations();
+
+    return (
+        <section
+            className="auth-card flex min-w-0 flex-col gap-4 !p-5"
+            aria-labelledby="portal-schools-title"
+        >
+            <h2
+                id="portal-schools-title"
+                className="flex items-center gap-2 text-xl font-bold"
+            >
+                <GraduationCap className="size-5 text-[#6c5ce7]" />
+                {t('portal.bestSchools')}
+            </h2>
+            {schools.entries.length === 0 ? (
+                <PortalEmpty text={t('portal.bestSchoolsEmpty')} />
+            ) : (
+                <ol className="flex flex-col gap-2">
+                    {schools.entries.map((school) => (
+                        <li
+                            key={school.name + (school.city ?? '')}
+                            className="flex min-w-0 items-center gap-3 rounded-xl border-2 border-[#151b2e] bg-white px-3 py-2.5"
+                        >
+                            <span className="grid size-8 shrink-0 place-items-center rounded-full border-2 border-[#151b2e] bg-[#ffd93d] text-sm font-bold">
+                                {school.rank}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-bold">
+                                    {school.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                    {school.players} {t('portal.schoolPlayers')}
+                                </p>
+                            </div>
+                            <strong className="shrink-0 text-sm text-[#116a56] tabular-nums">
+                                {numberFormat.format(school.points)}{' '}
+                                {t('portal.schoolPoints')}
+                            </strong>
+                        </li>
+                    ))}
+                </ol>
+            )}
+        </section>
+    );
+}
+
+function PortalPulseCard({
+    icon: Icon,
+    label,
+    value,
+    accent,
+    href,
+}: {
+    icon: typeof Gamepad2;
+    label: string;
+    value: string;
+    accent: string;
+    href: string;
+}) {
+    return (
+        <Link
+            href={href}
+            className="auth-card flex min-w-0 items-center gap-3 !p-4 transition-transform hover:-translate-y-0.5"
+        >
+            <span
+                className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[#151b2e]"
+                style={{ background: accent }}
+            >
+                <Icon className="size-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+                <p className="text-2xl font-bold tabular-nums">{value}</p>
+                <p className="truncate text-xs font-bold text-muted-foreground">
+                    {label}
+                </p>
+            </div>
+        </Link>
+    );
+}
+
+function SubjectPerformance({
+    title,
+    subjects,
+    numberFormat,
+    language,
+    positive = false,
+}: {
+    title: string;
+    subjects: PortalNewsSubject[];
+    numberFormat: Intl.NumberFormat;
+    language: string;
+    positive?: boolean;
+}) {
+    const { t } = useTranslations();
+
+    return (
+        <section className="auth-card flex min-w-0 flex-col gap-4 !p-5">
+            <h3 className="flex items-center gap-2 text-xl font-bold">
+                <ChartNoAxesCombined
+                    className={`size-5 ${positive ? 'text-[#116a56]' : 'text-[#e85d75]'}`}
+                />
+                {title}
+            </h3>
+            {subjects.length === 0 ? (
+                <PortalEmpty text={t('portal.news.empty')} />
+            ) : (
+                <ol className="flex flex-col gap-2">
+                    {subjects.map((subject, index) => (
+                        <li key={subject.key}>
+                            <Link
+                                href={`/subjects/${encodeURIComponent(subject.key)}`}
+                                className="flex min-w-0 items-center gap-3 rounded-xl border-2 border-[#151b2e] bg-white px-3 py-2.5 transition-transform hover:-translate-y-0.5"
+                            >
+                                <span className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-[#151b2e] bg-[#fff0cf] text-xs font-bold">
+                                    {index + 1}
+                                </span>
+                                <span
+                                    className="grid size-9 shrink-0 place-items-center rounded-lg border-2 border-[#151b2e]"
+                                    style={{ background: subject.color }}
+                                >
+                                    <SubjectIcon
+                                        icon={subject.icon}
+                                        className="size-4"
+                                    />
+                                </span>
+                                <span className="min-w-0 flex-1 truncate text-sm font-bold">
+                                    {language.startsWith('en')
+                                        ? subject.nameEn || subject.nameId
+                                        : subject.nameId}
+                                </span>
+                                <span className="shrink-0 text-sm font-bold tabular-nums">
+                                    {numberFormat.format(subject.accuracy)}%
+                                </span>
+                            </Link>
+                        </li>
+                    ))}
+                </ol>
+            )}
+        </section>
+    );
+}
+
+function PortalEmpty({ text }: { text: string }) {
+    return (
+        <p className="rounded-xl border-2 border-dashed border-[#151b2e]/25 px-4 py-6 text-center text-sm text-muted-foreground">
+            {text}
+        </p>
     );
 }
 

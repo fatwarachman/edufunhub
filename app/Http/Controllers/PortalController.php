@@ -4,14 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\PlayerProfile;
 use App\Services\ActiveGames;
+use App\Services\PlayerLeaderboards;
 use App\Services\PlayerPortal;
+use App\Services\PortalNews;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PortalController extends Controller
 {
-    public function __construct(public PlayerPortal $portal, public ActiveGames $activeGames) {}
+    public function __construct(
+        public PlayerPortal $portal,
+        public ActiveGames $activeGames,
+        public PlayerLeaderboards $leaderboards,
+        public PortalNews $news,
+    ) {}
 
     public function __invoke(Request $request): Response
     {
@@ -34,6 +41,8 @@ class PortalController extends Controller
             'leaderboards' => $this->portal->leaderboards($user),
             'recent' => $this->portal->recentResults($user),
             'activeGames' => Inertia::defer(fn (): array => $this->activeGames->for($user)),
+            'news' => $this->news->widgets(),
+            'schools' => $this->leaderboards->schools($user),
         ]);
     }
 }

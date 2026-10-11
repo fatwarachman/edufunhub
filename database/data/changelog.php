@@ -24,6 +24,102 @@
 
 return [
     [
+        'version' => '0.26.0',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'player-account-about-link',
+                'type' => 'feature',
+                'title' => ['id' => 'Menu Tentang di Akun pemain', 'en' => 'About link in player account menu'],
+                'body' => ['id' => 'Menu Akun pemain kini menyediakan tautan Tentang ke halaman /about tepat di atas tombol Keluar.', 'en' => 'The player Account menu now provides an About link to /about directly above the Log out button.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.25.0',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'portal-school-ranking-pin-dialog',
+                'type' => 'feature',
+                'title' => ['id' => 'Peringkat sekolah dan modal PIN di portal', 'en' => 'School ranking and PIN dialog on portal'],
+                'body' => ['id' => 'Portal kini menampilkan sekolah terbaik berdasarkan akumulasi poin pemain dan membuka modal PIN saat field PIN disentuh.', 'en' => 'The portal now shows top schools by accumulated player points and opens a PIN dialog when the PIN field receives focus.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.24.2',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'portal-clickable-items',
+                'type' => 'improvement',
+                'title' => ['id' => 'Item portal dapat diklik', 'en' => 'Portal items are clickable'],
+                'body' => ['id' => 'Kartu statistik, game populer, skor tertinggi, performa mata pelajaran, judul game, dan riwayat permainan kini memiliki navigasi langsung.', 'en' => 'Stats cards, popular games, top scores, subject performance, game titles, and play history now provide direct navigation.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.24.0',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'dynamic-news-portal',
+                'type' => 'feature',
+                'title' => ['id' => 'Portal data dinamis EduFunHub', 'en' => 'Dynamic EduFunHub data portal'],
+                'body' => ['id' => 'Portal pemain kini menampilkan tren game berdasarkan periode, skor tertinggi sepanjang masa, performa mata pelajaran, dan ringkasan aktivitas EduFunHub.', 'en' => 'The player portal now shows period-based game trends, all-time highest scores, subject performance, and an EduFunHub activity pulse.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.23.4',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'teacher-stat-card-inline-value',
+                'type' => 'improvement',
+                'title' => ['id' => 'Ikon dan angka statistik guru satu baris', 'en' => 'Teacher stat icons and values on one line'],
+                'body' => ['id' => 'Kartu statistik guru kini menampilkan ikon dan angka dalam satu baris agar lebih ringkas dan mudah dipindai.', 'en' => 'Teacher stat cards now show icons and values on one line for a more compact, scannable layout.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.23.3',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'teacher-topics-render-data',
+                'type' => 'fix',
+                'title' => ['id' => 'Perbaikan render data Materi guru', 'en' => 'Fix teacher topics data rendering'],
+                'body' => ['id' => 'Halaman Materi guru memakai data mata pelajaran dari props halaman secara langsung agar tidak blank saat katalog bersama belum siap.', 'en' => 'Teacher Topics now reads subject data directly from page props so it does not go blank when the shared catalog is not ready.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.23.2',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'teacher-topics-blank-page',
+                'type' => 'fix',
+                'title' => ['id' => 'Perbaikan halaman Materi guru yang blank', 'en' => 'Fix blank teacher topics page'],
+                'body' => ['id' => 'Halaman Materi guru kembali merender normal dan tombol tambah materi tidak lagi memakai tombol bersarang.', 'en' => 'Teacher Topics renders normally again and the add-topic control no longer uses nested buttons.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.23.1',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'teacher-classroom-menu',
+                'type' => 'fix',
+                'title' => ['id' => 'Menu ruang kelas guru di navigasi', 'en' => 'Teacher classroom menu in navigation'],
+                'body' => ['id' => 'Guru kini bisa membuka fitur Ruang Kelas langsung dari menu Akun di navigasi utama.', 'en' => 'Teachers can now open Classrooms directly from the Account menu in the main navigation.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.23.0',
         'date' => '2026-10-11',
         'changes' => [
