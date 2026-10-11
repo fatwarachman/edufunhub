@@ -54,16 +54,18 @@ export function StatCard({
             className="auth-card flex min-w-0 flex-col gap-3 !p-5"
             data-testid={testId}
         >
-            <span
-                className="grid size-11 place-items-center rounded-xl border-2 border-[#151b2e] text-[#151b2e]"
-                style={{ background: accent }}
-            >
-                <Icon className="size-5" aria-hidden="true" />
-            </span>
-            <div className="flex min-w-0 flex-col gap-0.5">
-                <p className="truncate text-2xl font-bold tabular-nums md:text-3xl">
+            <div className="flex min-w-0 items-center gap-3">
+                <span
+                    className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[#151b2e] text-[#151b2e]"
+                    style={{ background: accent }}
+                >
+                    <Icon className="size-5" aria-hidden="true" />
+                </span>
+                <p className="min-w-0 truncate text-2xl font-bold tabular-nums md:text-3xl">
                     {value}
                 </p>
+            </div>
+            <div className="flex min-w-0 flex-col gap-0.5">
                 <p className="text-sm font-bold">{label}</p>
                 {hint && (
                     <p className="text-xs text-muted-foreground">{hint}</p>
