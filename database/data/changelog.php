@@ -24,6 +24,18 @@
 
 return [
     [
+        'version' => '0.26.1',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'teacher-topics-production-render-fix',
+                'type' => 'fix',
+                'title' => ['id' => 'Perbaikan halaman topik guru', 'en' => 'Fix teacher topics page rendering'],
+                'body' => ['id' => 'Halaman topik guru kini merender aman di produksi dengan struktur tombol valid dan nama mata pelajaran dari data halaman.', 'en' => 'The teacher topics page now renders safely in production with valid button structure and subject names from page data.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.26.0',
         'date' => '2026-10-11',
         'changes' => [

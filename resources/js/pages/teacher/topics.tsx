@@ -6,7 +6,7 @@ import {
 } from '@/components/teacher/teacher-ui';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
-import { SubjectIcon, useSubjectName } from '@/lib/subjects';
+import { SubjectIcon } from '@/lib/subjects';
 import { router, useForm } from '@inertiajs/react';
 import {
     ChevronDown,
@@ -23,7 +23,7 @@ import { createPortal } from 'react-dom';
 interface SubjectRow {
     key: string;
     name_id: string;
-    name_en: string;
+    name_en: string | null;
     icon: string;
     color: string;
 }
@@ -48,8 +48,11 @@ interface TopicsProps {
 }
 
 export default function TeacherTopics({ topics, subjects }: TopicsProps) {
-    const { t } = useTranslations();
-    const subjectName = useSubjectName();
+    const { t, i18n } = useTranslations();
+    const subjectName = (subject: SubjectRow): string =>
+        i18n.language?.startsWith('en')
+            ? subject.name_en || subject.name_id
+            : subject.name_id;
     const [expanded, setExpanded] = useState<Set<string>>(
         new Set(subjects.map((s) => s.key)),
     );
@@ -88,52 +91,68 @@ export default function TeacherTopics({ topics, subjects }: TopicsProps) {
             <TeacherTabs active="topics" />
             <SuccessNotice />
 
-            <div className="flex flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {bySubject.map(({ subject, topics: subjectTopics }) => (
                     <section
                         key={subject.key}
-                        className="auth-card flex flex-col gap-4 !p-5"
+                        className="auth-card flex min-w-0 flex-col gap-4 !p-5"
                         data-testid={`topic-subject-${subject.key}`}
                     >
-                        <button
-                            type="button"
-                            onClick={() => toggleSubject(subject.key)}
-                            className="flex min-h-11 w-full items-center justify-between gap-2 text-left"
-                            aria-expanded={expanded.has(subject.key)}
-                        >
-                            <div className="flex min-w-0 items-center gap-2">
-                                <SubjectIcon
-                                    icon={subject.icon}
-                                    className="size-5"
-                                />
-                                <span className="truncate font-bold">
-                                    {subjectName(subject.key)}
+                        <div className="flex min-h-11 w-full items-start justify-between gap-3">
+                            <button
+                                type="button"
+                                onClick={() => toggleSubject(subject.key)}
+                                className="flex min-w-0 flex-1 flex-col items-start gap-2 text-left"
+                                aria-expanded={expanded.has(subject.key)}
+                                aria-label={subjectName(subject)}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <span
+                                        className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[#151b2e] text-[#151b2e]"
+                                        style={{
+                                            background:
+                                                subject.color || '#efeaff',
+                                        }}
+                                    >
+                                        <SubjectIcon
+                                            icon={subject.icon}
+                                            className="size-5"
+                                        />
+                                    </span>
+                                    <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-[#151b2e] bg-[#fff4cc] text-xs font-bold tabular-nums">
+                                        {subjectTopics.length}
+                                    </span>
                                 </span>
-                                <span className="rounded-full border-2 border-[#1f2a44] bg-[#fff4cc] px-2 py-0.5 text-xs tabular-nums">
-                                    {subjectTopics.length}
+                                <span className="min-w-0 truncate text-base font-bold">
+                                    {subjectName(subject)}
                                 </span>
-                            </div>
-                            <div className="flex items-center gap-2">
+                            </button>
+                            <div className="flex shrink-0 items-center gap-1.5">
                                 <button
                                     type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
+                                    onClick={() => {
                                         setEditingTopic(null);
                                         setShowDialog(true);
                                     }}
-                                    className="inline-flex size-10 items-center justify-center rounded-xl border-2 border-[#1f2a44] bg-white hover:bg-[#FFF176]"
+                                    className="inline-flex size-10 items-center justify-center rounded-xl border-2 border-[#151b2e] bg-white shadow-[2px_2px_0px_#151b2e] hover:bg-[#FFF176]"
                                     aria-label={t('teacher.topics.add')}
                                     data-testid={`topic-add-${subject.key}`}
                                 >
                                     <Plus className="size-4" />
                                 </button>
                                 {expanded.has(subject.key) ? (
-                                    <ChevronUp className="size-5 text-muted-foreground" />
+                                    <ChevronUp
+                                        className="size-5 text-muted-foreground"
+                                        aria-hidden="true"
+                                    />
                                 ) : (
-                                    <ChevronDown className="size-5 text-muted-foreground" />
+                                    <ChevronDown
+                                        className="size-5 text-muted-foreground"
+                                        aria-hidden="true"
+                                    />
                                 )}
                             </div>
-                        </button>
+                        </div>
 
                         {expanded.has(subject.key) && (
                             <div className="flex flex-col gap-2">
