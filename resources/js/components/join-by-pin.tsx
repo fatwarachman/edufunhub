@@ -147,6 +147,7 @@ export function PinForm({
     here,
     disabled,
     label,
+    onFocus,
 }: {
     initialPin?: string;
     /** Look the initial PIN up right away (dialog opened from `?join=`). */
@@ -160,6 +161,7 @@ export function PinForm({
     disabled?: boolean;
     /** Visible label above the input (screen-reader only when absent). */
     label?: string;
+    onFocus?: () => void;
 }) {
     const { t } = useTranslations();
     const inputId = useId();
@@ -225,6 +227,7 @@ export function PinForm({
                     maxLength={6}
                     placeholder={t('joinPin.placeholder')}
                     autoFocus={autoFocus}
+                    onFocus={onFocus}
                     aria-invalid={state.kind === 'error'}
                     aria-describedby={messageId}
                     className="h-12 min-h-12 min-w-0 flex-1 rounded-xl border-2 border-[#1f2a44] bg-white px-3 text-center font-display text-xl font-black tracking-[0.25em] text-[#1f2a44] placeholder:text-sm placeholder:tracking-normal placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[#FF9E44] focus-visible:outline-none"
@@ -396,30 +399,36 @@ export function JoinByPinDialog({
 /** Inline card for the portal and the game list. */
 export function JoinByPinCard({ className }: { className?: string }) {
     const { t } = useTranslations();
+    const [open, setOpen] = useState(false);
+    const close = useCallback(() => setOpen(false), []);
+
     return (
-        <section
-            className={cn(
-                'flex flex-col gap-3 rounded-3xl border-3 border-[#1f2a44] bg-[#FFF176] p-4 shadow-[4px_4px_0px_#1f2a44] sm:p-5',
-                className,
-            )}
-            aria-label={t('joinPin.title')}
-            data-testid="join-pin-card"
-        >
-            <div className="flex items-start gap-3">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border-2 border-[#1f2a44] bg-white">
-                    <KeyRound className="size-5" aria-hidden />
-                </span>
-                <div className="min-w-0">
-                    <h2 className="font-display text-lg font-black text-[#1f2a44]">
-                        {t('joinPin.title')}
-                    </h2>
-                    <p className="text-sm font-bold text-slate-700">
-                        {t('joinPin.intro')}
-                    </p>
+        <>
+            <section
+                className={cn(
+                    'flex flex-col gap-3 rounded-3xl border-3 border-[#1f2a44] bg-[#FFF176] p-4 shadow-[4px_4px_0px_#1f2a44] sm:p-5',
+                    className,
+                )}
+                aria-label={t('joinPin.title')}
+                data-testid="join-pin-card"
+            >
+                <div className="flex items-start gap-3">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border-2 border-[#1f2a44] bg-white">
+                        <KeyRound className="size-5" aria-hidden />
+                    </span>
+                    <div className="min-w-0">
+                        <h2 className="font-display text-lg font-black text-[#1f2a44]">
+                            {t('joinPin.title')}
+                        </h2>
+                        <p className="text-sm font-bold text-slate-700">
+                            {t('joinPin.intro')}
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <PinForm compact />
-        </section>
+                <PinForm compact onFocus={() => setOpen(true)} />
+            </section>
+            <JoinByPinDialog open={open} onClose={close} />
+        </>
     );
 }
 

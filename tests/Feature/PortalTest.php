@@ -4,7 +4,9 @@ use App\Models\GameAccess;
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\PointLedger;
+use App\Models\Subject;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -41,6 +43,32 @@ function reportPortalResult(mixed $test, User $user, array $overrides = []): Tes
         'HTTP_X_GAME_SIGNATURE' => hash_hmac('sha256', $timestamp.'.'.$body, PORTAL_SECRET),
     ], $body);
 }
+
+test('subject detail resolves by subject key', function (): void {
+    $user = User::factory()->create();
+    $subject = Subject::query()->where('key', 'science')->firstOrFail();
+
+    $this->actingAs($user)->get('/subjects/science')->assertInertia(fn (Assert $page) => $page
+        ->component('subjects/show')
+        ->where('subject.key', $subject->key)
+        ->where('subject.nameId', $subject->name_id));
+});
+
+test('portal shows schools ranked by accumulated player points', function (): void {
+    $viewer = User::factory()->create();
+    $first = User::factory()->create();
+    $second = User::factory()->create();
+    PlayerProfile::factory()->for($first)->create(['school_name' => 'SMK Nusantara', 'school_city' => 'Bogor']);
+    PlayerProfile::factory()->for($second)->create(['school_name' => 'SMK Nusantara', 'school_city' => 'Bogor']);
+    PointLedger::factory()->for($first)->create(['points' => 800000]);
+    PointLedger::factory()->for($second)->create(['points' => 1200000]);
+    Cache::forget('leaderboards:schools');
+
+    $this->actingAs($viewer)->get('/portal')->assertInertia(fn (Assert $page) => $page
+        ->where('schools.entries.0.name', 'SMK Nusantara')
+        ->where('schools.entries.0.players', 2)
+        ->where('schools.entries.0.points', 2000000));
+});
 
 test('portal requires login', function (): void {
     $this->get('/portal')->assertRedirect(route('login'));

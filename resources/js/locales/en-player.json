@@ -50,21 +50,11 @@
             "demoInvite": "Solo with bot · Duel with a friend",
             "demoWinner": "5 : 3 — Victory!",
             "demoQuestion": "What is 7 × 8?",
-            "demoOptions": [
-                "54",
-                "56",
-                "63",
-                "48"
-            ],
+            "demoOptions": ["54", "56", "63", "48"],
             "demoAnswer": "Answer: 56",
             "demoRally": "Rally 6 · turns alternate",
             "demoRallyQuestion": "Which planet is closest to the Sun?",
-            "demoRallyOptions": [
-                "Venus",
-                "Mercury",
-                "Mars",
-                "Earth"
-            ],
+            "demoRallyOptions": ["Venus", "Mercury", "Mars", "Earth"],
             "demo": {
                 "subject": "PICK A SUBJECT",
                 "read": "READ THE QUESTION",
@@ -403,6 +393,46 @@
         "you": "you",
         "recent": "Recent results",
         "allHistory": "See full history",
+        "bestSchools": "Top schools",
+        "bestSchoolsEmpty": "No school has points yet.",
+        "schoolPlayers": "players",
+        "schoolPoints": "points",
+        "news": {
+            "eyebrow": "EDUFUNHUB DATA NEWS",
+            "title": "What is happening across EduFunHub",
+            "intro": "A dynamic portal for game trends, top scores, subject performance, and the latest activity pulse.",
+            "periodLabel": "Most-played game period",
+            "mostPlayed": "Most played games",
+            "highestScores": "All time highest score",
+            "bestSubjects": "Best-scoring subjects",
+            "weakestSubjects": "Subjects that need focus",
+            "playersShort": "players",
+            "empty": "No data for this period yet.",
+            "periods": {
+                "today": "Today",
+                "threeDays": "3 days",
+                "sevenDays": "7 days"
+            },
+            "pulse": {
+                "games": "Active games",
+                "plays": "Total play sessions",
+                "players": "Active players",
+                "questions": "Active questions"
+            }
+        },
+        "subjectDetail": {
+            "back": "Back to portal",
+            "eyebrow": "SUBJECT DETAIL",
+            "intro": "Review mastery, performance distribution, and questions that need attention.",
+            "accuracy": "Mastery rate",
+            "answers": "Recorded answers",
+            "questions": "Question count",
+            "byGrade": "Performance by grade",
+            "byGame": "Performance by game",
+            "weakestQuestions": "Questions that need focus",
+            "answersShort": "answers",
+            "unknown": "Unknown"
+        },
         "games": {
             "pingPong": "Return the ball by answering quiz questions from every subject. Play solo against a bot or invite a friend by PIN.",
             "title": "Educational games",
@@ -466,6 +496,7 @@
         "backToDashboard": "Back to home",
         "backToLogin": "Back to login",
         "teacher": "Teacher",
+        "classrooms": "Classrooms",
         "allGames": "See all games",
         "gradeRange": "Grades {{range}}",
         "loginToPlay": "Sign in to play",
@@ -477,6 +508,7 @@
         "ability": "Ability analysis",
         "registerFree": "Sign up free",
         "profile": "Profile",
+        "about": "About",
         "friends": "Friends",
         "social": "Social",
         "account": "Account",
@@ -3294,12 +3326,7 @@
             "demoPin": "Sample PIN",
             "demoWinner": "Tail cleared — Champion!",
             "demoQuestion": "What is 7 × 8?",
-            "demoOptions": [
-                "54",
-                "56",
-                "63",
-                "48"
-            ],
+            "demoOptions": ["54", "56", "63", "48"],
             "demo": {
                 "room": "CREATE A ROOM & PICK A MODE",
                 "read": "READ THE QUESTION",
@@ -3501,6 +3528,16 @@
             "waText": "🎒 Join my classroom {{name}} on EduFunHub!\nPIN: {{pin}}\nLink: {{url}}"
         },
         "teacher": {
+            "title": "Teacher Classrooms",
+            "heading": "Classrooms",
+            "intro": "Create learning sessions, choose games and questions, then monitor participants live.",
+            "create": "Create room",
+            "listTitle": "Classroom list",
+            "filterLabel": "Classroom status filter",
+            "emptyTitle": "No classrooms yet",
+            "emptyHint": "Create your first room to start a learning session with participants.",
+            "emptyFiltered": "No classrooms with this status.",
+            "open": "Open classroom",
             "edit": "Edit",
             "endNow": "End now"
         },

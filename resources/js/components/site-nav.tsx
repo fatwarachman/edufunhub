@@ -22,6 +22,7 @@ import {
     Gamepad2,
     Globe,
     Home,
+    Info,
     KeyRound,
     LayoutDashboard,
     LogIn,
@@ -29,6 +30,7 @@ import {
     Menu,
     MessageCircle,
     MessageSquarePlus,
+    School,
     ShieldCheck,
     Trophy,
     UserPlus,
@@ -192,6 +194,13 @@ const TEACHER_ITEM: NavItem = {
     testId: 'nav-teacher',
 };
 
+const CLASSROOM_ITEM: NavItem = {
+    href: '/teacher/classrooms',
+    labelKey: 'nav.classrooms',
+    icon: School,
+    testId: 'nav-classrooms',
+};
+
 /** Admins and superadmins: jump from the player site to the admin dashboard. */
 const ADMIN_ITEM: NavItem = {
     href: '/admin/dashboard',
@@ -214,6 +223,14 @@ const PROFILE_ITEM: NavItem = {
     labelKey: 'nav.profile',
     icon: CircleUserRound,
     testId: 'nav-profile',
+};
+
+const ABOUT_ITEM: NavItem = {
+    href: '/about',
+    labelKey: 'nav.about',
+    icon: Info,
+    external: true,
+    testId: 'nav-about',
 };
 
 const FEEDBACK_ITEM: NavItem = {
@@ -272,8 +289,9 @@ function playerGroups({
                 CHARACTER_ITEM,
                 ABILITY_ITEM,
                 FEEDBACK_ITEM,
-                ...(isTeacher ? [TEACHER_ITEM] : []),
+                ...(isTeacher ? [TEACHER_ITEM, CLASSROOM_ITEM] : []),
                 ...(isAdmin ? [ADMIN_ITEM] : []),
+                ABOUT_ITEM,
             ],
         },
     ];
