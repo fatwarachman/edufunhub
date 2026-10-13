@@ -112,6 +112,8 @@ interface UserDetail {
     two_factor_enabled: boolean;
     roles: { id: number; name: string; slug: string }[];
     is_teacher: boolean;
+    assignedTeacherSubjects: (string | null)[];
+    canTeachAllSubjects: boolean;
     providers: { provider: string; linked_at: string | null }[];
     player_profile: {
         nickname: string | null;
@@ -143,6 +145,7 @@ interface PlayRow {
 interface Props {
     user: UserDetail;
     viewerIsSuperadmin: boolean;
+    teacherSubjects: { key: string; name_id: string; name_en: string | null }[];
     badges: {
         stats: Record<string, number>;
         badges: (BadgeProgress & { name: string; description: string })[];
@@ -359,6 +362,21 @@ export default function ShowUser(props: Props) {
     }, [scrollRequest]);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [editingSchool, setEditingSchool] = useState(false);
+    const [teacherSubjects, setTeacherSubjects] = useState<string[]>(
+        user.canTeachAllSubjects
+            ? ['*']
+            : user.assignedTeacherSubjects.filter(
+                  (subject): subject is string => subject !== null,
+              ),
+    );
+
+    const toggleAssignedSubject = (subject: string): void => {
+        setTeacherSubjects((current) =>
+            current.includes(subject)
+                ? current.filter((item) => item !== subject)
+                : [...current.filter((item) => item !== '*'), subject],
+        );
+    };
     const isLearnerAccount =
         !user.is_superadmin &&
         !user.is_teacher &&
@@ -471,12 +489,83 @@ export default function ShowUser(props: Props) {
                                     {tr('AI ability analysis')}
                                 </a>
                             )}
+                            {props.viewerIsSuperadmin && (
+                                <div className="flex w-full flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 p-2 text-sm">
+                                    <span className="font-medium text-foreground">
+                                        {tr('Teacher subjects')}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setTeacherSubjects((current) =>
+                                                current.includes('*')
+                                                    ? []
+                                                    : ['*'],
+                                            )
+                                        }
+                                        className="rounded-md border border-border px-2 py-1 hover:bg-accent"
+                                    >
+                                        {tr('All subjects')}
+                                    </button>
+                                    {props.teacherSubjects.map((subject) => (
+                                        <button
+                                            key={subject.key}
+                                            type="button"
+                                            onClick={() =>
+                                                toggleAssignedSubject(
+                                                    subject.key,
+                                                )
+                                            }
+                                            className={cn(
+                                                'rounded-md border px-2 py-1',
+                                                teacherSubjects.includes('*') ||
+                                                    teacherSubjects.includes(
+                                                        subject.key,
+                                                    )
+                                                    ? 'border-primary bg-primary/10 text-primary'
+                                                    : 'border-border hover:bg-accent',
+                                            )}
+                                        >
+                                            {subject.name_en || subject.name_id}
+                                        </button>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            router.patch(
+                                                `/admin/users/${user.id}/teacher-subjects`,
+                                                {
+                                                    subjects:
+                                                        teacherSubjects.includes(
+                                                            '*',
+                                                        )
+                                                            ? []
+                                                            : teacherSubjects,
+                                                },
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                        className="rounded-md bg-primary px-2 py-1 text-primary-foreground hover:bg-primary/90"
+                                    >
+                                        {tr('Save subjects')}
+                                    </button>
+                                </div>
+                            )}
                             <button
                                 type="button"
                                 onClick={() =>
                                     router.patch(
                                         `/admin/users/${user.id}/teacher`,
-                                        {},
+                                        user.is_teacher
+                                            ? {}
+                                            : {
+                                                  subjects:
+                                                      teacherSubjects.includes(
+                                                          '*',
+                                                      )
+                                                          ? []
+                                                          : teacherSubjects,
+                                              },
                                         { preserveScroll: true },
                                     )
                                 }
@@ -744,9 +833,10 @@ export default function ShowUser(props: Props) {
                                 <Fact
                                     icon={Smartphone}
                                     label={tr('WhatsApp')}
-                                    value={user.whatsapp_number
-                                        ? user.whatsapp_number
-                                        : 'Belum input nomor WA'
+                                    value={
+                                        user.whatsapp_number
+                                            ? user.whatsapp_number
+                                            : 'Belum input nomor WA'
                                     }
                                 />
                                 <Fact

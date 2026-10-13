@@ -10,6 +10,7 @@ import {
     DatabaseBackup,
     Flame,
     Gauge,
+    GraduationCap,
     History,
     ListChecks,
     Lock,
@@ -60,6 +61,12 @@ export const navItems: NavEntry[] = [
         superadminOnly: true,
     },
     { title: 'Users', href: '/admin/users', icon: Users },
+    {
+        title: 'Teacher requests',
+        href: '/admin/teacher-requests',
+        icon: GraduationCap,
+        superadminOnly: true,
+    },
     { title: 'Roles', href: '/admin/roles', icon: ShieldCheck },
     { title: 'Permissions', href: '/admin/permissions', icon: Lock },
     {

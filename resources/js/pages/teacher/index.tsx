@@ -25,6 +25,7 @@ import {
     GraduationCap,
     Pencil,
     Plus,
+    School,
     Search,
     Trash2,
     Users,
@@ -105,6 +106,12 @@ export default function TeacherIndex({
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                    <NavButton
+                        href="/teacher/classrooms"
+                        icon={School}
+                        label={t('teacher.tabs.classrooms')}
+                        testId="teacher-classrooms-link"
+                    />
                     <NavButton
                         href="/teacher/questions/import"
                         icon={FileUp}

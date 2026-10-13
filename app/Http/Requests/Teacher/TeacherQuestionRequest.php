@@ -16,8 +16,8 @@ class TeacherQuestionRequest extends FormRequest
         $question = $this->route('question');
 
         return $question instanceof Question
-            ? $this->user()?->can('update', $question) ?? false
-            : $this->user()?->isTeacher() ?? false;
+            ? ($this->user()?->can('update', $question) ?? false) && $this->user()->canTeachSubject($question->subject)
+            : ($this->user()?->isTeacher() ?? false) && $this->user()->canTeachSubject((string) $this->input('subject'));
     }
 
     protected function prepareForValidation(): void

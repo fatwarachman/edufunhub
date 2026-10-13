@@ -239,6 +239,41 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasRole(Role::TEACHER);
     }
 
+    /** @return HasMany<TeacherSubject, $this> */
+    public function teacherSubjects(): HasMany
+    {
+        return $this->hasMany(TeacherSubject::class);
+    }
+
+    /** @return HasMany<TeacherRequest, $this> */
+    public function teacherRequests(): HasMany
+    {
+        return $this->hasMany(TeacherRequest::class);
+    }
+
+    /**
+     * Subject keys assigned to this teacher. A null key means all subjects.
+     *
+     * @return list<string>|null
+     */
+    public function assignedTeacherSubjects(): ?array
+    {
+        if ($this->is_superadmin) {
+            return null;
+        }
+
+        $subjects = $this->teacherSubjects()->pluck('subject_key')->all();
+
+        return in_array(null, $subjects, true) || $subjects === [] ? null : $subjects;
+    }
+
+    public function canTeachSubject(string $subject): bool
+    {
+        $assigned = $this->assignedTeacherSubjects();
+
+        return $assigned === null || in_array($subject, $assigned, true);
+    }
+
     /**
      * Questions this user authored.
      *

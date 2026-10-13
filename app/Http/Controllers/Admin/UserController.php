@@ -10,6 +10,8 @@ use App\Models\GameHistory;
 use App\Models\ImpersonationLog;
 use App\Models\Module;
 use App\Models\Role;
+use App\Models\Subject;
+use App\Models\TeacherSubject;
 use App\Models\User;
 use App\Models\UserAbilityAssessment;
 use App\Services\ActivityLogPresenter;
@@ -145,15 +147,36 @@ class UserController extends Controller
         $isTeacher = $user->roles()->whereKey($role->id)->exists();
         $isTeacher ? $user->roles()->detach($role->id) : $user->roles()->attach($role->id);
 
+        if ($isTeacher) {
+            TeacherSubject::query()->where('user_id', $user->id)->delete();
+        } else {
+            $subjects = array_values(array_filter((array) $request->input('subjects', []), fn ($subject): bool => is_string($subject) && in_array($subject, Subject::activeKeys(), true)));
+            TeacherSubject::query()->where('user_id', $user->id)->delete();
+            foreach ($subjects === [] ? [null] : $subjects as $subject) {
+                TeacherSubject::query()->create(['user_id' => $user->id, 'subject_key' => $subject]);
+            }
+        }
+
         activity()->causedBy($request->user())->performedOn($user)->log($isTeacher ? 'Removed teacher role' : 'Assigned teacher role');
-        $notifications->notify(
-            $user,
-            'teacher',
-            $isTeacher ? 'player_notifications.teacher_revoked' : 'player_notifications.teacher_granted',
-            url: $isTeacher ? '/dashboard' : '/teacher/questions',
-        );
+        $notifications->notify($user, 'teacher', $isTeacher ? 'player_notifications.teacher_revoked' : 'player_notifications.teacher_granted', url: $isTeacher ? '/dashboard' : '/teacher/questions');
 
         return back()->with('success', $isTeacher ? __('ai.teacher_removed', ['name' => $user->name]) : __('ai.teacher_assigned', ['name' => $user->name]));
+    }
+
+    public function updateTeacherSubjects(Request $request, User $user): RedirectResponse
+    {
+        abort_unless((bool) $request->user()?->is_superadmin, 403);
+        abort_unless($user->isTeacher(), 422);
+
+        $subjects = array_values(array_filter((array) $request->input('subjects', []), fn ($subject): bool => is_string($subject) && in_array($subject, Subject::activeKeys(), true)));
+        TeacherSubject::query()->where('user_id', $user->id)->delete();
+        foreach ($subjects === [] ? [null] : $subjects as $subject) {
+            TeacherSubject::query()->create(['user_id' => $user->id, 'subject_key' => $subject]);
+        }
+
+        activity()->causedBy($request->user())->performedOn($user)->log('Updated teacher subjects');
+
+        return back()->with('success', __('ai.teacher_subjects_updated', ['name' => $user->name]));
     }
 
     /**
@@ -170,6 +193,8 @@ class UserController extends Controller
                 'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
                 'roles' => $user->roles->map(fn ($role): array => ['id' => $role->id, 'name' => $role->name, 'slug' => $role->slug])->all(),
                 'is_teacher' => $user->roles->contains('slug', Role::TEACHER),
+                'assignedTeacherSubjects' => $user->teacherSubjects()->pluck('subject_key')->all(),
+                'canTeachAllSubjects' => $user->teacherSubjects()->whereNull('subject_key')->exists(),
                 'providers' => $user->connectedAccounts->map(fn ($account): array => ['provider' => $account->provider, 'linked_at' => $account->created_at?->toIso8601String()])->all(),
                 'player_profile' => $user->playerProfile ? [
                     'nickname' => $user->playerProfile->nickname,
@@ -186,6 +211,9 @@ class UserController extends Controller
             ],
             ...$analytics->userDetail($user),
             'viewerIsSuperadmin' => (bool) request()->user()?->is_superadmin,
+            'teacherSubjects' => Subject::query()->active()->ordered()->get(['key', 'name_id', 'name_en'])->map(fn (Subject $subject): array => $subject->only(['key', 'name_id', 'name_en']))->values(),
+            'assignedTeacherSubjects' => $user->teacherSubjects()->pluck('subject_key')->all(),
+            'canTeachAllSubjects' => $user->teacherSubjects()->whereNull('subject_key')->exists(),
             'activityLog' => $analytics->activityFor($user),
             'badges' => collect($badges->summary($user))
                 ->map(fn ($value, string $key) => $key === 'badges'
