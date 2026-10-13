@@ -15,7 +15,7 @@ class ClassroomQuestionOptionsRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:100'],
-            'subject' => ['nullable', 'string', Rule::in(Subject::activeKeys())],
+            'subject' => ['required', 'string', Rule::in(Subject::activeKeys())],
             'topic' => ['nullable', 'integer', Rule::exists(SubjectTopic::class, 'id')->where('is_active', true)],
             'level' => ['nullable', 'integer', 'in:1,2,3'],
             'grade' => ['nullable', 'integer', Rule::in(Question::GRADES)],

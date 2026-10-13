@@ -51,6 +51,7 @@ use App\Http\Controllers\SubjectDetailController;
 use App\Http\Controllers\Teacher\ClassroomController;
 use App\Http\Controllers\Teacher\TeacherQuestionController;
 use App\Http\Controllers\Teacher\TeacherTopicController;
+use App\Http\Controllers\TeacherRequestController;
 use App\Http\Controllers\TurboTriviaController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Middleware\EnsurePlayerDetailsComplete;
@@ -79,6 +80,8 @@ Route::get('/player-details/regencies', RegencyController::class)->middleware('t
 Route::get('/player-details/school-list', SchoolListController::class)->middleware('throttle:120,1,player-details.school-list')->name('player-details.school-list');
 
 Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): void {
+    Route::get('/teacher-request', [TeacherRequestController::class, 'create'])->name('teacher-request.create');
+    Route::post('/teacher-request', [TeacherRequestController::class, 'store'])->middleware('throttle:5,1,teacher-request.store')->name('teacher-request.store');
     Route::get('/dashboard', UserDashboardController::class)->name('dashboard');
     Route::get('/portal', PortalController::class)->name('portal');
     Route::get('/subjects/{subject:key}', SubjectDetailController::class)->name('subjects.show');
@@ -163,6 +166,7 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::get('/classrooms', [ClassroomController::class, 'index'])->name('classrooms.index');
         Route::get('/classrooms/create', [ClassroomController::class, 'create'])->name('classrooms.create');
         Route::post('/classrooms', [ClassroomController::class, 'store'])->middleware('throttle:10,1,classrooms.store')->name('classrooms.store');
+        Route::get('/classrooms/questions', [ClassroomController::class, 'questionOptions'])->name('classrooms.questions');
         Route::get('/classrooms/{classroom}', [ClassroomController::class, 'show'])->name('classrooms.show');
         Route::get('/classrooms/{classroom}/edit', [ClassroomController::class, 'edit'])->name('classrooms.edit');
         Route::put('/classrooms/{classroom}', [ClassroomController::class, 'update'])->middleware('throttle:10,1,classrooms.update')->name('classrooms.update');
@@ -171,7 +175,6 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::post('/classrooms/{classroom}/remove-member', [ClassroomController::class, 'removeMember'])->middleware('throttle:30,1,classrooms.remove')->name('classrooms.remove');
         Route::post('/classrooms/{classroom}/analyze', [ClassroomController::class, 'analyze'])->middleware('throttle:5,1,classrooms.analyze')->name('classrooms.analyze');
         Route::get('/classrooms/{classroom}/live', [ClassroomController::class, 'live'])->name('classrooms.live');
-        Route::get('/classrooms/questions', [ClassroomController::class, 'questionOptions'])->name('classrooms.questions');
         Route::post('/classrooms/{classroom}/share', [ClassroomController::class, 'share'])->middleware('throttle:30,1,classrooms.share')->name('classrooms.share');
         Route::post('/classrooms/{classroom}/share-all', [ClassroomController::class, 'shareAll'])->middleware('throttle:10,1,classrooms.share-all')->name('classrooms.share-all');
     });

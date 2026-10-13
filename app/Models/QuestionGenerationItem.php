@@ -32,7 +32,7 @@ class QuestionGenerationItem extends Model
     public const FINISHED = [self::DONE, self::FAILED, self::CANCELLED];
 
     protected $fillable = [
-        'generation_id', 'subject', 'grade', 'status', 'target', 'created_count', 'skipped_count', 'error', 'started_at', 'finished_at',
+        'generation_id', 'subject', 'topic_id', 'grade', 'status', 'target', 'created_count', 'skipped_count', 'error', 'started_at', 'finished_at',
     ];
 
     /** @return array<string, string> */
@@ -40,6 +40,7 @@ class QuestionGenerationItem extends Model
     {
         return [
             'grade' => 'integer',
+            'topic_id' => 'integer',
             'target' => 'integer',
             'created_count' => 'integer',
             'skipped_count' => 'integer',
@@ -54,18 +55,25 @@ class QuestionGenerationItem extends Model
         return $this->belongsTo(QuestionGeneration::class, 'generation_id');
     }
 
+    /** @return BelongsTo<SubjectTopic, $this> */
+    public function topic(): BelongsTo
+    {
+        return $this->belongsTo(SubjectTopic::class, 'topic_id');
+    }
+
     public function isFinished(): bool
     {
         return in_array($this->status, self::FINISHED, true);
     }
 
     /**
-     * @return array{subject: string, grade: int, status: string, created: int, skipped: int, target: int, error: ?string}
+     * @return array{subject: string, topic: ?array{id: int, name_id: string, name_en: ?string}, grade: int, status: string, created: int, skipped: int, target: int, error: ?string}
      */
     public function toProgress(): array
     {
         return [
             'subject' => $this->subject,
+            'topic' => $this->topic_id !== null ? $this->topic?->only(['id', 'name_id', 'name_en']) : null,
             'grade' => $this->grade,
             'status' => $this->status,
             'created' => $this->created_count,

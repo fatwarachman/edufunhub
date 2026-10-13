@@ -1,5 +1,3 @@
-import InputError from '@/components/input-error';
-import { BackButton } from '@/components/site-nav';
 import {
     actionButtonClass,
     dangerButtonClass,
@@ -15,8 +13,10 @@ import {
     type QuestionPick,
     type Topic,
 } from '@/components/classroom/types';
-import { teacherFieldClass, Toggle } from '@/components/teacher/teacher-ui';
+import InputError from '@/components/input-error';
+import { BackButton } from '@/components/site-nav';
 import { TeacherTabs } from '@/components/teacher/teacher-tabs';
+import { teacherFieldClass, Toggle } from '@/components/teacher/teacher-ui';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { cn } from '@/lib/utils';
@@ -416,8 +416,7 @@ export default function ClassroomForm({
                             const Icon = catalog.icon(key);
                             const picked = selectedKeys.includes(key);
                             const blocked =
-                                !picked &&
-                                data.games.length >= limits.maxGames;
+                                !picked && data.games.length >= limits.maxGames;
                             return (
                                 <button
                                     key={key}
@@ -484,9 +483,7 @@ export default function ClassroomForm({
                                 game.questions.filter((_, i) => i !== index),
                             )
                         }
-                        onCopyFrom={(source) =>
-                            copyFrom(game.game_key, source)
-                        }
+                        onCopyFrom={(source) => copyFrom(game.game_key, source)}
                     />
                 ))}
 
@@ -571,9 +568,7 @@ function GameQuestions({
     const catalog = useGameCatalog();
     const Icon = catalog.icon(game.game_key);
     const auto = game.questions.length === 0;
-    const questionErrors = Object.entries(
-        {} as Record<string, string>,
-    ).concat(
+    const questionErrors = Object.entries({} as Record<string, string>).concat(
         [
             `games.${gameIndex}.question_ids`,
             `games.${gameIndex}.game_key`,
@@ -706,7 +701,7 @@ function GameQuestions({
                                     type="button"
                                     onClick={() => onMove(index, -1)}
                                     disabled={index === 0}
-                                    className={`${actionButtonClass} !px-0 size-11`}
+                                    className={`${actionButtonClass} size-11 !px-0`}
                                     aria-label={t('classroom.form.moveUp')}
                                 >
                                     <ArrowUp
@@ -720,7 +715,7 @@ function GameQuestions({
                                     disabled={
                                         index === game.questions.length - 1
                                     }
-                                    className={`${actionButtonClass} !px-0 size-11`}
+                                    className={`${actionButtonClass} size-11 !px-0`}
                                     aria-label={t('classroom.form.moveDown')}
                                 >
                                     <ArrowDown
@@ -731,7 +726,7 @@ function GameQuestions({
                                 <button
                                     type="button"
                                     onClick={() => onRemove(index)}
-                                    className={`${dangerButtonClass} !px-0 size-11`}
+                                    className={`${dangerButtonClass} size-11 !px-0`}
                                     aria-label={t('classroom.form.remove')}
                                     data-testid="classroom-remove-question"
                                 >

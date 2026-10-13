@@ -495,6 +495,7 @@
         "backToDashboard": "Kembali ke beranda",
         "backToLogin": "Kembali masuk",
         "teacher": "Guru",
+        "teacherRequest": "Request menjadi guru",
         "classrooms": "Ruang Kelas",
         "allGames": "Lihat semua game",
         "gradeRange": "Kelas {{range}}",
@@ -785,6 +786,19 @@
             "rawInfo": "Data mentah",
             "showRaw": "Tampilkan data mentah"
         }
+    },
+    "teacherRequest": {
+        "title": "Request menjadi guru",
+        "badge": "REQUEST GURU",
+        "intro": "Ajukan akses guru dan pilih mata pelajaran yang ingin kamu ajarkan.",
+        "subject": "Mata pelajaran",
+        "allSubjects": "Semua mata pelajaran",
+        "message": "Pesan",
+        "messagePlaceholder": "Jelaskan pengalaman atau kebutuhanmu…",
+        "submit": "Kirim request",
+        "sending": "Mengirim…",
+        "pending": "Request sedang ditinjau",
+        "pendingNote": "Admin akan meninjau request dan mata pelajaran pilihanmu."
     },
     "duel": {
         "title": "Duel Kuis Kelas",
@@ -3591,9 +3605,13 @@
             "level": "Level",
             "grade": "Kelas",
             "allSubjects": "Semua mapel",
+            "selectSubject": "Pilih mapel",
+            "selectSubjectHint": "Pilih mapel terlebih dahulu untuk menampilkan semua soal.",
             "allTopics": "Semua topik",
             "allLevels": "Semua level",
             "allGrades": "Semua kelas",
+            "gradeValue": "Kelas: {{grade}}",
+            "levelValue": "Tingkat: {{level}}",
             "mine": "Soal saya saja",
             "full": "Sudah {{max}} soal. Hapus yang lain untuk menambah.",
             "error": "Gagal memuat soal. Coba lagi.",

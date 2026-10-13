@@ -22,6 +22,7 @@ return [
     'generation_not_running' => 'Permintaan ini sudah selesai atau sudah dihentikan.',
     'teacher_assigned' => ':name sekarang guru dan dapat membuka Ruang Guru.',
     'teacher_removed' => ':name bukan guru lagi.',
+    'teacher_subjects_updated' => 'Mata pelajaran guru :name berhasil diperbarui.',
     'assessment_started' => 'Analisa kemampuan AI dimulai. Hasilnya muncul di sini dalam satu menit.',
     'assessment_running' => 'Analisa untuk pengguna ini masih berjalan.',
     'assessment_failed' => 'Analisa AI gagal. Coba lagi nanti.',
@@ -29,4 +30,6 @@ return [
     'assessment_timed_out' => 'Analisa tidak selesai tepat waktu.',
     'auto_saved' => 'Pengaturan analisa otomatis disimpan.',
     'auto_bounds' => 'Isi angka antara :min dan :max soal.',
+    'topic_invalid' => 'Topik tidak valid atau tidak aktif.',
+    'topic_subject_mismatch' => 'Topik harus milik satu mapel yang dipilih.',
 ];

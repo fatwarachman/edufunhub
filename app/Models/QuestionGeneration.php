@@ -20,7 +20,7 @@ class QuestionGeneration extends Model
     public const BATCH = 5;
 
     protected $fillable = [
-        'requested_by', 'model', 'subjects', 'grades', 'level', 'per_combination', 'games', 'activate',
+        'requested_by', 'model', 'subjects', 'grades', 'level', 'topic_id', 'topic_ids', 'per_combination', 'games', 'activate',
         'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error', 'cancelled_at', 'finished_at',
     ];
 
@@ -34,6 +34,8 @@ class QuestionGeneration extends Model
             'activate' => 'boolean',
             'per_combination' => 'integer',
             'level' => 'integer',
+            'topic_id' => 'integer',
+            'topic_ids' => 'array',
             'total_jobs' => 'integer',
             'done_jobs' => 'integer',
             'created_count' => 'integer',
@@ -49,6 +51,12 @@ class QuestionGeneration extends Model
         return $this->belongsTo(User::class, 'requested_by');
     }
 
+    /** @return BelongsTo<SubjectTopic, $this> */
+    public function topic(): BelongsTo
+    {
+        return $this->belongsTo(SubjectTopic::class, 'topic_id');
+    }
+
     /** @return HasMany<Question, $this> */
     public function questions(): HasMany
     {
@@ -61,16 +69,40 @@ class QuestionGeneration extends Model
         return $this->hasMany(QuestionGenerationItem::class, 'generation_id');
     }
 
-    /** Create one queued progress row per subject/grade pair. */
+    /**
+     * Targets of this request: every subject with its topics (null = the
+     * whole subject).
+     *
+     * @return list<array{subject: string, topic_id: ?int}>
+     */
+    public function targets(): array
+    {
+        $topics = SubjectTopic::query()->whereIn('id', $this->topic_ids ?? [])->ordered()->get(['id', 'subject_key']);
+        $targets = [];
+        foreach ($this->subjects as $subject) {
+            $subjectTopics = $topics->where('subject_key', $subject)->pluck('id');
+            if ($subjectTopics->isEmpty()) {
+                $targets[] = ['subject' => $subject, 'topic_id' => null];
+            }
+            foreach ($subjectTopics as $topicId) {
+                $targets[] = ['subject' => $subject, 'topic_id' => (int) $topicId];
+            }
+        }
+
+        return $targets;
+    }
+
+    /** Create one queued progress row per subject/topic/grade target. */
     public function createItems(): void
     {
         $now = now();
         $rows = [];
-        foreach ($this->subjects as $subject) {
+        foreach ($this->targets() as $target) {
             foreach ($this->grades as $grade) {
                 $rows[] = [
                     'generation_id' => $this->id,
-                    'subject' => $subject,
+                    'subject' => $target['subject'],
+                    'topic_id' => $target['topic_id'],
                     'grade' => (int) $grade,
                     'status' => QuestionGenerationItem::QUEUED,
                     'target' => $this->per_combination,
@@ -84,11 +116,11 @@ class QuestionGeneration extends Model
         }
     }
 
-    /** Progress row of one subject/grade; created on demand for requests made before progress tracking. */
-    public function itemFor(string $subject, int $grade): QuestionGenerationItem
+    /** Progress row of one target; created on demand for requests made before progress tracking. */
+    public function itemFor(string $subject, int $grade, ?int $topicId = null): QuestionGenerationItem
     {
         return QuestionGenerationItem::query()->firstOrCreate(
-            ['generation_id' => $this->id, 'subject' => $subject, 'grade' => $grade],
+            ['generation_id' => $this->id, 'subject' => $subject, 'topic_id' => $topicId, 'grade' => $grade],
             ['status' => QuestionGenerationItem::QUEUED, 'target' => $this->per_combination, 'created_count' => 0, 'skipped_count' => 0],
         );
     }
@@ -103,7 +135,7 @@ class QuestionGeneration extends Model
     {
         return self::query()
             ->whereIn('status', ['queued', 'running'])
-            ->with(['requester:id,name', 'items' => fn ($query) => $query->orderBy('id')])
+            ->with(['requester:id,name', 'topic:id,name_id,name_en', 'items' => fn ($query) => $query->with('topic:id,name_id,name_en')->orderBy('id')])
             ->latest('id')
             ->limit(5)
             ->get()
@@ -122,6 +154,7 @@ class QuestionGeneration extends Model
             ...$this->only(['id', 'model', 'subjects', 'grades', 'level', 'per_combination', 'activate', 'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error']),
             'cancelled_at' => $this->cancelled_at?->toIso8601String(),
             'requested_by' => $this->requester?->name,
+            'topic' => $this->topic?->only(['id', 'name_id', 'name_en']),
             'created_at' => $this->created_at?->toIso8601String(),
             'finished_at' => $this->finished_at?->toIso8601String(),
             'items' => $this->items->map(fn (QuestionGenerationItem $item): array => $item->toProgress())->values()->all(),

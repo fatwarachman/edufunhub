@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SubjectRequest;
 use App\Models\Question;
 use App\Models\Subject;
+use App\Models\SubjectTopic;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -26,12 +27,18 @@ class SubjectController extends Controller
             ->groupBy('subject')
             ->get()
             ->keyBy('subject');
+        $topics = SubjectTopic::query()->ordered()->withCount('questions')->get()
+            ->groupBy('subject_key');
 
         return Inertia::render('admin/subjects/index', [
             'subjects' => Subject::query()->ordered()->get()->map(fn (Subject $subject): array => [
                 ...$subject->only(['id', 'key', 'name_id', 'name_en', 'icon', 'color', 'ai_hint', 'sort_order', 'is_active', 'is_system']),
                 'questions' => (int) ($counts->get($subject->key)->total ?? 0),
                 'active_questions' => (int) ($counts->get($subject->key)->active ?? 0),
+                'topics' => ($topics->get($subject->key) ?? collect())->map(fn (SubjectTopic $topic): array => [
+                    ...$topic->only(['id', 'subject_key', 'name_id', 'name_en', 'material', 'is_active']),
+                    'questions_count' => $topic->questions_count,
+                ])->values(),
             ])->values(),
             'icons' => Subject::ICONS,
         ]);

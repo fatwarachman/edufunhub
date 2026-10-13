@@ -197,7 +197,7 @@ export default function Dashboard(props: DashboardProps) {
             <Head title={tr('Admin Dashboard')} />
             <div className="flex flex-col gap-6">
                 {/* Pulse header */}
-                <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+                <section className="relative w-full max-w-full min-w-0 overflow-hidden rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-6 md:p-8">
                     <div
                         className="pointer-events-none absolute inset-0 opacity-70 dark:opacity-40"
                         aria-hidden="true"
@@ -252,7 +252,7 @@ export default function Dashboard(props: DashboardProps) {
                                 )}
                             </p>
                         </div>
-                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                        <div className="grid w-full min-w-0 grid-cols-3 gap-2 sm:w-auto sm:gap-3">
                             <PulseStat
                                 icon={Gamepad2}
                                 label={tr('Plays today')}
@@ -1017,7 +1017,7 @@ function PulseStat({
     testId?: string;
 }) {
     const classes =
-        'group flex min-w-24 flex-col gap-1 rounded-2xl border border-border bg-background/80 px-3 py-3 backdrop-blur sm:min-w-28 sm:px-4';
+        'group flex min-w-0 flex-col gap-1 rounded-2xl border border-border bg-background/80 px-2.5 py-3 backdrop-blur sm:min-w-28 sm:px-4';
     const body = (
         <>
             <span className="flex items-center justify-between gap-2">
@@ -1032,7 +1032,7 @@ function PulseStat({
             <span className="font-display text-2xl leading-none font-bold text-foreground tabular-nums">
                 {formatNumber(value)}
             </span>
-            <span className="text-xs font-medium text-foreground/70">
+            <span className="min-w-0 truncate text-xs font-medium text-foreground/70">
                 {tr(label)}
             </span>
         </>

@@ -179,7 +179,7 @@ it('sends the progress items of every request to the page, old requests with non
         ->has('generations', 2)
         ->where('generations.0.id', $live->id)
         ->has('generations.0.items', 4)
-        ->where('generations.0.items.0', ['subject' => 'math', 'grade' => 1, 'status' => 'done', 'created' => 5, 'skipped' => 0, 'target' => 5, 'error' => null])
+        ->where('generations.0.items.0', ['subject' => 'math', 'topic' => null, 'grade' => 1, 'status' => 'done', 'created' => 5, 'skipped' => 0, 'target' => 5, 'error' => null])
         ->where('generations.0.items.1.status', 'running')
         ->where('generations.0.items.1.created', 2)
         ->where('generations.0.items.2.status', 'queued')

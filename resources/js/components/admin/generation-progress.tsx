@@ -23,6 +23,7 @@ export type ItemStatus = 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
 
 export interface GenerationItem {
     subject: string;
+    topic?: { id: number; name_id: string; name_en: string | null } | null;
     grade: number;
     status: ItemStatus;
     created: number;
@@ -37,6 +38,7 @@ export interface Generation {
     subjects: string[];
     grades: number[];
     per_combination: number;
+    topic?: { id: number; name_id: string; name_en: string | null } | null;
     activate: boolean;
     status: 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
     total_jobs: number;
@@ -90,6 +92,14 @@ export function useGenerationPolling(
     }, [running, props]);
 
     return running;
+}
+
+function topicCount(g: Generation): number {
+    return new Set(
+        (g.items ?? [])
+            .map((item) => item.topic?.id)
+            .filter((id): id is number => id !== undefined),
+    ).size;
 }
 
 export function GenerationRow({ generation: g }: { generation: Generation }) {
@@ -193,7 +203,13 @@ export function GenerationRow({ generation: g }: { generation: Generation }) {
                 onConfirm={stop}
             />
             <p className="text-xs text-muted-foreground">
-                {g.subjects.map((subject) => subjectLabel(subject)).join(', ')}{' '}
+                {g.subjects.map((subject) => subjectLabel(subject)).join(', ')}
+                {topicCount(g) > 0 && (
+                    <span data-testid={`generation-${g.id}-topic`}>
+                        {' '}
+                        · {tr('{0} topics', [topicCount(g)])}
+                    </span>
+                )}{' '}
                 · {g.grades.map(gradeLabel).join(', ')} · {g.per_combination}{' '}
                 {tr('each ·')}{' '}
                 {g.activate ? 'active' : tr('inactive for review')}
@@ -342,7 +358,10 @@ export function SubjectProgress({
 
     const groups = items.reduce<Map<string, GenerationItem[]>>(
         (map, item) =>
-            map.set(item.subject, [...(map.get(item.subject) ?? []), item]),
+            map.set(`${item.subject}:${item.topic?.id ?? ''}`, [
+                ...(map.get(`${item.subject}:${item.topic?.id ?? ''}`) ?? []),
+                item,
+            ]),
         new Map(),
     );
     const finished = items.filter(
@@ -356,7 +375,7 @@ export function SubjectProgress({
         .slice(0, 3)
         .map(
             (item) =>
-                `${subjectLabel(item.subject)} ${item.grade === 0 ? gradeLabel(item.grade) : gradeLabel(item.grade).toLowerCase()}`,
+                `${subjectLabel(item.subject)}${item.topic ? ` › ${item.topic.name_id}` : ''} ${item.grade === 0 ? gradeLabel(item.grade) : gradeLabel(item.grade).toLowerCase()}`,
         )
         .join(', ');
 
@@ -424,10 +443,14 @@ export function SubjectProgress({
                         className="grid gap-2 lg:grid-cols-2"
                         data-testid={`generation-${generationId}-subjects`}
                     >
-                        {[...groups.entries()].map(([subject, grades]) => (
+                        {[...groups.entries()].map(([key, grades]) => (
                             <SubjectGroup
-                                key={subject}
-                                label={subjectLabel(subject)}
+                                key={key}
+                                label={
+                                    grades[0].topic
+                                        ? `${subjectLabel(grades[0].subject)} › ${grades[0].topic.name_id}`
+                                        : subjectLabel(grades[0].subject)
+                                }
                                 items={grades}
                             />
                         ))}
@@ -484,7 +507,7 @@ function SubjectGroup({
             <ul className="flex flex-wrap gap-1.5">
                 {items.map((item) => (
                     <li
-                        key={item.grade}
+                        key={`${item.topic?.id ?? ''}-${item.grade}`}
                         className={cn(
                             'inline-flex h-6 max-w-full items-center gap-1 rounded-full border px-2 text-xs tabular-nums',
                             STATUS_STYLE[item.status].chip,

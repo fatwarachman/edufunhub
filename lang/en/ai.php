@@ -22,6 +22,7 @@ return [
     'generation_not_running' => 'This request has already finished or been stopped.',
     'teacher_assigned' => ':name is now a teacher and can open Ruang Guru.',
     'teacher_removed' => ':name is no longer a teacher.',
+    'teacher_subjects_updated' => ':name teacher subjects updated successfully.',
     'assessment_started' => 'AI ability analysis started. The result appears here in a minute.',
     'assessment_running' => 'An analysis for this user is still running.',
     'assessment_failed' => 'The AI analysis failed. Try again later.',
@@ -29,4 +30,6 @@ return [
     'assessment_timed_out' => 'The analysis did not finish in time.',
     'auto_saved' => 'Automatic analysis settings saved.',
     'auto_bounds' => 'Enter a number between :min and :max questions.',
+    'topic_invalid' => 'The topic is invalid or inactive.',
+    'topic_subject_mismatch' => 'The topic must belong to the single chosen subject.',
 ];

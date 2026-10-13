@@ -194,6 +194,13 @@ const TEACHER_ITEM: NavItem = {
     testId: 'nav-teacher',
 };
 
+const TEACHER_REQUEST_ITEM: NavItem = {
+    href: '/teacher-request',
+    labelKey: 'nav.teacherRequest',
+    icon: BookOpenCheck,
+    testId: 'nav-teacher-request',
+};
+
 const CLASSROOM_ITEM: NavItem = {
     href: '/teacher/classrooms',
     labelKey: 'nav.classrooms',
@@ -289,7 +296,9 @@ function playerGroups({
                 CHARACTER_ITEM,
                 ABILITY_ITEM,
                 FEEDBACK_ITEM,
-                ...(isTeacher ? [TEACHER_ITEM, CLASSROOM_ITEM] : []),
+                ...(isTeacher
+                    ? [TEACHER_ITEM, CLASSROOM_ITEM]
+                    : [TEACHER_REQUEST_ITEM]),
                 ...(isAdmin ? [ADMIN_ITEM] : []),
                 ABOUT_ITEM,
             ],

@@ -9,6 +9,7 @@ use App\Models\Question;
 use App\Models\QuestionCompensationRate;
 use App\Models\Subject;
 use App\Models\SubjectTopic;
+use App\Models\User;
 use App\Services\ActivityLogPresenter;
 use App\Services\QuestionAnalytics;
 use App\Services\TeacherQuestionImporter;
@@ -35,7 +36,7 @@ class TeacherQuestionController extends Controller
         $filters = [
             'search' => mb_substr(trim((string) $request->query('search')), 0, 100) ?: null,
             'grade' => is_numeric($request->query('grade')) && in_array((int) $request->query('grade'), Question::GRADES, true) ? (int) $request->query('grade') : null,
-            'subject' => in_array($request->query('subject'), Subject::keys(), true) ? (string) $request->query('subject') : null,
+            'subject' => in_array($request->query('subject'), $this->assignedSubjects($teacher), true) ? (string) $request->query('subject') : null,
             'topic' => ctype_digit((string) $request->query('topic')) && (int) $request->query('topic') > 0 ? (int) $request->query('topic') : null,
             'level' => ctype_digit((string) $request->query('level')) && array_key_exists((int) $request->query('level'), Question::LEVELS) ? (int) $request->query('level') : null,
         ];
@@ -182,13 +183,21 @@ class TeacherQuestionController extends Controller
         ]);
     }
 
+    /** @return list<string> */
+    private function assignedSubjects(User $teacher): array
+    {
+        $assigned = $teacher->assignedTeacherSubjects();
+
+        return $assigned === null ? Subject::activeKeys() : array_values(array_intersect($assigned, Subject::activeKeys()));
+    }
+
     /** @return array<string, mixed> */
     private function options(): array
     {
         return [
             'games' => Question::GAMES,
             'choiceOnlyGames' => Question::CHOICE_ONLY_GAMES,
-            'subjects' => Subject::activeKeys(),
+            'subjects' => $this->assignedSubjects(request()->user()),
             'grades' => Question::GRADES,
             'topics' => SubjectTopic::forPicker(),
             'levels' => array_keys(Question::LEVELS),

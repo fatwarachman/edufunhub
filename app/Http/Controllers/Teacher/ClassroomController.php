@@ -28,6 +28,7 @@ class ClassroomController extends Controller
     public function __construct(
         private ClassroomLive $live,
         private ClassroomReport $report,
+        private AiSettings $ai,
     ) {}
 
     public function index(Request $request): Response
@@ -119,6 +120,7 @@ class ClassroomController extends Controller
                 'name' => $classroom->name,
                 'description' => $classroom->description,
                 'pin' => $classroom->pin,
+                'join_path' => route('classrooms.show', ['pin' => $classroom->pin], false),
                 'status' => $classroom->status(),
                 'starts_at' => $classroom->starts_at?->toIso8601String(),
                 'ends_at' => $classroom->ends_at?->toIso8601String(),
@@ -134,6 +136,7 @@ class ClassroomController extends Controller
                 ]),
                 'ai_status' => $classroom->ai_status,
                 'ai_summary' => $classroom->ai_summary,
+                'ai_available' => $this->ai->configured(),
                 'report_generated_at' => $classroom->report_generated_at?->toIso8601String(),
             ],
         ];

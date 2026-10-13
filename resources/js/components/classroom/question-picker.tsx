@@ -1,7 +1,6 @@
 import {
     actionButtonClass,
     ClassroomDialog,
-    LevelChip,
     primaryButtonClass,
     useLocalized,
 } from '@/components/classroom/classroom-ui';
@@ -14,7 +13,7 @@ import { teacherFieldClass, Toggle } from '@/components/teacher/teacher-ui';
 import { useTranslations } from '@/hooks/use-translations';
 import { gradeLabel } from '@/lib/grade';
 import http from '@/lib/http';
-import { QUESTION_LEVELS } from '@/lib/question-levels';
+import { QUESTION_LEVELS, questionLevelKey } from '@/lib/question-levels';
 import { useSubjectName } from '@/lib/subjects';
 import { cn } from '@/lib/utils';
 import {
@@ -88,8 +87,12 @@ export function QuestionPickerDialog({
     useEffect(() => {
         if (open) {
             setPicks(selected);
+            setFilters(EMPTY_FILTERS);
+            setSearch('');
+            setResult(null);
+            setError(false);
         }
-        // Only reset the draft when the dialog opens.
+        // Only reset the draft and filters when the dialog opens.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
@@ -107,7 +110,7 @@ export function QuestionPickerDialog({
             if (current.page > 1) params.set('page', String(current.page));
             try {
                 const { data, response } = await http.get<QuestionOptionsPage>(
-                    `/teacher/classrooms/question-options?${params.toString()}`,
+                    `/teacher/classrooms/questions?${params.toString()}`,
                 );
                 if (!response.ok || !data) {
                     setError(true);
@@ -124,10 +127,12 @@ export function QuestionPickerDialog({
     );
 
     useEffect(() => {
-        if (open) {
+        if (open && filters.subject) {
             void load(filters);
         }
     }, [open, filters, load]);
+
+    const hasSubject = Boolean(filters.subject);
 
     const update = (next: Partial<Filters>) =>
         setFilters((current) => ({ ...current, page: 1, ...next }));
@@ -209,6 +214,7 @@ export function QuestionPickerDialog({
                         <input
                             type="search"
                             value={search}
+                            disabled={!hasSubject}
                             maxLength={100}
                             onChange={(event) => setSearch(event.target.value)}
                             onBlur={() =>
@@ -231,7 +237,7 @@ export function QuestionPickerDialog({
                         data-testid="classroom-picker-subject"
                     >
                         <option value="">
-                            {t('classroom.picker.allSubjects')}
+                            {t('classroom.picker.selectSubject')}
                         </option>
                         {subjects.map((subject) => (
                             <option key={subject} value={subject}>
@@ -246,7 +252,7 @@ export function QuestionPickerDialog({
                         }
                         aria-label={t('classroom.picker.topic')}
                         className={teacherFieldClass}
-                        disabled={subjectTopics.length === 0}
+                        disabled={!hasSubject || subjectTopics.length === 0}
                         data-testid="classroom-picker-topic"
                     >
                         <option value="">
@@ -316,7 +322,11 @@ export function QuestionPickerDialog({
                 )}
 
                 <div aria-busy={loading} className="flex flex-col gap-2">
-                    {error ? (
+                    {!hasSubject ? (
+                        <p className="rounded-xl border-2 border-dashed border-[#151b2e]/30 px-4 py-6 text-center text-sm font-bold">
+                            {t('classroom.picker.selectSubjectHint')}
+                        </p>
+                    ) : error ? (
                         <p
                             role="alert"
                             className="rounded-xl border-2 border-[#c0392b] bg-[#ffe9e6] px-3 py-2 text-sm font-bold text-[#8e2a1f]"
@@ -465,7 +475,20 @@ export function QuestionSummary({ question }: { question: QuestionPick }) {
                         {localized.topic(question.topic)}
                     </span>
                 )}
-                <LevelChip level={question.level} />
+                <span className="rounded-full border-2 border-[#1f2a44] bg-[#e0f0ff] px-2 py-0.5">
+                    {t('classroom.picker.gradeValue', {
+                        grade: question.grades
+                            .map((grade) => gradeLabel(t, grade))
+                            .join(', '),
+                    })}
+                </span>
+                <span className="rounded-full border-2 border-[#1f2a44] bg-[#f3e8ff] px-2 py-0.5">
+                    {t('classroom.picker.levelValue', {
+                        level: t(
+                            `classroom.levels.${questionLevelKey(question.level)}`,
+                        ),
+                    })}
+                </span>
                 {question.type === 'true_false' && (
                     <span className="rounded-full border-2 border-[#1f2a44] bg-white px-2 py-0.5">
                         {t('classroom.picker.trueFalse')}
