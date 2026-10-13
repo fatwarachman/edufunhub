@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\SorterSetController;
 use App\Http\Controllers\Admin\SubjectAnalyticsController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\SubjectTopicController;
+use App\Http\Controllers\Admin\TeacherRequestController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserGamePlayController;
 use App\Http\Controllers\Admin\UserStatisticsController;
@@ -70,6 +71,9 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
         Route::get('/users/{user}/plays/{play}', [UserGamePlayController::class, 'show'])->whereNumber(['user', 'play'])->name('users.plays.show');
         Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::patch('/users/{user}/teacher', [UserController::class, 'toggleTeacher'])->middleware(EnsureSuperadmin::class)->name('users.teacher');
+        Route::patch('/users/{user}/teacher-subjects', [UserController::class, 'updateTeacherSubjects'])->middleware(EnsureSuperadmin::class)->name('users.teacher-subjects');
+        Route::get('/teacher-requests', [TeacherRequestController::class, 'index'])->middleware(EnsureSuperadmin::class)->name('teacher-requests.index');
+        Route::patch('/teacher-requests/{teacherRequest}', [TeacherRequestController::class, 'update'])->whereNumber('teacherRequest')->middleware(EnsureSuperadmin::class)->name('teacher-requests.update');
         Route::patch('/users/{user}/player-details', [PlayerSchoolGradeController::class, 'update'])->middleware([EnsureSuperadmin::class, 'throttle:30,1,users.player-details'])->name('users.player-details');
         Route::post('/impersonate/{user}', [ImpersonationController::class, 'impersonate'])->whereNumber('user')->middleware('throttle:20,1,impersonate')->name('impersonate');
 

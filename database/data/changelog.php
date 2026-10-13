@@ -24,6 +24,138 @@
 
 return [
     [
+        'version' => '0.29.3',
+        'date' => '2026-10-12',
+        'changes' => [
+            [
+                'key' => 'admin-generate-grade-level-panels',
+                'type' => 'improvement',
+                'title' => ['id' => 'Panel kelas dan tingkat soal di Buat soal AI', 'en' => 'Grade and level panels in AI generation'],
+                'body' => ['id' => 'Pilihan kelas dikelompokkan per jenjang TK, SD, SMP, SMA dengan pilih per jenjang. Tingkat soal tampil sebagai kartu dengan penjelasan, bintang, poin, dan pengatur jumlah soal.', 'en' => 'Grades are grouped by TK, SD, SMP and SMA with per-stage picking. Question levels show as cards with a description, stars, points and a question amount stepper.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.29.2',
+        'date' => '2026-10-12',
+        'changes' => [
+            [
+                'key' => 'admin-generate-game-picker-search',
+                'type' => 'improvement',
+                'title' => ['id' => 'Pemilih game dengan pencarian di Buat soal AI', 'en' => 'Searchable game picker in AI generation'],
+                'body' => ['id' => 'Bagian Gunakan di game kini berupa panel lebar dengan pencarian langsung, grid beberapa kolom, penghitung terpilih, dan tombol pilih yang tampil, tanpa menumpuk ke bawah.', 'en' => 'The Use in games section is now a full-width panel with live search, a multi-column grid, a picked counter, and pick-shown controls instead of a tall stacked list.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.29.1',
+        'date' => '2026-10-12',
+        'changes' => [
+            [
+                'key' => 'admin-generate-subject-accordion-style',
+                'type' => 'improvement',
+                'title' => ['id' => 'Akordeon per mapel di Buat soal AI', 'en' => 'Per-subject accordion in AI generation'],
+                'body' => ['id' => 'Setiap mapel kini menjadi kartu akordeon sendiri dengan ikon, warna, ringkasan topik terpilih, serta tombol buka/tutup semua.', 'en' => 'Each subject is now its own accordion card with icon, colour, picked-topic summary, and expand/collapse all controls.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.29.0',
+        'date' => '2026-10-12',
+        'changes' => [
+            [
+                'key' => 'admin-topic-tree-generation',
+                'type' => 'feature',
+                'title' => ['id' => 'Pohon mapel & topik untuk soal AI', 'en' => 'Subject & topic tree for AI questions'],
+                'body' => ['id' => 'Topik tampil sebagai anak mapel dengan akordeon di halaman Mapel. Buat soal AI kini memilih mapel atau topik: mapel penuh membuat soal untuk semua topiknya, topik terpilih hanya untuk topik itu.', 'en' => 'Topics show as children of each subject in a smooth accordion on the Subjects page. AI generation now picks subjects or topics: a whole subject covers all its topics, single topics cover only themselves.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.28.0',
+        'date' => '2026-10-12',
+        'changes' => [
+            [
+                'key' => 'admin-topic-focused-ai-generation',
+                'type' => 'feature',
+                'title' => ['id' => 'Topik mapel dan soal AI per topik', 'en' => 'Subject topics and topic-focused AI questions'],
+                'body' => ['id' => 'Admin dapat menambah topik beserta deskripsi materi di halaman Mapel, lalu memilih mapel dan topik saat membuat soal dengan AI agar soal fokus pada topik tersebut.', 'en' => 'Admins can add topics with a material description on the Subjects page, then pick a subject and topic when generating AI questions so they stay focused on that topic.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.27.6',
+        'date' => '2026-10-12',
+        'changes' => [
+            [
+                'key' => 'classroom-question-filter-flow',
+                'type' => 'fix',
+                'title' => ['id' => 'Alur filter soal ruang kelas', 'en' => 'Classroom question filter flow'],
+                'body' => ['id' => 'Soal baru dimuat setelah mapel dipilih, lalu hasil menyempit berdasarkan topik, tingkat, kelas, pencarian, dan filter lain.', 'en' => 'Questions load after a subject is selected, then narrow by topic, level, grade, search, and other filters.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.27.4',
+        'date' => '2026-10-12',
+        'changes' => [
+            [
+                'key' => 'classroom-question-settings-summary',
+                'type' => 'improvement',
+                'title' => ['id' => 'Ringkasan pengaturan soal di ruang kelas', 'en' => 'Show question settings in classroom'],
+                'body' => ['id' => 'Soal yang dipilih kini menampilkan mapel, topik, tingkat kesulitan, dan kelas sasaran.', 'en' => 'Selected questions now show subject, topic, difficulty level, and target grade.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.27.3',
+        'date' => '2026-10-12',
+        'changes' => [
+            [
+                'key' => 'admin-mobile-card-layout-fix',
+                'type' => 'fix',
+                'title' => ['id' => 'Perbaikan kartu admin di mobile', 'en' => 'Fix admin cards on mobile'],
+                'body' => ['id' => 'Kartu dashboard admin kini mengikuti lebar layar mobile dan tidak saling menumpuk atau meluber.', 'en' => 'Admin dashboard cards now fit mobile screen width without overlapping or overflowing.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.27.2',
+        'date' => '2026-10-12',
+        'changes' => [
+            [
+                'key' => 'teacher-classroom-detail-render-fix',
+                'type' => 'fix',
+                'title' => ['id' => 'Perbaikan halaman detail ruang kelas guru', 'en' => 'Fix teacher classroom detail page'],
+                'body' => ['id' => 'Halaman detail ruang kelas kini menerima jalur undangan dan status AI yang diperlukan agar tidak blank setelah kelas dibuat.', 'en' => 'The classroom detail page now receives the invite path and AI status required to render after classroom creation.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.27.1',
+        'date' => '2026-10-12',
+        'changes' => [
+            [
+                'key' => 'teacher-classroom-header-navigation',
+                'type' => 'improvement',
+                'title' => ['id' => 'Navigasi ruang kelas di halaman guru', 'en' => 'Classroom navigation on teacher page'],
+                'body' => ['id' => 'Tombol Ruang Kelas kini sejajar dengan tombol impor dan buat soal di halaman bank soal guru.', 'en' => 'The Classroom button now sits alongside Import and Create question on the teacher question bank page.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.27.0',
+        'date' => '2026-10-11',
+        'changes' => [
+            [
+                'key' => 'teacher-access-requests-and-subject-scopes',
+                'type' => 'feature',
+                'title' => ['id' => 'Request guru dan pembatasan mata pelajaran', 'en' => 'Teacher access requests and subject scopes'],
+                'body' => ['id' => 'Pengguna dapat request menjadi guru. Admin dapat menyetujui request, menetapkan semua atau mata pelajaran tertentu, dan portal pembuatan soal hanya menampilkan mata pelajaran yang ditugaskan.', 'en' => 'Users can request teacher access. Admins can approve requests, assign all or selected subjects, and the question authoring portal only shows assigned subjects.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.26.1',
         'date' => '2026-10-11',
         'changes' => [

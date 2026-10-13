@@ -496,6 +496,7 @@
         "backToDashboard": "Back to home",
         "backToLogin": "Back to login",
         "teacher": "Teacher",
+        "teacherRequest": "Request teacher access",
         "classrooms": "Classrooms",
         "allGames": "See all games",
         "gradeRange": "Grades {{range}}",
@@ -786,6 +787,19 @@
             "rawInfo": "Raw data",
             "showRaw": "Show raw data"
         }
+    },
+    "teacherRequest": {
+        "title": "Request teacher access",
+        "badge": "TEACHER REQUEST",
+        "intro": "Request teacher access and choose subjects you want to teach.",
+        "subject": "Subject",
+        "allSubjects": "All subjects",
+        "message": "Message",
+        "messagePlaceholder": "Share your experience or request…",
+        "submit": "Send request",
+        "sending": "Sending…",
+        "pending": "Request under review",
+        "pendingNote": "An admin will review your request and selected subjects."
     },
     "duel": {
         "title": "Class Quiz Duel",
@@ -3592,9 +3606,13 @@
             "level": "Level",
             "grade": "Grade",
             "allSubjects": "All subjects",
+            "selectSubject": "Select subject",
+            "selectSubjectHint": "Select a subject first to show all questions.",
             "allTopics": "All topics",
             "allLevels": "All levels",
             "allGrades": "All grades",
+            "gradeValue": "Grade: {{grade}}",
+            "levelValue": "Level: {{level}}",
             "mine": "My questions only",
             "full": "Already at {{max}} questions. Remove some to add more.",
             "error": "Failed to load questions. Try again.",
