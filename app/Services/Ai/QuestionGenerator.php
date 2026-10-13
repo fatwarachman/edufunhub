@@ -6,6 +6,7 @@ use App\Ai\Agents\QuestionWriter;
 use App\Models\Question;
 use App\Models\QuestionGeneration;
 use App\Models\Subject;
+use App\Models\SubjectTopic;
 use Closure;
 use Illuminate\Support\Str;
 use JsonException;
@@ -26,7 +27,21 @@ class QuestionGenerator
         Question::LEVEL_EXPERT => 'expert: challenging for this grade, multi-step reasoning or deeper knowledge, still fair for strong students of this grade.',
     ];
 
+    /** Topic the next run focuses on; null keeps the request topic or the whole subject. */
+    private ?SubjectTopic $topic = null;
+
+    private bool $topicSet = false;
+
     public function __construct(private OpenAiCompatibleClient $client, private AiSettings $settings) {}
+
+    /** Focus the next generate() call on one topic (null = whole subject). */
+    public function forTopic(?SubjectTopic $topic): static
+    {
+        $this->topic = $topic;
+        $this->topicSet = true;
+
+        return $this;
+    }
 
     /**
      * @param  (Closure(int, int): void)|null  $onProgress  called with the created and skipped totals after every batch
@@ -40,13 +55,18 @@ class QuestionGenerator
         $provider = $this->client->register();
         $created = 0;
         $skipped = 0;
+        $topic = $this->topicSet
+            ? $this->topic
+            : ($generation->topic_id !== null ? SubjectTopic::query()->find($generation->topic_id) : null);
+        $this->topic = null;
+        $this->topicSet = false;
 
         while ($created < $count) {
             if ($shouldStop !== null && $shouldStop()) {
                 return ['created' => $created, 'skipped' => $skipped, 'stopped' => true];
             }
             $want = min(QuestionGeneration::BATCH, $count - $created);
-            $items = $this->ask($provider, $generation->model, $subject, $grade, $want, Question::normalizeLevel($generation->level));
+            $items = $this->ask($provider, $generation->model, $subject, $grade, $want, Question::normalizeLevel($generation->level), $topic);
             if ($items === []) {
                 break;
             }
@@ -65,6 +85,7 @@ class QuestionGenerator
                     'key' => 'ai-'.Str::lower(Str::random(10)),
                     'type' => Question::TYPE_CHOICE,
                     'subject' => $subject,
+                    'topic_id' => $topic?->id,
                     'band' => Question::bandForGrades([$grade]),
                     'grades' => [$grade],
                     'level' => Question::normalizeLevel($generation->level),
@@ -89,11 +110,12 @@ class QuestionGenerator
     }
 
     /** @return list<mixed> */
-    private function ask(string $provider, string $model, string $subject, int $grade, int $count, int $level = Question::LEVEL_EASY): array
+    private function ask(string $provider, string $model, string $subject, int $grade, int $count, int $level = Question::LEVEL_EASY, ?SubjectTopic $topic = null): array
     {
         $avoid = Question::query()
             ->where('subject', $subject)
             ->where('band', Question::bandForGrades([$grade]))
+            ->when($topic !== null, fn ($query) => $query->where('topic_id', $topic->id))
             ->latest('id')
             ->limit(40)
             ->pluck('prompt_id')
@@ -102,6 +124,7 @@ class QuestionGenerator
 
         $gradeLabel = $grade === Question::KINDERGARTEN ? 'TK (kindergarten, age 4-6)' : "kelas {$grade} (grade {$grade})";
         $prompt = "Write {$count} new multiple choice questions.\nSubject: ".Subject::aiDescription($subject)."\nGrade: {$gradeLabel}\n"
+            .($topic !== null ? $this->topicFocus($topic) : '')
             .'Difficulty: '.self::LEVEL_GUIDE[$level]."\n"
             .($avoid !== '' ? "Avoid these existing questions:\n{$avoid}\n" : '');
 
@@ -113,6 +136,16 @@ class QuestionGenerator
         $questions = $response['questions'] ?? null;
 
         return is_array($questions) ? array_values($questions) : [];
+    }
+
+    /** Instruction that keeps every question inside one topic and its material. */
+    private function topicFocus(SubjectTopic $topic): string
+    {
+        $name = trim($topic->name_id.($topic->name_en ? " ({$topic->name_en})" : ''));
+        $material = trim((string) $topic->material);
+
+        return "Topic: {$name}\nEvery question must be about this topic only.\n"
+            .($material !== '' ? "Topic material and scope:\n".Str::limit($material, SubjectTopic::MAX_MATERIAL, '')."\n" : '');
     }
 
     /**

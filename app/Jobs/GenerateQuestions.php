@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\QuestionGeneration;
 use App\Models\QuestionGenerationItem;
+use App\Models\SubjectTopic;
 use App\Services\Ai\QuestionGenerator;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -22,7 +23,7 @@ class GenerateQuestions implements ShouldQueue
 
     public int $timeout = 600;
 
-    public function __construct(public QuestionGeneration $generation, public string $subject, public int $grade)
+    public function __construct(public QuestionGeneration $generation, public string $subject, public int $grade, public ?int $topicId = null)
     {
         $this->onConnection(config('ai.question_generation.connection'));
         $this->onQueue('low');
@@ -30,7 +31,7 @@ class GenerateQuestions implements ShouldQueue
 
     public function handle(QuestionGenerator $generator): void
     {
-        $item = $this->generation->itemFor($this->subject, $this->grade);
+        $item = $this->generation->itemFor($this->subject, $this->grade, $this->topicId);
         $claimed = QuestionGenerationItem::query()->whereKey($item->id)
             ->where('status', QuestionGenerationItem::QUEUED)
             ->update(['status' => QuestionGenerationItem::RUNNING, 'started_at' => now(), 'updated_at' => now()]);
@@ -41,7 +42,8 @@ class GenerateQuestions implements ShouldQueue
         $this->generation->markRunning();
 
         try {
-            $result = $generator->generate(
+            $topic = $this->topicId !== null ? SubjectTopic::query()->find($this->topicId) : null;
+            $result = $generator->forTopic($topic)->generate(
                 $this->generation,
                 $this->subject,
                 $this->grade,
@@ -67,7 +69,7 @@ class GenerateQuestions implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-        $item = $this->generation->itemFor($this->subject, $this->grade);
+        $item = $this->generation->itemFor($this->subject, $this->grade, $this->topicId);
         $this->finish(QuestionGenerationItem::FAILED, $item->created_count, $item->skipped_count, $this->describe($exception?->getMessage() ?? 'job failed'));
     }
 
@@ -80,6 +82,7 @@ class GenerateQuestions implements ShouldQueue
         $closed = QuestionGenerationItem::query()
             ->where('generation_id', $this->generation->id)
             ->where('subject', $this->subject)
+            ->where('topic_id', $this->topicId)
             ->where('grade', $this->grade)
             ->whereNotIn('status', QuestionGenerationItem::FINISHED)
             ->update([
@@ -98,6 +101,8 @@ class GenerateQuestions implements ShouldQueue
 
     private function describe(string $message): string
     {
-        return Str::limit("{$this->subject}/{$this->grade}: {$message}", 500);
+        $topic = $this->topicId !== null ? '#'.$this->topicId : '';
+
+        return Str::limit("{$this->subject}{$topic}/{$this->grade}: {$message}", 500);
     }
 }
