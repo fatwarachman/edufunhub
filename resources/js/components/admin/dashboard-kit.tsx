@@ -248,7 +248,7 @@ export function KpiCard({
         </>
     );
     const classes =
-        'group relative flex min-w-0 flex-col gap-3 overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm transition-all';
+        'group relative flex min-w-0 max-w-full flex-col gap-3 overflow-hidden rounded-2xl border border-border bg-card p-4 shadow-sm transition-all sm:p-5';
 
     return href ? (
         <Link
