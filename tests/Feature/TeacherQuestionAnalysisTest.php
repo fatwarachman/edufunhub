@@ -88,6 +88,9 @@ test('other teachers and players cannot open the analysis', function (): void {
     $this->actingAs(User::factory()->teacher()->create())->get("/teacher/questions/{$question->id}")->assertForbidden();
     $this->actingAs(User::factory()->create())->get("/teacher/questions/{$question->id}")->assertForbidden();
     $this->actingAs($this->teacher)->get('/teacher/questions/'.Question::query()->where('source', 'system')->value('id'))->assertForbidden();
+
+    auth()->guard('web')->logout();
+    $this->assertGuest();
     $this->get("/teacher/questions/{$question->id}")->assertRedirect();
 });
 
