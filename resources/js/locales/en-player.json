@@ -515,7 +515,8 @@
         "social": "Social",
         "account": "Account",
         "withCount": "{{label}} ({{count}} new)",
-        "myClassrooms": "My classes"
+        "myClassrooms": "My classes",
+        "search": "Search games & features"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -1459,6 +1460,9 @@
         "retired": "No longer sold"
     },
     "pwa": {
+        "apk": "Download Android APK",
+        "installWeb": "Install web version",
+        "apkMeta": "Latest build • {{size}} • {{date}}",
         "title": "Install the App",
         "intro": "Install EduFunHub on your phone or laptop. Open it from your home screen, full screen without the browser bar.",
         "install": "Install app",
@@ -1539,7 +1543,7 @@
         "offline": "Reconnecting…",
         "failed": "Not sent. Try again.",
         "retry": "Resend",
-        "peopleSearch": "Search a friend",
+        "peopleSearch": "Search name, school or email",
         "peopleEmpty": "No matching players.",
         "startChat": "Start chat",
         "groupName": "Group name",

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AbilityController;
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\Admin\ImpersonationController;
+use App\Http\Controllers\AndroidApkController;
 use App\Http\Controllers\AndroidAssetLinksController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\LoginController;
@@ -80,6 +81,7 @@ Route::get('/about', function () {
 })->name('about');
 
 Route::get('/.well-known/assetlinks.json', AndroidAssetLinksController::class)->name('android.asset-links');
+Route::get('/download/edufunhub.apk', AndroidApkController::class)->middleware('throttle:20,1,android.apk')->name('android.apk');
 
 Route::get('/landing/stats', LandingStatsController::class)->middleware('throttle:60,1,landing.stats')->name('landing.stats');
 Route::get('/player-details/regencies', RegencyController::class)->middleware('throttle:30,1,player-details.regencies')->name('player-details.regencies');

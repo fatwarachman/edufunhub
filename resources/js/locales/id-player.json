@@ -514,7 +514,8 @@
         "social": "Sosial",
         "account": "Akun",
         "withCount": "{{label}} ({{count}} baru)",
-        "myClassrooms": "Kelasku"
+        "myClassrooms": "Kelasku",
+        "search": "Cari game & fitur"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -1458,6 +1459,9 @@
         "retired": "Tidak dijual lagi"
     },
     "pwa": {
+        "apk": "Unduh APK Android",
+        "installWeb": "Pasang versi web",
+        "apkMeta": "Versi terbaru • {{size}} • {{date}}",
         "title": "Pasang Aplikasi",
         "intro": "Pasang EduFunHub di HP atau laptop. Buka langsung dari layar utama, tampil penuh tanpa bilah browser.",
         "install": "Pasang aplikasi",
@@ -1538,7 +1542,7 @@
         "offline": "Menyambung ulang…",
         "failed": "Gagal terkirim. Coba lagi.",
         "retry": "Kirim ulang",
-        "peopleSearch": "Cari nama teman",
+        "peopleSearch": "Cari nama, sekolah, atau email",
         "peopleEmpty": "Tidak ada pemain yang cocok.",
         "startChat": "Mulai chat",
         "groupName": "Nama grup",

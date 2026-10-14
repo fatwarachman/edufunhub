@@ -8,6 +8,12 @@
     "player": "Player features",
     "games": "Games",
     "results": "Search results",
+    "teacher": "Teacher tools",
+    "close": "Close search",
+    "playerTitle": "Search games & features",
+    "playerDescription": "Find EduFunHub games, pages and features.",
+    "playerPlaceholder": "Search games, pages or features…",
+    "playerEmpty": "Nothing matches. Try another word, like \"quiz\" or \"class\".",
     "features": {
         "campaign": {
             "href": "/admin/ads/campaigns/create",
@@ -194,6 +200,27 @@
             "title": "My classes (joined classrooms)",
             "superadminOnly": false,
             "teacherOnly": false
+        },
+        "teacherRequest": {
+            "href": "/teacher-request",
+            "title": "Request teacher access",
+            "superadminOnly": false,
+            "teacherOnly": false,
+            "keywords": "apply become teacher"
+        },
+        "teacherQuestionCreate": {
+            "href": "/teacher/questions/create",
+            "title": "Create a question (teacher)",
+            "superadminOnly": false,
+            "teacherOnly": true,
+            "keywords": "write new question bank"
+        },
+        "teacherClassroomCreate": {
+            "href": "/teacher/classrooms/create",
+            "title": "Create a classroom",
+            "superadminOnly": false,
+            "teacherOnly": true,
+            "keywords": "new class pin students"
         }
     }
 }

@@ -8,6 +8,12 @@
     "player": "Fitur pemain",
     "games": "Permainan",
     "results": "Hasil pencarian",
+    "teacher": "Fitur guru",
+    "close": "Tutup pencarian",
+    "playerTitle": "Cari game & fitur",
+    "playerDescription": "Temukan game, halaman, dan fitur EduFunHub.",
+    "playerPlaceholder": "Cari game, halaman, atau fitur…",
+    "playerEmpty": "Tidak ada yang cocok. Coba kata lain, misalnya \"kuis\" atau \"kelas\".",
     "features": {
         "campaign": {
             "href": "/admin/ads/campaigns/create",
@@ -194,6 +200,27 @@
             "title": "Kelasku (ruang kelas yang diikuti)",
             "superadminOnly": false,
             "teacherOnly": false
+        },
+        "teacherRequest": {
+            "href": "/teacher-request",
+            "title": "Request menjadi guru",
+            "superadminOnly": false,
+            "teacherOnly": false,
+            "keywords": "ajukan daftar guru pengajar"
+        },
+        "teacherQuestionCreate": {
+            "href": "/teacher/questions/create",
+            "title": "Buat soal (guru)",
+            "superadminOnly": false,
+            "teacherOnly": true,
+            "keywords": "tulis soal baru bank soal"
+        },
+        "teacherClassroomCreate": {
+            "href": "/teacher/classrooms/create",
+            "title": "Buat ruang kelas",
+            "superadminOnly": false,
+            "teacherOnly": true,
+            "keywords": "kelas baru pin siswa"
         }
     }
 }
