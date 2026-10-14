@@ -24,6 +24,42 @@
 
 return [
     [
+        'version' => '0.42.0',
+        'date' => '2026-10-14',
+        'changes' => [
+            [
+                'key' => 'android-apk-download',
+                'type' => 'feature',
+                'title' => ['id' => 'Unduh APK Android dari kartu Pasang Aplikasi', 'en' => 'Download the Android APK from the Install the App card'],
+                'body' => ['id' => 'Kartu Pasang Aplikasi di dashboard kini berisi satu tombol Unduh APK Android dengan build aplikasi terbaru, lengkap dengan ukuran dan tanggal build. Tombol pasang versi web dihapus.', 'en' => 'The Install the App card on the dashboard now has a single Download Android APK button with the latest app build, showing its size and build date. The install web version button is removed.'],
+            ],
+            [
+                'key' => 'character-3d',
+                'type' => 'feature',
+                'title' => ['id' => 'Karakter dan semua item kini tampil 3D', 'en' => 'Characters and all items are now 3D'],
+                'body' => ['id' => 'Karakter pemain kini berupa model 3D dengan bentuk yang sama seperti sebelumnya: kepala besar, mata berkilau, rambut, baju, dan garis tinta tebal. Semua item toko maupun yang sudah dibeli (topi, wajah, baju, punggung, senjata, perisai) ikut 3D. Animasi napas, kedip, lambaian, lompat, dan jalan tetap ada. Tampil di dashboard, toko, papan peringkat, chat, game, Flag Quest, dan ruang kelas 3D. Perangkat tanpa WebGL otomatis memakai gambar 2D.', 'en' => 'Player characters are now 3D models with the same shape as before: big head, sparkling eyes, hair, outfit and thick ink outline. Every shop and owned item (hats, face, outfits, back, weapons, shields) is 3D too. Breathing, blinking, waving, hopping and walking animations stay. Shown on the dashboard, shop, leaderboard, chat, games, Flag Quest and the 3D classroom. Devices without WebGL fall back to the 2D drawing.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.41.0',
+        'date' => '2026-10-14',
+        'changes' => [
+            [
+                'key' => 'player-feature-search',
+                'type' => 'feature',
+                'title' => ['id' => 'Pencarian game dan fitur untuk pemain dan guru', 'en' => 'Game and feature search for players and teachers'],
+                'body' => ['id' => 'Header pemain kini punya tombol cari (juga lewat Ctrl/⌘ K dan menu di HP). Ketik nama game, halaman, atau fitur (misalnya "ular", "kelasku", "chat") lalu pilih hasilnya untuk langsung membukanya. Guru juga menemukan fitur guru seperti bank soal, impor soal, dan ruang kelas. Halaman admin tidak ikut muncul.', 'en' => 'The player header now has a search button (also Ctrl/⌘ K and the phone menu). Type a game, page or feature (for example "snake", "my classes", "chat") and pick a result to open it. Teachers also find teacher tools such as the question bank, question import and classrooms. Admin pages are not included.'],
+            ],
+            [
+                'key' => 'chat-people-search-school-email',
+                'type' => 'improvement',
+                'title' => ['id' => 'Cari teman chat berdasarkan sekolah dan email', 'en' => 'Find chat partners by school or email'],
+                'body' => ['id' => 'Kolom cari di modal Chat baru dan Grup baru kini juga mencocokkan nama sekolah dan email. Admin bisa mencari sebagian email; pemain lain hanya menemukan seseorang lewat email bila mengetik alamatnya lengkap, dan alamat itu tetap tidak ditampilkan.', 'en' => 'The search box in the New chat and New group pickers now also matches school names and emails. Admins can search part of an email; other players only find someone by email when they type the full address, and the address itself stays hidden.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.40.0',
         'date' => '2026-10-14',
         'changes' => [

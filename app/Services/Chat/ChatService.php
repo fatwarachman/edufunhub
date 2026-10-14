@@ -282,9 +282,10 @@ class ChatService
      * @return list<array{id: int, name: string, character: array<string, mixed>|null}>
      */
     /**
-     * People the viewer can start a chat with. Everyone sees the school and a
-     * teacher flag; only admins see (and can search by) the email, so player
-     * addresses never leak to other players.
+     * People the viewer can start a chat with, matched by name, nickname,
+     * school or email. Everyone sees the school and a teacher flag. Admins
+     * see emails and may search them partially; players only find someone by
+     * typing their full email address, and never see the address itself.
      *
      * @return list<array{id: int, name: string, character: array<string, mixed>|null, school: string|null, is_teacher: bool, email?: string}>
      */
@@ -300,8 +301,11 @@ class ChatService
             ->with(['playerProfile', 'roles:id,slug'])
             ->when($term !== '', fn (Builder $q) => $q->where(fn (Builder $w) => $w
                 ->where('name', 'like', $like)
-                ->orWhereHas('playerProfile', fn (Builder $p) => $p->where('nickname', 'like', $like))
-                ->when($showEmail, fn (Builder $e) => $e->orWhere('email', 'like', $like))))
+                ->orWhereHas('playerProfile', fn (Builder $p) => $p
+                    ->where('nickname', 'like', $like)
+                    ->orWhere('school_name', 'like', $like))
+                ->when($showEmail, fn (Builder $e) => $e->orWhere('email', 'like', $like))
+                ->when(! $showEmail && filter_var($term, FILTER_VALIDATE_EMAIL), fn (Builder $e) => $e->orWhereRaw('LOWER(email) = ?', [Str::lower($term)]))))
             ->orderBy('name')
             ->limit($limit)
             ->get();

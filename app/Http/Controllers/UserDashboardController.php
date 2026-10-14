@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GameHistory;
 use App\Models\PlayerProfile;
 use App\Models\Question;
+use App\Services\AndroidApk;
 use App\Services\CharacterShop;
 use App\Services\OnlinePlayers;
 use App\Services\PlayerAbility;
@@ -17,7 +18,7 @@ use Inertia\Response;
 
 class UserDashboardController extends Controller
 {
-    public function __invoke(Request $request, PlayerPortal $portal, CharacterShop $shop, PlayerBadges $badges, PlayerDashboardStats $stats, PlayerAbility $abilities, OnlinePlayers $online): Response
+    public function __invoke(Request $request, PlayerPortal $portal, CharacterShop $shop, PlayerBadges $badges, PlayerDashboardStats $stats, PlayerAbility $abilities, OnlinePlayers $online, AndroidApk $apk): Response
     {
         $user = $request->user();
         $profile = $user->playerProfile()->first() ?? new PlayerProfile;
@@ -39,6 +40,7 @@ class UserDashboardController extends Controller
                 'whatsapp_number' => $user->whatsapp_number,
                 'whatsapp_notifications' => (bool) $user->whatsapp_notifications,
             ],
+            'androidApk' => $apk->present(),
             'categories' => $portal->catalog($profile->grade),
             'progress' => $portal->progress($points),
             'rank' => $portal->rankOf($user, $points),

@@ -1,7 +1,7 @@
 import { AbilityCard, type PlayerAbility } from '@/components/ability-card';
 import { BadgeCollection } from '@/components/badge-collection';
 import { type BadgeProgress } from '@/components/badges';
-import { InstallAppCard } from '@/components/install-app-card';
+import { InstallAppCard, type AndroidApk } from '@/components/install-app-card';
 import { LanguageToggle } from '@/components/language-toggle';
 import {
     LeaderboardPlayerMenu,
@@ -157,6 +157,8 @@ interface DashboardProps {
     ability?: PlayerAbility | null;
     /** Deferred: players online right now. */
     onlineCount?: number;
+    /** Latest Android app build to download, if one is published. */
+    androidApk: AndroidApk | null;
 }
 
 const INK = 'border-[#151b2e]';
@@ -253,6 +255,7 @@ export default function Dashboard({
     stats,
     ability,
     onlineCount,
+    androidApk,
 }: DashboardProps) {
     const { t, i18n } = useTranslations();
     const { auth } = usePage<SharedData>().props;
@@ -495,7 +498,7 @@ export default function Dashboard({
                         grade={grade}
                         questionLevel={questionLevel}
                     />
-                    <InstallAppCard />
+                    <InstallAppCard apk={androidApk} />
                 </aside>
             </div>
 

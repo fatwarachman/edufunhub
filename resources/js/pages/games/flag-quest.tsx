@@ -153,6 +153,7 @@ export default function FlagQuest({
     }, [t, play]);
 
     const renderer = useMemo(() => new FlagQuestRenderer(), []);
+    useEffect(() => () => renderer.dispose(), [renderer]);
     const clearedCount = useRef(0);
     const onEvent = useCallback(
         (msg: Record<string, unknown>) => {
