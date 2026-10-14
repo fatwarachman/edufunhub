@@ -60,7 +60,9 @@ export function InstallAppCard({ apk = null }: { apk?: AndroidApk | null }) {
                 </p>
             ) : (
                 <>
-                    <p className="text-sm">{t('pwa.intro')}</p>
+                    <p className="text-sm">
+                        {t(apk ? 'pwa.apkIntro' : 'pwa.intro')}
+                    </p>
                     {apk && (
                         <div className="flex flex-col gap-1.5">
                             <a
@@ -88,7 +90,7 @@ export function InstallAppCard({ apk = null }: { apk?: AndroidApk | null }) {
                             </p>
                         </div>
                     )}
-                    {state === 'available' ? (
+                    {apk ? null : state === 'available' ? (
                         <button
                             type="button"
                             disabled={busy}
@@ -101,7 +103,7 @@ export function InstallAppCard({ apk = null }: { apk?: AndroidApk | null }) {
                             data-testid="install-app-button"
                         >
                             <Download className="size-5" aria-hidden="true" />
-                            {apk ? t('pwa.installWeb') : t('pwa.install')}
+                            {t('pwa.install')}
                         </button>
                     ) : (
                         <>
@@ -116,7 +118,7 @@ export function InstallAppCard({ apk = null }: { apk?: AndroidApk | null }) {
                                     className="size-5"
                                     aria-hidden="true"
                                 />
-                                {apk ? t('pwa.installWeb') : t('pwa.install')}
+                                {t('pwa.install')}
                             </button>
                             {showHelp && (
                                 <ol

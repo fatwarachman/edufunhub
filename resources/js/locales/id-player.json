@@ -1460,7 +1460,7 @@
     },
     "pwa": {
         "apk": "Unduh APK Android",
-        "installWeb": "Pasang versi web",
+        "apkIntro": "Unduh aplikasi EduFunHub untuk HP Android. Buka langsung dari layar utama, tampil penuh tanpa bilah browser.",
         "apkMeta": "Versi terbaru • {{size}} • {{date}}",
         "title": "Pasang Aplikasi",
         "intro": "Pasang EduFunHub di HP atau laptop. Buka langsung dari layar utama, tampil penuh tanpa bilah browser.",

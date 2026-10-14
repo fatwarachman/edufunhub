@@ -31,7 +31,7 @@ return [
                 'key' => 'android-apk-download',
                 'type' => 'feature',
                 'title' => ['id' => 'Unduh APK Android dari kartu Pasang Aplikasi', 'en' => 'Download the Android APK from the Install the App card'],
-                'body' => ['id' => 'Kartu Pasang Aplikasi di dashboard kini punya tombol Unduh APK Android berisi build aplikasi terbaru, lengkap dengan ukuran dan tanggal build. Pasang versi web (PWA) tetap tersedia untuk iPhone dan laptop.', 'en' => 'The Install the App card on the dashboard now has a Download Android APK button with the latest app build, showing its size and build date. Installing the web version (PWA) stays available for iPhone and laptops.'],
+                'body' => ['id' => 'Kartu Pasang Aplikasi di dashboard kini berisi satu tombol Unduh APK Android dengan build aplikasi terbaru, lengkap dengan ukuran dan tanggal build. Tombol pasang versi web dihapus.', 'en' => 'The Install the App card on the dashboard now has a single Download Android APK button with the latest app build, showing its size and build date. The install web version button is removed.'],
             ],
             [
                 'key' => 'character-3d',

@@ -1461,7 +1461,7 @@
     },
     "pwa": {
         "apk": "Download Android APK",
-        "installWeb": "Install web version",
+        "apkIntro": "Download the EduFunHub app for Android phones. Open it from your home screen, full screen without the browser bar.",
         "apkMeta": "Latest build • {{size}} • {{date}}",
         "title": "Install the App",
         "intro": "Install EduFunHub on your phone or laptop. Open it from your home screen, full screen without the browser bar.",
