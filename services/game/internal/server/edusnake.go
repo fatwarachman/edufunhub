@@ -120,6 +120,8 @@ func (s *Server) serveEduSnake(w http.ResponseWriter, r *http.Request) {
 			_, ids = s.snake.Create(claims, now)
 		case "join":
 			ids, err = s.snake.Enter(claims, in.Pin, now)
+		case "classroom":
+			ids, err = s.snake.EnterClassroom(claims, now)
 		case "leave":
 			var paid int
 			ids, paid = s.snake.Leave(claims.Subject, now)

@@ -15,17 +15,19 @@ import {
     GenerationRow,
     useGenerationPolling,
 } from '@/components/admin/generation-progress';
+import {
+    QuestionLiveSearch,
+    highlightMatch,
+} from '@/components/admin/question-live-search';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
+import { SubjectIcon, useSubjects } from '@/lib/subjects';
 import { cn } from '@/lib/utils';
 import { type PaginatedData } from '@/types/admin';
 import { Head, Link, router } from '@inertiajs/react';
 import {
     ArrowLeft,
     ArrowUpRight,
-    Atom,
-    BookOpen,
-    Calculator,
     ChartNoAxesColumn,
     Check,
     ChevronLeft,
@@ -35,8 +37,6 @@ import {
     Gamepad2,
     Gauge,
     GraduationCap,
-    Landmark,
-    Languages,
     Layers,
     ListChecks,
     Loader2,
@@ -45,7 +45,6 @@ import {
     Power,
     PowerOff,
     RotateCcw,
-    Scale,
     School,
     Search,
     Settings2,
@@ -164,18 +163,6 @@ interface QuestionsProps {
     bands: { value: number; min: number; max: number }[];
 }
 
-const SUBJECT_STYLE: Record<
-    string,
-    { icon: React.ElementType; color: string }
-> = {
-    math: { icon: Calculator, color: 'bg-bubble-blue' },
-    science: { icon: Atom, color: 'bg-bubble-green' },
-    language: { icon: BookOpen, color: 'bg-bubble-orange' },
-    social: { icon: Landmark, color: 'bg-bubble-purple' },
-    english: { icon: Languages, color: 'bg-bubble-pink' },
-    civics: { icon: Scale, color: 'bg-bubble-ink' },
-};
-
 /** Grade badge colours per band so the grade is readable at a glance. */
 const BAND_TONE: Record<number, string> = {
     0: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
@@ -218,52 +205,31 @@ function SubjectOverview({
     bands,
 }: QuestionsProps) {
     const subjectLabel = useSubjectLabel();
-    const [search, setSearch] = useState('');
+    const catalog = useSubjects();
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div className="flex flex-col gap-1">
-                    <h2 className="font-display text-2xl font-bold text-foreground">
-                        {tr('Question Bank')}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        {formatNumber(summary.total)} {tr('questions ·')}{' '}
-                        {formatNumber(summary.active)} {tr('active ·')}{' '}
-                        {games
-                            .map(
-                                (game) =>
-                                    `${gameLabel(game)} ${summary.byGame[game] ?? 0}`,
-                            )
-                            .join(' · ')}
-                        {tr('. Choose a subject to manage its questions.')}
-                    </p>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="flex min-w-0 items-center gap-3">
+                    <span
+                        className="grid size-12 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] bg-[#c7d2fe] text-[#1f2a44] shadow-[2px_2px_0_#1f2a44]"
+                        aria-hidden="true"
+                    >
+                        <ListChecks className="size-6" />
+                    </span>
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                        <h2 className="font-display text-2xl font-bold text-foreground">
+                            {tr('Question Bank')}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            {tr('Choose a subject to manage its questions.')}
+                        </p>
+                    </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <form
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            if (search.trim()) {
-                                router.get('/admin/questions', {
-                                    search: search.trim(),
-                                });
-                            }
-                        }}
-                        className="relative"
-                    >
-                        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                        <input
-                            type="search"
-                            aria-label={tr('Search all questions')}
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder={tr('Search all questions…')}
-                            className={cn(fieldClass, 'w-64 pl-9')}
-                        />
-                    </form>
                     <Link
                         href="/admin/questions/generate"
-                        className="inline-flex items-center gap-2 rounded-lg border border-violet-300 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-950/70"
+                        className="inline-flex h-10 items-center gap-2 rounded-xl border-2 border-violet-400 bg-violet-50 px-4 text-sm font-semibold text-violet-700 hover:bg-violet-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-950/70"
                         data-testid="questions-generate"
                     >
                         <Sparkles className="size-4" />
@@ -271,7 +237,7 @@ function SubjectOverview({
                     </Link>
                     <Link
                         href="/admin/questions/create"
-                        className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                         <Plus className="size-4" />
                         {tr('Add question')}
@@ -279,88 +245,145 @@ function SubjectOverview({
                 </div>
             </div>
 
-            {(summary.ai > 0 || summary.teacher > 0 || summary.bonus > 0) && (
-                <div className="flex flex-wrap gap-2 text-sm">
-                    {summary.ai > 0 && (
-                        <Link
-                            href="/admin/questions?source=ai"
-                            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 hover:bg-accent"
-                            data-testid="questions-ai-link"
+            <section className={cn(PANEL_CLASS, 'gap-4')}>
+                <QuestionLiveSearch subjectLabel={subjectLabel} />
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <SummaryStat
+                        label={tr('Questions')}
+                        value={formatNumber(summary.total)}
+                        icon={Layers}
+                    />
+                    <SummaryStat
+                        label={tr('Active')}
+                        value={formatNumber(summary.active)}
+                        icon={CircleCheck}
+                        tone="text-emerald-600 dark:text-emerald-400"
+                    />
+                    <SummaryStat
+                        label={tr('AI-created')}
+                        value={formatNumber(summary.ai)}
+                        icon={Sparkles}
+                        tone="text-violet-600 dark:text-violet-400"
+                        href={
+                            summary.ai > 0
+                                ? '/admin/questions?source=ai'
+                                : undefined
+                        }
+                        hint={
+                            summary.ai_pending > 0
+                                ? tr('{0} waiting for review', [
+                                      formatNumber(summary.ai_pending),
+                                  ])
+                                : undefined
+                        }
+                        testId="questions-ai-link"
+                    />
+                    <SummaryStat
+                        label={tr('Teacher-created')}
+                        value={formatNumber(summary.teacher)}
+                        icon={School}
+                        tone="text-emerald-700 dark:text-emerald-300"
+                        href={
+                            summary.teacher > 0
+                                ? '/admin/questions?source=teacher'
+                                : undefined
+                        }
+                        testId="questions-teacher-link"
+                    />
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                    <span className="inline-flex items-center gap-1 font-medium text-muted-foreground">
+                        <Gamepad2 className="size-3.5" aria-hidden="true" />
+                        {tr('Active per game')}
+                    </span>
+                    {games.map((game) => (
+                        <span
+                            key={game}
+                            className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5"
                         >
-                            <AiBadge />
-                            {formatNumber(summary.ai)} {tr('AI-created')}
-                            {summary.ai_pending > 0 && (
-                                <span className="text-xs text-amber-700 dark:text-amber-300">
-                                    · {formatNumber(summary.ai_pending)}{' '}
-                                    {tr('waiting for review')}
-                                </span>
-                            )}
-                        </Link>
-                    )}
-                    {summary.teacher > 0 && (
-                        <Link
-                            href="/admin/questions?source=teacher"
-                            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 hover:bg-accent"
-                            data-testid="questions-teacher-link"
-                        >
-                            <SourceBadge source="teacher" />
-                            {formatNumber(summary.teacher)}{' '}
-                            {tr('Teacher-created')}
-                        </Link>
-                    )}
+                            {gameLabel(game)}
+                            <span className="font-semibold text-foreground tabular-nums">
+                                {formatNumber(summary.byGame[game] ?? 0)}
+                            </span>
+                        </span>
+                    ))}
                     {summary.bonus > 0 && (
                         <Link
                             href="/admin/questions?bonus=1"
-                            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 hover:bg-accent"
+                            className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 font-medium text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
                         >
-                            <Coins className="size-4 text-amber-500" />
+                            <Coins className="size-3" aria-hidden="true" />
                             {formatNumber(summary.bonus)}{' '}
                             {tr('bonus questions')}
                         </Link>
                     )}
                 </div>
-            )}
+            </section>
 
             <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {subjectStats.map((stat) => {
-                    const style = SUBJECT_STYLE[stat.subject] ?? {
-                        icon: ListChecks,
-                        color: 'bg-bubble-blue',
-                    };
-                    const Icon = style.icon;
+                    const info = catalog.find(
+                        (subject) => subject.key === stat.subject,
+                    );
                     const maxBand = Math.max(1, ...Object.values(stat.bands));
+                    const activeRate =
+                        stat.total > 0
+                            ? Math.round((stat.active / stat.total) * 100)
+                            : 0;
 
                     return (
                         <li key={stat.subject}>
                             <Link
                                 href={`/admin/questions?subject=${stat.subject}`}
-                                className="group flex h-full flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                className="group flex h-full flex-col gap-4 rounded-2xl border-2 border-[#1f2a44] bg-card p-4 shadow-[2px_2px_0_#1f2a44] transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_#1f2a44] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:p-5 dark:border-white/20 dark:shadow-none dark:hover:border-white/40"
                                 data-testid={`subject-${stat.subject}`}
                             >
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex min-w-0 items-center gap-3">
                                         <span
-                                            className={cn(
-                                                'flex size-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm',
-                                                style.color,
-                                            )}
+                                            className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] text-[#1f2a44] shadow-[2px_2px_0_#1f2a44]"
+                                            style={{
+                                                background:
+                                                    info?.color ?? '#c7d2fe',
+                                            }}
+                                            aria-hidden="true"
                                         >
-                                            <Icon className="size-5" />
+                                            <SubjectIcon
+                                                icon={info?.icon}
+                                                className="size-5"
+                                            />
                                         </span>
                                         <div className="flex min-w-0 flex-col">
                                             <span className="truncate font-semibold text-foreground">
                                                 {subjectLabel(stat.subject)}
                                             </span>
                                             <span className="text-xs text-muted-foreground">
-                                                {stat.total} {tr('questions ·')}{' '}
-                                                {stat.active} {tr('active')}
+                                                {formatNumber(stat.total)}{' '}
+                                                {tr('questions ·')}{' '}
+                                                {formatNumber(stat.active)}{' '}
+                                                {tr('active')}
                                             </span>
                                         </div>
                                     </div>
                                     <ArrowUpRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                                 </div>
 
-                                <div className="flex flex-col gap-2">
+                                <div
+                                    className="flex items-center gap-2"
+                                    title={tr('{0}% active', [activeRate])}
+                                >
+                                    <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                                        <span
+                                            className="block h-full rounded-full bg-emerald-500"
+                                            style={{ width: `${activeRate}%` }}
+                                        />
+                                    </span>
+                                    <span className="w-10 text-right text-xs font-medium text-muted-foreground tabular-nums">
+                                        {activeRate}%
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border bg-muted/30 p-3">
                                     <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                                         <GraduationCap className="size-3.5" />
                                         {tr('Questions per grade')}
@@ -398,7 +421,7 @@ function SubjectOverview({
                                     </ul>
                                 </div>
 
-                                <div className="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
+                                <div className="mt-auto flex items-center justify-between text-xs text-muted-foreground">
                                     <span>
                                         {formatNumber(stat.answered)}{' '}
                                         {tr('answers recorded')}
@@ -432,6 +455,63 @@ function SubjectOverview({
     );
 }
 
+const PANEL_CLASS =
+    'flex flex-col rounded-2xl border-2 border-[#1f2a44] bg-card p-3 shadow-[2px_2px_0_#1f2a44] sm:p-4 dark:border-white/20 dark:shadow-none';
+
+function SummaryStat({
+    label,
+    value,
+    icon: Icon,
+    tone = 'text-foreground',
+    href,
+    hint,
+    testId,
+}: {
+    label: string;
+    value: string;
+    icon: React.ElementType;
+    tone?: string;
+    href?: string;
+    hint?: string;
+    testId?: string;
+}) {
+    const body = (
+        <>
+            <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <Icon className={cn('size-3.5', tone)} aria-hidden="true" />
+                {label}
+            </span>
+            <span className="text-xl font-bold text-foreground tabular-nums">
+                {value}
+            </span>
+            {hint && (
+                <span className="text-xs text-amber-700 dark:text-amber-300">
+                    {hint}
+                </span>
+            )}
+        </>
+    );
+    const classes =
+        'flex min-w-0 flex-col gap-0.5 rounded-xl border border-border bg-muted/30 px-3 py-2';
+
+    return href ? (
+        <Link
+            href={href}
+            className={cn(
+                classes,
+                'transition-colors hover:border-primary/40 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+            )}
+            data-testid={testId}
+        >
+            {body}
+        </Link>
+    ) : (
+        <div className={classes} data-testid={testId}>
+            {body}
+        </div>
+    );
+}
+
 function QuestionList({
     questions,
     filters,
@@ -449,11 +529,13 @@ function QuestionList({
     const [selected, setSelected] = useState<Set<number>>(() => new Set());
     const [bulkConfirm, setBulkConfirm] = useState(false);
     const [bulkBusy, setBulkBusy] = useState<BulkAction | null>(null);
+    const [searching, setSearching] = useState(false);
     const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
     const firstRender = useRef(true);
     const subject =
         filters.subject && filters.subject !== 'all' ? filters.subject : null;
     const stat = subjectStats.find((row) => row.subject === subject);
+    const subjectInfo = useSubjects().find((row) => row.key === subject);
     const visibleIds = useMemo(
         () => questions?.data.map((question) => question.id) ?? [],
         [questions],
@@ -500,6 +582,8 @@ function QuestionList({
         router.get('/admin/questions', query, {
             preserveScroll: true,
             preserveState: true,
+            onStart: () => setSearching('search' in changes),
+            onFinish: () => setSearching(false),
         });
     };
 
@@ -511,7 +595,7 @@ function QuestionList({
         if (debounce.current) clearTimeout(debounce.current);
         debounce.current = setTimeout(
             () => apply({ search: search.trim() || undefined }),
-            400,
+            300,
         );
         return () => {
             if (debounce.current) clearTimeout(debounce.current);
@@ -556,7 +640,25 @@ function QuestionList({
                         <ArrowLeft className="size-4" />
                         {tr('All subjects')}
                     </Link>
-                    <h2 className="font-display text-2xl font-bold text-foreground">
+                    <h2 className="flex items-center gap-3 font-display text-2xl font-bold text-foreground">
+                        <span
+                            className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] text-[#1f2a44] shadow-[2px_2px_0_#1f2a44]"
+                            style={{
+                                background: subjectInfo?.color ?? '#c7d2fe',
+                            }}
+                            aria-hidden="true"
+                        >
+                            {subjectInfo ? (
+                                <SubjectIcon
+                                    icon={subjectInfo.icon}
+                                    className="size-5"
+                                />
+                            ) : filters.search ? (
+                                <Search className="size-5" />
+                            ) : (
+                                <Layers className="size-5" />
+                            )}
+                        </span>
                         {tr(title)}
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -573,241 +675,291 @@ function QuestionList({
                             ? `/admin/questions/create?subject=${subject}`
                             : '/admin/questions/create'
                     }
-                    className="inline-flex w-fit items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    className="inline-flex h-10 w-fit items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                     <Plus className="size-4" />
                     {tr('Add question')}
                 </Link>
             </div>
 
-            <div
-                className="flex flex-wrap items-center gap-2"
-                role="group"
-                aria-label={tr('Filter by grade')}
+            <section
+                className={cn(PANEL_CLASS, 'gap-4')}
+                aria-label={tr('Filters')}
+                data-testid="questions-filter-panel"
             >
-                <GradeTab
-                    active={!filters.band}
-                    onClick={() => apply({ band: undefined })}
-                >
-                    {tr('All grades')}
-                    {stat && <Count>{stat.total}</Count>}
-                </GradeTab>
-                {bands.map((band) => (
-                    <GradeTab
-                        key={band.value}
-                        active={filters.band === String(band.value)}
-                        onClick={() => apply({ band: String(band.value) })}
-                    >
-                        {tr(BAND_LABELS[band.value])}
-                        {stat && <Count>{stat.bands[band.value] ?? 0}</Count>}
-                    </GradeTab>
-                ))}
-            </div>
-
-            <div
-                className="flex flex-wrap items-center gap-2"
-                role="group"
-                aria-label={tr('Question level')}
-                data-testid="questions-level-filter"
-            >
-                <GradeTab
-                    active={!filters.level}
-                    onClick={() => apply({ level: undefined })}
-                >
-                    {tr('All levels')}
-                </GradeTab>
-                {[1, 2, 3].map((level) => (
-                    <GradeTab
-                        key={level}
-                        active={filters.level === String(level)}
-                        onClick={() => apply({ level: String(level) })}
-                    >
-                        {tr(QUESTION_LEVEL_LABELS[level])} ×{level}
-                    </GradeTab>
-                ))}
-            </div>
-
-            {sourceCounts && (
-                <div className="flex min-w-0 flex-col gap-1.5">
-                    <span
-                        id="questions-creator-label"
-                        className="text-xs font-medium text-muted-foreground"
-                    >
-                        {tr('Created by')}
+                <div className="grid gap-3 lg:grid-cols-[auto_1fr] lg:items-center">
+                    <span className="text-xs font-medium text-muted-foreground">
+                        {tr('Grade')}
                     </span>
                     <div
-                        className="-mx-1 flex min-w-0 [scrollbar-width:thin] gap-1.5 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible"
+                        className="flex flex-wrap items-center gap-2"
                         role="group"
-                        aria-labelledby="questions-creator-label"
-                        data-testid="questions-source-filter"
+                        aria-label={tr('Filter by grade')}
                     >
-                        {CREATOR_FILTERS.map((option) => {
-                            const active =
-                                (filters.source ?? undefined) === option.value;
-                            const Icon = option.icon;
-                            return (
-                                <button
-                                    key={option.label}
-                                    type="button"
-                                    aria-pressed={active}
-                                    onClick={() =>
-                                        apply({
-                                            source: option.value,
-                                            author: undefined,
-                                        })
-                                    }
-                                    data-testid={`questions-source-${option.value ?? 'all'}`}
-                                    className={cn(
-                                        'inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-                                        active
-                                            ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                                            : 'border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground',
-                                    )}
-                                >
-                                    <Icon className="size-4" />
-                                    {tr(option.label)}
-                                    <Count>
-                                        {formatNumber(
-                                            sourceCounts[option.value ?? 'all'],
-                                        )}
-                                    </Count>
-                                </button>
-                            );
-                        })}
+                        <GradeTab
+                            active={!filters.band}
+                            onClick={() => apply({ band: undefined })}
+                        >
+                            {tr('All grades')}
+                            {stat && <Count>{stat.total}</Count>}
+                        </GradeTab>
+                        {bands.map((band) => (
+                            <GradeTab
+                                key={band.value}
+                                active={filters.band === String(band.value)}
+                                onClick={() =>
+                                    apply({ band: String(band.value) })
+                                }
+                            >
+                                {tr(BAND_LABELS[band.value])}
+                                {stat && (
+                                    <Count>{stat.bands[band.value] ?? 0}</Count>
+                                )}
+                            </GradeTab>
+                        ))}
                     </div>
-                </div>
-            )}
 
-            <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3 shadow-sm">
-                <div className="relative min-w-56 flex-1">
-                    <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                        type="search"
-                        aria-label={tr('Search questions')}
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder={tr('Search question text or key…')}
-                        className={cn(fieldClass, 'w-full pl-9')}
-                    />
-                </div>
-                <select
-                    aria-label={tr('Subject')}
-                    value={filters.subject ?? 'all'}
-                    onChange={(e) =>
-                        apply({ subject: e.target.value, band: undefined })
-                    }
-                    className={fieldClass}
-                >
-                    <option value="all">{tr('All subjects')}</option>
-                    {subjects.map((value) => (
-                        <option key={value} value={value}>
-                            {subjectLabel(value)}
-                        </option>
-                    ))}
-                </select>
-                <select
-                    aria-label={tr('Game')}
-                    value={filters.game ?? ''}
-                    onChange={(e) =>
-                        apply({ game: e.target.value || undefined })
-                    }
-                    className={fieldClass}
-                >
-                    <option value="">{tr('All games')}</option>
-                    {games.map((game) => (
-                        <option key={game} value={game}>
-                            {gameLabel(game)}
-                        </option>
-                    ))}
-                </select>
-                <select
-                    aria-label={tr('Type')}
-                    value={filters.type ?? ''}
-                    onChange={(e) =>
-                        apply({ type: e.target.value || undefined })
-                    }
-                    className={fieldClass}
-                >
-                    <option value="">{tr('All types')}</option>
-                    <option value="choice">{tr('Multiple choice')}</option>
-                    <option value="true_false">{tr('True / false')}</option>
-                </select>
-                <select
-                    aria-label={tr('Status')}
-                    value={filters.status ?? ''}
-                    onChange={(e) =>
-                        apply({ status: e.target.value || undefined })
-                    }
-                    className={fieldClass}
-                >
-                    <option value="">{tr('Any status')}</option>
-                    <option value="active">{tr('Active')}</option>
-                    <option value="inactive">{tr('Inactive')}</option>
-                    <option value="played">{tr('Played in quizzes')}</option>
-                    <option value="unplayed">{tr('Not played yet')}</option>
-                </select>
-                {filters.source === 'teacher' && teachers.length > 0 && (
-                    <select
-                        aria-label={tr('Teacher')}
-                        value={filters.author ?? ''}
-                        onChange={(e) =>
-                            apply({ author: e.target.value || undefined })
-                        }
-                        className={cn(fieldClass, 'max-w-full min-w-0')}
-                        data-testid="questions-author-filter"
+                    <span className="text-xs font-medium text-muted-foreground">
+                        {tr('Question level')}
+                    </span>
+                    <div
+                        className="flex flex-wrap items-center gap-2"
+                        role="group"
+                        aria-label={tr('Question level')}
+                        data-testid="questions-level-filter"
                     >
-                        <option value="">{tr('All teachers')}</option>
-                        {teachers.map((teacher) => (
-                            <option key={teacher.id} value={teacher.id}>
-                                {teacher.name}
+                        <GradeTab
+                            active={!filters.level}
+                            onClick={() => apply({ level: undefined })}
+                        >
+                            {tr('All levels')}
+                        </GradeTab>
+                        {[1, 2, 3].map((level) => (
+                            <GradeTab
+                                key={level}
+                                active={filters.level === String(level)}
+                                onClick={() => apply({ level: String(level) })}
+                            >
+                                {tr(QUESTION_LEVEL_LABELS[level])} ×{level}
+                            </GradeTab>
+                        ))}
+                    </div>
+
+                    {sourceCounts && (
+                        <>
+                            <span
+                                id="questions-creator-label"
+                                className="text-xs font-medium text-muted-foreground"
+                            >
+                                {tr('Created by')}
+                            </span>
+                            <div
+                                className="-mx-1 flex min-w-0 [scrollbar-width:thin] gap-1.5 overflow-x-auto px-1 pb-1 sm:flex-wrap sm:overflow-visible"
+                                role="group"
+                                aria-labelledby="questions-creator-label"
+                                data-testid="questions-source-filter"
+                            >
+                                {CREATOR_FILTERS.map((option) => {
+                                    const active =
+                                        (filters.source ?? undefined) ===
+                                        option.value;
+                                    const Icon = option.icon;
+                                    return (
+                                        <button
+                                            key={option.label}
+                                            type="button"
+                                            aria-pressed={active}
+                                            onClick={() =>
+                                                apply({
+                                                    source: option.value,
+                                                    author: undefined,
+                                                })
+                                            }
+                                            data-testid={`questions-source-${option.value ?? 'all'}`}
+                                            className={cn(
+                                                'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                                                active
+                                                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                                                    : 'border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground',
+                                            )}
+                                        >
+                                            <Icon className="size-4" />
+                                            {tr(option.label)}
+                                            <Count>
+                                                {formatNumber(
+                                                    sourceCounts[
+                                                        option.value ?? 'all'
+                                                    ],
+                                                )}
+                                            </Count>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 border-t-2 border-dashed border-border pt-4">
+                    <div className="relative min-w-56 flex-1">
+                        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                            type="search"
+                            aria-label={tr('Search questions')}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder={tr('Search question text or key…')}
+                            className={cn(
+                                fieldClass,
+                                'w-full pr-9 pl-9 [&::-webkit-search-cancel-button]:hidden',
+                            )}
+                            data-testid="questions-list-search"
+                        />
+                        <span className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center">
+                            {searching ? (
+                                <Loader2
+                                    className="size-4 animate-spin text-muted-foreground"
+                                    aria-hidden="true"
+                                />
+                            ) : (
+                                search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearch('')}
+                                        aria-label={tr('Clear search')}
+                                        title={tr('Clear search')}
+                                        className="grid size-6 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                        data-testid="questions-list-search-clear"
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                )
+                            )}
+                        </span>
+                    </div>
+                    <select
+                        aria-label={tr('Subject')}
+                        value={filters.subject ?? 'all'}
+                        onChange={(e) =>
+                            apply({ subject: e.target.value, band: undefined })
+                        }
+                        className={fieldClass}
+                    >
+                        <option value="all">{tr('All subjects')}</option>
+                        {subjects.map((value) => (
+                            <option key={value} value={value}>
+                                {subjectLabel(value)}
                             </option>
                         ))}
                     </select>
-                )}
-                <select
-                    aria-label={tr('Bonus')}
-                    value={filters.bonus ?? ''}
-                    onChange={(e) =>
-                        apply({ bonus: e.target.value || undefined })
-                    }
-                    className={fieldClass}
-                    data-testid="questions-bonus-filter"
-                >
-                    <option value="">{tr('Any points')}</option>
-                    <option value="1">{tr('Bonus questions')}</option>
-                </select>
-                <select
-                    aria-label={tr('Sort')}
-                    value={filters.sort ?? ''}
-                    onChange={(e) =>
-                        apply({ sort: e.target.value || undefined })
-                    }
-                    className={fieldClass}
-                >
-                    <option value="">{tr('Sort by grade')}</option>
-                    <option value="hardest">{tr('Hardest first')}</option>
-                    <option value="most_answered">{tr('Most answered')}</option>
-                </select>
-                {narrowed && (
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setSearch('');
-                            router.get(
-                                '/admin/questions',
-                                { subject: filters.subject ?? 'all' },
-                                { preserveScroll: true },
-                            );
-                        }}
-                        className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                    <select
+                        aria-label={tr('Game')}
+                        value={filters.game ?? ''}
+                        onChange={(e) =>
+                            apply({ game: e.target.value || undefined })
+                        }
+                        className={fieldClass}
                     >
-                        <RotateCcw className="size-4" />
-                        {tr('Reset')}
-                    </button>
-                )}
-            </div>
+                        <option value="">{tr('All games')}</option>
+                        {games.map((game) => (
+                            <option key={game} value={game}>
+                                {gameLabel(game)}
+                            </option>
+                        ))}
+                    </select>
+                    <select
+                        aria-label={tr('Type')}
+                        value={filters.type ?? ''}
+                        onChange={(e) =>
+                            apply({ type: e.target.value || undefined })
+                        }
+                        className={fieldClass}
+                    >
+                        <option value="">{tr('All types')}</option>
+                        <option value="choice">{tr('Multiple choice')}</option>
+                        <option value="true_false">{tr('True / false')}</option>
+                    </select>
+                    <select
+                        aria-label={tr('Status')}
+                        value={filters.status ?? ''}
+                        onChange={(e) =>
+                            apply({ status: e.target.value || undefined })
+                        }
+                        className={fieldClass}
+                    >
+                        <option value="">{tr('Any status')}</option>
+                        <option value="active">{tr('Active')}</option>
+                        <option value="inactive">{tr('Inactive')}</option>
+                        <option value="played">
+                            {tr('Played in quizzes')}
+                        </option>
+                        <option value="unplayed">{tr('Not played yet')}</option>
+                    </select>
+                    {filters.source === 'teacher' && teachers.length > 0 && (
+                        <select
+                            aria-label={tr('Teacher')}
+                            value={filters.author ?? ''}
+                            onChange={(e) =>
+                                apply({ author: e.target.value || undefined })
+                            }
+                            className={cn(fieldClass, 'max-w-full min-w-0')}
+                            data-testid="questions-author-filter"
+                        >
+                            <option value="">{tr('All teachers')}</option>
+                            {teachers.map((teacher) => (
+                                <option key={teacher.id} value={teacher.id}>
+                                    {teacher.name}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                    <select
+                        aria-label={tr('Bonus')}
+                        value={filters.bonus ?? ''}
+                        onChange={(e) =>
+                            apply({ bonus: e.target.value || undefined })
+                        }
+                        className={fieldClass}
+                        data-testid="questions-bonus-filter"
+                    >
+                        <option value="">{tr('Any points')}</option>
+                        <option value="1">{tr('Bonus questions')}</option>
+                    </select>
+                    <select
+                        aria-label={tr('Sort')}
+                        value={filters.sort ?? ''}
+                        onChange={(e) =>
+                            apply({ sort: e.target.value || undefined })
+                        }
+                        className={fieldClass}
+                    >
+                        <option value="">{tr('Sort by grade')}</option>
+                        <option value="hardest">{tr('Hardest first')}</option>
+                        <option value="most_answered">
+                            {tr('Most answered')}
+                        </option>
+                    </select>
+                    {narrowed && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSearch('');
+                                router.get(
+                                    '/admin/questions',
+                                    { subject: filters.subject ?? 'all' },
+                                    { preserveScroll: true },
+                                );
+                            }}
+                            className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                        >
+                            <RotateCcw className="size-4" />
+                            {tr('Reset')}
+                        </button>
+                    )}
+                </div>
+            </section>
 
-            <div className="rounded-2xl border border-border bg-card shadow-sm">
+            <div className="rounded-2xl border-2 border-[#1f2a44] bg-card shadow-[2px_2px_0_#1f2a44] dark:border-white/20 dark:shadow-none">
                 {questions.data.length > 0 && (
                     <div
                         className="sticky top-0 z-10 flex flex-wrap items-center gap-2 rounded-t-2xl border-b border-border bg-card/95 px-4 py-2.5 backdrop-blur"
@@ -932,7 +1084,10 @@ function QuestionList({
                                             href={`/admin/questions/${question.id}`}
                                             className="font-medium text-foreground hover:text-primary hover:underline"
                                         >
-                                            {question.prompt_id}
+                                            {highlightMatch(
+                                                question.prompt_id,
+                                                filters.search,
+                                            )}
                                         </Link>
                                         <p className="text-xs text-muted-foreground">
                                             {tr('Answer:')}{' '}
@@ -1070,7 +1225,10 @@ function QuestionList({
                                                 </Badge>
                                             )}
                                             <span className="font-mono text-muted-foreground">
-                                                {question.key}
+                                                {highlightMatch(
+                                                    question.key,
+                                                    filters.search,
+                                                )}
                                             </span>
                                         </div>
                                     </div>
@@ -1342,9 +1500,9 @@ function GradeTab({
             onClick={onClick}
             aria-pressed={active}
             className={cn(
-                'inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                'inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                 active
-                    ? 'border-primary bg-primary text-primary-foreground'
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
                     : 'border-border bg-card text-muted-foreground hover:text-foreground',
             )}
         >

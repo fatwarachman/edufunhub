@@ -300,6 +300,11 @@ func (h *Hub) Create(claims auth.Claims, now time.Time) (string, []int64) {
 	return h.rooms.Create(claims, now, func(r *room) { r.Game.winner, r.Game.first = -1, -1 })
 }
 
+// EnterClassroom joins or opens the shared room of the player's classroom.
+func (h *Hub) EnterClassroom(claims auth.Claims, now time.Time) ([]int64, error) {
+	return h.rooms.EnterClassroom(claims, now, func(r *room) { r.Game.winner, r.Game.first = -1, -1 })
+}
+
 // Enter joins the room with the given PIN.
 func (h *Hub) Enter(claims auth.Claims, pin string, now time.Time) ([]int64, error) {
 	return h.rooms.Enter(claims, pin, now)
@@ -668,6 +673,17 @@ func matchOf(r *room, now time.Time) *record.Match {
 		Grade: g.grade, StartedAt: record.Stamp(g.started), EndedAt: record.Stamp(now),
 		Finished: r.Phase == PhaseDone, Players: players,
 	}
+}
+
+// CloseClassroom closes every room of classroom id (the teacher ended the
+// classroom). Unfinished games pay what players achieved, like Prune. It
+// returns the account holders who were seated, so the server can tell them.
+func (h *Hub) CloseClassroom(id int64, now time.Time) []int64 {
+	return h.rooms.CloseClassroom(id, func(r *room) {
+		for i := range r.Seats {
+			h.settle(r, i, false, now)
+		}
+	})
 }
 
 // Prune drops idle rooms and rooms whose members are all offline; players of

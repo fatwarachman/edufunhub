@@ -49,6 +49,13 @@ class ChatLiveStore {
     /** Conversation open on the chat page (no popup for its messages). */
     activeConversation: number | null = null;
 
+    /**
+     * Set while the 3D classroom is open: returns true for senders standing
+     * in the room, whose direct messages show as bubbles there instead of
+     * the global popup.
+     */
+    inClassroomWorld: ((userId: number) => boolean) | null = null;
+
     me(): number | null {
         return this.userId;
     }

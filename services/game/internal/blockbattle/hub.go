@@ -1,8 +1,10 @@
 package blockbattle
 
 import (
+	"errors"
 	"fmt"
 	"math/rand/v2"
+	"sort"
 	"sync"
 	"time"
 )
@@ -12,7 +14,10 @@ import (
 type Hub struct {
 	cfg Config
 
-	mu      sync.Mutex
+	mu sync.Mutex
+	// classMu serialises EnterClassroom so one classroom never opens two
+	// rooms at once.
+	classMu sync.Mutex
 	rng     *rand.Rand
 	rooms   map[string]*Room
 	hosts   map[int64]*Room
@@ -105,12 +110,83 @@ func (h *Hub) Join(c *Client, pin string, avatar []byte) error {
 	r := h.rooms[pin]
 	prev := h.players[c.ID()]
 	h.mu.Unlock()
-	if r == nil {
+	if r == nil || (r.classroomID > 0 && r.classroomID != c.Claims.Classroom) {
 		return ErrNotFound
 	}
 	if prev != nil && prev != r {
 		prev.do(command{kind: "leave", c: c})
 	}
+	return r.do(command{kind: "join", c: c, avatar: avatar}).err
+}
+
+// EnterClassroom seats a player in the shared room of their classroom. The
+// classroom comes from the signed token claim only, never from the message.
+// A player already seated there is reattached (reload safe); else they join
+// an open room of the classroom (lobby or game over, not full; the fullest
+// wins, ties lowest PIN). Without one a room with no host screen is created
+// and the player becomes its captain (player-host).
+func (h *Hub) EnterClassroom(c *Client, now time.Time, avatar []byte) error {
+	if c.Host {
+		return ErrPlayerOnly
+	}
+	id := c.Claims.Classroom
+	if id <= 0 {
+		return ErrNoClassroom
+	}
+	h.classMu.Lock()
+	defer h.classMu.Unlock()
+	h.mu.Lock()
+	prev := h.players[c.ID()]
+	var rooms []*Room
+	for _, r := range h.rooms {
+		if r.classroomID == id {
+			rooms = append(rooms, r)
+		}
+	}
+	h.mu.Unlock()
+	if prev != nil && prev.classroomID == id && prev.do(command{kind: "attach", c: c}).err == nil {
+		return nil
+	}
+	type candidate struct {
+		room   *Room
+		active int
+	}
+	var open []candidate
+	for _, r := range rooms {
+		res := r.do(command{kind: "inspect", fn: func(r *Room) any {
+			if !r.joinable() {
+				return -1
+			}
+			return r.active()
+		}})
+		if n, ok := res.v.(int); res.err == nil && ok && n >= 0 {
+			open = append(open, candidate{r, n})
+		}
+	}
+	sort.Slice(open, func(i, j int) bool {
+		if open[i].active != open[j].active {
+			return open[i].active > open[j].active
+		}
+		return open[i].room.Pin < open[j].room.Pin
+	})
+	if prev != nil && prev.classroomID != id {
+		prev.do(command{kind: "leave", c: c})
+	}
+	for _, o := range open {
+		if o.room.do(command{kind: "join", c: c, avatar: avatar}).err == nil {
+			return nil
+		}
+	}
+	h.mu.Lock()
+	pin := ""
+	for pin == "" || h.rooms[pin] != nil {
+		pin = fmt.Sprintf("%06d", 100000+h.rng.IntN(900000))
+	}
+	r := newRoom(h, pin, c, h.rng.Uint64(), now)
+	r.classroomID = id
+	h.rooms[pin] = r
+	h.mu.Unlock()
+	go r.run()
 	return r.do(command{kind: "join", c: c, avatar: avatar}).err
 }
 
@@ -200,8 +276,14 @@ func (h *Hub) Inspect(pin string, fn func(r *Room) any) (any, error) {
 }
 
 // RoomPhase reports the phase of the room with the given PIN (PIN lookup).
+// Classroom rooms are never found: they are reached via EnterClassroom.
 func (h *Hub) RoomPhase(pin string) (string, bool) {
-	v, err := h.Inspect(pin, func(r *Room) any { return r.phase })
+	v, err := h.Inspect(pin, func(r *Room) any {
+		if r.classroomID > 0 {
+			return ""
+		}
+		return r.phase
+	})
 	phase, _ := v.(string)
 	if err != nil || phase == "" {
 		return "", false
@@ -247,6 +329,41 @@ func (h *Hub) CloseAll() {
 	for _, r := range rooms {
 		r.do(command{kind: "close"})
 	}
+}
+
+// ClosedClassroom is the close reason sent when a teacher ends the classroom.
+const ClosedClassroom = "classroom_ended"
+
+// CloseClassroom closes every room of classroom id (the teacher ended the
+// classroom): unfinished games are paid and everyone in the room gets a
+// state_sync with phase NONE and closed "classroom_ended". It returns how
+// many rooms were closed. Normal PIN rooms (id 0) are never touched.
+func (h *Hub) CloseClassroom(id int64) int {
+	if id <= 0 {
+		return 0
+	}
+	h.mu.Lock()
+	var rooms []*Room
+	for _, r := range h.rooms {
+		if r.classroomID == id {
+			rooms = append(rooms, r)
+		}
+	}
+	h.mu.Unlock()
+	closed := 0
+	for _, r := range rooms {
+		for attempt := 0; ; attempt++ {
+			err := r.do(command{kind: "close", reason: ClosedClassroom}).err
+			if err == nil {
+				closed++
+			}
+			if !errors.Is(err, ErrBusy) || attempt >= 100 {
+				break
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+	return closed
 }
 
 // TakeResults drains results waiting to be reported.

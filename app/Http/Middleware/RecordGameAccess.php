@@ -4,9 +4,12 @@ namespace App\Http\Middleware;
 
 use App\Models\GameAccess;
 use App\Services\Ads\AdServer;
+use App\Services\Classrooms\ClassroomContext;
+use App\Services\Classrooms\ClassroomPlayLimit;
 use App\Services\DeviceDetector;
 use App\Services\UserActivity;
 use Closure;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -22,10 +25,15 @@ class RecordGameAccess
 {
     public const DEDUPE_MINUTES = 10;
 
-    public function __construct(private DeviceDetector $detector, private AdServer $ads, private UserActivity $activity) {}
+    public function __construct(private DeviceDetector $detector, private AdServer $ads, private UserActivity $activity, private ClassroomContext $classrooms, private ClassroomPlayLimit $playLimits) {}
 
     public function handle(Request $request, Closure $next, string $game): Response
     {
+        $limitRedirect = $this->playLimitRedirect($request, $game);
+        if ($limitRedirect !== null) {
+            return $limitRedirect;
+        }
+
         // Ad foundation: every game route uses this middleware, so every game
         // page receives the `ads` prop (placement => creative) for <AdSlot>.
         if ($request->isMethod('GET')) {
@@ -35,6 +43,7 @@ class RecordGameAccess
                 $this->detector->detect($request->userAgent(), $request->header('Sec-CH-UA-Mobile'), $request->header('Sec-CH-UA-Platform'))['device_type'],
             ));
             Inertia::share('adGame', $game);
+            Inertia::share('gameReturn', fn (): ?array => $this->returnTarget($request, $game));
         }
 
         $response = $next($request);
@@ -72,5 +81,52 @@ class RecordGameAccess
         }
 
         return $response;
+    }
+
+    /**
+     * Classroom play limit: a member who used every play of this classroom
+     * game is sent back to the classroom page instead of opening the game.
+     * Only page visits (GET, not JSON) are blocked.
+     */
+    private function playLimitRedirect(Request $request, string $game): ?RedirectResponse
+    {
+        $user = $request->user();
+        if ($user === null || $game === '' || ! $request->isMethod('GET') || $request->expectsJson()) {
+            return null;
+        }
+
+        $classroom = $this->classrooms->currentFor($user, $game);
+        if ($classroom === null || $this->playLimits->remaining($classroom, $user, $game) !== 0) {
+            return null;
+        }
+
+        return redirect()
+            ->route('classrooms.show', ['pin' => $classroom->pin])
+            ->with('error', __('classrooms.play_limit_reached', [
+                'game' => $this->playLimits->gameTitle($game),
+                'max' => (int) $this->playLimits->maxFor($classroom, $game),
+            ]));
+    }
+
+    /**
+     * Where "back" leads from this game: the classroom the player is
+     * actively in when the teacher picked this game, else null (portal).
+     * Built server-side from the membership, never from a query value.
+     *
+     * @return array{href: string, name: string}|null
+     */
+    private function returnTarget(Request $request, string $game): ?array
+    {
+        $user = $request->user();
+        if ($user === null || $game === '') {
+            return null;
+        }
+
+        $classroom = $this->classrooms->currentFor($user, $game);
+
+        return $classroom === null ? null : [
+            'href' => route('classrooms.show', ['pin' => $classroom->pin], absolute: false),
+            'name' => $classroom->name,
+        ];
     }
 }

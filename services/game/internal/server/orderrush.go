@@ -142,6 +142,9 @@ func (s *Server) serveOrderRush(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			err = s.rush.Join(client, pin, in.Avatar)
+		case "classroom":
+			// Classroom id comes from the signed token claim only.
+			_, err = s.rush.EnterClassroom(client, in.Avatar, at)
 		case "configure":
 			err = s.rush.Configure(client, in.Mode, in.Value, in.Sets)
 		case "start_game":

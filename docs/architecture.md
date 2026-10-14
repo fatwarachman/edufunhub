@@ -140,6 +140,10 @@ mengelolanya di `/admin/subjects`: tambah, ubah nama/ikon/warna, sembunyikan, ur
 - Mapel `tkj` (kelas 10–12) dan 18 soal TKJ bervisual di-seed dari `database/data/tkj-visual-questions.php`.
   Game bertanda TKJ memakai `tags: ['tkj']` di `config/game-catalog.php` (lencana `TkjBadge`, filter "Edisi TKJ").
 
+## Classroom world service (`services/game/cmd/classroom`)
+
+Dunia kelas 3D berjalan di container Go terpisah, `edufunhub-classroom` (`docker compose build classroom`, port internal 8092), dari modul yang sama dengan game (`internal/classroom` + server `internal/classroomsrv`, `Dockerfile.classroom`). Browser tersambung lewat gateway `/game-ws/classroom` → `ws/classroom` dengan token bertanda tangan yang sama (secret `GAME_SERVICE_SECRET`, `game=classroom`, wajib membawa id kelas). Laravel mengeluarkan siswa lewat `POST http://edufunhub-classroom:8092/internal/classroom/kick` (`GAME_SERVICE_CLASSROOM_KICK_URL`, header `X-Game-Timestamp`/`X-Game-Signature`, toleransi 300 dtk; tidak diekspos gateway). Pesan `say` disimpan dengan POST bertanda tangan ke `CLASSROOM_CHAT_URL` (`/api/internal/classroom-chat`).
+
 ## Chat service (`services/chat`)
 
 Chat antar pemain berjalan di container Go terpisah, `edufunhub-chat` (`docker compose build chat`, port internal 8091). Laravel tetap pemilik data: keanggotaan, penyimpanan pesan, notifikasi lonceng. Go hanya mengantar event secara live. Go tidak menyimpan riwayat, dan klien melakukan resync dari Laravel setiap kali tersambung ulang.

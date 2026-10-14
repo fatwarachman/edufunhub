@@ -1,3 +1,4 @@
+import { AiPoints, STUDENT_SECTIONS } from '@/components/classroom/ai-points';
 import {
     AccuracyBar,
     MasteryBadge,
@@ -362,9 +363,11 @@ export default function ClassroomReport({ report }: Props) {
                         <Trophy className="size-4" aria-hidden="true" />
                         {t('classroom.report.aiFeedback')}
                     </h2>
-                    <p className="text-sm leading-relaxed whitespace-pre-line">
-                        {ai_feedback}
-                    </p>
+                    <AiPoints
+                        sections={ai_feedback}
+                        order={STUDENT_SECTIONS}
+                        testId="report-ai-feedback-points"
+                    />
                 </section>
             )}
 

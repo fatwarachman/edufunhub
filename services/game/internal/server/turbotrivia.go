@@ -138,6 +138,9 @@ func (s *Server) serveTurboTrivia(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			err = s.turbo.Join(client, pin, in.Avatar)
+		case "classroom":
+			// The classroom comes from the signed token claim only.
+			err = s.turbo.EnterClassroom(client, at, in.Avatar)
 		case "configure":
 			err = s.turbo.Configure(client, in.Questions)
 		case "set_subject":

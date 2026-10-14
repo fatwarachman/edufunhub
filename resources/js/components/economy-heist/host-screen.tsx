@@ -256,15 +256,11 @@ function HostLobby({
     online: boolean;
     act: Act;
 }) {
-    const { t, i18n } = useTranslations();
-    const [subject, setSubject] = useState<GameSubject>('mix');
+    const { t } = useTranslations();
     const [copied, setCopied] = useState<string | null>(null);
     const link = inviteLink('economy-heist', state.pin ?? '');
     const active = state.players.filter((p) => !p.left);
     const enough = active.length >= state.min_players;
-    const roomSubject = isGameSubject(state.subject ?? '')
-        ? (state.subject as GameSubject)
-        : subject;
 
     const copy = async (kind: string, text: string) => {
         try {
@@ -275,9 +271,6 @@ function HostLobby({
             setCopied(null);
         }
     };
-    const configure = (win: HeistWin, value: number) =>
-        act({ t: 'configure', win, value });
-
     return (
         <div className="grid gap-5 lg:grid-cols-12" data-testid="eh-host-lobby">
             <Panel className="flex flex-col gap-4 lg:col-span-5">
@@ -312,103 +305,7 @@ function HostLobby({
                     </div>
                 </div>
 
-                <fieldset className="flex flex-col gap-2" disabled={!online}>
-                    <legend className="mb-1 text-sm font-black">
-                        {t('economyHeist.winCondition')}
-                    </legend>
-                    <div className="grid grid-cols-2 gap-2">
-                        {(
-                            [
-                                [
-                                    'TIME_LIMIT',
-                                    Timer,
-                                    t('economyHeist.winTime'),
-                                ],
-                                [
-                                    'GOLD_TARGET',
-                                    Coins,
-                                    t('economyHeist.winGold'),
-                                ],
-                            ] as const
-                        ).map(([win, Icon, label]) => (
-                            <button
-                                key={win}
-                                type="button"
-                                aria-pressed={state.win === win}
-                                data-testid={`eh-win-${win}`}
-                                onClick={() =>
-                                    configure(
-                                        win,
-                                        win === 'TIME_LIMIT'
-                                            ? state.minutes
-                                            : state.target_gold,
-                                    )
-                                }
-                                className={cn(
-                                    'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3 text-sm font-black transition-colors',
-                                    state.win === win
-                                        ? 'bg-[#1f2a44] text-white'
-                                        : 'bg-white hover:bg-[#FFF176]',
-                                )}
-                            >
-                                <Icon className="size-4" aria-hidden="true" />
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5" role="group">
-                        {state.win === 'TIME_LIMIT'
-                            ? state.time_limits.map((minutes) => (
-                                  <Chip
-                                      key={minutes}
-                                      active={state.minutes === minutes}
-                                      onClick={() =>
-                                          configure('TIME_LIMIT', minutes)
-                                      }
-                                  >
-                                      {t('economyHeist.minutes', {
-                                          count: minutes,
-                                      })}
-                                  </Chip>
-                              ))
-                            : state.gold_targets.map((gold) => (
-                                  <Chip
-                                      key={gold}
-                                      active={state.target_gold === gold}
-                                      onClick={() =>
-                                          configure('GOLD_TARGET', gold)
-                                      }
-                                  >
-                                      {formatGold(gold, i18n.language)}
-                                  </Chip>
-                              ))}
-                    </div>
-                    <p
-                        className="text-xs font-bold text-slate-600"
-                        data-testid="eh-win-label"
-                    >
-                        {state.win === 'TIME_LIMIT'
-                            ? t('economyHeist.timeLabel', {
-                                  count: state.minutes,
-                              })
-                            : t('economyHeist.targetLabel', {
-                                  amount: formatGold(
-                                      state.target_gold,
-                                      i18n.language,
-                                  ),
-                              })}
-                    </p>
-                </fieldset>
-
-                <SubjectPicker
-                    value={roomSubject}
-                    onChange={(value) => {
-                        setSubject(value);
-                        act({ t: 'set_subject', subject: value });
-                    }}
-                    disabled={!online}
-                    compact
-                />
+                <HeistSettings state={state} online={online} act={act} />
                 {error && <RoomError code={error} />}
                 <div className="flex flex-wrap justify-center gap-2">
                     <Button
@@ -477,6 +374,120 @@ function HostLobby({
     );
 }
 
+/**
+ * Win condition + subject settings shared by the projector lobby and the
+ * classroom captain's lobby on the player pad.
+ */
+export function HeistSettings({
+    state,
+    online,
+    act,
+}: {
+    state: HeistState;
+    online: boolean;
+    act: Act;
+}) {
+    const { t, i18n } = useTranslations();
+    const [subject, setSubject] = useState<GameSubject>('mix');
+    const roomSubject = isGameSubject(state.subject ?? '')
+        ? (state.subject as GameSubject)
+        : subject;
+    const configure = (win: HeistWin, value: number) =>
+        act({ t: 'configure', win, value });
+
+    return (
+        <>
+            <fieldset className="flex flex-col gap-2" disabled={!online}>
+                <legend className="mb-1 text-sm font-black">
+                    {t('economyHeist.winCondition')}
+                </legend>
+                <div className="grid grid-cols-2 gap-2">
+                    {(
+                        [
+                            ['TIME_LIMIT', Timer, t('economyHeist.winTime')],
+                            ['GOLD_TARGET', Coins, t('economyHeist.winGold')],
+                        ] as const
+                    ).map(([win, Icon, label]) => (
+                        <button
+                            key={win}
+                            type="button"
+                            aria-pressed={state.win === win}
+                            data-testid={`eh-win-${win}`}
+                            onClick={() =>
+                                configure(
+                                    win,
+                                    win === 'TIME_LIMIT'
+                                        ? state.minutes
+                                        : state.target_gold,
+                                )
+                            }
+                            className={cn(
+                                'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3 text-sm font-black transition-colors',
+                                state.win === win
+                                    ? 'bg-[#1f2a44] text-white'
+                                    : 'bg-white hover:bg-[#FFF176]',
+                            )}
+                        >
+                            <Icon className="size-4" aria-hidden="true" />
+                            {label}
+                        </button>
+                    ))}
+                </div>
+                <div className="flex flex-wrap gap-1.5" role="group">
+                    {state.win === 'TIME_LIMIT'
+                        ? state.time_limits.map((minutes) => (
+                              <Chip
+                                  key={minutes}
+                                  active={state.minutes === minutes}
+                                  onClick={() =>
+                                      configure('TIME_LIMIT', minutes)
+                                  }
+                              >
+                                  {t('economyHeist.minutes', {
+                                      count: minutes,
+                                  })}
+                              </Chip>
+                          ))
+                        : state.gold_targets.map((gold) => (
+                              <Chip
+                                  key={gold}
+                                  active={state.target_gold === gold}
+                                  onClick={() => configure('GOLD_TARGET', gold)}
+                              >
+                                  {formatGold(gold, i18n.language)}
+                              </Chip>
+                          ))}
+                </div>
+                <p
+                    className="text-xs font-bold text-slate-600"
+                    data-testid="eh-win-label"
+                >
+                    {state.win === 'TIME_LIMIT'
+                        ? t('economyHeist.timeLabel', {
+                              count: state.minutes,
+                          })
+                        : t('economyHeist.targetLabel', {
+                              amount: formatGold(
+                                  state.target_gold,
+                                  i18n.language,
+                              ),
+                          })}
+                </p>
+            </fieldset>
+
+            <SubjectPicker
+                value={roomSubject}
+                onChange={(value) => {
+                    setSubject(value);
+                    act({ t: 'set_subject', subject: value });
+                }}
+                disabled={!online}
+                compact
+            />
+        </>
+    );
+}
+
 function Chip({
     active,
     onClick,
@@ -528,7 +539,7 @@ function CopyButton({
     );
 }
 
-function EndGameButton({ onConfirm }: { onConfirm: () => void }) {
+export function EndGameButton({ onConfirm }: { onConfirm: () => void }) {
     const { t } = useTranslations();
     const [armed, setArmed] = useState(false);
 

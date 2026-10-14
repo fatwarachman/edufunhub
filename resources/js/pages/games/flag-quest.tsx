@@ -8,7 +8,7 @@ import {
 } from '@/components/multiplayer/subject-picker';
 import { OnlineDot } from '@/components/online-dot';
 import PlayerCharacter from '@/components/player-character';
-import { BackButton, NavButton } from '@/components/site-nav';
+import { BackButton, NavButton, useGameBack } from '@/components/site-nav';
 import { useFlagQuestConnection } from '@/hooks/use-flag-quest-connection';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import { useTranslations } from '@/hooks/use-translations';
@@ -103,6 +103,7 @@ export default function FlagQuest({
     wsUrl,
 }: Props) {
     const { t, i18n } = useTranslations();
+    const back = useGameBack();
     const [subject, setSubject] = useState<GameSubject>(() =>
         typeof window === 'undefined' ? 'mix' : rememberedSubject(),
     );
@@ -688,11 +689,7 @@ export default function FlagQuest({
                     </div>
                 </div>
                 <div className="flex gap-1.5">
-                    <BackButton
-                        href="/portal"
-                        label={t('nav.backToPortal')}
-                        iconOnly
-                    />
+                    <BackButton href={back.href} label={back.label} iconOnly />
                     <button
                         type="button"
                         className="fq-icon-btn"
@@ -1023,10 +1020,7 @@ export default function FlagQuest({
                                 )}
                             </p>
                         )}
-                        <BackButton
-                            href="/portal"
-                            label={t('nav.backToPortal')}
-                        />
+                        <BackButton href={back.href} label={back.label} />
                     </div>
                 </div>
             )}
@@ -1123,9 +1117,9 @@ export default function FlagQuest({
                                 {t('flagQuest.complete.next')}
                             </button>
                             <NavButton
-                                href="/portal"
+                                href={back.href}
                                 icon={Trophy}
-                                label={t('nav.backToPortal')}
+                                label={back.label}
                                 className="flex-1"
                             />
                         </div>

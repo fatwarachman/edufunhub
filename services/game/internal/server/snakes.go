@@ -115,6 +115,8 @@ func (s *Server) serveSnakes(w http.ResponseWriter, r *http.Request) {
 			_, ids = s.snakes.Create(claims, now)
 		case "join":
 			ids, err = s.snakes.Enter(claims, in.Pin, now)
+		case "classroom":
+			ids, err = s.snakes.EnterClassroom(claims, now)
 		case "leave":
 			var paid int
 			ids, paid = s.snakes.Leave(claims.Subject, now)

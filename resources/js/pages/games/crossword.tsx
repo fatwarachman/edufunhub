@@ -10,10 +10,11 @@ import {
     RoomError,
     RoomLobby,
     type RoomPayload,
+    RoomPinBadge,
     useRoomPin,
 } from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
+import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
     type CrosswordLevel,
@@ -150,7 +151,7 @@ export default function Crossword({
     pin,
 }: CrosswordProps) {
     const { t, i18n } = useTranslations();
-    const backHref = useGameBackHref();
+    const back = useGameBack();
     const { play, muted, toggleMuted } = useGameAudio();
     const [state, setState] = useState<Received | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -214,7 +215,10 @@ export default function Crossword({
         (code: string) => connection.send({ t: 'join', pin: code }),
         [connection],
     );
-    useRoomPin(online, state?.pin, pin, join);
+    useRoomPin(online, state?.pin, pin, join, {
+        game: 'crossword',
+        classroom: (state as { classroom?: number } | null)?.classroom,
+    });
 
     const playing = state?.phase === 'playing';
     useAdMoments(
@@ -358,6 +362,7 @@ export default function Crossword({
                 createLabel={t('room.create')}
                 onCreate={() => send({ t: 'create', level })}
                 onJoin={(code) => send({ t: 'join', pin: code })}
+                onClassroom={() => send({ t: 'classroom' })}
             >
                 {levels.length > 0 && (
                     <LevelPicker
@@ -404,9 +409,12 @@ export default function Crossword({
                     <div className="flex flex-wrap items-center justify-between gap-2 rounded-3xl border-3 border-[#1f2a44] bg-white p-3 shadow-[4px_4px_0px_#1f2a44]">
                         <div className="flex flex-wrap items-center gap-2">
                             <ConnectionBadge status={connection.status} />
-                            <span className="rounded-xl border-2 border-[#1f2a44] bg-[#FFFDE6] px-3 py-1.5 font-display text-sm font-black tracking-widest">
-                                PIN {state.pin}
-                            </span>
+                            <RoomPinBadge
+                                pin={state.pin}
+                                classroom={
+                                    (state as { classroom?: number }).classroom
+                                }
+                            />
                             <span className="rounded-xl border-2 border-[#1f2a44] bg-[#e0f2fe] px-3 py-1.5 text-xs font-black">
                                 {t('crossword.level.name', {
                                     level: state.level,
@@ -879,8 +887,8 @@ export default function Crossword({
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
-                            href={backHref}
-                            label={t('nav.backToPortal')}
+                            href={back.href}
+                            label={back.label}
                             iconOnly
                         />
                         <BrandLink variant="mark" />

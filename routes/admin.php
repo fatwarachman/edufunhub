@@ -107,6 +107,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::post('/questions/generate', [QuestionGenerationController::class, 'store'])->name('questions.generate.store');
             Route::post('/questions/generate/{generation}/cancel', [QuestionGenerationController::class, 'cancel'])->middleware('throttle:20,1,questions.generate.cancel')->name('questions.generate.cancel');
             Route::post('/users/{user}/ability-assessments', [AbilityAssessmentController::class, 'store'])->middleware('throttle:5,1,users.ability-assessments.store')->name('users.ability-assessments.store');
+            Route::get('/questions/search', [QuestionController::class, 'search'])->middleware('throttle:120,1,questions.search')->name('questions.search');
             Route::post('/questions/bulk', [QuestionController::class, 'bulk'])->middleware('throttle:30,1,questions.bulk')->name('questions.bulk');
             Route::patch('/questions/{question}/toggle', [QuestionController::class, 'toggle'])->name('questions.toggle');
             Route::post('/questions/media', [QuestionMediaController::class, 'store'])->middleware('throttle:30,1,questions.media')->name('questions.media.store');

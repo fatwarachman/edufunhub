@@ -140,6 +140,9 @@ func (s *Server) serveHeist(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			err = s.heist.Join(client, pin, in.Avatar)
+		case "classroom":
+			// Classroom id comes from the signed token claim only.
+			_, err = s.heist.EnterClassroom(client, in.Avatar, at)
 		case "configure":
 			err = s.heist.Configure(client, in.Win, in.Value)
 		case "set_subject":

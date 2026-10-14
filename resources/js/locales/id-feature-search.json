@@ -190,8 +190,8 @@
             "teacherOnly": true
         },
         "portalClassroom": {
-            "href": "/portal/classrooms",
-            "title": "Ruang Kelas (Portal Pemain)",
+            "href": "/my-classrooms",
+            "title": "Kelasku (ruang kelas yang diikuti)",
             "superadminOnly": false,
             "teacherOnly": false
         }

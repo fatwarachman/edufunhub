@@ -7,8 +7,10 @@ import { GameFinale, podiumStandings } from '@/components/game-finale';
 import {
     ConnectionBadge,
     inviteLink,
+    markClassroomRoom,
     RoomEntry,
     RoomError,
+    RoomPinBadge,
     useRoomPin,
 } from '@/components/multiplayer/room';
 import {
@@ -18,7 +20,7 @@ import {
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { QuestionMedia } from '@/components/question-media';
-import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
+import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
     type FloorRanking,
@@ -150,7 +152,7 @@ export default function FloorDrop({
     role,
 }: FloorDropProps) {
     const { t, i18n } = useTranslations();
-    const backHref = useGameBackHref();
+    const back = useGameBack();
     const { play, muted, toggleMuted } = useGameAudio();
     const [error, setError] = useState<string | null>(null);
     const playRef = useRef(play);
@@ -172,7 +174,9 @@ export default function FloorDrop({
         }
     }, []);
     const onError = useCallback((code: string) => setError(code), []);
-    const chosenRole: FloorRole | null = role ?? (pin ? 'player' : null);
+    // A classroom opens straight as a player: no role picker, no PIN.
+    const chosenRole: FloorRole | null =
+        role ?? (pin || back.inClassroom ? 'player' : null);
     const { state, status, send } = useFloorDrop(
         serviceReady && chosenRole ? wsUrl : null,
         chosenRole ?? 'player',
@@ -195,12 +199,21 @@ export default function FloorDrop({
         (code: string) => send({ t: 'join_room', pin: code }),
         [send],
     );
+    const classroom = classroomOf(state);
+    const isCaptain =
+        classroom > 0 &&
+        state.you !== undefined &&
+        captainOf(state) === state.you.user_id;
+    // Classroom rooms are never shared by PIN: keep it out of the URL.
     useRoomPin(
         online && chosenRole === 'player',
-        state.pin,
+        classroom > 0 ? undefined : state.pin,
         chosenRole === 'player' ? pin : null,
         join,
     );
+    if (state.pin && classroom > 0) {
+        markClassroomRoom('floor-drop');
+    }
 
     const playing = !['NONE', 'LOBBY', 'GAME_OVER'].includes(state.phase);
     useAdMoments(
@@ -237,6 +250,8 @@ export default function FloorDrop({
                 online={online}
                 name={player.name}
                 act={act}
+                classroom={classroom}
+                isCaptain={isCaptain}
             />
         );
     }
@@ -257,8 +272,8 @@ export default function FloorDrop({
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
-                            href={backHref}
-                            label={t('nav.backToPortal')}
+                            href={back.href}
+                            label={back.label}
                             iconOnly
                         />
                         <BrandLink variant="mark" />
@@ -340,13 +355,23 @@ export default function FloorDrop({
                     (row) => t('floorDrop.accuracy', { value: row.accuracy }),
                 )}
                 onPlayAgain={
-                    chosenRole === 'host'
+                    chosenRole === 'host' || isCaptain
                         ? () => act({ t: 'start_game' })
                         : undefined
                 }
             />
         </div>
     );
+}
+
+/** Classroom id of the room (0 for PIN rooms), sent in `state_sync`. */
+function classroomOf(state: FloorState): number {
+    return (state as { classroom?: number }).classroom ?? 0;
+}
+
+/** Player hosting a classroom room (no host screen there). */
+function captainOf(state: FloorState): number {
+    return (state as { captain?: number }).captain ?? 0;
 }
 
 function chooseRole(role: FloorRole) {
@@ -699,37 +724,7 @@ function HostScreen({
                             {active.length}/{state.max_players}
                         </span>
                     </h2>
-                    {active.length === 0 ? (
-                        <p className="rounded-2xl border-2 border-dashed border-[#1f2a44]/40 px-4 py-10 text-center text-sm font-bold text-slate-600">
-                            {t('floorDrop.waitingPlayers')}
-                        </p>
-                    ) : (
-                        <ul
-                            className="grid grid-cols-3 gap-2 sm:grid-cols-5 xl:grid-cols-6"
-                            data-testid="fd-lobby-players"
-                        >
-                            {active.map((p) => (
-                                <li
-                                    key={p.user_id}
-                                    className={cn(
-                                        'flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 border-[#1f2a44] bg-white p-1.5',
-                                        !p.online && 'opacity-50',
-                                    )}
-                                >
-                                    <span className="size-12">
-                                        <PlayerAvatar
-                                            character={p.character}
-                                            seat={p.user_id}
-                                            userId={p.user_id}
-                                        />
-                                    </span>
-                                    <span className="w-full truncate text-center text-xs font-black">
-                                        {p.name}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                    <LobbyRoster players={active} />
                 </Panel>
             </div>
         );
@@ -831,6 +826,57 @@ function HostScreen({
             {error && <RoomError code={error} />}
             <EndGameButton onConfirm={() => act({ t: 'leave_room' })} />
         </div>
+    );
+}
+
+/** Players seated in the lobby (host screen and classroom lobby). */
+function LobbyRoster({
+    players,
+    captain,
+}: {
+    players: FloorState['players'];
+    captain?: number;
+}) {
+    const { t } = useTranslations();
+    if (players.length === 0) {
+        return (
+            <p className="rounded-2xl border-2 border-dashed border-[#1f2a44]/40 px-4 py-10 text-center text-sm font-bold text-slate-600">
+                {t('floorDrop.waitingPlayers')}
+            </p>
+        );
+    }
+    return (
+        <ul
+            className="grid grid-cols-3 gap-2 sm:grid-cols-5 xl:grid-cols-6"
+            data-testid="fd-lobby-players"
+        >
+            {players.map((p) => (
+                <li
+                    key={p.user_id}
+                    className={cn(
+                        'relative flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 border-[#1f2a44] bg-white p-1.5',
+                        !p.online && 'opacity-50',
+                    )}
+                >
+                    {captain !== undefined && p.user_id === captain && (
+                        <Crown
+                            className="absolute top-1 right-1 size-4 fill-[#ffd93d] text-[#b45309]"
+                            aria-label={t('room.host')}
+                        />
+                    )}
+                    <span className="size-12">
+                        <PlayerAvatar
+                            character={p.character}
+                            seat={p.user_id}
+                            userId={p.user_id}
+                        />
+                    </span>
+                    <span className="w-full truncate text-center text-xs font-black">
+                        {p.name}
+                    </span>
+                </li>
+            ))}
+        </ul>
     );
 }
 
@@ -1212,6 +1258,8 @@ function PlayerScreen({
     online,
     name,
     act,
+    classroom,
+    isCaptain,
 }: {
     state: FloorState;
     status: ReturnType<typeof useFloorDrop>['status'];
@@ -1219,8 +1267,13 @@ function PlayerScreen({
     online: boolean;
     name: string;
     act: (msg: Record<string, unknown>) => void;
+    /** Classroom id of the room; > 0 means a classroom room without PIN. */
+    classroom: number;
+    /** This player hosts the classroom room (start, subject, settings). */
+    isCaptain: boolean;
 }) {
     const { t } = useTranslations();
+    const back = useGameBack();
 
     if (state.phase === 'NONE' || !state.pin) {
         return (
@@ -1233,6 +1286,7 @@ function PlayerScreen({
                     createLabel={t('floorDrop.openHost')}
                     onCreate={() => chooseRole('host')}
                     onJoin={(code) => act({ t: 'join_room', pin: code })}
+                    onClassroom={() => act({ t: 'classroom' })}
                 >
                     {state.closed && state.closed !== 'idle' && (
                         <p className="text-xs font-bold text-slate-600">
@@ -1249,7 +1303,16 @@ function PlayerScreen({
     const leave = (
         <Button
             variant="ghost"
-            onClick={() => act({ t: 'leave_room' })}
+            onClick={() => {
+                act({ t: 'leave_room' });
+                if (classroom > 0) {
+                    // Back to the classroom even if the reply is lost.
+                    window.setTimeout(
+                        () => window.location.assign(back.href),
+                        800,
+                    );
+                }
+            }}
             data-testid="fd-leave"
             className="min-h-11 self-center rounded-xl border-2 border-[#1f2a44]/20 bg-white/70 px-4 text-xs font-bold text-slate-700"
         >
@@ -1261,9 +1324,13 @@ function PlayerScreen({
         <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
                 <ConnectionBadge status={status} />
-                <span className="rounded-xl border-2 border-[#1f2a44] bg-[#FFFDE6] px-3 py-1.5 font-display text-sm font-black tracking-widest">
-                    PIN {state.pin}
-                </span>
+                {classroom > 0 ? (
+                    <RoomPinBadge pin={state.pin} classroom={classroom} />
+                ) : (
+                    <span className="rounded-xl border-2 border-[#1f2a44] bg-[#FFFDE6] px-3 py-1.5 font-display text-sm font-black tracking-widest">
+                        PIN {state.pin}
+                    </span>
+                )}
             </div>
             {state.phase !== 'LOBBY' && state.phase !== 'GAME_OVER' && (
                 <span className="flex flex-wrap items-center gap-2 font-display text-sm font-black">
@@ -1276,6 +1343,92 @@ function PlayerScreen({
             )}
         </div>
     );
+
+    if (state.phase === 'LOBBY' && classroom > 0) {
+        const active = state.players.filter((p) => !p.left);
+        const enough = active.length >= state.min_players;
+        const subject = isGameSubject(state.subject ?? '')
+            ? (state.subject as GameSubject)
+            : 'mix';
+        return (
+            <div
+                className="grid gap-5 lg:grid-cols-12"
+                data-testid="fd-classroom-lobby"
+                data-captain={isCaptain ? 'true' : 'false'}
+            >
+                <Panel className="flex flex-col gap-4 lg:col-span-5">
+                    {top}
+                    <h2 className="font-display text-xl font-black">
+                        {t('room.classroom.title', {
+                            name: back.classroomName ?? '',
+                        })}
+                    </h2>
+                    {isCaptain ? (
+                        <>
+                            <p className="text-sm font-bold text-slate-600">
+                                {t('room.classroom.hostHint', {
+                                    min: state.min_players,
+                                })}
+                            </p>
+                            <SubjectPicker
+                                value={subject}
+                                onChange={(value) =>
+                                    act({ t: 'set_subject', subject: value })
+                                }
+                                disabled={!online}
+                                compact
+                            />
+                            <HostSettings
+                                state={state}
+                                disabled={!online}
+                                players={active.length}
+                                onChange={(settings) =>
+                                    act({ t: 'set_settings', ...settings })
+                                }
+                            />
+                        </>
+                    ) : (
+                        <p className="text-sm font-bold text-slate-600">
+                            {t('room.classroom.playerHint')}
+                        </p>
+                    )}
+                    {error && <RoomError code={error} />}
+                    {isCaptain ? (
+                        <Button
+                            onClick={() => act({ t: 'start_game' })}
+                            disabled={!online || !enough}
+                            data-testid="fd-start"
+                            className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-6 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
+                        >
+                            <Play className="size-5" />
+                            {enough
+                                ? t('floorDrop.start')
+                                : t('floorDrop.needPlayers', {
+                                      min: state.min_players,
+                                  })}
+                        </Button>
+                    ) : (
+                        <p
+                            className="text-center font-display text-lg font-black"
+                            data-testid="fd-waiting"
+                        >
+                            {t('room.waitingHost')}
+                        </p>
+                    )}
+                    {leave}
+                </Panel>
+                <Panel className="flex flex-col gap-3 lg:col-span-7">
+                    <h2 className="flex items-center justify-between gap-2 font-display text-lg font-black">
+                        {t('floorDrop.joined')}
+                        <span className="text-sm tabular-nums">
+                            {active.length}/{state.max_players}
+                        </span>
+                    </h2>
+                    <LobbyRoster players={active} captain={captainOf(state)} />
+                </Panel>
+            </div>
+        );
+    }
 
     if (state.phase === 'LOBBY') {
         return (
@@ -1350,9 +1503,22 @@ function PlayerScreen({
                 <div className="w-full text-left">
                     <Podium state={state} />
                 </div>
-                <p className="text-xs font-bold text-slate-600">
-                    {t('floorDrop.waitingHost')}
-                </p>
+                {isCaptain ? (
+                    <Button
+                        onClick={() => act({ t: 'start_game' })}
+                        disabled={!online}
+                        data-testid="fd-again"
+                        className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#1f2a44] px-6 font-display font-black text-white shadow-[3px_3px_0px_#FF9E44]"
+                    >
+                        <Play className="size-5" />
+                        {t('floorDrop.again')}
+                    </Button>
+                ) : (
+                    <p className="text-xs font-bold text-slate-600">
+                        {t('floorDrop.waitingHost')}
+                    </p>
+                )}
+                {error && <RoomError code={error} />}
                 <AdSlot placement="arena.result" className="w-full max-w-md" />
                 {leave}
             </Panel>

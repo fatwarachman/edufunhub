@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'search_min' => 'Ketik minimal 2 karakter untuk mencari.',
+    'search_max' => 'Teks pencarian maksimal 100 karakter.',
     'created' => 'Soal berhasil dibuat.',
     'updated' => 'Soal berhasil diperbarui.',
     'deleted' => 'Soal berhasil dihapus.',

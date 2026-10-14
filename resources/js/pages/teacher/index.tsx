@@ -1,3 +1,4 @@
+import { useGameCatalog } from '@/components/classroom/classroom-ui';
 import { NavButton } from '@/components/site-nav';
 import {
     GradeChips,
@@ -90,6 +91,7 @@ export default function TeacherIndex({
     grades,
 }: TeacherIndexProps) {
     const { t } = useTranslations();
+    const games = useGameCatalog();
     const format = useTeacherFormat();
     const { summary } = overview;
 
@@ -131,7 +133,7 @@ export default function TeacherIndex({
             <SuccessNotice />
 
             <section
-                className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5"
+                className="grid grid-cols-2 gap-2.5 sm:gap-4 xl:grid-cols-5"
                 aria-label={t('teacher.heading')}
             >
                 <StatCard
@@ -181,6 +183,7 @@ export default function TeacherIndex({
                         count: summary.correct,
                     })}
                     testId="teacher-stat-compensation"
+                    className="col-span-2 xl:col-span-1"
                 />
             </section>
 
@@ -190,9 +193,7 @@ export default function TeacherIndex({
                     icon={Gamepad2}
                     rows={overview.byGame.map((row) => ({
                         key: row.label,
-                        label: t(`teacher.games.${row.label}`, {
-                            defaultValue: row.label,
-                        }),
+                        label: games.title(row.label),
                         stats: row,
                     }))}
                     testId="teacher-by-game"
@@ -322,25 +323,25 @@ function RatesCard({ rates }: { rates: Record<string, number> }) {
                     {t('teacher.rates.note')}
                 </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
                 {GRADE_LEVELS.map((level) => (
                     <div
                         key={level.key}
-                        className="flex flex-col gap-2 rounded-xl border-2 border-[#151b2e] bg-white p-3"
+                        className="flex min-w-0 flex-col gap-2 rounded-xl border-2 border-[#151b2e] bg-white p-2.5 sm:p-3"
                     >
                         <p className="text-sm font-bold">
                             {t(`teacher.levels.${level.key}`)}
                         </p>
-                        <ul className="flex flex-col gap-1 text-sm">
+                        <ul className="flex flex-col gap-1 text-xs sm:text-sm">
                             {level.grades.map((grade) => (
                                 <li
                                     key={grade}
-                                    className="flex justify-between gap-2"
+                                    className="flex flex-wrap justify-between gap-x-2"
                                 >
                                     <span className="text-muted-foreground">
                                         {gradeLabel(t, grade)}
                                     </span>
-                                    <span className="font-bold tabular-nums">
+                                    <span className="ml-auto font-bold whitespace-nowrap tabular-nums">
                                         {format.money(rates[grade] ?? 0)}
                                     </span>
                                 </li>
@@ -367,6 +368,7 @@ function QuestionList({
     const { t, i18n } = useTranslations();
     const subjectName = useSubjectName();
     const format = useTeacherFormat();
+    const games = useGameCatalog();
     const [search, setSearch] = useState(filters.search ?? '');
     const hasFilters = Boolean(
         filters.search || filters.subject || filters.grade !== undefined,
@@ -584,9 +586,7 @@ function QuestionList({
                                             {t('teacher.list.playedIn')}:{' '}
                                             {question.stats.games
                                                 .map((game) =>
-                                                    t(`teacher.games.${game}`, {
-                                                        defaultValue: game,
-                                                    }),
+                                                    games.title(game),
                                                 )
                                                 .join(', ')}
                                             {question.stats.grades.length >

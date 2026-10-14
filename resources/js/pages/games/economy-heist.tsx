@@ -14,8 +14,8 @@ import {
     Panel,
 } from '@/components/economy-heist/shared';
 import { GameFinale, podiumStandings } from '@/components/game-finale';
-import { useRoomPin } from '@/components/multiplayer/room';
-import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
+import { markClassroomRoom, useRoomPin } from '@/components/multiplayer/room';
+import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import {
     type HeistAction,
     type HeistRole,
@@ -69,7 +69,7 @@ export default function EconomyHeist({
     role,
 }: EconomyHeistProps) {
     const { t, i18n } = useTranslations();
-    const backHref = useGameBackHref();
+    const back = useGameBack();
     const { play, muted, toggleMuted } = useGameAudio();
     const [error, setError] = useState<string | null>(null);
     const [notice, setNotice] = useState<HeistNotice | null>(null);
@@ -173,7 +173,9 @@ export default function EconomyHeist({
         [player.id, show],
     );
     const onError = useCallback((code: string) => setError(code), []);
-    const chosenRole: HeistRole | null = role ?? (pin ? 'player' : null);
+    // A game opened from a classroom skips the role picker: always a player.
+    const chosenRole: HeistRole | null =
+        role ?? (pin || back.inClassroom ? 'player' : null);
     const { state, status, send } = useEconomyHeist(
         serviceReady && chosenRole ? wsUrl : null,
         chosenRole ?? 'player',
@@ -201,10 +203,19 @@ export default function EconomyHeist({
             }),
         [send, player.id, player.name, player.character],
     );
+    const { classroom = 0, captain = 0 } = state as {
+        classroom?: number;
+        captain?: number;
+    };
+    const isCaptain = classroom > 0 && captain === player.id;
+    if (state.pin && classroom > 0) {
+        markClassroomRoom('economy-heist');
+    }
+    // Classroom rooms are never shared by PIN: keep it out of the address bar.
     useRoomPin(
         online && chosenRole === 'player',
-        state.pin,
-        chosenRole === 'player' ? pin : null,
+        classroom > 0 ? undefined : state.pin,
+        chosenRole === 'player' && !back.inClassroom ? pin : null,
         join,
     );
 
@@ -256,6 +267,7 @@ export default function EconomyHeist({
                     }
                 }}
                 onHost={() => chooseRole('host')}
+                userId={player.id}
             />
         );
     }
@@ -276,8 +288,8 @@ export default function EconomyHeist({
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
-                            href={backHref}
-                            label={t('nav.backToPortal')}
+                            href={back.href}
+                            label={back.label}
                             iconOnly
                         />
                         <BrandLink variant="mark" />
@@ -358,7 +370,7 @@ export default function EconomyHeist({
                     (row) => t('economyHeist.gold', { amount: row.gold }),
                 )}
                 onPlayAgain={
-                    chosenRole === 'host'
+                    chosenRole === 'host' || isCaptain
                         ? () => act({ t: 'start_game' })
                         : undefined
                 }

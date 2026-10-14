@@ -11,7 +11,9 @@ use App\Models\QuestionAnswer;
 use App\Models\QuestionCompensationRate;
 use App\Models\SequenceAttempt;
 use App\Models\User;
+use App\Services\Ai\AutoAbilityAssessment;
 use App\Services\Classrooms\ClassroomContext;
+use App\Services\Classrooms\ClassroomPlayLimit;
 use App\Services\MatchRecorder;
 use App\Services\PlayerBadges;
 use App\Services\PlayerNotifications;
@@ -39,6 +41,9 @@ class GameResultController extends Controller
         $totalBefore = $portal->totalPoints($user);
 
         $classroom = app(ClassroomContext::class)->currentFor($user, $data['game_key']);
+        if ($classroom !== null && app(ClassroomPlayLimit::class)->remaining($classroom, $user, $data['game_key']) === 0) {
+            $classroom = null;
+        }
 
         $history = DB::transaction(function () use ($user, $data, $locale, $profile, $matches, $classroom): GameHistory {
             $history = $user->gameHistories()->create([
@@ -85,7 +90,7 @@ class GameResultController extends Controller
         $badges->evaluate($user);
 
         try {
-            app(\App\Services\Ai\AutoAbilityAssessment::class)->check($user, $history->played_at);
+            app(AutoAbilityAssessment::class)->check($user, $history->played_at);
         } catch (Throwable $exception) {
             report($exception);
         }

@@ -7,6 +7,11 @@ import {
     RatSprite,
 } from '@/components/monster-cafe/art';
 import {
+    CafeSettings,
+    EndGameButton,
+    MAX_PLAYERS,
+} from '@/components/monster-cafe/host-screen';
+import {
     clock,
     CoinValue,
     Leaderboard,
@@ -24,6 +29,7 @@ import {
     ConnectionBadge,
     RoomEntry,
     RoomError,
+    RoomPinBadge,
 } from '@/components/multiplayer/room';
 import {
     isGameSubject,
@@ -32,6 +38,7 @@ import {
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { QuestionMedia } from '@/components/question-media';
+import { useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
     type Ingredient,
@@ -61,6 +68,7 @@ import {
     OctagonX,
     Play,
     RotateCcw,
+    School,
     Timer,
     Trash2,
     Trophy,
@@ -84,6 +92,9 @@ const PLATE_MAX = 6;
 /** Wrong-answer cooldown of the contract (ring scale). */
 const COOLDOWN_MS = 2000;
 
+/** Classroom fields of `state_sync` (room without a host screen). */
+type ClassroomSync = { classroom?: number; captain?: number };
+
 export interface CafeNotice {
     id: number;
     tone: 'good' | 'bad' | 'info';
@@ -105,6 +116,7 @@ export function PlayerScreen({
     onHost,
     solo = false,
     onCreateSolo,
+    userId,
 }: {
     state: MonsterCafeState;
     status: MonsterCafeStatus;
@@ -120,9 +132,16 @@ export function PlayerScreen({
     /** Solo kitchen page (`?role=solo`): the player owns the room. */
     solo?: boolean;
     onCreateSolo?: () => void;
+    /** Signed-in user; the classroom captain gets the host controls. */
+    userId?: number;
 }) {
     const { t } = useTranslations();
+    const back = useGameBack();
     const isSolo = solo || state.solo === true;
+    const { classroom = 0, captain = 0 } = state as MonsterCafeState &
+        ClassroomSync;
+    const inClassroom = classroom > 0 && !isSolo;
+    const isCaptain = inClassroom && captain > 0 && captain === userId;
 
     if (solo && state.phase === 'NONE') {
         return (
@@ -167,6 +186,15 @@ export function PlayerScreen({
                 createLabel={t('monsterCafe.page.openHost')}
                 onCreate={onHost}
                 onJoin={onJoin}
+                onClassroom={
+                    solo
+                        ? undefined
+                        : () =>
+                              act({
+                                  t: 'classroom',
+                                  avatar: character ?? null,
+                              })
+                }
             >
                 {state.closed && state.closed !== 'idle' && (
                     <p className="text-xs font-bold text-slate-600">
@@ -188,7 +216,12 @@ export function PlayerScreen({
     ) : (
         <RoomLeaveControl
             isHost={false}
-            onLeave={() => act({ t: 'leave_room' })}
+            onLeave={() => {
+                act({ t: 'leave_room' });
+                if (inClassroom) {
+                    window.location.assign(back.href);
+                }
+            }}
             onStop={() => {}}
             testId="mc-leave"
             className="rounded-xl border-2 border-[#1f2a44]/20 bg-white/70 px-4 text-slate-700"
@@ -203,6 +236,21 @@ export function PlayerScreen({
                 error={error}
                 online={online}
                 act={act}
+                leave={leave}
+            />
+        );
+    }
+
+    if (state.phase === 'LOBBY' && inClassroom) {
+        return (
+            <ClassroomLobby
+                state={state}
+                status={status}
+                error={error}
+                online={online}
+                act={act}
+                isCaptain={isCaptain}
+                classroomName={back.classroomName ?? ''}
                 leave={leave}
             />
         );
@@ -298,11 +346,24 @@ export function PlayerScreen({
                         <RotateCcw className="size-5" aria-hidden="true" />
                         {t('monsterCafe.player.soloAgain')}
                     </Button>
+                ) : isCaptain ? (
+                    <Button
+                        onClick={() => act({ t: 'start_game' })}
+                        disabled={!online}
+                        data-testid="mc-again"
+                        className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#ea580c] px-6 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#c2410c] disabled:bg-[#fed7aa] disabled:text-[#1f2a44] disabled:opacity-100"
+                    >
+                        <RotateCcw className="size-5" aria-hidden="true" />
+                        {t('monsterCafe.host.again')}
+                    </Button>
                 ) : (
                     <p className="text-xs font-bold text-slate-600">
-                        {t('monsterCafe.player.waitingHost')}
+                        {inClassroom
+                            ? t('room.waitingHost')
+                            : t('monsterCafe.player.waitingHost')}
                     </p>
                 )}
+                {error && inClassroom && <RoomError code={error} />}
                 <AdSlot placement="arena.result" className="w-full max-w-md" />
                 {leave}
             </Panel>
@@ -356,7 +417,127 @@ export function PlayerScreen({
                     </div>
                 </details>
             )}
+            {isCaptain && (
+                <EndGameButton onConfirm={() => act({ t: 'end_game' })} />
+            )}
             {leave}
+        </div>
+    );
+}
+
+/**
+ * Lobby of a classroom room (no host screen): classroom badge instead of a
+ * PIN, classmates list, and the kitchen settings + Start for the captain.
+ */
+function ClassroomLobby({
+    state,
+    status,
+    error,
+    online,
+    act,
+    isCaptain,
+    classroomName,
+    leave,
+}: {
+    state: MonsterCafeState & ClassroomSync;
+    status: MonsterCafeStatus;
+    error: string | null;
+    online: boolean;
+    act: MonsterCafeSend;
+    isCaptain: boolean;
+    classroomName: string;
+    leave: ReactNode;
+}) {
+    const { t } = useTranslations();
+    const active = state.roster.filter((p) => !p.left);
+    return (
+        <div
+            className="mx-auto w-full max-w-2xl"
+            data-testid="mc-classroom-lobby"
+        >
+            <Panel className="flex flex-col gap-4" testId="mc-lobby">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <ConnectionBadge status={status} />
+                    <RoomPinBadge
+                        pin={state.pin ?? ''}
+                        classroom={state.classroom}
+                    />
+                </div>
+                <div className="flex min-w-0 items-start gap-3 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#e9fbf3] p-3 text-left sm:p-4">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5]">
+                        <School className="size-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                        <p className="text-sm font-black break-words">
+                            {t('room.classroom.title', { name: classroomName })}
+                        </p>
+                        <p className="mt-0.5 text-xs font-bold text-slate-600">
+                            {isCaptain
+                                ? t('room.classroom.hostHint', { min: 1 })
+                                : t('room.classroom.playerHint')}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                    <h2 className="flex items-center justify-between gap-2 font-display text-lg font-black">
+                        {t('monsterCafe.host.joined')}
+                        <span className="text-sm tabular-nums">
+                            {active.length}/{MAX_PLAYERS}
+                        </span>
+                    </h2>
+                    <ul
+                        className="grid grid-cols-3 gap-2 sm:grid-cols-5"
+                        data-testid="mc-lobby-players"
+                    >
+                        {active.map((p) => (
+                            <li
+                                key={p.user_id}
+                                className={cn(
+                                    'flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 border-[#1f2a44] bg-white p-1.5',
+                                    !p.online && 'opacity-50',
+                                )}
+                            >
+                                <span className="size-12">
+                                    <PlayerAvatar
+                                        character={p.character}
+                                        seat={p.user_id}
+                                        userId={p.user_id}
+                                    />
+                                </span>
+                                <span className="w-full truncate text-center text-xs font-black">
+                                    {p.name}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                {isCaptain ? (
+                    <>
+                        <CafeSettings state={state} online={online} act={act} />
+                        <Button
+                            onClick={() => act({ t: 'start_game' })}
+                            disabled={!online || active.length < 1}
+                            data-testid="mc-start"
+                            className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#ea580c] px-6 font-display text-lg font-black whitespace-normal text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#c2410c] disabled:bg-[#fed7aa] disabled:text-[#1f2a44] disabled:opacity-100"
+                        >
+                            <Play
+                                className="size-5 shrink-0"
+                                aria-hidden="true"
+                            />
+                            {t('monsterCafe.host.start')}
+                        </Button>
+                    </>
+                ) : (
+                    <p
+                        className="text-center font-display text-lg font-black"
+                        data-testid="mc-waiting"
+                    >
+                        {t('room.waitingHost')}
+                    </p>
+                )}
+                {error && <RoomError code={error} />}
+                {leave}
+            </Panel>
         </div>
     );
 }

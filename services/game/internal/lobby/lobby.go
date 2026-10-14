@@ -41,6 +41,8 @@ var (
 	ErrLocalLimit = errors.New("local_limit")
 	ErrNotLocal   = errors.New("not_local")
 	ErrAnswerTime = errors.New("invalid_answer_time")
+	// ErrNoClassroom: the signed token carries no classroom claim.
+	ErrNoClassroom = errors.New("no_classroom")
 )
 
 // Config bounds a game's rooms.
@@ -78,7 +80,10 @@ type Room[S, P any] struct {
 	// AnswerSeconds is the host's answer time per question (0 = the game's
 	// default). Games that time their questions read it via AnswerTime.
 	AnswerSeconds int
-	Game          S
+	// ClassroomID marks a classroom room (0 = normal PIN room): players of
+	// that classroom (signed claim) join it without a PIN, nobody else may.
+	ClassroomID int64
+	Game        S
 }
 
 // AnswerTimes are the answer times (seconds) a host can pick; 0 keeps the
@@ -284,11 +289,13 @@ func (h *Hub[S, P]) Create(claims auth.Claims, now time.Time, init func(r *Room[
 
 // Enter joins the room with the given PIN. Optional prepare callbacks run
 // under the lock after membership checks, before a new seat is appended.
+// Classroom rooms only accept players of the same classroom; for anyone else
+// they do not exist.
 func (h *Hub[S, P]) Enter(claims auth.Claims, pin string, now time.Time, prepare ...func(*Room[S, P])) ([]int64, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	r, ok := h.rooms[pin]
-	if !ok {
+	if !ok || (r.ClassroomID > 0 && claims.Classroom != r.ClassroomID) {
 		return nil, ErrNotFound
 	}
 	if r.SeatIndex(claims.Subject) >= 0 {
@@ -310,7 +317,54 @@ func (h *Hub[S, P]) Enter(claims auth.Claims, pin string, now time.Time, prepare
 	return append(affected, r.Humans()...), nil
 }
 
-// AddLocal adds a pass-and-play seat on the host's device.
+// EnterClassroom seats claims in the shared room of their classroom (signed
+// claim only). A player already seated there stays (reload safe). Else they
+// join an open room of the classroom (lobby or done, not full); when several
+// match, the fullest wins (ties: lowest PIN). Without one a new room is
+// created with claims as host and init run, like Create. Optional prepare
+// callbacks run under the lock before joining an existing room, like Enter.
+func (h *Hub[S, P]) EnterClassroom(claims auth.Claims, now time.Time, init func(r *Room[S, P]), prepare ...func(*Room[S, P])) ([]int64, error) {
+	if claims.Classroom <= 0 {
+		return nil, ErrNoClassroom
+	}
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	if r := h.roomOf(claims.Subject); r != nil && r.ClassroomID == claims.Classroom && r.SeatIndex(claims.Subject) >= 0 {
+		return r.Humans(), nil
+	}
+	var best *Room[S, P]
+	for _, r := range h.rooms {
+		if r.ClassroomID != claims.Classroom || (r.Phase != PhaseLobby && r.Phase != PhaseDone) || r.Active() >= h.cfg.Max {
+			continue
+		}
+		if best == nil || r.Active() > best.Active() || (r.Active() == best.Active() && r.Pin < best.Pin) {
+			best = r
+		}
+	}
+	affected := h.leaveLocked(claims.Subject, now)
+	if best != nil {
+		if _, alive := h.rooms[best.Pin]; alive {
+			for _, fn := range prepare {
+				fn(best)
+			}
+			best.Seats = append(best.Seats, &Seat[P]{Claims: claims})
+			best.Touch(now)
+			h.members[claims.Subject] = best.Pin
+			return append(affected, best.Humans()...), nil
+		}
+	}
+	pin := h.newPin()
+	r := &Room[S, P]{Pin: pin, Host: claims.Subject, Phase: PhaseLobby, Touched: now, ClassroomID: claims.Classroom, Seats: []*Seat[P]{{Claims: claims}}}
+	if init != nil {
+		init(r)
+	}
+	h.rooms[pin] = r
+	h.members[claims.Subject] = pin
+	return append(affected, claims.Subject), nil
+}
+
+// AddLocal adds a pass-and-play seat on the host's device. Classroom rooms
+// list real accounts only, so they take no local seats.
 func (h *Hub[S, P]) AddLocal(uid int64, name string, now time.Time) ([]int64, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -318,7 +372,7 @@ func (h *Hub[S, P]) AddLocal(uid int64, name string, now time.Time) ([]int64, er
 	if r == nil {
 		return nil, ErrNoRoom
 	}
-	if !h.cfg.Local {
+	if !h.cfg.Local || r.ClassroomID > 0 {
 		return nil, ErrLocalLimit
 	}
 	if r.Host != uid {
@@ -487,11 +541,12 @@ type Presence struct {
 
 // PhaseOf reports the phase of the room with the given PIN, if it exists
 // (PIN lookup: "join with a code" without choosing the game first).
+// Classroom rooms are hidden: they are joined from the classroom, never by PIN.
 func (h *Hub[S, P]) PhaseOf(pin string) (string, bool) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	r, ok := h.rooms[pin]
-	if !ok {
+	if !ok || r.ClassroomID > 0 {
 		return "", false
 	}
 	return r.Phase, true
@@ -722,6 +777,39 @@ func (h *Hub[S, P]) Dissolve(uid int64) []int64 {
 	return ids
 }
 
+// CloseClassroom removes every room of classroom id (the teacher ended the
+// classroom) and returns the account holders who were seated there, so the
+// caller can tell them. Optional drop callbacks run under the lock first for
+// rooms that were still playing (settle unfinished games). Normal PIN rooms
+// are never touched.
+func (h *Hub[S, P]) CloseClassroom(id int64, drop ...func(r *Room[S, P])) []int64 {
+	if id <= 0 {
+		return nil
+	}
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	var ids []int64
+	for pin, r := range h.rooms {
+		if r.ClassroomID != id {
+			continue
+		}
+		if r.Phase == PhasePlaying {
+			for _, fn := range drop {
+				fn(r)
+			}
+		}
+		for _, uid := range r.Humans() {
+			if h.members[uid] == pin {
+				delete(h.members, uid)
+			}
+			ids = append(ids, uid)
+		}
+		delete(h.rooms, pin)
+		delete(h.away, pin)
+	}
+	return ids
+}
+
 // Message is a JSON object.
 type Message = map[string]any
 
@@ -759,6 +847,7 @@ func (h *Hub[S, P]) RoomPayload(r *Room[S, P], viewer int64, extra func(i int, s
 		"pin": r.Pin, "seq": r.Seq, "phase": r.Phase, "host": host, "you": you, "subject": subjectOrMix(r.Subject),
 		"players": players, "min_players": h.cfg.Min, "max_players": h.cfg.Max,
 		"local_seats": h.cfg.Local, "answer_seconds": r.AnswerSeconds, "answer_times": AnswerTimes,
+		"classroom": r.ClassroomID,
 	}
 }
 

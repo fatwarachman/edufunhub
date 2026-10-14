@@ -5,6 +5,7 @@ namespace App\Services\Classrooms;
 use App\Models\Classroom;
 use App\Models\ClassroomMember;
 use App\Models\Question;
+use App\Services\Ai\ClassroomAiText;
 use Illuminate\Support\Facades\DB;
 
 class ClassroomReport
@@ -123,7 +124,7 @@ class ClassroomReport
             ->filter(fn ($row): bool => (int) $row->answered >= 3)
             ->sortBy(fn ($row): float => (int) $row->answered > 0 ? (int) $row->correct / (int) $row->answered : 1)
             ->take(50)
-            ->map(function ($row): array {
+            ->map(function ($row) use ($classroom): array {
                 $answered = (int) $row->answered;
                 $correct = (int) $row->correct;
                 $acc = $answered > 0 ? round($correct / $answered * 100, 1) : null;
@@ -145,7 +146,7 @@ class ClassroomReport
                     'index' => (int) $wa->choice,
                     'text' => $options[(int) $wa->choice]['id'] ?? '',
                     'count' => (int) $wa->cnt,
-                ])->filter(fn (array $tw): bool => $tw['text'] !== '')->values()->all();
+                ])->first(fn (array $tw): bool => $tw['text'] !== '');
 
                 $diff = $acc !== null
                     ? ($acc >= 70 ? 'easy' : ($acc >= 40 ? 'medium' : 'hard'))
@@ -180,11 +181,25 @@ class ClassroomReport
             ->groupBy('user_id')
             ->get();
 
+        $studentSubjects = DB::table('question_answers')
+            ->join('game_histories', 'question_answers.game_history_id', '=', 'game_histories.id')
+            ->join('questions', 'question_answers.question_id', '=', 'questions.id')
+            ->where('game_histories.classroom_id', $classroom->id)
+            ->selectRaw('
+                game_histories.user_id,
+                questions.subject,
+                COUNT(*) as answered,
+                COALESCE(SUM(CASE WHEN question_answers.correct = 1 THEN 1 ELSE 0 END), 0) as correct
+            ')
+            ->groupBy('game_histories.user_id', 'questions.subject')
+            ->get()
+            ->groupBy('user_id');
+
         $studentList = $classroom->members()
             ->whereNull('left_at')
             ->with('user.playerProfile')
             ->get()
-            ->map(function ($member) use ($students): array {
+            ->map(function ($member) use ($students, $studentSubjects): array {
                 $stats = $students->firstWhere('user_id', $member->user_id);
                 $answered = (int) ($stats->answered ?? 0);
                 $correct = (int) ($stats->correct ?? 0);
@@ -196,25 +211,35 @@ class ClassroomReport
                 return [
                     'member_id' => $member->id,
                     'user_id' => $member->user_id,
-                    'name' => $member->user->playerProfile?->nickname ?? $member->user->name,
+                    'name' => $member->user->playerProfile?->nickname ?: $member->user->name,
+                    'grade' => $member->user->playerProfile?->grade,
                     'plays' => (int) ($stats->plays ?? 0),
                     'answered' => $answered,
                     'correct' => $correct,
+                    'wrong' => (int) ($stats->wrong ?? 0),
                     'accuracy' => $acc,
                     'points' => (int) ($stats->points ?? 0),
+                    'rank' => null,
                     'mastery' => $mastery,
-                    'strengths' => [],
-                    'weaknesses' => [],
-                    'ai_feedback' => $member->ai_feedback,
+                    'strengths' => $this->subjectKeys($studentSubjects->get($member->user_id), true),
+                    'weaknesses' => $this->subjectKeys($studentSubjects->get($member->user_id), false),
+                    'ai_feedback' => ClassroomAiText::decode($member->ai_feedback, ClassroomAiText::STUDENT_SECTIONS, 'strengths'),
                     'shared_at' => $member->report_shared_at?->toIso8601String(),
                 ];
-            })->values();
+            })
+            ->sortBy([['points', 'desc'], ['accuracy', 'desc'], ['name', 'asc']])
+            ->values()
+            ->map(function (array $student, int $index): array {
+                $student['rank'] = $student['plays'] > 0 ? $index + 1 : null;
+
+                return $student;
+            });
 
         $insights = $this->generateInsights(collect($difficultQuestions)->take(1), $topics, $subjects, $studentList, $classroom);
 
         return [
             'summary' => [
-                'members' => (int) $historiesSummary->players,
+                'members' => $studentList->count(),
                 'played_members' => $students->count(),
                 'plays' => (int) $historiesSummary->total_plays,
                 'answered' => $totalAnswered,
@@ -277,15 +302,22 @@ class ClassroomReport
         $gamesBreakdown = DB::table('game_histories')
             ->where('classroom_id', $classroom->id)
             ->where('user_id', $userId)
-            ->selectRaw('game_key, COUNT(*) as plays, COALESCE(SUM(correct), 0) as correct, COALESCE(SUM(wrong), 0) as wrong')
+            ->selectRaw('game_key, COUNT(*) as plays, COALESCE(SUM(correct), 0) as correct, COALESCE(SUM(wrong), 0) as wrong, COALESCE(SUM(points), 0) as points')
             ->groupBy('game_key')
+            ->orderByDesc('plays')
             ->get()
-            ->map(fn ($row): array => [
-                'game_key' => $row->game_key,
-                'plays' => (int) $row->plays,
-                'correct' => (int) $row->correct,
-                'wrong' => (int) $row->wrong,
-            ])->values()->all();
+            ->map(function ($row): array {
+                $answered = (int) $row->correct + (int) $row->wrong;
+
+                return [
+                    'game_key' => $row->game_key,
+                    'plays' => (int) $row->plays,
+                    'answered' => $answered,
+                    'correct' => (int) $row->correct,
+                    'accuracy' => $answered > 0 ? round((int) $row->correct / $answered * 100, 1) : null,
+                    'points' => (int) $row->points,
+                ];
+            })->values()->all();
 
         $subjectAnswers = DB::table('question_answers')
             ->join('game_histories', 'question_answers.game_history_id', '=', 'game_histories.id')
@@ -296,12 +328,17 @@ class ClassroomReport
             ->groupBy('questions.subject')
             ->get();
 
+        $classroomReport = $this->forClassroom($classroom);
+        $classSubjects = collect($classroomReport['subjects'])->keyBy('key');
+        $classStudent = collect($classroomReport['students'])->firstWhere('member_id', $member->id);
+
         $subjectBreakdown = $subjectAnswers->map(fn ($row): array => [
             'key' => $row->subject,
             'answered' => (int) $row->answered,
             'correct' => (int) $row->correct,
             'accuracy' => $row->answered > 0 ? round($row->correct / $row->answered * 100, 1) : null,
-        ])->values()->all();
+            'class_accuracy' => $classSubjects[$row->subject]['accuracy'] ?? null,
+        ])->sortByDesc('answered')->values()->all();
 
         $topicAnswers = DB::table('question_answers')
             ->join('game_histories', 'question_answers.game_history_id', '=', 'game_histories.id')
@@ -316,13 +353,13 @@ class ClassroomReport
 
         $topicBreakdown = $topicAnswers->map(fn ($row): array => [
             'id' => (int) $row->topic_id,
-            'name_id' => $row->name_id,
+            'name_id' => (string) $row->name_id,
             'name_en' => $row->name_en,
             'subject_key' => $row->subject,
             'answered' => (int) $row->answered,
             'correct' => (int) $row->correct,
             'accuracy' => $row->answered > 0 ? round($row->correct / $row->answered * 100, 1) : null,
-        ])->values()->all();
+        ])->sortBy('accuracy')->values()->all();
 
         $wrongForReview = DB::table('question_answers')
             ->join('game_histories', 'question_answers.game_history_id', '=', 'game_histories.id')
@@ -330,38 +367,57 @@ class ClassroomReport
             ->where('game_histories.classroom_id', $classroom->id)
             ->where('game_histories.user_id', $userId)
             ->where('question_answers.correct', 0)
-            ->selectRaw('DISTINCT questions.id, questions.prompt_id, questions.prompt_en, questions.answer, questions.options, questions.subject')
+            ->selectRaw('questions.id, questions.prompt_id, questions.prompt_en, questions.answer, questions.options, questions.subject, COUNT(*) as times_wrong')
+            ->groupBy('questions.id', 'questions.prompt_id', 'questions.prompt_en', 'questions.answer', 'questions.options', 'questions.subject')
+            ->orderByDesc('times_wrong')
             ->limit(15)
             ->get()
             ->map(function ($row): array {
                 $options = is_string($row->options) ? json_decode($row->options, true) : ($row->options ?? []);
+                $correct = is_array($options) ? ($options[(int) $row->answer] ?? null) : null;
 
                 return [
                     'id' => (int) $row->id,
-                    'prompt_id' => $row->prompt_id,
+                    'prompt_id' => (string) $row->prompt_id,
                     'prompt_en' => $row->prompt_en,
                     'subject' => $row->subject,
-                    'correct_answer' => $options[(int) $row->answer]['id'] ?? '',
+                    'correct_text' => is_array($correct) ? (($correct['id'] ?? null) ?: null) : null,
+                    'times_wrong' => (int) $row->times_wrong,
                 ];
             })->values()->all();
 
+        $classroom->loadMissing('teacher.playerProfile');
+
         return [
-            'classroom' => $classroom->only(['id', 'name', 'pin']),
+            'classroom' => [
+                'id' => $classroom->id,
+                'name' => $classroom->name,
+                'pin' => $classroom->pin,
+                'teacher_name' => $classroom->teacher?->playerProfile?->nickname ?: ($classroom->teacher?->name ?? ''),
+                'starts_at' => $classroom->starts_at?->toIso8601String(),
+                'ends_at' => $classroom->ends_at?->toIso8601String(),
+            ],
             'student' => [
+                'name' => $member->user?->playerProfile?->nickname ?: ($member->user?->name ?? ''),
+            ],
+            'totals' => [
                 'plays' => (int) ($studentStats->plays ?? 0),
                 'answered' => $answered,
                 'correct' => $correct,
+                'wrong' => (int) ($studentStats->wrong ?? 0),
                 'accuracy' => $acc,
                 'points' => (int) ($studentStats->points ?? 0),
-                'class_accuracy' => $classAcc,
-                'mastery' => $mastery,
+                'rank' => $classStudent['rank'] ?? null,
+                'members' => (int) $classroomReport['summary']['members'],
             ],
+            'class_accuracy' => $classAcc,
+            'mastery' => $mastery,
             'games' => $gamesBreakdown,
             'subjects' => $subjectBreakdown,
             'topics' => $topicBreakdown,
             'review' => $wrongForReview,
             'teacher_note' => null,
-            'ai_feedback' => $member->ai_feedback,
+            'ai_feedback' => ClassroomAiText::decode($member->ai_feedback, ClassroomAiText::STUDENT_SECTIONS, 'strengths'),
             'shared_at' => $member->report_shared_at?->toIso8601String(),
         ];
     }
@@ -376,8 +432,9 @@ class ClassroomReport
             $insights[] = [
                 'key' => 'hardest_question',
                 'params' => [
-                    'prompt' => $hardest->prompt_id,
-                    'accuracy' => $hardest->answered > 0 ? round($hardest->correct / $hardest->answered * 100, 1) : null,
+                    'prompt' => $hardest['prompt_id'],
+                    'prompt_en' => $hardest['prompt_en'] ?: $hardest['prompt_id'],
+                    'accuracy' => $hardest['accuracy'],
                 ],
             ];
         }
@@ -385,15 +442,19 @@ class ClassroomReport
         $weakestTopic = collect($topics)->filter(fn ($t): bool => ($t['answered'] ?? 0) >= 3)
             ->sortBy('accuracy')->first();
         if ($weakestTopic !== null) {
-            $insights[] = ['key' => 'weak_topic', 'params' => ['topic' => $weakestTopic['name_id'], 'accuracy' => $weakestTopic['accuracy']]];
+            $insights[] = ['key' => 'weak_topic', 'params' => [
+                'topic' => $weakestTopic['name_id'],
+                'topic_en' => $weakestTopic['name_en'] ?: $weakestTopic['name_id'],
+                'accuracy' => $weakestTopic['accuracy'],
+            ]];
         }
 
-        $strongest = collect($subjects)->sortByDesc('accuracy')->first();
+        $strongest = collect($subjects)->filter(fn ($s): bool => ($s['answered'] ?? 0) >= 3)->sortByDesc('accuracy')->first();
         if ($strongest !== null && ($strongest['accuracy'] ?? 0) >= 70) {
             $insights[] = ['key' => 'strong_subject', 'params' => ['subject' => $strongest['key'], 'accuracy' => $strongest['accuracy']]];
         }
 
-        $topStudent = collect($students)->filter(fn ($s): bool => ($s['plays'] ?? 0) >= 1)->sortByDesc('accuracy')->first();
+        $topStudent = collect($students)->filter(fn ($s): bool => ($s['answered'] ?? 0) >= 3)->sortByDesc('accuracy')->first();
         if ($topStudent !== null) {
             $insights[] = ['key' => 'top_student', 'params' => ['name' => $topStudent['name'], 'accuracy' => $topStudent['accuracy']]];
         }
@@ -409,5 +470,26 @@ class ClassroomReport
         }
 
         return $insights;
+    }
+
+    /**
+     * Subjects a student is strong (>= 70%) or weak (< 50%) in, with at least
+     * three answers so one lucky guess does not count.
+     *
+     * @return list<string>
+     */
+    private function subjectKeys($rows, bool $strong): array
+    {
+        return collect($rows ?? [])
+            ->filter(fn ($row): bool => (int) $row->answered >= 3)
+            ->filter(function ($row) use ($strong): bool {
+                $accuracy = (int) $row->correct / (int) $row->answered * 100;
+
+                return $strong ? $accuracy >= 70 : $accuracy < 50;
+            })
+            ->sortBy(fn ($row): float => ((int) $row->correct / (int) $row->answered) * ($strong ? -1 : 1))
+            ->pluck('subject')
+            ->values()
+            ->all();
     }
 }

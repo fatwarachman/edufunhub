@@ -15,7 +15,7 @@ import {
     BackButton,
     NavButton,
     SiteNav,
-    useGameBackHref,
+    useGameBack,
 } from '@/components/site-nav';
 import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useGameAudio } from '@/hooks/use-game-audio';
@@ -324,7 +324,7 @@ export default function SkyQuiz({
     );
     const { locale } = usePage<SharedData>().props;
     const signedIn = player !== null;
-    const backHref = useGameBackHref();
+    const back = useGameBack();
     const online = signedIn && serviceReady && Boolean(wsUrl);
     const canvas = useRef<HTMLCanvasElement>(null);
     const arena = useRef<Arena>(newArena());
@@ -1087,13 +1087,7 @@ export default function SkyQuiz({
             <Head title={`${t('sky.title')} — EduFunHub`} />
             <header className="sticky top-0 z-50 flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
                 <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-                    <BackButton
-                        href={backHref}
-                        label={t(
-                            signedIn ? 'nav.backToPortal' : 'nav.backToGames',
-                        )}
-                        iconOnly
-                    />
+                    <BackButton href={back.href} label={back.label} iconOnly />
                     <h1 className="flex min-w-0 items-center gap-2 font-display text-lg font-bold sm:text-xl">
                         <Plane className="size-6 shrink-0" />
                         <span className="truncate">{t('sky.title')}</span>
@@ -1573,9 +1567,9 @@ export default function SkyQuiz({
                             </button>
                             {signedIn ? (
                                 <NavButton
-                                    href="/portal"
+                                    href={back.href}
                                     icon={Trophy}
-                                    label={t('nav.backToPortal')}
+                                    label={back.label}
                                     block
                                 />
                             ) : (

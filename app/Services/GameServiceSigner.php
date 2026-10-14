@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Question;
 use App\Models\User;
+use App\Services\Classrooms\ClassroomContext;
+use App\Services\Classrooms\ClassroomPlayLimit;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -15,6 +17,9 @@ use RuntimeException;
  */
 class GameServiceSigner
 {
+    /** Upper bound of the classroom world `seats` claim (Classroom::MAX_MEMBERS). */
+    public const MAX_SEATS = 200;
+
     public function isConfigured(): bool
     {
         return strlen((string) config('game-service.secret')) >= 32;
@@ -22,10 +27,11 @@ class GameServiceSigner
 
     /**
      * @param  array{name: string, grade: int, level?: int, color: string, accessory: string, character?: array<string, mixed>}  $player
+     * @param  array{classroom?: int, booths?: list<string>, seats?: int, teacher_id?: int}  $extra  Extra claims; only `classroom`, `booths`, `seats` (clamped 1..200) and `teacher_id` (kept only when > 0) are accepted.
      */
-    public function issueToken(User $user, string $game, array $player): string
+    public function issueToken(User $user, string $game, array $player, array $extra = []): string
     {
-        $payload = $this->base64UrlEncode((string) json_encode([
+        $claims = [
             'sub' => $user->id,
             'name' => $player['name'],
             'grade' => $player['grade'],
@@ -36,17 +42,40 @@ class GameServiceSigner
             'game' => $game,
             'exp' => now()->addSeconds((int) config('game-service.token_ttl'))->getTimestamp(),
             'nonce' => Str::random(16),
-            'classroom' => $this->getClassroomId($user, $game),
-        ], JSON_UNESCAPED_UNICODE));
+            'classroom' => array_key_exists('classroom', $extra) ? (int) $extra['classroom'] : $this->getClassroomId($user, $game),
+        ];
+
+        if (array_key_exists('booths', $extra)) {
+            $claims['booths'] = array_values(array_map('strval', (array) $extra['booths']));
+        }
+
+        if (array_key_exists('seats', $extra)) {
+            $claims['seats'] = max(1, min(self::MAX_SEATS, (int) $extra['seats']));
+        }
+
+        if (array_key_exists('teacher_id', $extra) && (int) $extra['teacher_id'] > 0) {
+            $claims['teacher_id'] = (int) $extra['teacher_id'];
+        }
+
+        $payload = $this->base64UrlEncode((string) json_encode($claims, JSON_UNESCAPED_UNICODE));
 
         return $payload.'.'.$this->base64UrlEncode(hash_hmac('sha256', $payload, $this->secret(), true));
     }
 
+    /**
+     * Classroom claim from the active membership. Once the student used every
+     * play of this classroom game the claim is dropped (0): the game is still
+     * playable, but its points no longer count for the classroom.
+     */
     private function getClassroomId(User $user, string $game): ?int
     {
-        $classroom = app(\App\Services\Classrooms\ClassroomContext::class)->currentFor($user, $game);
+        $classroom = app(ClassroomContext::class)->currentFor($user, $game);
 
-        return $classroom?->id;
+        if ($classroom === null) {
+            return null;
+        }
+
+        return app(ClassroomPlayLimit::class)->remaining($classroom, $user, $game) === 0 ? 0 : $classroom->id;
     }
 
     public function verifyRequest(string $timestamp, string $signature, string $body): bool

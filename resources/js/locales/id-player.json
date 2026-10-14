@@ -491,6 +491,7 @@
         "register": "Daftar",
         "back": "Kembali",
         "backToPortal": "Kembali ke portal",
+        "backToClassroom": "Kembali ke ruang kelas",
         "backToGames": "Kembali ke daftar game",
         "backToDashboard": "Kembali ke beranda",
         "backToLogin": "Kembali masuk",
@@ -512,7 +513,8 @@
         "friends": "Teman",
         "social": "Sosial",
         "account": "Akun",
-        "withCount": "{{label}} ({{count}} baru)"
+        "withCount": "{{label}} ({{count}} baru)",
+        "myClassrooms": "Kelasku"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -1269,7 +1271,8 @@
             "no_dish": "Belum ada masakan untuk disajikan.",
             "invalid_order_id": "Pesanan itu sudah tidak ada.",
             "no_pie": "Kamu belum punya pie.",
-            "invalid_rat": "Tikus itu sudah pergi."
+            "invalid_rat": "Tikus itu sudah pergi.",
+            "no_classroom": "Ruang ini hanya untuk anggota kelas yang aktif."
         },
         "copyPinLabel": "Salin PIN",
         "copyLinkLabel": "Salin link",
@@ -1291,6 +1294,14 @@
             "hint": "Berlaku untuk semua pemain di ruang ini.",
             "badge": "{{seconds}} detik per soal",
             "default": "Standar ({{seconds}} detik)"
+        },
+        "classroom": {
+            "title": "Ruang kelas {{name}}",
+            "hostHint": "Kamu host. Tekan Mulai saat teman sudah masuk (minimal {{min}} pemain).",
+            "playerHint": "Teman sekelas yang membuka game ini masuk ke ruang yang sama. Tunggu host menekan Mulai.",
+            "preparing": "Menyiapkan ruang kelas…",
+            "returning": "Kembali ke ruang kelas…",
+            "retry": "Coba lagi"
         }
     },
     "crossword": {
@@ -3440,8 +3451,26 @@
             "aiProcessing": "Memproses…",
             "aiFailed": "Analisa AI gagal. Coba lagi.",
             "aiSummary": "Ringkasan AI",
-            "aiEmpty": "Analisa AI belum tersedia",
-            "aiEmptyHint": "Akhiri ruang dulu, lalu buat analisa AI."
+            "aiEmpty": "Belum ada analisa AI",
+            "aiEmptyHint": "Analisa dibuat dari data permainan siswa di ruang kelas ini. Tekan tombol di atas untuk membuatnya.",
+            "aiTitle": "Analisa AI",
+            "aiIntro": "AI membaca hasil kelas (nama siswa disamarkan) lalu menulis ringkasan dan umpan balik tiap siswa untuk guru.",
+            "aiRerun": "Analisa ulang",
+            "aiWaiting": "Analisa sedang dibuat. Halaman ini diperbarui otomatis.",
+            "aiUnavailable": "Analisa AI belum diaktifkan admin. Hubungi admin untuk mengatur model AI.",
+            "aiNoData": "Belum ada siswa yang bermain. Analisa AI butuh data permainan.",
+            "aiGeneratedAt": "Dibuat {{time}}",
+            "aiStudentFeedback": "Umpan balik per siswa",
+            "expandAll": "Buka semua",
+            "collapseAll": "Tutup semua",
+            "feedbackPoints_one": "{{count}} poin umpan balik",
+            "feedbackPoints_other": "{{count}} poin umpan balik",
+            "reportWrong": "Salah",
+            "rank": "Peringkat",
+            "aiFeedbackTitle": "Analisa AI",
+            "noAiFeedback": "Belum ada analisa AI untuk siswa ini. Jalankan Analisa AI di tab AI.",
+            "notPlayedYet": "Siswa ini belum bermain di kelas ini.",
+            "maxPlays": "Maks {{count}}x"
         },
         "portal": {
             "title": "Ruang Kelas",
@@ -3460,7 +3489,13 @@
             "questions": "soal",
             "leave": "Keluar",
             "leaveConfirmTitle": "Keluar dari ruang?",
-            "leaveConfirmBody": "Anda tidak bisa kembali setelah keluar."
+            "leaveConfirmBody": "Anda tidak bisa kembali setelah keluar.",
+            "gamesHint": "Ketuk game untuk melihat penjelasannya. Untuk bermain, masuk ruangan lalu datangi bilik game tersebut.",
+            "gamePlayHint": "Game ini dimainkan dari ruang kelas 3D. Tekan Masuk Ruangan, lalu jalan ke bilik game ini untuk mulai bermain bersama teman.",
+            "gamePlayClosed": "Game ini hanya bisa dimainkan dari ruang kelas 3D saat ruang kelas sedang berlangsung.",
+            "gameNoDescription": "Belum ada penjelasan untuk game ini.",
+            "playLimit": "Maks {{max}}x main · sisa {{remaining}}",
+            "playLimitDone": "Batas main tercapai ({{plays}}/{{max}})"
         },
         "report": {
             "title": "Laporan",
@@ -3517,7 +3552,14 @@
             "medium": "Sedang",
             "expert": "Expert"
         },
-        "insights": {},
+        "insights": {
+            "hardest_question": "Soal tersulit: \"{{prompt}}\" (akurasi {{accuracy}}).",
+            "weak_topic": "Topik paling lemah: {{topic}} (akurasi {{accuracy}}). Ulas kembali materi ini.",
+            "strong_subject": "Mapel paling dikuasai: {{subject}} (akurasi {{accuracy}}).",
+            "top_student": "Siswa dengan akurasi tertinggi: {{name}} ({{accuracy}}).",
+            "inactive_members": "{{count}} siswa belum bermain sama sekali.",
+            "needs_help": "{{count}} siswa perlu pendampingan (akurasi di bawah 50%)."
+        },
         "common": {
             "pin": "PIN",
             "back": "Kembali",
@@ -3552,7 +3594,8 @@
             "emptyFiltered": "Tidak ada ruang dengan status ini.",
             "open": "Buka ruang",
             "edit": "Ubah",
-            "endNow": "Akhiri sekarang"
+            "endNow": "Akhiri sekarang",
+            "enterWorld": "Masuk ruangan 3D"
         },
         "form": {
             "createTitle": "Buat ruang baru",
@@ -3594,7 +3637,10 @@
             "remove": "Hapus",
             "save": "Simpan perubahan",
             "create": "Buat ruang",
-            "saving": "Menyimpan…"
+            "saving": "Menyimpan…",
+            "maxPlays": "Maksimal main per siswa",
+            "maxPlaysPlaceholder": "Tanpa batas",
+            "maxPlaysHint": "Kosongkan untuk tanpa batas, atau isi {{min}}–{{max}} kali."
         },
         "picker": {
             "title": "Pilih soal untuk {{game}}",
@@ -3620,6 +3666,231 @@
             "apply": "Selesai",
             "trueFalse": "Benar/salah",
             "mineBadge": "Soal saya"
+        },
+        "world": {
+            "enter": "Masuk Ruangan",
+            "enterHint": "Jelajahi ruang kelas 3D bersama teman, ngobrol lewat balon chat, lalu masuk ke bilik permainan pilihan guru.",
+            "canvasLabel": "Ruang kelas 3D. Gerak dengan WASD atau tombol panah, seret untuk memutar kamera.",
+            "connecting": "Menyambungkan ke ruang kelas…",
+            "reconnecting": "Menyambung ulang…",
+            "noWebgl": "Perangkat ini tidak mendukung tampilan 3D, jadi game ruang kelas belum bisa dimainkan di perangkat ini. Coba pakai perangkat lain.",
+            "gradeRequired": "Atur kelas (jenjang) di profil dulu agar bisa masuk ruangan.",
+            "points": "Nilai di kelas ini",
+            "plays": "Permainan dimainkan",
+            "playsShort": "{{count}} main",
+            "rank": "Peringkat",
+            "online": "Teman di ruangan",
+            "leaderboard": "Papan peringkat kelas",
+            "boardEmpty": "Belum ada yang bermain. Jadilah yang pertama!",
+            "close": "Tutup",
+            "fullscreen": "Layar penuh",
+            "exitFullscreen": "Keluar layar penuh",
+            "exit": "Keluar ruangan",
+            "play": "Main {{game}}",
+            "keysHint": "WASD/panah: jalan · seret: putar · Enter: chat",
+            "zoomIn": "Perbesar",
+            "zoomOut": "Perkecil",
+            "chat": "Obrolan",
+            "chatEmpty": "Sapa teman sekelasmu!",
+            "chatPlaceholder": "Tulis pesan…",
+            "send": "Kirim",
+            "reload": "Muat ulang",
+            "kickedRemoved": "Kamu dikeluarkan dari ruang kelas ini.",
+            "kickedEnded": "Ruang kelas sudah selesai.",
+            "emote": {
+                "wave": "Lambaikan tangan",
+                "jump": "Lompat",
+                "clap": "Tepuk tangan"
+            },
+            "errors": {
+                "generic": "Terjadi kesalahan. Coba lagi.",
+                "chat_rate": "Pelan-pelan, tunggu sebentar sebelum mengirim lagi.",
+                "too_far": "Masuk ke dalam bilik dulu.",
+                "full": "Ruangan penuh.",
+                "teacher_no_booth": "Guru tidak bisa masuk bilik permainan.",
+                "no_target": "Orang itu tidak ada di ruangan ini."
+            },
+            "leaveClass": "Keluar dari kelas",
+            "teacherBadge": "Guru",
+            "dm": {
+                "chatWith": "Ngobrol dengan {{name}}",
+                "title": "Obrolan dengan {{name}}",
+                "empty": "Sapa {{name}}! Pesanmu juga tersimpan di halaman Chat.",
+                "placeholder": "Tulis pesan untuk {{name}}…",
+                "you": "Kamu",
+                "tooFar": "Dekati {{name}} dulu untuk mengobrol.",
+                "noTarget": "{{name}} tidak bisa dihubungi di ruangan ini."
+            },
+            "chatEmptyTeacher": "Sapa para peserta kelas!",
+            "playLimitReached": "Batas main tercapai ({{plays}}/{{max}})",
+            "playsLeft": "Sisa main {{remaining}}/{{max}}",
+            "inbox": {
+                "open": "Chat menunggu balasan ({{count}})",
+                "title": "Chat menunggu balasan",
+                "empty": "Semua chat sudah dibalas.",
+                "replyPlaceholder": "Tulis balasan…",
+                "markRead": "Tandai dibaca",
+                "failed": "Balasan gagal terkirim. Coba lagi."
+            }
+        },
+        "ai": {
+            "section": {
+                "overview": "Gambaran umum",
+                "strengths": "Sudah kuat",
+                "weaknesses": "Perlu ditingkatkan",
+                "improve": "Perlu ditingkatkan",
+                "misconceptions": "Miskonsepsi",
+                "actions": "Tindak lanjut",
+                "tips": "Saran latihan"
+            }
+        },
+        "participants": {
+            "open": "Lihat semua peserta",
+            "title": "Daftar peserta",
+            "back": "Kembali ke ruang kelas",
+            "topTitle": "Nilai tertinggi",
+            "topEmpty": "Belum ada nilai",
+            "topEmptyHint": "Peringkat muncul setelah peserta mulai bermain.",
+            "place": "Juara {{place}}",
+            "points": "poin",
+            "kpiMembers": "Peserta",
+            "kpiPlayed": "Sudah main",
+            "kpiAccuracy": "Rata-rata akurasi",
+            "kpiPoints": "Total poin",
+            "listTitle": "Semua peserta",
+            "exportCsv": "Ekspor CSV",
+            "csvFile": "peserta-kelas",
+            "csv": {
+                "name": "Nama",
+                "grade": "Kelas",
+                "plays": "Main",
+                "correct": "Benar",
+                "wrong": "Salah",
+                "accuracy": "Akurasi (%)",
+                "points": "Poin",
+                "mastery": "Penguasaan"
+            },
+            "searchLabel": "Cari peserta",
+            "searchPlaceholder": "Cari nama peserta…",
+            "filterMastery": "Filter penguasaan",
+            "allMastery": "Semua penguasaan",
+            "filterStatus": "Filter status bermain",
+            "allStatus": "Semua status",
+            "played": "Sudah main",
+            "notPlayed": "Belum main",
+            "sortLabel": "Urutkan",
+            "sort": {
+                "points": "Poin tertinggi",
+                "accuracy": "Akurasi tertinggi",
+                "name": "Nama (A–Z)",
+                "plays": "Paling sering main",
+                "wrong": "Salah terbanyak"
+            },
+            "resultCount_one": "{{count}} dari {{total}} peserta",
+            "resultCount_other": "{{count}} dari {{total}} peserta",
+            "resetFilters": "Hapus filter",
+            "empty": "Belum ada peserta",
+            "emptyHint": "Peserta muncul setelah bergabung dengan PIN ruang kelas.",
+            "noResults": "Tidak ada peserta yang cocok dengan filter.",
+            "mastery": "Penguasaan",
+            "actions": "Aksi",
+            "details": "Detail"
+        },
+        "mine": {
+            "title": "Kelasku",
+            "subtitle": "Kelas yang kamu ikuti, permainan, soal, nilai, dan analisa dirimu.",
+            "kpiClasses": "Kelas diikuti",
+            "kpiPoints": "Total poin",
+            "kpiPlays": "Permainan",
+            "kpiAccuracy": "Akurasi rata-rata",
+            "emptyTitle": "Belum ikut kelas",
+            "emptyHint": "Masukkan PIN dari gurumu untuk bergabung ke ruang kelas.",
+            "search": "Cari kelas atau guru",
+            "filterStatus": "Saring status kelas",
+            "count_one": "{{count}} dari {{total}} kelas",
+            "count_other": "{{count}} dari {{total}} kelas",
+            "noMatch": "Tidak ada yang cocok dengan pencarian.",
+            "left": "Sudah keluar",
+            "reportShared": "Laporan dari guru",
+            "back": "Kembali ke Kelasku",
+            "openRoom": "Buka ruang kelas",
+            "tabs": "Bagian kelas",
+            "tab": {
+                "summary": "Nilai",
+                "games": "Permainan",
+                "questions": "Soal",
+                "analysis": "Analisa"
+            },
+            "answered": "Dijawab",
+            "wrong": "Salah",
+            "noGames": "Kelas ini belum punya permainan.",
+            "notPlayed": "Belum dimainkan",
+            "history": "Riwayat main",
+            "noHistory": "Belum ada permainan di kelas ini.",
+            "questionsTitle": "Soal kelas",
+            "questionsCount": "{{answered}} dari {{total}} soal sudah kamu jawab",
+            "answersRevealed": "Kelas sudah selesai. Kunci jawaban dan penjelasan ditampilkan agar kamu bisa belajar dari soal yang salah.",
+            "answersLocked_one": "Kelas masih berlangsung. Kunci jawaban baru terbuka setelah kelas selesai; {{count}} soal yang belum kamu jawab masih disembunyikan.",
+            "answersLocked_other": "Kelas masih berlangsung. Kunci jawaban baru terbuka setelah kelas selesai; {{count}} soal yang belum kamu jawab masih disembunyikan.",
+            "noQuestions": "Belum ada soal yang bisa ditampilkan. Mainkan game di ruang kelas dulu.",
+            "searchQuestion": "Cari soal",
+            "filterQuestions": "Saring soal",
+            "qfilter": {
+                "all": "Semua",
+                "wrong": "Pernah salah",
+                "correct": "Benar",
+                "unanswered": "Belum dijawab"
+            },
+            "qstatus": {
+                "correct": "Benar {{correct}}x",
+                "wrong": "Salah {{wrong}}x",
+                "unanswered": "Belum dijawab"
+            },
+            "yourChoice": "Pilihanmu",
+            "noDataTitle": "Belum ada data analisa",
+            "noDataHint": "Jawab beberapa soal di permainan kelas ini, lalu analisamu akan muncul di sini.",
+            "selfTitle": "Analisa diriku",
+            "self": {
+                "excellent": "Luar biasa! Akurasimu {{accuracy}}. Pertahankan dan bantu temanmu.",
+                "good": "Bagus! Akurasimu {{accuracy}}. Sedikit lagi menuju Luar Biasa.",
+                "fair": "Cukup. Akurasimu {{accuracy}}. Ulangi soal yang salah agar makin paham.",
+                "needs_help": "Akurasimu {{accuracy}}. Pelajari lagi soal yang salah dan minta bantuan guru.",
+                "no_data": "Jawab minimal 3 soal agar penguasaanmu bisa dinilai.",
+                "aboveClass": "Akurasimu {{diff}} di atas rata-rata kelas.",
+                "belowClass": "Akurasimu {{diff}} di bawah rata-rata kelas. Ayo kejar!",
+                "strongest": "Paling kuat: {{subject}} ({{accuracy}}).",
+                "weakest": "Perlu latihan: {{subject}} ({{accuracy}}).",
+                "sameAsClass": "Akurasimu sama dengan rata-rata kelas."
+            },
+            "focusTopics": "Topik yang perlu dilatih",
+            "aiPending": "Saran AI akan muncul setelah gurumu membagikan laporan.",
+            "fullReport": "Lihat laporan lengkap",
+            "playsOfMax": "{{plays}}/{{max}} main"
+        },
+        "announcement": {
+            "label": "Pengumuman guru",
+            "defaultTitle": "Pengumuman",
+            "seconds": "{{count}} dtk",
+            "timeLeft": "Sisa waktu pengumuman",
+            "autoClose": "Pengumuman ini akan tertutup otomatis saat waktunya habis.",
+            "cardTitle": "Pengumuman",
+            "cardHint": "Kirim pesan yang muncul sebagai popup di layar semua peserta aktif, termasuk di ruang 3D.",
+            "inactiveHint": "Pengumuman hanya bisa dikirim saat kelas sedang berlangsung.",
+            "titleLabel": "Judul (opsional)",
+            "titlePlaceholder": "Contoh: Perhatian",
+            "bodyLabel": "Isi pengumuman",
+            "bodyPlaceholder": "Tulis pesan untuk siswa…",
+            "durationLabel": "Durasi tampil",
+            "custom": "Lainnya (detik)",
+            "durationHint": "Antara {{min}} dan {{max}} detik. Siswa tidak bisa menutup popup sebelum waktunya habis.",
+            "send": "Kirim pengumuman",
+            "sending": "Mengirim…",
+            "recent": "Pengumuman terbaru",
+            "empty": "Belum ada pengumuman.",
+            "shownFor": "Tampil {{count}} dtk",
+            "activeLeft": "Aktif · sisa {{count}} dtk",
+            "finished": "Selesai",
+            "stop": "Hentikan"
         }
     }
 }

@@ -1,5 +1,9 @@
 import AdSlot from '@/components/ads/ad-slot';
 import {
+    EndGameButton,
+    HeistSettings,
+} from '@/components/economy-heist/host-screen';
+import {
     ChestArt,
     clock,
     formatGold,
@@ -17,9 +21,11 @@ import {
     ConnectionBadge,
     RoomEntry,
     RoomError,
+    RoomPinBadge,
 } from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { QuestionMedia } from '@/components/question-media';
+import { useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
     type HeistBoardEntry,
@@ -35,6 +41,9 @@ import {
     Coins,
     DoorOpen,
     Hourglass,
+    Play,
+    RotateCcw,
+    School,
     Shield,
     ShieldOff,
     Target,
@@ -42,7 +51,7 @@ import {
     Trophy,
     X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 type Status = ReturnType<typeof useEconomyHeist>['status'];
 type Act = (msg: Record<string, unknown>) => void;
@@ -52,6 +61,9 @@ const LETTERS = ['A', 'B', 'C', 'D'];
 const OPTION_COLORS = ['#c2185b', '#1565c0', '#b45309', '#2e7d32'];
 /** How long a chest reveal stays before the next question shows. */
 const REVEAL_MS = 2600;
+
+/** Classroom fields of `state_sync` (room without a host screen). */
+type ClassroomSync = { classroom?: number; captain?: number };
 
 export interface HeistNotice {
     id: number;
@@ -71,6 +83,7 @@ export function PlayerScreen({
     act,
     onJoin,
     onHost,
+    userId,
 }: {
     state: HeistState;
     status: Status;
@@ -82,8 +95,14 @@ export function PlayerScreen({
     act: Act;
     onJoin: (pin: string) => void;
     onHost: () => void;
+    /** Signed-in user; the classroom captain gets the host controls. */
+    userId?: number;
 }) {
     const { t } = useTranslations();
+    const back = useGameBack();
+    const { classroom = 0, captain = 0 } = state as HeistState & ClassroomSync;
+    const inClassroom = classroom > 0;
+    const isCaptain = inClassroom && captain > 0 && captain === userId;
 
     if (state.phase === 'NONE' || !state.pin) {
         return (
@@ -95,6 +114,9 @@ export function PlayerScreen({
                 createLabel={t('economyHeist.openHost')}
                 onCreate={onHost}
                 onJoin={onJoin}
+                onClassroom={() =>
+                    act({ t: 'classroom', avatar: character ?? null })
+                }
             >
                 {state.closed && state.closed !== 'idle' && (
                     <p className="text-xs font-bold text-slate-600">
@@ -110,7 +132,12 @@ export function PlayerScreen({
     const leave = (
         <Button
             variant="ghost"
-            onClick={() => act({ t: 'leave_room' })}
+            onClick={() => {
+                act({ t: 'leave_room' });
+                if (inClassroom) {
+                    window.location.assign(back.href);
+                }
+            }}
             data-testid="eh-leave"
             className="min-h-11 self-center rounded-xl border-2 border-[#1f2a44]/20 bg-white/70 px-4 text-xs font-bold text-slate-700"
         >
@@ -118,6 +145,21 @@ export function PlayerScreen({
             {t('economyHeist.leave')}
         </Button>
     );
+
+    if (state.phase === 'LOBBY' && inClassroom) {
+        return (
+            <ClassroomLobby
+                state={state}
+                status={status}
+                error={error}
+                online={online}
+                act={act}
+                isCaptain={isCaptain}
+                classroomName={back.classroomName ?? ''}
+                leave={leave}
+            />
+        );
+    }
 
     if (state.phase === 'LOBBY') {
         return (
@@ -194,9 +236,24 @@ export function PlayerScreen({
                 <div className="w-full text-left">
                     <Podium state={state} />
                 </div>
-                <p className="text-xs font-bold text-slate-600">
-                    {t('economyHeist.waitingHost')}
-                </p>
+                {isCaptain ? (
+                    <Button
+                        onClick={() => act({ t: 'start_game' })}
+                        disabled={!online}
+                        data-testid="eh-again"
+                        className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#1f2a44] px-6 font-display font-black text-white shadow-[3px_3px_0px_#FF9E44]"
+                    >
+                        <RotateCcw className="size-5" aria-hidden="true" />
+                        {t('economyHeist.again')}
+                    </Button>
+                ) : (
+                    <p className="text-xs font-bold text-slate-600">
+                        {inClassroom
+                            ? t('room.waitingHost')
+                            : t('economyHeist.waitingHost')}
+                    </p>
+                )}
+                {error && inClassroom && <RoomError code={error} />}
                 <AdSlot placement="arena.result" className="w-full max-w-md" />
                 {leave}
             </Panel>
@@ -247,7 +304,138 @@ export function PlayerScreen({
                     />
                 </div>
             </details>
+            {isCaptain && (
+                <EndGameButton onConfirm={() => act({ t: 'end_game' })} />
+            )}
             {leave}
+        </div>
+    );
+}
+
+/**
+ * Lobby of a classroom room (no host screen): classroom badge instead of a
+ * PIN, classmates list, and the game settings + Start for the captain.
+ */
+function ClassroomLobby({
+    state,
+    status,
+    error,
+    online,
+    act,
+    isCaptain,
+    classroomName,
+    leave,
+}: {
+    state: HeistState & ClassroomSync;
+    status: Status;
+    error: string | null;
+    online: boolean;
+    act: Act;
+    isCaptain: boolean;
+    classroomName: string;
+    leave: ReactNode;
+}) {
+    const { t } = useTranslations();
+    const active = state.players.filter((p) => !p.left);
+    const enough = active.length >= state.min_players;
+    return (
+        <div
+            className="mx-auto w-full max-w-2xl"
+            data-testid="eh-classroom-lobby"
+        >
+            <Panel className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <ConnectionBadge status={status} />
+                    <RoomPinBadge
+                        pin={state.pin ?? ''}
+                        classroom={state.classroom}
+                    />
+                </div>
+                <div className="flex min-w-0 items-start gap-3 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#e9fbf3] p-3 text-left sm:p-4">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5]">
+                        <School className="size-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                        <p className="text-sm font-black break-words">
+                            {t('room.classroom.title', { name: classroomName })}
+                        </p>
+                        <p className="mt-0.5 text-xs font-bold text-slate-600">
+                            {isCaptain
+                                ? t('room.classroom.hostHint', {
+                                      min: state.min_players,
+                                  })
+                                : t('room.classroom.playerHint')}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                    <h2 className="flex items-center justify-between gap-2 font-display text-lg font-black">
+                        {t('economyHeist.joined')}
+                        <span className="text-sm tabular-nums">
+                            {active.length}/{state.max_players}
+                        </span>
+                    </h2>
+                    <ul
+                        className="grid grid-cols-3 gap-2 sm:grid-cols-5"
+                        data-testid="eh-lobby-players"
+                    >
+                        {active.map((p) => (
+                            <li
+                                key={p.user_id}
+                                className={cn(
+                                    'flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 border-[#1f2a44] bg-white p-1.5',
+                                    !p.online && 'opacity-50',
+                                )}
+                            >
+                                <span className="size-12">
+                                    <PlayerAvatar
+                                        character={p.character}
+                                        seat={p.user_id}
+                                        userId={p.user_id}
+                                    />
+                                </span>
+                                <span className="w-full truncate text-center text-xs font-black">
+                                    {p.name}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                {isCaptain ? (
+                    <>
+                        <HeistSettings
+                            state={state}
+                            online={online}
+                            act={act}
+                        />
+                        <Button
+                            onClick={() => act({ t: 'start_game' })}
+                            disabled={!online || !enough}
+                            data-testid="eh-start"
+                            className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-6 font-display text-lg font-black whitespace-normal text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
+                        >
+                            <Play
+                                className="size-5 shrink-0"
+                                aria-hidden="true"
+                            />
+                            {enough
+                                ? t('economyHeist.start')
+                                : t('economyHeist.needPlayers', {
+                                      min: state.min_players,
+                                  })}
+                        </Button>
+                    </>
+                ) : (
+                    <p
+                        className="text-center font-display text-lg font-black"
+                        data-testid="eh-waiting"
+                    >
+                        {t('room.waitingHost')}
+                    </p>
+                )}
+                {error && <RoomError code={error} />}
+                {leave}
+            </Panel>
         </div>
     );
 }

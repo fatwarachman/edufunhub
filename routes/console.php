@@ -25,3 +25,6 @@ Schedule::command('app:send-api-key-expiry-alerts')->dailyAt('08:00')->withoutOv
 
 // Full database backup: runs every minute but only backs up when the schedule on /admin/backups is due
 Schedule::command('backup:database --trigger=scheduled')->everyMinute()->withoutOverlapping(180)->runInBackground();
+
+// Close game rooms, the 3D world and open student pages of classrooms whose end time passed
+Schedule::command('classrooms:close-ended')->everyMinute()->withoutOverlapping();

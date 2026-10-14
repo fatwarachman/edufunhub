@@ -5,7 +5,12 @@ import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale } from '@/components/game-finale';
 import { GameLanguageToggle } from '@/components/game-language-toggle';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
+import {
+    BackButton,
+    NavButton,
+    SiteNav,
+    useGameBack,
+} from '@/components/site-nav';
 import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import {
@@ -138,6 +143,7 @@ export default function PortSorter({
     wsUrl,
 }: PortSorterProps) {
     const { t, i18n } = useTranslations();
+    const back = useGameBack();
     const myId = useMyUserId();
     const { play, muted, toggleMuted } = useGameAudio();
     const canvas = useRef<HTMLCanvasElement | null>(null);
@@ -651,11 +657,7 @@ export default function PortSorter({
             <Head title={`${t('portSorter.title')} — EduFunHub`} />
             <header className="sticky top-0 z-50 flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
                 <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-                    <BackButton
-                        href="/portal"
-                        label={t('nav.backToPortal')}
-                        iconOnly
-                    />
+                    <BackButton href={back.href} label={back.label} iconOnly />
                     <BrandLink variant="mark" />
                     <h1 className="flex min-w-0 items-center gap-2 font-display text-lg font-bold sm:text-xl">
                         <Network className="size-6 shrink-0" />
@@ -1085,6 +1087,7 @@ function Overlay({
     onChoose: (key: string) => void;
 }) {
     const { t } = useTranslations();
+    const back = useGameBack();
     const phase = state?.phase ?? 'ready';
     const result = state?.result;
     const total = state?.total ?? 30;
@@ -1197,7 +1200,7 @@ function Overlay({
                         <RotateCcw className="size-5" />
                         {t('portSorter.playAgain')}
                     </StartButton>
-                    <NavButton href="/portal" label={t('nav.backToPortal')} />
+                    <NavButton href={back.href} label={back.label} />
                 </div>
                 <AdSlot placement="arena.result" className="w-full max-w-md" />
             </>

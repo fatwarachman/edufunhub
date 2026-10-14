@@ -492,6 +492,7 @@
         "register": "Sign up",
         "back": "Back",
         "backToPortal": "Back to portal",
+        "backToClassroom": "Back to the classroom",
         "backToGames": "Back to games",
         "backToDashboard": "Back to home",
         "backToLogin": "Back to login",
@@ -513,7 +514,8 @@
         "friends": "Friends",
         "social": "Social",
         "account": "Account",
-        "withCount": "{{label}} ({{count}} new)"
+        "withCount": "{{label}} ({{count}} new)",
+        "myClassrooms": "My classes"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -1270,7 +1272,8 @@
             "no_dish": "You have no dish to serve.",
             "invalid_order_id": "That order is gone.",
             "no_pie": "You don't have a pie yet.",
-            "invalid_rat": "That rat is already gone."
+            "invalid_rat": "That rat is already gone.",
+            "no_classroom": "This room is only for active classroom members."
         },
         "copyPinLabel": "Copy PIN",
         "copyLinkLabel": "Copy link",
@@ -1292,6 +1295,14 @@
             "hint": "Applies to every player in this room.",
             "badge": "{{seconds}} s per question",
             "default": "Standard ({{seconds}} s)"
+        },
+        "classroom": {
+            "title": "Classroom {{name}}",
+            "hostHint": "You are the host. Press Start once friends have joined (at least {{min}} players).",
+            "playerHint": "Classmates who open this game join the same room. Wait for the host to press Start.",
+            "preparing": "Preparing the classroom room…",
+            "returning": "Returning to the classroom…",
+            "retry": "Try again"
         }
     },
     "crossword": {
@@ -3441,8 +3452,26 @@
             "aiProcessing": "Processing…",
             "aiFailed": "AI analysis failed. Try again.",
             "aiSummary": "AI Summary",
-            "aiEmpty": "AI analysis not available yet",
-            "aiEmptyHint": "End the room first, then create AI analysis."
+            "aiEmpty": "No AI analysis yet",
+            "aiEmptyHint": "The analysis is built from student games in this classroom. Press the button above to create it.",
+            "aiTitle": "AI analysis",
+            "aiIntro": "AI reads the class results (student names are hidden) and writes a summary plus feedback for each student for the teacher.",
+            "aiRerun": "Run again",
+            "aiWaiting": "The analysis is being written. This page updates by itself.",
+            "aiUnavailable": "AI analysis is not enabled by the admin yet. Ask the admin to set up the AI model.",
+            "aiNoData": "No student has played yet. AI analysis needs game data.",
+            "aiGeneratedAt": "Created {{time}}",
+            "aiStudentFeedback": "Feedback per student",
+            "expandAll": "Expand all",
+            "collapseAll": "Collapse all",
+            "feedbackPoints_one": "{{count}} feedback point",
+            "feedbackPoints_other": "{{count}} feedback points",
+            "reportWrong": "Wrong",
+            "rank": "Rank",
+            "aiFeedbackTitle": "AI analysis",
+            "noAiFeedback": "No AI analysis for this student yet. Run the AI analysis on the AI tab.",
+            "notPlayedYet": "This student has not played in this classroom yet.",
+            "maxPlays": "Max {{count}}x"
         },
         "portal": {
             "title": "Classroom",
@@ -3461,7 +3490,13 @@
             "questions": "questions",
             "leave": "Leave",
             "leaveConfirmTitle": "Leave room?",
-            "leaveConfirmBody": "You cannot return after leaving."
+            "leaveConfirmBody": "You cannot return after leaving.",
+            "gamesHint": "Tap a game to read about it. To play, enter the room and walk to that game's booth.",
+            "gamePlayHint": "This game is played from the 3D classroom. Press Enter Room, then walk to this game's booth to start playing with your classmates.",
+            "gamePlayClosed": "This game can only be played from the 3D classroom while the class is running.",
+            "gameNoDescription": "No description for this game yet.",
+            "playLimit": "Max {{max}} plays · {{remaining}} left",
+            "playLimitDone": "Play limit reached ({{plays}}/{{max}})"
         },
         "report": {
             "title": "Report",
@@ -3518,7 +3553,14 @@
             "medium": "Medium",
             "expert": "Expert"
         },
-        "insights": {},
+        "insights": {
+            "hardest_question": "Hardest question: \"{{prompt}}\" ({{accuracy}} accuracy).",
+            "weak_topic": "Weakest topic: {{topic}} ({{accuracy}} accuracy). Review this material.",
+            "strong_subject": "Strongest subject: {{subject}} ({{accuracy}} accuracy).",
+            "top_student": "Highest accuracy: {{name}} ({{accuracy}}).",
+            "inactive_members": "{{count}} students have not played yet.",
+            "needs_help": "{{count}} students need support (accuracy below 50%)."
+        },
         "common": {
             "pin": "PIN",
             "back": "Back",
@@ -3553,7 +3595,8 @@
             "emptyFiltered": "No classrooms with this status.",
             "open": "Open classroom",
             "edit": "Edit",
-            "endNow": "End now"
+            "endNow": "End now",
+            "enterWorld": "Enter 3D room"
         },
         "form": {
             "createTitle": "Create classroom",
@@ -3595,7 +3638,10 @@
             "remove": "Remove",
             "save": "Save changes",
             "create": "Create room",
-            "saving": "Saving…"
+            "saving": "Saving…",
+            "maxPlays": "Max plays per student",
+            "maxPlaysPlaceholder": "Unlimited",
+            "maxPlaysHint": "Leave empty for unlimited, or enter {{min}}–{{max}} plays."
         },
         "picker": {
             "title": "Pick questions for {{game}}",
@@ -3621,6 +3667,231 @@
             "apply": "Done",
             "trueFalse": "True/false",
             "mineBadge": "My question"
+        },
+        "world": {
+            "enter": "Enter the Room",
+            "enterHint": "Explore the 3D classroom with friends, chat with speech bubbles, then step into the game booths your teacher picked.",
+            "canvasLabel": "3D classroom. Move with WASD or arrow keys, drag to turn the camera.",
+            "connecting": "Connecting to the classroom…",
+            "reconnecting": "Reconnecting…",
+            "noWebgl": "This device does not support 3D, so classroom games cannot be played here. Please try another device.",
+            "gradeRequired": "Set your grade in your profile first to enter the room.",
+            "points": "Points in this class",
+            "plays": "Games played",
+            "playsShort": "{{count}} plays",
+            "rank": "Rank",
+            "online": "Classmates in the room",
+            "leaderboard": "Class leaderboard",
+            "boardEmpty": "Nobody has played yet. Be the first!",
+            "close": "Close",
+            "fullscreen": "Full screen",
+            "exitFullscreen": "Exit full screen",
+            "exit": "Leave the room",
+            "play": "Play {{game}}",
+            "keysHint": "WASD/arrows: walk · drag: turn · Enter: chat",
+            "zoomIn": "Zoom in",
+            "zoomOut": "Zoom out",
+            "chat": "Chat",
+            "chatEmpty": "Say hi to your classmates!",
+            "chatPlaceholder": "Type a message…",
+            "send": "Send",
+            "reload": "Reload",
+            "kickedRemoved": "You were removed from this classroom.",
+            "kickedEnded": "The classroom has ended.",
+            "emote": {
+                "wave": "Wave",
+                "jump": "Jump",
+                "clap": "Clap"
+            },
+            "errors": {
+                "generic": "Something went wrong. Try again.",
+                "chat_rate": "Slow down, wait a moment before sending again.",
+                "too_far": "Step inside the booth first.",
+                "full": "The room is full.",
+                "teacher_no_booth": "Teachers can't enter game booths.",
+                "no_target": "That person isn't in this room."
+            },
+            "leaveClass": "Leave the class",
+            "teacherBadge": "Teacher",
+            "dm": {
+                "chatWith": "Chat with {{name}}",
+                "title": "Chat with {{name}}",
+                "empty": "Say hi to {{name}}! Your messages are also saved on the Chat page.",
+                "placeholder": "Write a message to {{name}}…",
+                "you": "You",
+                "tooFar": "Move closer to {{name}} to chat.",
+                "noTarget": "{{name}} can't be reached in this room."
+            },
+            "chatEmptyTeacher": "Say hi to your class participants!",
+            "playLimitReached": "Play limit reached ({{plays}}/{{max}})",
+            "playsLeft": "{{remaining}}/{{max}} plays left",
+            "inbox": {
+                "open": "Chats waiting for a reply ({{count}})",
+                "title": "Chats waiting for a reply",
+                "empty": "Every chat has been answered.",
+                "replyPlaceholder": "Write a reply…",
+                "markRead": "Mark as read",
+                "failed": "Reply could not be sent. Try again."
+            }
+        },
+        "ai": {
+            "section": {
+                "overview": "Overview",
+                "strengths": "Strengths",
+                "weaknesses": "Needs work",
+                "improve": "Needs work",
+                "misconceptions": "Misconceptions",
+                "actions": "Next steps",
+                "tips": "Practice tips"
+            }
+        },
+        "participants": {
+            "open": "View all participants",
+            "title": "Participants",
+            "back": "Back to classroom",
+            "topTitle": "Top scores",
+            "topEmpty": "No scores yet",
+            "topEmptyHint": "Rankings appear once participants start playing.",
+            "place": "Place {{place}}",
+            "points": "points",
+            "kpiMembers": "Participants",
+            "kpiPlayed": "Played",
+            "kpiAccuracy": "Average accuracy",
+            "kpiPoints": "Total points",
+            "listTitle": "All participants",
+            "exportCsv": "Export CSV",
+            "csvFile": "classroom-participants",
+            "csv": {
+                "name": "Name",
+                "grade": "Grade",
+                "plays": "Plays",
+                "correct": "Correct",
+                "wrong": "Wrong",
+                "accuracy": "Accuracy (%)",
+                "points": "Points",
+                "mastery": "Mastery"
+            },
+            "searchLabel": "Search participants",
+            "searchPlaceholder": "Search participant name…",
+            "filterMastery": "Filter by mastery",
+            "allMastery": "All mastery levels",
+            "filterStatus": "Filter by play status",
+            "allStatus": "All statuses",
+            "played": "Played",
+            "notPlayed": "Not played yet",
+            "sortLabel": "Sort by",
+            "sort": {
+                "points": "Highest points",
+                "accuracy": "Highest accuracy",
+                "name": "Name (A–Z)",
+                "plays": "Most plays",
+                "wrong": "Most wrong answers"
+            },
+            "resultCount_one": "{{count}} of {{total}} participants",
+            "resultCount_other": "{{count}} of {{total}} participants",
+            "resetFilters": "Clear filters",
+            "empty": "No participants yet",
+            "emptyHint": "Participants appear after joining with the classroom PIN.",
+            "noResults": "No participants match the filters.",
+            "mastery": "Mastery",
+            "actions": "Actions",
+            "details": "Details"
+        },
+        "mine": {
+            "title": "My classes",
+            "subtitle": "Classrooms you joined, games, questions, scores and your own analysis.",
+            "kpiClasses": "Classes joined",
+            "kpiPoints": "Total points",
+            "kpiPlays": "Games played",
+            "kpiAccuracy": "Average accuracy",
+            "emptyTitle": "No classes yet",
+            "emptyHint": "Enter the PIN from your teacher to join a classroom.",
+            "search": "Search class or teacher",
+            "filterStatus": "Filter class status",
+            "count_one": "{{count}} of {{total}} class",
+            "count_other": "{{count}} of {{total}} classes",
+            "noMatch": "Nothing matches your search.",
+            "left": "Left",
+            "reportShared": "Report from teacher",
+            "back": "Back to My classes",
+            "openRoom": "Open classroom",
+            "tabs": "Class sections",
+            "tab": {
+                "summary": "Scores",
+                "games": "Games",
+                "questions": "Questions",
+                "analysis": "Analysis"
+            },
+            "answered": "Answered",
+            "wrong": "Wrong",
+            "noGames": "This class has no games yet.",
+            "notPlayed": "Not played yet",
+            "history": "Play history",
+            "noHistory": "No games played in this class yet.",
+            "questionsTitle": "Class questions",
+            "questionsCount": "You answered {{answered}} of {{total}} questions",
+            "answersRevealed": "The class has ended. Answer keys and explanations are shown so you can learn from your mistakes.",
+            "answersLocked_one": "The class is still running. Answer keys open after it ends; {{count}} question you have not answered is still hidden.",
+            "answersLocked_other": "The class is still running. Answer keys open after it ends; {{count}} questions you have not answered are still hidden.",
+            "noQuestions": "No questions to show yet. Play the classroom games first.",
+            "searchQuestion": "Search questions",
+            "filterQuestions": "Filter questions",
+            "qfilter": {
+                "all": "All",
+                "wrong": "Got wrong",
+                "correct": "Correct",
+                "unanswered": "Unanswered"
+            },
+            "qstatus": {
+                "correct": "Correct {{correct}}x",
+                "wrong": "Wrong {{wrong}}x",
+                "unanswered": "Unanswered"
+            },
+            "yourChoice": "Your pick",
+            "noDataTitle": "No analysis yet",
+            "noDataHint": "Answer some questions in this class's games and your analysis will show here.",
+            "selfTitle": "My analysis",
+            "self": {
+                "excellent": "Excellent! Your accuracy is {{accuracy}}. Keep it up and help your friends.",
+                "good": "Good! Your accuracy is {{accuracy}}. Almost Excellent.",
+                "fair": "Fair. Your accuracy is {{accuracy}}. Review the questions you got wrong.",
+                "needs_help": "Your accuracy is {{accuracy}}. Study the wrong questions again and ask your teacher for help.",
+                "no_data": "Answer at least 3 questions so your mastery can be rated.",
+                "aboveClass": "Your accuracy is {{diff}} above the class average.",
+                "belowClass": "Your accuracy is {{diff}} below the class average. Let's catch up!",
+                "strongest": "Strongest: {{subject}} ({{accuracy}}).",
+                "weakest": "Needs practice: {{subject}} ({{accuracy}}).",
+                "sameAsClass": "Your accuracy matches the class average."
+            },
+            "focusTopics": "Topics to practise",
+            "aiPending": "AI tips appear after your teacher shares the report.",
+            "fullReport": "View full report",
+            "playsOfMax": "{{plays}}/{{max}} plays"
+        },
+        "announcement": {
+            "label": "Teacher announcement",
+            "defaultTitle": "Announcement",
+            "seconds": "{{count}} s",
+            "timeLeft": "Announcement time left",
+            "autoClose": "This announcement closes on its own when the time runs out.",
+            "cardTitle": "Announcements",
+            "cardHint": "Send a message that pops up on every active participant's screen, including the 3D room.",
+            "inactiveHint": "Announcements can only be sent while the classroom is running.",
+            "titleLabel": "Title (optional)",
+            "titlePlaceholder": "Example: Attention",
+            "bodyLabel": "Message",
+            "bodyPlaceholder": "Write a message for your students…",
+            "durationLabel": "Display time",
+            "custom": "Other (seconds)",
+            "durationHint": "Between {{min}} and {{max}} seconds. Students cannot close the popup before the time runs out.",
+            "send": "Send announcement",
+            "sending": "Sending…",
+            "recent": "Recent announcements",
+            "empty": "No announcements yet.",
+            "shownFor": "Shown for {{count}} s",
+            "activeLeft": "Active · {{count}} s left",
+            "finished": "Finished",
+            "stop": "Stop"
         }
     }
 }

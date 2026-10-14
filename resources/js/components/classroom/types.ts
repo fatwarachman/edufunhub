@@ -6,6 +6,9 @@ export type Mastery = 'excellent' | 'good' | 'fair' | 'needs_help' | 'no_data';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
+/** AI analysis as titled bullet lists (section key => points). */
+export type AiSections = Record<string, string[]>;
+
 export interface Topic {
     id: number;
     subject_key: string;
@@ -77,7 +80,11 @@ export interface ClassroomFormData {
     duration_minutes: number;
     max_members: number;
     status: ClassroomStatus;
-    games: { game_key: string; questions: QuestionPick[] }[];
+    games: {
+        game_key: string;
+        max_plays: number | null;
+        questions: QuestionPick[];
+    }[];
 }
 
 export interface LiveMember {
@@ -121,7 +128,7 @@ export interface ReportStudent {
     mastery: Mastery;
     strengths: string[];
     weaknesses: string[];
-    ai_feedback: string | null;
+    ai_feedback: AiSections | null;
     shared_at: string | null;
 }
 
@@ -171,6 +178,7 @@ export interface ClassroomReport {
         accuracy: number | null;
         difficulty: Difficulty | null;
         top_wrong: { index: number; text: string; count: number } | null;
+        topic?: TopicRef | null;
     }[];
     students: ReportStudent[];
     insights: { key: string; params: Record<string, string | number> }[];
@@ -186,10 +194,19 @@ export interface ClassroomDetail {
     ends_at: string;
     max_members: number;
     join_path: string;
-    games: { game_key: string; question_count: number }[];
+    games: {
+        game_key: string;
+        question_count?: number;
+        max_plays?: number | null;
+        questions?: Pick<
+            QuestionPick,
+            'id' | 'prompt_id' | 'prompt_en' | 'type'
+        >[];
+    }[];
     ai_status: null | 'queued' | 'running' | 'done' | 'failed';
-    ai_summary: string | null;
+    ai_summary: AiSections | null;
     ai_available: boolean;
+    report_generated_at?: string | null;
 }
 
 export interface MemberReport {
@@ -219,6 +236,8 @@ export interface MemberReport {
         correct: number;
         accuracy: number | null;
         points: number;
+        /** Classroom play limit of the game (my classroom detail only). */
+        max_plays?: number | null;
     }[];
     subjects: {
         key: string;
@@ -239,6 +258,105 @@ export interface MemberReport {
         times_wrong: number;
     }[];
     teacher_note: string | null;
-    ai_feedback: string | null;
+    ai_feedback: AiSections | null;
     shared_at: string | null;
+}
+
+/** Student's own totals inside one classroom ("Kelasku"). */
+export interface MyClassroomTotals {
+    plays: number;
+    answered: number;
+    correct: number;
+    wrong: number;
+    accuracy: number | null;
+    points: number;
+    rank: number | null;
+    members: number;
+}
+
+export interface MyClassroomCard {
+    id: number;
+    name: string;
+    pin: string;
+    status: ClassroomStatus;
+    starts_at: string | null;
+    ends_at: string | null;
+    teacher_name: string;
+    games: string[];
+}
+
+export interface MyClassroomItem {
+    member_id: number;
+    classroom: MyClassroomCard;
+    joined_at: string | null;
+    left: boolean;
+    report_shared: boolean;
+    totals: MyClassroomTotals;
+    mastery: Mastery;
+}
+
+export interface MyClassroomQuestion {
+    id: number;
+    type: 'choice' | 'true_false';
+    subject: string;
+    topic: { name_id: string; name_en: string | null } | null;
+    level: number;
+    prompt_id: string;
+    prompt_en: string | null;
+    options: { id: string; en: string | null }[];
+    games: string[];
+    mine: {
+        answered: number;
+        correct: number;
+        wrong: number;
+        last_correct: boolean | null;
+        last_choice: number | null;
+    };
+    /** Only after the classroom ended. */
+    answer: number | null;
+    hint_id: string | null;
+    hint_en: string | null;
+}
+
+export interface MyClassroomDetail {
+    member_id: number;
+    classroom: MyClassroomCard & { description: string | null };
+    joined_at: string | null;
+    left: boolean;
+    answers_revealed: boolean;
+    report_shared: boolean;
+    report_url: string | null;
+    totals: MyClassroomTotals;
+    class_accuracy: number | null;
+    mastery: Mastery;
+    games: MemberReport['games'];
+    /** Play limit per classroom game; null = unlimited. */
+    play_limits?: Record<string, number | null>;
+    subjects: MemberReport['subjects'];
+    topics: MemberReport['topics'];
+    review: MemberReport['review'];
+    recent_plays: {
+        id: number;
+        game_key: string;
+        points: number;
+        correct: number;
+        wrong: number;
+        duration_seconds: number;
+        played_at: string | null;
+    }[];
+    questions: {
+        total: number;
+        answered: number;
+        hidden: number;
+        items: MyClassroomQuestion[];
+    };
+    teacher_note: string | null;
+    ai_feedback: AiSections | null;
+}
+
+/** Classroom play usage of one game: null max/remaining = unlimited. */
+export interface ClassroomPlayUsage {
+    plays: number;
+    max: number | null;
+    remaining: number | null;
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ClassroomChatController;
 use App\Http\Controllers\Api\CrosswordBankController;
 use App\Http\Controllers\Api\GameResultController;
 use App\Http\Controllers\Api\HealthController;
@@ -15,6 +16,10 @@ Route::get('/health', HealthController::class);
 Route::post('/internal/game-results', [GameResultController::class, 'store'])
     ->middleware('throttle:120,1,api.internal.game-results.store')
     ->name('api.internal.game-results.store');
+
+Route::post('/internal/classroom-chat', [ClassroomChatController::class, 'store'])
+    ->middleware('throttle:240,1,api.internal.classroom-chat')
+    ->name('api.internal.classroom-chat');
 
 Route::get('/internal/question-bank', QuestionBankController::class)
     ->middleware('throttle:120,1,api.internal.question-bank')

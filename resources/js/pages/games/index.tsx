@@ -217,7 +217,10 @@ export default function GameList({
     );
     /** Games playable solo. */
     const soloGames = useMemo(
-        () => matched.flatMap((category) => category.games).filter((g) => g.minPlayers === 1),
+        () =>
+            matched
+                .flatMap((category) => category.games)
+                .filter((g) => g.minPlayers === 1),
         [matched],
     );
     const categoryOf = useMemo(
@@ -275,20 +278,20 @@ export default function GameList({
                     ]
                   : []
               : filter === SOLO
-              ? soloGames.length > 0
-                  ? [
-                        {
-                            key: SOLO,
-                            titleKey: 'gameList.solo.title',
-                            games: soloGames,
-                        },
-                    ]
-                  : []
-              : matched.filter(
-                    (category) =>
-                        (filter === 'all' || category.key === filter) &&
-                        category.games.length > 0,
-                );
+                ? soloGames.length > 0
+                    ? [
+                          {
+                              key: SOLO,
+                              titleKey: 'gameList.solo.title',
+                              games: soloGames,
+                          },
+                      ]
+                    : []
+                : matched.filter(
+                      (category) =>
+                          (filter === 'all' || category.key === filter) &&
+                          category.games.length > 0,
+                  );
     const shownCount = shown.reduce(
         (sum, category) => sum + category.games.length,
         0,

@@ -116,6 +116,8 @@ func (s *Server) serveMini(key string) http.HandlerFunc {
 				ids = hub.Create(claims, now)
 			case "join":
 				ids, err = hub.Enter(claims, in.Pin, now)
+			case "classroom":
+				ids, err = hub.EnterClassroom(claims, now)
 			case "leave":
 				ids = hub.Leave(claims.Subject, now)
 			case "start":

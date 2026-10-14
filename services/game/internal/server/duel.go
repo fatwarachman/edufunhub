@@ -177,6 +177,18 @@ func (s *Server) serveDuel(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			s.pushDuel(ids, now)
+		case "classroom":
+			if s.duels.Busy(claims.Subject) {
+				send(duel.Message{"t": "error", "code": duel.ErrPhase.Error()})
+				continue
+			}
+			s.duels.Cancel(claims.Subject)
+			ids, err := s.duelRooms.EnterClassroom(claims, now, nil)
+			if err != nil {
+				send(duel.Message{"t": "error", "code": err.Error()})
+				continue
+			}
+			s.pushDuel(ids, now)
 		case "leave":
 			s.pushDuel(s.duelRooms.Leave(claims.Subject, now), now)
 		case "subject":

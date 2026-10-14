@@ -21,7 +21,7 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
+import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import {
     DPad,
     QuestionBar,
@@ -95,7 +95,7 @@ function feedbackTitle(
 
 export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
     const { t, i18n } = useTranslations();
-    const backHref = useGameBackHref();
+    const back = useGameBack();
     const subjectName = useSubjectName();
     const [muted, setMuted] = useState(false);
     const game = useSnake(serviceReady ? wsUrl : null, i18n.language);
@@ -103,7 +103,10 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
     const join = (code: string) => {
         send({ t: 'join', pin: code });
     };
-    useRoomPin(status === 'online', state?.pin, pin, join);
+    useRoomPin(status === 'online', state?.pin, pin, join, {
+        game: 'snake',
+        classroom: (state as { classroom?: number } | null)?.classroom,
+    });
     const playing = state?.phase === 'playing';
     const done = state?.phase === 'done';
     const won = Boolean(done && state.winner === state.you);
@@ -157,8 +160,8 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
-                            href={backHref}
-                            label={t('snake.back')}
+                            href={back.href}
+                            label={back.label}
                             iconOnly
                         />
                         <BrandLink variant="mark" />
@@ -216,6 +219,7 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
                         intro={t('snake.intro', { name: player.name })}
                         onCreate={() => send({ t: 'create' })}
                         onJoin={join}
+                        onClassroom={() => send({ t: 'classroom' })}
                     >
                         <p>{t('snake.rules')}</p>
                     </RoomEntry>

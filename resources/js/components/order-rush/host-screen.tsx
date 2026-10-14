@@ -494,7 +494,6 @@ function HostLobby({
     const link = inviteLink('order-rush', state.pin ?? '');
     const active = state.players.filter((p) => !p.left);
     const enough = active.length >= state.min_players;
-    const selected = state.sets;
 
     const copy = async (kind: string, text: string) => {
         try {
@@ -505,18 +504,6 @@ function HostLobby({
             setCopied(null);
         }
     };
-    const configure = (mode: RushMode, value: number, sets = selected) =>
-        act({ t: 'configure', mode, value, sets });
-    const value = state.mode === 'RACE' ? state.modules : state.minutes;
-    const toggleSet = (key: string) =>
-        configure(
-            state.mode,
-            value,
-            selected.includes(key)
-                ? selected.filter((k) => k !== key)
-                : [...selected, key],
-        );
-
     return (
         <div
             className="grid grid-cols-1 gap-5 lg:grid-cols-12"
@@ -554,156 +541,7 @@ function HostLobby({
                     </div>
                 </div>
 
-                <fieldset className="flex flex-col gap-2" disabled={!online}>
-                    <legend className="mb-1 text-sm font-black">
-                        {t('orderRush.mode')}
-                    </legend>
-                    <div className="grid grid-cols-2 gap-2">
-                        {(
-                            [
-                                ['RACE', Flag, t('orderRush.modeRace')],
-                                ['TIME_ATTACK', Timer, t('orderRush.modeTime')],
-                            ] as const
-                        ).map(([mode, Icon, label]) => (
-                            <button
-                                key={mode}
-                                type="button"
-                                aria-pressed={state.mode === mode}
-                                data-testid={`or-mode-${mode}`}
-                                onClick={() =>
-                                    configure(
-                                        mode,
-                                        mode === 'RACE'
-                                            ? state.modules
-                                            : state.minutes,
-                                    )
-                                }
-                                className={cn(
-                                    'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3 text-sm font-black transition-colors',
-                                    state.mode === mode
-                                        ? 'bg-[#1f2a44] text-white'
-                                        : 'bg-white hover:bg-[#ccfbf1]',
-                                )}
-                            >
-                                <Icon className="size-4" aria-hidden="true" />
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-                    <div
-                        className={cn(
-                            'grid gap-1.5',
-                            (state.mode === 'RACE'
-                                ? state.race_targets
-                                : state.time_limits
-                            ).length > 3
-                                ? 'grid-cols-4'
-                                : 'grid-cols-3',
-                        )}
-                        role="group"
-                        aria-label={
-                            state.mode === 'RACE'
-                                ? t('orderRush.goalModules')
-                                : t('orderRush.goalMinutes')
-                        }
-                        data-testid="or-goal"
-                    >
-                        {(state.mode === 'RACE'
-                            ? state.race_targets
-                            : state.time_limits
-                        ).map((n) => (
-                            <button
-                                key={n}
-                                type="button"
-                                aria-pressed={value === n}
-                                onClick={() => configure(state.mode, n)}
-                                className={cn(
-                                    'flex min-h-14 flex-col items-center justify-center rounded-xl border-2 border-[#1f2a44] leading-none transition-colors',
-                                    value === n
-                                        ? 'bg-[#99f6e4] shadow-[2px_2px_0px_#1f2a44]'
-                                        : 'bg-white hover:bg-[#ccfbf1]',
-                                )}
-                            >
-                                <span className="font-display text-xl font-black tabular-nums">
-                                    {n}
-                                </span>
-                                <span className="mt-1 text-[11px] font-bold text-slate-600">
-                                    {state.mode === 'RACE'
-                                        ? t('orderRush.unitModules')
-                                        : t('orderRush.unitMinutes')}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-                </fieldset>
-
-                <fieldset
-                    className="flex flex-col gap-2"
-                    disabled={!online}
-                    data-testid="or-set-picker"
-                >
-                    <legend className="mb-1 flex w-full items-center justify-between gap-2 text-sm font-black">
-                        {t('orderRush.categories')}
-                        <span className="rounded-full border-2 border-[#1f2a44] bg-[#ccfbf1] px-2 py-0.5 text-xs tabular-nums">
-                            {selected.length === 0
-                                ? t('orderRush.allShort')
-                                : `${selected.length}/${state.catalog.length}`}
-                        </span>
-                    </legend>
-                    <TopicOption
-                        active={selected.length === 0}
-                        onClick={() => configure(state.mode, value, [])}
-                        icon={Shuffle}
-                        title={t('orderRush.allTopics')}
-                        meta={t('orderRush.allTopicsHint')}
-                        testId="or-topic-all"
-                    />
-                    {(['cable', 'protocol'] as const).map((kind) => {
-                        const entries = state.catalog.filter(
-                            (entry) => entry.kind === kind,
-                        );
-                        if (entries.length === 0) {
-                            return null;
-                        }
-                        return (
-                            <div key={kind} className="flex flex-col gap-1.5">
-                                <p className="mt-1 text-[11px] font-black tracking-wide text-slate-600 uppercase">
-                                    {kind === 'cable'
-                                        ? t('orderRush.groupCable')
-                                        : t('orderRush.groupProtocol')}
-                                </p>
-                                <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                                    {entries.map((entry) => (
-                                        <TopicOption
-                                            key={entry.key}
-                                            active={selected.includes(
-                                                entry.key,
-                                            )}
-                                            onClick={() => toggleSet(entry.key)}
-                                            icon={
-                                                kind === 'cable'
-                                                    ? Cable
-                                                    : Network
-                                            }
-                                            title={entry.title}
-                                            meta={
-                                                entry.ends
-                                                    ? `${t('orderRush.twoEnds')} · ${t('orderRush.slotsCount', { count: entry.slots })}`
-                                                    : t(
-                                                          'orderRush.slotsCount',
-                                                          {
-                                                              count: entry.slots,
-                                                          },
-                                                      )
-                                            }
-                                            testId={`or-topic-${entry.key}`}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </fieldset>
+                <RushSettings state={state} online={online} act={act} />
 
                 {error && <RoomError code={error} />}
                 <div className="sticky bottom-0 z-10 -mx-5 -mb-5 flex gap-2 rounded-b-3xl border-t-2 border-[#1f2a44]/15 bg-white px-5 py-3 shadow-[0_-6px_12px_-8px_rgb(31_42_68/0.35)] sm:-mx-6 sm:-mb-6 sm:px-6 lg:static lg:m-0 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
@@ -776,6 +614,182 @@ function HostLobby({
                 )}
             </Panel>
         </div>
+    );
+}
+
+/**
+ * Race settings (mode, goal, topic sets) shared by the projector lobby and
+ * the classroom captain's lobby on the player pad.
+ */
+export function RushSettings({
+    state,
+    online,
+    act,
+}: {
+    state: RushState;
+    online: boolean;
+    act: Act;
+}) {
+    const { t } = useTranslations();
+    const selected = state.sets;
+    const configure = (mode: RushMode, value: number, sets = selected) =>
+        act({ t: 'configure', mode, value, sets });
+    const value = state.mode === 'RACE' ? state.modules : state.minutes;
+    const toggleSet = (key: string) =>
+        configure(
+            state.mode,
+            value,
+            selected.includes(key)
+                ? selected.filter((k) => k !== key)
+                : [...selected, key],
+        );
+
+    return (
+        <>
+            <fieldset className="flex flex-col gap-2" disabled={!online}>
+                <legend className="mb-1 text-sm font-black">
+                    {t('orderRush.mode')}
+                </legend>
+                <div className="grid grid-cols-2 gap-2">
+                    {(
+                        [
+                            ['RACE', Flag, t('orderRush.modeRace')],
+                            ['TIME_ATTACK', Timer, t('orderRush.modeTime')],
+                        ] as const
+                    ).map(([mode, Icon, label]) => (
+                        <button
+                            key={mode}
+                            type="button"
+                            aria-pressed={state.mode === mode}
+                            data-testid={`or-mode-${mode}`}
+                            onClick={() =>
+                                configure(
+                                    mode,
+                                    mode === 'RACE'
+                                        ? state.modules
+                                        : state.minutes,
+                                )
+                            }
+                            className={cn(
+                                'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3 text-sm font-black transition-colors',
+                                state.mode === mode
+                                    ? 'bg-[#1f2a44] text-white'
+                                    : 'bg-white hover:bg-[#ccfbf1]',
+                            )}
+                        >
+                            <Icon className="size-4" aria-hidden="true" />
+                            {label}
+                        </button>
+                    ))}
+                </div>
+                <div
+                    className={cn(
+                        'grid gap-1.5',
+                        (state.mode === 'RACE'
+                            ? state.race_targets
+                            : state.time_limits
+                        ).length > 3
+                            ? 'grid-cols-4'
+                            : 'grid-cols-3',
+                    )}
+                    role="group"
+                    aria-label={
+                        state.mode === 'RACE'
+                            ? t('orderRush.goalModules')
+                            : t('orderRush.goalMinutes')
+                    }
+                    data-testid="or-goal"
+                >
+                    {(state.mode === 'RACE'
+                        ? state.race_targets
+                        : state.time_limits
+                    ).map((n) => (
+                        <button
+                            key={n}
+                            type="button"
+                            aria-pressed={value === n}
+                            onClick={() => configure(state.mode, n)}
+                            className={cn(
+                                'flex min-h-14 flex-col items-center justify-center rounded-xl border-2 border-[#1f2a44] leading-none transition-colors',
+                                value === n
+                                    ? 'bg-[#99f6e4] shadow-[2px_2px_0px_#1f2a44]'
+                                    : 'bg-white hover:bg-[#ccfbf1]',
+                            )}
+                        >
+                            <span className="font-display text-xl font-black tabular-nums">
+                                {n}
+                            </span>
+                            <span className="mt-1 text-[11px] font-bold text-slate-600">
+                                {state.mode === 'RACE'
+                                    ? t('orderRush.unitModules')
+                                    : t('orderRush.unitMinutes')}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            </fieldset>
+
+            <fieldset
+                className="flex flex-col gap-2"
+                disabled={!online}
+                data-testid="or-set-picker"
+            >
+                <legend className="mb-1 flex w-full items-center justify-between gap-2 text-sm font-black">
+                    {t('orderRush.categories')}
+                    <span className="rounded-full border-2 border-[#1f2a44] bg-[#ccfbf1] px-2 py-0.5 text-xs tabular-nums">
+                        {selected.length === 0
+                            ? t('orderRush.allShort')
+                            : `${selected.length}/${state.catalog.length}`}
+                    </span>
+                </legend>
+                <TopicOption
+                    active={selected.length === 0}
+                    onClick={() => configure(state.mode, value, [])}
+                    icon={Shuffle}
+                    title={t('orderRush.allTopics')}
+                    meta={t('orderRush.allTopicsHint')}
+                    testId="or-topic-all"
+                />
+                {(['cable', 'protocol'] as const).map((kind) => {
+                    const entries = state.catalog.filter(
+                        (entry) => entry.kind === kind,
+                    );
+                    if (entries.length === 0) {
+                        return null;
+                    }
+                    return (
+                        <div key={kind} className="flex flex-col gap-1.5">
+                            <p className="mt-1 text-[11px] font-black tracking-wide text-slate-600 uppercase">
+                                {kind === 'cable'
+                                    ? t('orderRush.groupCable')
+                                    : t('orderRush.groupProtocol')}
+                            </p>
+                            <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                                {entries.map((entry) => (
+                                    <TopicOption
+                                        key={entry.key}
+                                        active={selected.includes(entry.key)}
+                                        onClick={() => toggleSet(entry.key)}
+                                        icon={
+                                            kind === 'cable' ? Cable : Network
+                                        }
+                                        title={entry.title}
+                                        meta={
+                                            entry.ends
+                                                ? `${t('orderRush.twoEnds')} · ${t('orderRush.slotsCount', { count: entry.slots })}`
+                                                : t('orderRush.slotsCount', {
+                                                      count: entry.slots,
+                                                  })
+                                        }
+                                        testId={`or-topic-${entry.key}`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })}
+            </fieldset>
+        </>
     );
 }
 
@@ -857,7 +871,7 @@ function CopyButton({
     );
 }
 
-function EndGameButton({ onConfirm }: { onConfirm: () => void }) {
+export function EndGameButton({ onConfirm }: { onConfirm: () => void }) {
     const { t } = useTranslations();
     const [armed, setArmed] = useState(false);
 

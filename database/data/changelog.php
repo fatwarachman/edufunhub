@@ -24,6 +24,330 @@
 
 return [
     [
+        'version' => '0.38.0',
+        'date' => '2026-10-14',
+        'changes' => [
+            [
+                'key' => 'classroom-own-container',
+                'type' => 'improvement',
+                'title' => ['id' => 'Ruang kelas 3D berjalan di container Go sendiri', 'en' => 'The 3D classroom runs in its own Go container'],
+                'body' => ['id' => 'Ruang kelas 3D kini dilayani container Go terpisah (edufunhub-classroom), tidak lagi menumpang di container game, sehingga beban dan pembaruan keduanya tidak saling mengganggu.', 'en' => 'The 3D classroom is now served by a separate Go container (edufunhub-classroom) instead of sharing the game container, so load and updates of one no longer affect the other.'],
+            ],
+            [
+                'key' => 'classroom-close-everything',
+                'type' => 'feature',
+                'title' => ['id' => 'Kelas ditutup, permainan dan ruang kelas siswa ikut tertutup', 'en' => 'Closing a class also closes students\' games and classroom'],
+                'body' => ['id' => 'Saat guru mengakhiri kelas atau waktunya habis, semua ruang permainan kelas itu langsung ditutup (poin yang sudah didapat tetap dihitung), siswa dikeluarkan dari ruang kelas 3D, dan halaman game atau kelas yang sedang dibuka siswa otomatis berpindah ke layar "Ruang sudah selesai" dengan tombol ke laporan di Kelasku.', 'en' => 'When the teacher ends a class or its time runs out, every game room of that class closes at once (points already earned still count), students are removed from the 3D classroom, and any open game or classroom page switches to the "class ended" screen with a link to the report in My classes.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.37.0',
+        'date' => '2026-10-14',
+        'changes' => [
+            [
+                'key' => 'classroom-world-waiting-chats',
+                'type' => 'feature',
+                'title' => ['id' => 'Daftar chat menunggu balasan di ruang kelas 3D', 'en' => 'Waiting chats list in the 3D classroom'],
+                'body' => ['id' => 'Pesan pribadi dari guru atau teman sekelas langsung menambah angka di atas kepala avatar pengirim dan angka total di atas kepala sendiri, walau pengirim tidak ada di ruangan. Mengetuk angka (atau tombol kotak masuk) membuka daftar chat yang belum dijawab per pengirim, yang bisa langsung dibalas atau ditandai dibaca tanpa pindah ke halaman Chat. Daftar diambil dari server sehingga tetap benar setelah memuat ulang.', 'en' => 'Direct messages from the teacher or classmates instantly raise a count above the sender\'s avatar and a total above your own head, even when the sender is not in the room. Tapping a count (or the inbox button) opens the unanswered chats per sender, which can be answered or marked read right there without leaving for the Chat page. The list comes from the server, so it stays right after a reload.'],
+            ],
+            [
+                'key' => 'classroom-world-keep-position',
+                'type' => 'fix',
+                'title' => ['id' => 'Posisi avatar tidak lagi kembali ke pintu', 'en' => 'Avatar no longer jumps back to the door'],
+                'body' => ['id' => 'Saat browser di-minimize, koneksi terputus sebentar, halaman dimuat ulang, atau kembali dari game, avatar muncul lagi di tempat terakhir berdiri (diingat hingga 2 jam), bukan di pintu masuk.', 'en' => 'After minimising the browser, a short connection drop, a page reload or coming back from a game, the avatar reappears where it last stood (remembered for up to 2 hours) instead of at the entrance.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.36.1',
+        'date' => '2026-10-14',
+        'changes' => [
+            [
+                'key' => 'classroom-world-chat-unread',
+                'type' => 'improvement',
+                'title' => ['id' => 'Chat di ruang kelas tidak lagi memunculkan modal', 'en' => 'Classroom chat no longer pops a modal'],
+                'body' => ['id' => 'Di ruang kelas 3D, pesan pribadi dari orang yang ada di ruangan tidak lagi tampil sebagai modal dan tidak mengarahkan ke halaman Chat. Bila obrolan dengan orang itu sedang terbuka, pesan tampil di balon di atas kepalanya; bila tertutup, muncul angka pesan belum dibaca di atas kepala avatarnya yang hilang saat obrolan dibuka.', 'en' => 'In the 3D classroom, direct messages from people in the room no longer show as a modal or send you to the Chat page. When the conversation with that person is open the message shows in a bubble over their head; when it is closed an unread count floats above their avatar and clears once the conversation is opened.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.36.0',
+        'date' => '2026-10-14',
+        'changes' => [
+            [
+                'key' => 'classroom-play-limit',
+                'type' => 'feature',
+                'title' => ['id' => 'Batas main per game di ruang kelas', 'en' => 'Per game play limit in classrooms'],
+                'body' => ['id' => 'Saat memilih game untuk ruang kelas, guru bisa mengatur maksimal berapa kali tiap siswa boleh memainkan game itu (kosong = tanpa batas). Batas dicek di server: halaman game dialihkan kembali ke ruang kelas bila jatah habis, dan hasil di atas batas tidak dihitung ke kelas. Sisa jatah tampil di bilik ruang 3D, halaman kelas, dan Kelasku.', 'en' => 'When picking classroom games, teachers can set how many times each student may play a game (empty = unlimited). The limit is enforced on the server: the game page sends the student back to the classroom once used up, and results above the limit do not count for the class. Remaining plays show in the 3D booth, the classroom page and My classes.'],
+            ],
+            [
+                'key' => 'classroom-announcements',
+                'type' => 'feature',
+                'title' => ['id' => 'Pengumuman ruang kelas', 'en' => 'Classroom announcements'],
+                'body' => ['id' => 'Guru bisa mengirim pengumuman dari tab Live dengan durasi tampil 5 detik sampai 10 menit. Pengumuman muncul langsung sebagai popup di layar semua peserta aktif, termasuk di ruang 3D, tidak bisa ditutup siswa, dan hilang otomatis saat waktunya habis atau saat guru menghentikannya.', 'en' => 'Teachers can send announcements from the Live tab with a display time of 5 seconds to 10 minutes. They pop up instantly on every active participant\'s screen, including the 3D room, cannot be closed by students, and disappear automatically when time is up or the teacher stops them.'],
+            ],
+            [
+                'key' => 'classroom-world-chat-replies',
+                'type' => 'fix',
+                'title' => ['id' => 'Balasan dari halaman Chat tampil di balon ruang kelas', 'en' => 'Replies from the Chat page show as classroom bubbles'],
+                'body' => ['id' => 'Balasan yang dikirim lewat halaman Chat kini muncul sebagai balon di atas avatar pengirim di ruang kelas 3D dan masuk ke panel obrolan.', 'en' => 'Replies sent from the Chat page now appear as a bubble over the sender\'s avatar in the 3D classroom and in the chat panel.'],
+            ],
+            [
+                'key' => 'classroom-world-booth-icons',
+                'type' => 'improvement',
+                'title' => ['id' => 'Ikon game di papan bilik dan sapaan guru', 'en' => 'Game icons on booth signs and teacher greeting'],
+                'body' => ['id' => 'Papan nama bilik game di ruang kelas 3D kini menampilkan ikon game di samping judulnya. Panel obrolan guru menampilkan ajakan "Sapa para peserta kelas!".', 'en' => 'Game booth signs in the 3D classroom now show the game icon next to the title. The teacher chat panel shows "Say hi to your class participants!".'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.35.0',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'my-classrooms',
+                'type' => 'feature',
+                'title' => ['id' => 'Kelasku: kelas, soal, permainan, nilai, dan analisa diri', 'en' => 'My classes: classes, questions, games, scores and self analysis'],
+                'body' => ['id' => 'Menu baru Kelasku (Akun → Kelasku) menampilkan semua kelas yang pernah diikuti beserta poin, peringkat, akurasi, dan penguasaan, dengan pencarian dan filter status. Detail tiap kelas punya tab Nilai, Permainan (hasil per game dan riwayat main), Soal (pilihanmu, status benar/salah, pencarian, dan filter), serta Analisa (analisa diri per mata pelajaran dan topik, saran AI dan catatan guru bila laporan sudah dibagikan). Kunci jawaban dan penjelasan baru terbuka setelah kelas selesai agar tidak bisa dipakai menyontek.', 'en' => 'The new My classes menu (Account → My classes) lists every classroom joined with points, rank, accuracy and mastery, with search and a status filter. Each class has Scores, Games (per game results and play history), Questions (your pick, right/wrong status, search and filters) and Analysis tabs (self analysis per subject and topic, AI tips and teacher note once the report is shared). Answer keys and explanations only unlock after the class ends so they cannot be used to cheat.'],
+            ],
+            [
+                'key' => 'feature-search-classroom-link',
+                'type' => 'fix',
+                'title' => ['id' => 'Pencarian fitur Ruang Kelas pemain tidak lagi 404', 'en' => 'Player Classroom feature search no longer 404s'],
+                'body' => ['id' => 'Hasil pencarian fitur untuk ruang kelas pemain kini membuka Kelasku, bukan halaman yang tidak ada.', 'en' => 'The player classroom feature search result now opens My classes instead of a missing page.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.34.0',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'classroom-world-teacher-avatar',
+                'type' => 'feature',
+                'title' => ['id' => 'Avatar guru di meja guru ruang kelas 3D', 'en' => 'Teacher avatar at the teacher desk in the 3D classroom'],
+                'body' => ['id' => 'Avatar guru kini tampil di meja guru lengkap dengan lencana Guru, sesuai karakter guru. Guru juga bisa masuk ruang kelas 3D dari halaman ruang kelasnya dan berjalan bersama siswa; guru tidak masuk bilik game.', 'en' => 'The teacher avatar now stands at the teacher desk with a Teacher badge, using the teacher\'s own character. Teachers can also enter the 3D classroom from their classroom page and walk among students; teachers do not enter game booths.'],
+            ],
+            [
+                'key' => 'classroom-world-proximity-chat',
+                'type' => 'feature',
+                'title' => ['id' => 'Ngobrol saat avatar berdekatan', 'en' => 'Chat when avatars are close'],
+                'body' => ['id' => 'Saat avatar mendekati teman atau guru, muncul tombol Ngobrol. Pesannya tampil sebagai balon di atas avatar pengirim, hanya terlihat oleh pengirim dan penerima, dan otomatis tersimpan di halaman Chat sebagai obrolan pribadi. Hanya anggota kelas yang sama dan guru kelas itu yang bisa saling mengobrol.', 'en' => 'Walking close to a classmate or the teacher shows a Chat button. Messages appear as a bubble over the sender\'s avatar, are seen only by the sender and recipient, and are saved automatically to the Chat page as a direct conversation. Only members of the same classroom and its teacher can chat with each other.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.33.1',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'classroom-game-detail-only',
+                'type' => 'improvement',
+                'title' => ['id' => 'Daftar game di halaman kelas hanya menampilkan penjelasan', 'en' => 'Classroom page game list only shows details'],
+                'body' => ['id' => 'Di halaman ruang kelas siswa, game tidak lagi bisa dimulai langsung dari daftar permainan. Mengetuk game kini membuka penjelasan game (deskripsi, jenjang kelas, jumlah pemain, poin, jumlah soal) beserta petunjuk untuk bermain lewat bilik di ruang kelas 3D dan tombol Masuk Ruangan.', 'en' => 'On the student classroom page, games can no longer be started straight from the game list. Tapping a game now opens its details (description, grades, players, points, question count) with a hint to play from its booth in the 3D classroom and an Enter Room button.'],
+            ],
+            [
+                'key' => 'admin-user-teacher-subjects-teachers-only',
+                'type' => 'fix',
+                'title' => ['id' => 'Pilihan mata pelajaran guru hanya untuk akun guru', 'en' => 'Teacher subject picker only for teacher accounts'],
+                'body' => ['id' => 'Di halaman profil pengguna admin, bagian Mata pelajaran guru tidak lagi muncul pada akun peserta; bagian ini hanya tampil untuk akun guru, dengan nama mata pelajaran mengikuti bahasa admin.', 'en' => 'On the admin user profile page, the Teacher subjects section no longer shows on learner accounts; it only shows for teachers, with subject names in the admin language.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.33.0',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'classroom-hostless-games',
+                'type' => 'feature',
+                'title' => ['id' => 'Game layar host tanpa layar host di ruang kelas', 'en' => 'Host-screen games without a host screen in classrooms'],
+                'body' => ['id' => 'Lantai Runtuh, Turbo Trivia, Tetris Kuis, Monster Café, Peti Emas Misteri, dan Order Rush yang dibuka dari ruang kelas tidak lagi butuh layar host. Siswa pertama menjadi kapten yang mengatur, memulai, dan menghentikan permainan sambil tetap ikut bermain; teman sekelas otomatis masuk ke ruang yang sama tanpa PIN. Bila kapten keluar, peran kapten pindah ke pemain lain. Hanya anggota kelas itu yang bisa masuk, dan keluar dari permainan kembali ke ruang kelas.', 'en' => 'Floor Drop, Turbo Trivia, Block Battle, Monster Café, Economy Heist and Order Rush opened from a classroom no longer need a host screen. The first student becomes the captain who sets up, starts and stops the game while still playing; classmates join the same room automatically without a PIN. If the captain leaves, another player takes over. Only members of that classroom can join, and leaving returns to the classroom.'],
+            ],
+            [
+                'key' => 'classroom-participants-page',
+                'type' => 'feature',
+                'title' => ['id' => 'Halaman daftar peserta ruang kelas', 'en' => 'Classroom participants page'],
+                'body' => ['id' => 'Tab Analisis kini punya tombol menuju halaman khusus daftar peserta: podium nilai tertinggi, ringkasan kelas, pencarian langsung, filter penguasaan dan status main, pengurutan, ekspor CSV, tombol bagikan laporan, serta detail per siswa dengan analisa AI.', 'en' => 'The Analysis tab now links to a dedicated participants page: top score podium, class summary, live search, mastery and play status filters, sorting, CSV export, report sharing and per-student details with the AI analysis.'],
+            ],
+            [
+                'key' => 'classroom-world-dynamic-size',
+                'type' => 'improvement',
+                'title' => ['id' => 'Ruang kelas 3D menyesuaikan jumlah peserta', 'en' => '3D classroom scales with class size'],
+                'body' => ['id' => 'Ukuran ruang kelas 3D, jumlah meja, posisi bilik game, jendela, dan kamera kini mengikuti kapasitas peserta kelas (1 meja untuk 2 siswa, hingga 200 siswa), sehingga avatar tidak menumpuk saat pesertanya banyak.', 'en' => 'The 3D classroom size, desk count, game booth positions, windows and camera now follow the class capacity (one desk per two students, up to 200 students), so avatars no longer pile up in large classes.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.32.0',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'classroom-game-rooms',
+                'type' => 'feature',
+                'title' => ['id' => 'Ruang game khusus ruang kelas tanpa PIN', 'en' => 'Classroom game rooms without a PIN'],
+                'body' => ['id' => 'Game multiplayer yang dibuka dari ruang kelas (Ular Tangga, Duel Kuis Kelas, Teka-Teki Silang, Ping Pong, Main Ular, Pasar Matematika, Taman Angka & Huruf, Jelajah Indonesia, Lab Mini) kini langsung memasukkan siswa ke ruang tunggu bersama kelasnya tanpa memasukkan PIN. Daftar teman yang sudah masuk langsung terlihat; pemain pertama menjadi host dan bisa menekan Mulai saat jumlah pemain cukup. Ruang ini hanya bisa dimasuki anggota aktif kelas yang sama (dicek dari token server), tidak muncul di pencarian PIN, dan tidak menerima pemain satu perangkat. Keluar dari permainan atau ruang tunggu langsung kembali ke ruang kelas.', 'en' => 'Multiplayer games opened from a classroom (Snakes & Ladders, Class Quiz Duel, Crossword, Ping Pong, Snake, Market Math, Number Garden, Explore Indonesia, Mini Lab) now place students straight into their classroom\'s shared waiting room without a PIN. Classmates who joined are listed right away; the first player is the host and can press Start once enough players are in. Only active members of the same classroom can join (checked from the server token); the room does not show up in PIN lookup and takes no same-device players. Leaving the game or the waiting room returns to the classroom.'],
+            ],
+            [
+                'key' => 'classroom-report-accordion-fix',
+                'type' => 'fix',
+                'title' => ['id' => 'Akordion laporan peserta menampilkan hasil analisa', 'en' => 'Participant report accordion shows the analysis'],
+                'body' => ['id' => 'Di tab Analisis ruang kelas, akordion setiap peserta kini terbuka dan tertutup dengan halus serta menampilkan jumlah main, soal terjawab, benar, salah, poin, peringkat, mapel kuat dan lemah, serta poin-poin analisa AI siswa tersebut.', 'en' => 'On the classroom Analysis tab, each participant accordion now opens and closes smoothly and shows plays, answered, correct, wrong, points, rank, strong and weak subjects and the student\'s AI analysis points.'],
+            ],
+            [
+                'key' => 'classroom-join-game-names',
+                'type' => 'fix',
+                'title' => ['id' => 'Daftar game di halaman masuk kelas tampil benar', 'en' => 'Game list on the classroom join page shows correctly'],
+                'body' => ['id' => 'Saat siswa pertama kali membuka ruang kelas, daftar permainannya kini tampil dengan nama game yang benar dan halaman tidak lagi kosong karena error.', 'en' => 'When a student first opens a classroom, the game list now shows the proper game names and the page no longer turns blank from an error.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.31.7',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'classroom-feedback-accordion',
+                'type' => 'improvement',
+                'title' => ['id' => 'Umpan balik AI per siswa jadi akordion', 'en' => 'Per-student AI feedback as an accordion'],
+                'body' => ['id' => 'Di tab AI ruang kelas, umpan balik setiap siswa kini tampil sebagai akordion yang terbuka dan tertutup dengan animasi halus. Baris judul menampilkan nama, jumlah poin, dan tingkat penguasaan; tersedia tombol Buka semua / Tutup semua. Kartu PIN kini rata tengah.', 'en' => 'On the classroom AI tab, each student\'s feedback is now a smoothly animated accordion. The header shows the name, number of points and mastery level, with an Expand all / Collapse all button. The PIN card is now centered.'],
+            ],
+            [
+                'key' => 'teacher-game-names',
+                'type' => 'fix',
+                'title' => ['id' => 'Nama game di form soal guru tampil benar', 'en' => 'Game names show correctly in the teacher question form'],
+                'body' => ['id' => 'Pilihan "Tampilkan di permainan" pada form buat/edit soal, statistik Bank Soal, detail soal, dan analisa kelas kini memakai nama resmi game (misalnya Pasar Matematika, Lantai Runtuh, Turbo Trivia), bukan kode teks seperti teacher.games.market-math.', 'en' => 'The "Show in games" options in the question form, Question Bank stats, question detail and classroom analysis now use the official game names (e.g. Market Math, Floor Drop, Turbo Trivia) instead of text codes like teacher.games.market-math.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.31.6',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'teacher-questions-compact-stats',
+                'type' => 'improvement',
+                'title' => ['id' => 'Kotak statistik Bank Soal dua kolom di HP', 'en' => 'Question Bank stat boxes in two columns on phones'],
+                'body' => ['id' => 'Di halaman Bank Soal guru, kotak Soal dibuat, Dipakai, Jawaban benar, dan Jawaban salah kini tampil dua kolom per baris di HP dengan ikon dan teks yang lebih ringkas; kotak Kompensasi tampil selebar baris. Kotak tarif kompensasi per jenjang juga dua kolom, dan nominal besar turun ke baris berikutnya tanpa keluar kotak. Halaman detail soal memakai gaya yang sama.', 'en' => 'On the teacher Question Bank page, the Questions created, Used, Correct and Wrong answer boxes now show two per row on phones with tighter icons and text; the Compensation box spans the row. The per-level compensation rate boxes also use two columns, and large amounts wrap to the next line instead of overflowing. The question detail page uses the same style.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.31.5',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'classroom-compact-stats',
+                'type' => 'improvement',
+                'title' => ['id' => 'Kotak statistik ruang kelas lebih ringkas', 'en' => 'More compact classroom stat boxes'],
+                'body' => ['id' => 'Di HP, kotak Anggota, Online, dan Bermain pada tab Live kini tampil berjajar tiga dalam satu baris, dan kotak tab Analisis tampil dua kolom, tidak lagi satu kotak per baris. Ikon dan angka berada sejajar sehingga kotak lebih pendek. Kartu per permainan menampilkan nama game utuh dengan ringkasan main, pemain, dan akurasi dalam tiga kotak kecil.', 'en' => 'On phones, the Members, Online and Playing boxes on the Live tab now sit three in a row, and the Analysis tab boxes use two columns instead of one box per row. Icons sit next to the numbers so boxes are shorter. Per-game cards show the full game name with plays, players and accuracy in three small tiles.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.31.4',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'classroom-ai-bullets',
+                'type' => 'improvement',
+                'title' => ['id' => 'Analisa AI ruang kelas dalam bentuk poin-poin', 'en' => 'Classroom AI analysis as bullet points'],
+                'body' => ['id' => 'Ringkasan AI kini dibagi per bagian (Gambaran umum, Sudah kuat, Perlu ditingkatkan, Miskonsepsi, Tindak lanjut), masing-masing berisi poin singkat. Umpan balik per siswa juga berpoin (Sudah kuat, Perlu ditingkatkan, Saran latihan) dan menyapa siswa dengan "kamu" tanpa label siswa. Bagian yang kosong tidak ditampilkan. Analisa lama yang masih berupa paragraf otomatis dipecah menjadi poin. Halaman laporan siswa yang dibagikan guru tidak lagi kosong dan kini menampilkan peringkat, poin per game, serta perbandingan dengan rata-rata kelas.', 'en' => 'The AI summary is now split into sections (Overview, Strengths, Needs work, Misconceptions, Next steps), each with short bullet points. Per-student feedback is also in bullets (Strengths, Needs work, Practice tips) and addresses the student directly without student labels. Empty sections are hidden. Older paragraph analyses are automatically split into points. The report page a teacher shares with a student no longer shows blank and now includes rank, points per game and comparison with the class average.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.31.3',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'teacher-tabs-responsive',
+                'type' => 'improvement',
+                'title' => ['id' => 'Menu Bank Soal, Materi, Ruang Kelas mengikuti lebar layar', 'en' => 'Question Bank, Topics, Classrooms menu fits the screen'],
+                'body' => ['id' => 'Menu bagian guru (Bank Soal, Materi, Ruang Kelas) kini selebar halaman dalam satu baris dengan tiga tombol sama besar, tidak lagi sempit dan terlipat dua baris. Di HP ikon tampil di atas teks agar label tetap terbaca. Di halaman ruang kelas menu ini berada di atas judul dengan jarak yang rapi, dan tab Live, Analisis, AI memakai gaya yang sama.', 'en' => 'The teacher section menu (Question Bank, Topics, Classrooms) now spans the page in one row with three equal buttons instead of a narrow two-row box. On phones the icon sits above the text so labels stay readable. On the classroom page the menu sits above the title with proper spacing, and the Live, Analysis, AI tabs use the same style.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.31.2',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'classroom-analysis-fix',
+                'type' => 'fix',
+                'title' => ['id' => 'Analisa ruang kelas tampil benar', 'en' => 'Classroom analysis shows correctly'],
+                'body' => ['id' => 'Kartu Analisa di halaman guru kini menampilkan kalimat yang bisa dibaca (bukan kode teks) dengan nama mapel dan persentase yang benar. Halaman guru tidak lagi error saat ada soal yang dijawab berkali-kali. Tombol Bagikan, Bagikan semua (dengan catatan guru), dan Keluarkan siswa kembali berfungsi. Laporan siswa kini berisi peringkat, jumlah salah, serta mapel kuat dan lemah tiap siswa.', 'en' => 'The Analysis card on the teacher page now shows readable sentences (not text codes) with correct subject names and percentages. The teacher page no longer errors when a question was answered many times. The Share, Share all (with a teacher note) and Remove student buttons work again. Student rows now include rank, wrong answers, and each student\'s strong and weak subjects.'],
+            ],
+            [
+                'key' => 'classroom-ai-analysis',
+                'type' => 'improvement',
+                'title' => ['id' => 'Analisa AI ruang kelas lebih lengkap dan aman', 'en' => 'Richer and safer classroom AI analysis'],
+                'body' => ['id' => 'Analisa AI kini membaca hasil per game, per mapel, per topik, soal tersulit, dan jawaban salah yang paling sering dipilih, lalu menulis ringkasan, saran tindak lanjut, dan umpan balik untuk setiap siswa. Nama siswa tetap disamarkan, umpan balik dipasangkan ke siswa lewat label (AI tidak bisa menulis ke siswa lain), teks dibersihkan, dan analisa ulang mengganti umpan balik lama. Tab AI menjelaskan kenapa tombol tidak aktif, menampilkan status proses, pesan gagal, dan waktu analisa, serta bisa menjalankan analisa ulang.', 'en' => 'AI analysis now reads results per game, subject and topic, the hardest questions and the most chosen wrong answers, then writes a summary, follow-up advice and feedback for every student. Student names stay hidden, feedback is matched to students by label (the AI cannot write to another student), text is cleaned, and a new analysis replaces old feedback. The AI tab explains why the button is disabled, shows progress, errors and the analysis time, and can run the analysis again.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.31.1',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'classroom-game-back',
+                'type' => 'fix',
+                'title' => ['id' => 'Game di ruang kelas kembali ke ruang kelas', 'en' => 'Classroom games go back to the classroom'],
+                'body' => ['id' => 'Tombol kembali di game (header dan layar hasil) kini membawa siswa ke ruang kelasnya bila game itu dibuka dari ruang kelas aktif yang memilih game tersebut, bukan ke portal. Game di luar ruang kelas tetap kembali ke portal.', 'en' => 'The back button in games (header and result screen) now takes students to their classroom when the game was opened from an active classroom that picked it, instead of the portal. Games outside a classroom still go back to the portal.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.31.0',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'classroom-3d-world',
+                'type' => 'feature',
+                'title' => ['id' => 'Ruang kelas 3D dengan avatar, obrolan, dan bilik permainan', 'en' => '3D classroom with avatars, chat and game booths'],
+                'body' => ['id' => 'Siswa kini bisa menekan "Masuk Ruangan" untuk menjelajahi ruang kelas 3D bersama teman. Avatar mengikuti tampilan dan item di pengaturan karakter, setiap avatar punya lencana nama mengambang, dan siswa bisa mengobrol lewat balon chat serta emote. Bilik permainan pilihan guru ada di dalam ruangan: masuk ke bilik untuk memainkan gamenya. Bar informasi menampilkan nilai, jumlah permainan, peringkat, dan papan peringkat kelas. Di HP, ruangan bisa digeser dan dijelajahi dengan joystick seperti game pada umumnya. Posisi, tabrakan, bilik, dan chat (disaring dan dibatasi) diatur server Go; siswa yang dikeluarkan atau keluar langsung diputus dari ruangan.', 'en' => 'Students can press "Enter the Room" to explore a 3D classroom with friends. Avatars follow the look and items from the character settings, each avatar has a floating name badge, and students chat with speech bubbles and emotes. The game booths the teacher picked stand in the room: step into a booth to play its game. An info bar shows points, games played, rank and the class leaderboard. On phones the room can be dragged and explored with a joystick like a regular game. Positions, collisions, booths and chat (filtered and rate limited) are run by the Go server; removed or leaving students are disconnected from the room right away.'],
+            ],
+            [
+                'key' => 'classroom-join-fix',
+                'type' => 'fix',
+                'title' => ['id' => 'Tombol masuk dan keluar ruang kelas berfungsi kembali', 'en' => 'Classroom join and leave buttons work again'],
+                'body' => ['id' => 'Tombol masuk/keluar di halaman ruang kelas siswa memakai alamat yang benar, setelah masuk siswa tetap di halaman kelas, dan daftar permainan kelas tampil lengkap dengan jumlah soal.', 'en' => 'The join/leave buttons on the student classroom page use the right address, students stay on the classroom page after joining, and the class game list shows with question counts.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.30.0',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'admin-questions-live-search',
+                'type' => 'feature',
+                'title' => ['id' => 'Pencarian langsung di Bank Soal', 'en' => 'Live search in the Question Bank'],
+                'body' => ['id' => 'Bank Soal admin punya pencarian langsung: saran soal muncul saat mengetik (teks Indonesia, Inggris, atau kunci soal) dengan sorotan kata, navigasi keyboard, pintasan "/", dan tombol lihat semua hasil. Pencarian di daftar soal juga menyorot kata yang cocok.', 'en' => 'The admin Question Bank has live search: matching questions appear while typing (Indonesian or English text, or the question key) with highlighted matches, keyboard navigation, a "/" shortcut and a show-all-results button. The question list search highlights matches too.'],
+            ],
+            [
+                'key' => 'admin-questions-restyle',
+                'type' => 'improvement',
+                'title' => ['id' => 'Tampilan baru Bank Soal', 'en' => 'Refreshed Question Bank layout'],
+                'body' => ['id' => 'Ringkasan soal tampil sebagai kartu statistik, kartu mata pelajaran memakai ikon dan warna katalog mapel dengan bar soal aktif, dan semua filter daftar soal digabung dalam satu panel.', 'en' => 'Question totals show as stat cards, subject cards use the subject catalog icon and colour with an active-question bar, and all list filters are grouped in one panel.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.29.4',
+        'date' => '2026-10-13',
+        'changes' => [
+            [
+                'key' => 'admin-roles-accordion',
+                'type' => 'improvement',
+                'title' => ['id' => 'Halaman peran bergaya akordion dengan daftar izin', 'en' => 'Accordion roles page with permission lists'],
+                'body' => ['id' => 'Halaman Peran admin kini tampil sebagai akordion. Setiap peran dapat dibuka untuk melihat izinnya yang dikelompokkan per modul, lengkap dengan jumlah pengguna, cakupan izin, serta tombol buka/tutup semua.', 'en' => 'The admin Roles page now uses an accordion. Each role expands to show its permissions grouped by module, with user count, permission coverage and an expand/collapse all button.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.29.3',
         'date' => '2026-10-12',
         'changes' => [

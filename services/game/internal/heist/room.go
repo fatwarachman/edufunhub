@@ -74,6 +74,7 @@ type command struct {
 	avatar   []byte
 	at       time.Time
 	fn       func(r *Room) any
+	reason   string
 	reply    chan reply
 }
 
@@ -87,6 +88,10 @@ type Room struct {
 	host       *Client
 	hostClaims auth.Claims
 	hostOnline bool
+	// classroomID marks a host-screen-less classroom room (signed claim of
+	// its first player, never changes): hostClaims is then the captain, a
+	// seated player who also runs the room.
+	classroomID int64
 
 	players []*Player
 	byID    map[int64]*Player
@@ -172,6 +177,8 @@ func (r *Room) handle(cmd command, now time.Time) {
 		res.err = r.attach(cmd.c, now)
 	case "join":
 		res.err = r.join(cmd.c, cmd.avatar, now)
+	case "classroom":
+		res.err = r.enterClassroom(cmd.c, cmd.avatar, now)
 	case "leave":
 		res.err = r.leave(cmd.c, now)
 	case "detach":
@@ -195,7 +202,11 @@ func (r *Room) handle(cmd command, now time.Time) {
 	case "inspect":
 		res.v = cmd.fn(r)
 	case "close":
-		r.close(now, "closed")
+		reason := cmd.reason
+		if reason == "" {
+			reason = "closed"
+		}
+		r.close(now, reason)
 	}
 	if res.err == nil && cmd.kind != "inspect" && cmd.kind != "sync" {
 		r.touched = now
@@ -325,6 +336,7 @@ func (r *Room) leave(c *Client, now time.Time) error {
 		r.dirtyBoard, r.dirtyLobby = true, true
 	}
 	c.push(Message{"t": "state_sync", "phase": "NONE", "role": "player"})
+	r.passCaptain(now)
 	return nil
 }
 
@@ -350,7 +362,7 @@ func (r *Room) detach(c *Client, now time.Time) {
 // --- host settings --------------------------------------------------------
 
 func (r *Room) configure(c *Client, win string, value int64, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if r.phase == PhasePlaying {
@@ -376,7 +388,7 @@ func (r *Room) configure(c *Client, win string, value int64, now time.Time) erro
 }
 
 func (r *Room) setSubject(c *Client, subject string, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if r.phase == PhasePlaying {
@@ -390,8 +402,86 @@ func (r *Room) setSubject(c *Client, subject string, now time.Time) error {
 
 // --- game flow ------------------------------------------------------------
 
+// --- classroom rooms ------------------------------------------------------
+
+// canHost reports whether c may run host-only commands (settings, subject,
+// start, end): the host screen, or the captain of a classroom room (the
+// player whose claims are hostClaims; captains still play and answer).
+func (r *Room) canHost(c *Client) bool {
+	return c.Host || (r.classroomID > 0 && c.ID() == r.hostClaims.Subject)
+}
+
+// captain is the account running a classroom room (0 for normal rooms).
+func (r *Room) captain() int64 {
+	if r.classroomID <= 0 {
+		return 0
+	}
+	return r.hostClaims.Subject
+}
+
+// openForClassroom reports whether a classroom player may still be seated
+// automatically: lobby or game over, not full.
+func (r *Room) openForClassroom() bool {
+	return (r.phase == PhaseLobby || r.phase == PhaseOver) && r.active() < MaxPlayers
+}
+
+// enterClassroom seats c in this classroom room when it is still open.
+func (r *Room) enterClassroom(c *Client, avatar []byte, now time.Time) error {
+	if r.classroomID <= 0 || c.Claims.Classroom != r.classroomID {
+		return ErrNotFound
+	}
+	if p := r.byID[c.ID()]; p != nil && !p.left {
+		return r.attach(c, now)
+	}
+	if !r.openForClassroom() {
+		return ErrFull
+	}
+	return r.join(c, avatar, now)
+}
+
+// passCaptain hands a classroom room to the next active player (join order)
+// when the captain left or stayed offline for LobbyDrop; an empty classroom
+// room closes. It reports false
+// when the room closed.
+func (r *Room) passCaptain(now time.Time) bool {
+	if r.classroomID <= 0 || r.closed {
+		return !r.closed
+	}
+	if r.active() == 0 {
+		r.close(now, "empty")
+		return false
+	}
+	cur := r.byID[r.hostClaims.Subject]
+	if cur != nil && !cur.left && (cur.online || now.Sub(cur.offlineAt) < r.cfg.LobbyDrop) {
+		return true
+	}
+	// Next captain: the first active player online, else (nobody online)
+	// the first active one when the captain left.
+	var next *Player
+	for _, p := range r.players {
+		if !p.left && p.online {
+			next = p
+			break
+		}
+	}
+	if next == nil && (cur == nil || cur.left) {
+		for _, p := range r.players {
+			if !p.left {
+				next = p
+				break
+			}
+		}
+	}
+	if next == nil || next == cur {
+		return true
+	}
+	r.hostClaims = next.Claims
+	r.broadcastState(now)
+	return true
+}
+
 func (r *Room) start(c *Client, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if r.phase == PhasePlaying {
@@ -686,7 +776,7 @@ func (r *Room) checkTarget(now time.Time) {
 }
 
 func (r *Room) end(c *Client, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if r.phase != PhasePlaying {
@@ -904,6 +994,9 @@ func (r *Room) housekeep(now time.Time) {
 			r.dirtyLobby = true
 		}
 	}
+	if !r.passCaptain(now) {
+		return
+	}
 	anyone := r.hostOnline
 	for _, p := range r.players {
 		anyone = anyone || p.online
@@ -1028,7 +1121,7 @@ func (r *Room) sendState(c *Client, now time.Time) {
 		})
 	}
 	msg := Message{
-		"t": "state_sync", "pin": r.Pin, "phase": r.phase, "role": role, "subject": subjectOrMix(r.subject),
+		"t": "state_sync", "pin": r.Pin, "phase": r.phase, "role": role, "classroom": r.classroomID, "captain": r.captain(), "subject": subjectOrMix(r.subject),
 		"host":    Message{"user_id": r.hostClaims.Subject, "name": r.hostClaims.Name, "online": r.hostOnline},
 		"players": roster, "min_players": MinPlayers, "max_players": MaxPlayers,
 		"win": r.win, "minutes": r.minutes, "target_gold": r.target,

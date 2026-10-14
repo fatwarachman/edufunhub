@@ -195,6 +195,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /ws/block-battle", s.serveBlockBattle)
 	mux.HandleFunc("GET /ws/monster-cafe", s.serveMonsterCafe)
 	mux.HandleFunc("GET /ws/snake", s.serveEduSnake)
+	mux.HandleFunc("POST /internal/classroom/close", s.serveClassroomClose)
 	mux.HandleFunc("GET /internal/stats", s.serveStats)
 	mux.HandleFunc("GET /internal/presence", s.servePresence)
 	mux.HandleFunc("GET /internal/room", s.serveFindPin)
@@ -336,7 +337,7 @@ func (s *Server) report(result any) {
 	}
 	body, _ := json.Marshal(result)
 	for attempt := 1; attempt <= 3; attempt++ {
-		err := s.post(body)
+		err := s.post(s.cfg.ResultURL, body)
 		if err == nil {
 			s.cfg.Logger.Info("result reported", "body", string(body))
 			return
@@ -346,9 +347,9 @@ func (s *Server) report(result any) {
 	}
 }
 
-func (s *Server) post(body []byte) error {
+func (s *Server) post(url string, body []byte) error {
 	ts := strconv.FormatInt(s.cfg.Now().Unix(), 10)
-	req, err := http.NewRequest(http.MethodPost, s.cfg.ResultURL, bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}

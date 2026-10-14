@@ -3,7 +3,12 @@ import {
     ConnectionBadge,
     RoomEntry,
     RoomError,
+    RoomPinBadge,
 } from '@/components/multiplayer/room';
+import {
+    EndGameButton,
+    RushSettings,
+} from '@/components/order-rush/host-screen';
 import {
     clock,
     formatScore,
@@ -18,6 +23,7 @@ import {
     useRemaining,
 } from '@/components/order-rush/shared';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
     type PowerUp,
@@ -33,6 +39,9 @@ import {
     DoorOpen,
     Flame,
     FlaskConical,
+    Play,
+    RotateCcw,
+    School,
     Shield,
     Timer,
     Trophy,
@@ -44,6 +53,9 @@ type Status = ReturnType<typeof useOrderRush>['status'];
 type Act = (msg: Record<string, unknown>) => boolean;
 
 const AUTO_SUBMIT_KEY = 'order-rush.auto-submit';
+
+/** Classroom fields of `state_sync` (room without a host screen). */
+type ClassroomSync = { classroom?: number; captain?: number };
 
 /** Wall clock for event handlers (never called during render). */
 function timestamp(): number {
@@ -61,6 +73,7 @@ export function PlayerScreen({
     act,
     onJoin,
     onHost,
+    userId,
 }: {
     state: RushState;
     status: Status;
@@ -71,8 +84,14 @@ export function PlayerScreen({
     act: Act;
     onJoin: (pin: string) => void;
     onHost: () => void;
+    /** Signed-in user; the classroom captain gets the host controls. */
+    userId?: number;
 }) {
     const { t } = useTranslations();
+    const back = useGameBack();
+    const { classroom = 0, captain = 0 } = state as RushState & ClassroomSync;
+    const inClassroom = classroom > 0;
+    const isCaptain = inClassroom && captain > 0 && captain === userId;
 
     if (state.phase === 'NONE' || !state.pin) {
         return (
@@ -84,6 +103,9 @@ export function PlayerScreen({
                 createLabel={t('orderRush.openHost')}
                 onCreate={onHost}
                 onJoin={onJoin}
+                onClassroom={() =>
+                    act({ t: 'classroom', avatar: character ?? null })
+                }
             >
                 {state.closed && state.closed !== 'idle' && (
                     <p className="text-xs font-bold text-slate-600">
@@ -99,7 +121,12 @@ export function PlayerScreen({
     const leave = (
         <Button
             variant="ghost"
-            onClick={() => act({ t: 'leave_room' })}
+            onClick={() => {
+                act({ t: 'leave_room' });
+                if (inClassroom) {
+                    window.location.assign(back.href);
+                }
+            }}
             data-testid="or-leave"
             className="min-h-11 self-center rounded-xl border-2 border-[#1f2a44]/20 bg-white/70 px-4 text-xs font-bold text-slate-700"
         >
@@ -107,6 +134,21 @@ export function PlayerScreen({
             {t('orderRush.leave')}
         </Button>
     );
+
+    if (state.phase === 'LOBBY' && inClassroom) {
+        return (
+            <ClassroomLobby
+                state={state}
+                status={status}
+                error={error}
+                online={online}
+                act={act}
+                isCaptain={isCaptain}
+                classroomName={back.classroomName ?? ''}
+                leave={leave}
+            />
+        );
+    }
 
     if (state.phase === 'LOBBY') {
         return (
@@ -182,9 +224,24 @@ export function PlayerScreen({
                 <div className="w-full text-left">
                     <Podium state={state} />
                 </div>
-                <p className="text-xs font-bold text-slate-600">
-                    {t('orderRush.waitingHost')}
-                </p>
+                {isCaptain ? (
+                    <Button
+                        onClick={() => act({ t: 'start_game' })}
+                        disabled={!online}
+                        data-testid="or-again"
+                        className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#1f2a44] px-6 font-display font-black text-white shadow-[3px_3px_0px_#14b8a6]"
+                    >
+                        <RotateCcw className="size-5" aria-hidden="true" />
+                        {t('orderRush.again')}
+                    </Button>
+                ) : (
+                    <p className="text-xs font-bold text-slate-600">
+                        {inClassroom
+                            ? t('room.waitingHost')
+                            : t('orderRush.waitingHost')}
+                    </p>
+                )}
+                {error && inClassroom && <RoomError code={error} />}
                 <AdSlot placement="arena.result" className="w-full max-w-md" />
                 {leave}
             </Panel>
@@ -208,8 +265,143 @@ export function PlayerScreen({
             online={online}
             character={look}
             act={act}
-            leave={leave}
+            leave={
+                isCaptain ? (
+                    <>
+                        <EndGameButton
+                            onConfirm={() => act({ t: 'end_game' })}
+                        />
+                        {leave}
+                    </>
+                ) : (
+                    leave
+                )
+            }
         />
+    );
+}
+
+/**
+ * Lobby of a classroom room (no host screen): classroom badge instead of a
+ * PIN, classmates list, and the race settings + Start for the captain.
+ */
+function ClassroomLobby({
+    state,
+    status,
+    error,
+    online,
+    act,
+    isCaptain,
+    classroomName,
+    leave,
+}: {
+    state: RushState & ClassroomSync;
+    status: Status;
+    error: string | null;
+    online: boolean;
+    act: Act;
+    isCaptain: boolean;
+    classroomName: string;
+    leave: React.ReactNode;
+}) {
+    const { t } = useTranslations();
+    const active = state.players.filter((p) => !p.left);
+    const enough = active.length >= state.min_players;
+    return (
+        <div
+            className="mx-auto w-full max-w-2xl"
+            data-testid="or-classroom-lobby"
+        >
+            <Panel className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <ConnectionBadge status={status} />
+                    <RoomPinBadge
+                        pin={state.pin ?? ''}
+                        classroom={state.classroom}
+                    />
+                </div>
+                <div className="flex min-w-0 items-start gap-3 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#e9fbf3] p-3 text-left sm:p-4">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5]">
+                        <School className="size-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                        <p className="text-sm font-black break-words">
+                            {t('room.classroom.title', { name: classroomName })}
+                        </p>
+                        <p className="mt-0.5 text-xs font-bold text-slate-600">
+                            {isCaptain
+                                ? t('room.classroom.hostHint', {
+                                      min: state.min_players,
+                                  })
+                                : t('room.classroom.playerHint')}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                    <h2 className="flex items-center justify-between gap-2 font-display text-lg font-black">
+                        {t('orderRush.joined')}
+                        <span className="text-sm tabular-nums">
+                            {active.length}/{state.max_players}
+                        </span>
+                    </h2>
+                    <ul
+                        className="grid grid-cols-3 gap-2 sm:grid-cols-5"
+                        data-testid="or-lobby-players"
+                    >
+                        {active.map((p) => (
+                            <li
+                                key={p.user_id}
+                                className={cn(
+                                    'flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 border-[#1f2a44] bg-white p-1.5',
+                                    !p.online && 'opacity-50',
+                                )}
+                            >
+                                <span className="size-12">
+                                    <PlayerAvatar
+                                        character={p.character}
+                                        seat={p.user_id}
+                                        userId={p.user_id}
+                                    />
+                                </span>
+                                <span className="w-full truncate text-center text-xs font-black">
+                                    {p.name}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                {isCaptain ? (
+                    <>
+                        <RushSettings state={state} online={online} act={act} />
+                        <Button
+                            onClick={() => act({ t: 'start_game' })}
+                            disabled={!online || !enough}
+                            data-testid="or-start"
+                            className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#0f766e] px-6 font-display text-lg font-black whitespace-normal text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#115e59] disabled:border-[#1f2a44]/40 disabled:bg-[#e2e8f0] disabled:text-[#334155] disabled:opacity-100 disabled:shadow-none"
+                        >
+                            <Play
+                                className="size-5 shrink-0"
+                                aria-hidden="true"
+                            />
+                            {enough
+                                ? t('orderRush.start')
+                                : t('orderRush.needPlayers', {
+                                      min: state.min_players,
+                                  })}
+                        </Button>
+                    </>
+                ) : (
+                    <p
+                        className="text-center font-display text-lg font-black"
+                        data-testid="or-waiting"
+                    >
+                        {t('room.waitingHost')}
+                    </p>
+                )}
+                {error && <RoomError code={error} />}
+                {leave}
+            </Panel>
+        </div>
     );
 }
 

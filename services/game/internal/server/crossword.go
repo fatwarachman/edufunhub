@@ -107,6 +107,8 @@ func (s *Server) serveCrossword(w http.ResponseWriter, r *http.Request) {
 			ids, err = s.crosswords.Create(claims, in.Level, now)
 		case "join":
 			ids, err = s.crosswords.Enter(claims, in.Pin, now)
+		case "classroom":
+			ids, err = s.crosswords.EnterClassroom(claims, now)
 		case "leave":
 			ids = s.crosswords.Leave(claims.Subject, now)
 		case "level":

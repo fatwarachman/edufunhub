@@ -1,5 +1,6 @@
 import { PinForm } from '@/components/join-by-pin';
 import { PlayerAvatar } from '@/components/player-avatar';
+import { useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import { WhatsAppShareButton } from '@/components/whatsapp-share-button';
 import { type GameSocketStatus } from '@/hooks/use-game-socket';
@@ -11,9 +12,11 @@ import {
     Crown,
     DoorOpen,
     Link2,
+    Loader2,
     MonitorSmartphone,
     Play,
     Plus,
+    School,
     Share2,
     Trash2,
     UserPlus,
@@ -62,8 +65,22 @@ export interface RoomPayload<Seat extends RoomSeat = RoomSeat> {
     subject?: string;
     /** Host's answer time per question in seconds (0 = game default). */
     answer_seconds?: number;
+    /** Classroom of a classroom room (no PIN sharing), 0 or absent otherwise. */
+    classroom?: number;
     /** Answer times the host can pick. */
     answer_times?: number[];
+}
+
+/**
+ * Games whose classroom room was seen on this page load. When the entry
+ * panel shows again for such a game, the player left the room: go back to
+ * the classroom. A full reload clears it, so reloading re-joins the room.
+ */
+const classroomRoomsSeen = new Set<string>();
+
+/** Marks that this page was seated in the game's classroom room. */
+export function markClassroomRoom(game: string): void {
+    classroomRoomsSeen.add(game);
 }
 
 /** Shareable invite link for a room: /games/{game}/join/{pin}. */
@@ -80,8 +97,12 @@ export function useRoomPin(
     currentPin: string | undefined,
     initialPin: string | null,
     join: (pin: string) => void,
+    room?: { game: string; classroom?: number | null },
 ) {
     const done = useRef(false);
+    if (currentPin && room && (room.classroom ?? 0) > 0) {
+        markClassroomRoom(room.game);
+    }
     useEffect(() => {
         if (!online || done.current || !initialPin) {
             return;
@@ -104,6 +125,39 @@ export function useRoomPin(
         }
         window.history.replaceState(window.history.state, '', url);
     }, [currentPin]);
+}
+
+/**
+ * Room label during play: the PIN for invite rooms, the classroom name for
+ * classroom rooms (they are never shared by PIN).
+ */
+export function RoomPinBadge({
+    pin,
+    classroom,
+}: {
+    pin: string;
+    classroom?: number | null;
+}) {
+    const back = useGameBack();
+    if ((classroom ?? 0) > 0) {
+        return (
+            <span
+                className="inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5] px-3 py-1.5 text-sm font-black"
+                data-testid="room-classroom-badge"
+            >
+                <School className="size-4 shrink-0" aria-hidden="true" />
+                <span className="truncate">{back.classroomName ?? ''}</span>
+            </span>
+        );
+    }
+    return (
+        <span
+            className="rounded-xl border-2 border-[#1f2a44] bg-[#FFFDE6] px-3 py-1.5 font-display text-sm font-black tracking-widest"
+            data-testid="room-pin-badge"
+        >
+            PIN {pin}
+        </span>
+    );
 }
 
 export function ConnectionBadge({
@@ -176,6 +230,7 @@ export function RoomEntry({
     createLabel,
     onCreate,
     onJoin,
+    onClassroom,
     children,
 }: {
     /** Catalog key of this game (config/game-catalog.php). */
@@ -186,10 +241,28 @@ export function RoomEntry({
     createLabel?: string;
     onCreate: () => void;
     onJoin: (pin: string) => void;
+    /**
+     * Sends `{t: 'classroom'}`: joins this game's shared room of the
+     * player's classroom (classroom id comes from the signed token).
+     */
+    onClassroom?: () => void;
     children?: ReactNode;
 }) {
     const { t } = useTranslations();
     const online = status === 'online';
+    const back = useGameBack();
+
+    if (back.inClassroom && onClassroom) {
+        return (
+            <ClassroomEntry
+                game={game}
+                status={status}
+                error={error}
+                backHref={back.href}
+                onClassroom={onClassroom}
+            />
+        );
+    }
 
     return (
         <Panel>
@@ -218,6 +291,98 @@ export function RoomEntry({
                     <RoomError code={error} />
                 </div>
             )}
+        </Panel>
+    );
+}
+
+/**
+ * Entry of a game opened from a classroom: no PIN, the player joins the
+ * classroom's room automatically. Showing again after the room was seen
+ * means the player left: return to the classroom.
+ */
+function ClassroomEntry({
+    game,
+    status,
+    error,
+    backHref,
+    onClassroom,
+}: {
+    game: string;
+    status: GameSocketStatus | null;
+    error: string | null;
+    backHref: string;
+    onClassroom: () => void;
+}) {
+    const { t } = useTranslations();
+    const online = status === 'online';
+    const leaving = classroomRoomsSeen.has(game);
+    const sent = useRef(false);
+    const send = useRef(onClassroom);
+    useEffect(() => {
+        send.current = onClassroom;
+    }, [onClassroom]);
+
+    useEffect(() => {
+        if (leaving) {
+            classroomRoomsSeen.delete(game);
+            window.location.assign(backHref);
+        }
+    }, [leaving, game, backHref]);
+
+    useEffect(() => {
+        if (leaving || !online || sent.current) {
+            return;
+        }
+        sent.current = true;
+        send.current();
+    }, [leaving, online]);
+
+    return (
+        <Panel>
+            <div className="flex justify-center">
+                <ConnectionBadge status={status} />
+            </div>
+            <div
+                className="mt-5 flex flex-col items-center gap-3"
+                data-testid="room-classroom-entry"
+            >
+                <span className="grid size-14 place-items-center rounded-2xl border-3 border-[#1f2a44] bg-[#c9f5e5]">
+                    <School className="size-7" aria-hidden="true" />
+                </span>
+                {error ? (
+                    <>
+                        <RoomError code={error} />
+                        <Button
+                            onClick={() => {
+                                sent.current = true;
+                                onClassroom();
+                            }}
+                            disabled={!online}
+                            data-testid="room-classroom-retry"
+                            className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-6 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
+                        >
+                            {t('room.classroom.retry')}
+                        </Button>
+                    </>
+                ) : (
+                    <p className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                        <Loader2
+                            className="size-4 animate-spin motion-reduce:animate-none"
+                            aria-hidden="true"
+                        />
+                        {leaving
+                            ? t('room.classroom.returning')
+                            : t('room.classroom.preparing')}
+                    </p>
+                )}
+                <a
+                    href={backHref}
+                    className="text-sm font-black text-[#1f2a44] underline underline-offset-4"
+                    data-testid="room-classroom-back"
+                >
+                    {t('nav.backToClassroom')}
+                </a>
+            </div>
         </Panel>
     );
 }
@@ -328,6 +493,11 @@ export function RoomLobby({
     const active = room.players.filter((p) => !p.left);
     const link = inviteLink(game, room.pin);
     const enough = active.length >= room.min_players;
+    const inClassroom = (room.classroom ?? 0) > 0;
+    const back = useGameBack();
+    if (inClassroom) {
+        markClassroomRoom(game);
+    }
 
     const copy = async (kind: 'pin' | 'link', text: string) => {
         try {
@@ -375,69 +545,97 @@ export function RoomLobby({
 
                 <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
                     <div className="flex min-w-0 flex-col gap-5">
-                        <div className="min-w-0 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#FFFDE6] p-3 text-center sm:p-4">
-                            <p className="text-sm font-black">
-                                {t('room.shareTitle')}
-                            </p>
-                            <p className="mt-1 text-xs font-bold text-slate-600">
-                                {t('room.shareHint')}
-                            </p>
-                            <p
-                                className="mt-2 font-display text-3xl font-black tracking-[0.2em] sm:text-5xl sm:tracking-[0.25em]"
-                                data-testid="room-pin"
+                        {inClassroom ? (
+                            <div
+                                className="flex min-w-0 items-start gap-3 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#e9fbf3] p-3 text-left sm:p-4"
+                                data-testid="room-classroom"
                             >
-                                {room.pin}
-                            </p>
-                            <p
-                                className="mt-1 text-xs font-bold [overflow-wrap:anywhere] text-slate-600"
-                                data-testid="room-link"
-                            >
-                                {link}
-                            </p>
-                            <div className="mt-3 flex flex-wrap justify-center gap-2">
-                                <ShareButton
-                                    onClick={() => copy('pin', room.pin)}
-                                    icon={Copy}
-                                    testId="room-copy-pin"
-                                    label={t('room.copyPinLabel')}
-                                >
-                                    {copied === 'pin'
-                                        ? t('room.copied')
-                                        : t('room.copyPin')}
-                                </ShareButton>
-                                <ShareButton
-                                    onClick={() => copy('link', link)}
-                                    icon={Link2}
-                                    testId="room-copy-link"
-                                    label={t('room.copyLinkLabel')}
-                                >
-                                    {copied === 'link'
-                                        ? t('room.copied')
-                                        : t('room.copyLink')}
-                                </ShareButton>
-                                <ShareButton
-                                    onClick={share}
-                                    icon={Share2}
-                                    testId="room-share"
-                                >
-                                    {t('room.share')}
-                                </ShareButton>
-                                <WhatsAppShareButton
-                                    text={t('player.shareWaRoomText', {
-                                        game: title,
-                                        pin: room.pin,
-                                        url: link,
-                                    })}
-                                    label={t('player.shareWaRoom')}
-                                    testId="room-share-wa"
-                                />
-                            </div>
-                            {shareError && (
-                                <div className="mt-3">
-                                    <RoomError code={shareError} />
+                                <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5]">
+                                    <School
+                                        className="size-5"
+                                        aria-hidden="true"
+                                    />
+                                </span>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-black break-words">
+                                        {t('room.classroom.title', {
+                                            name: back.classroomName ?? '',
+                                        })}
+                                    </p>
+                                    <p className="mt-0.5 text-xs font-bold text-slate-600">
+                                        {isHost
+                                            ? t('room.classroom.hostHint', {
+                                                  min: room.min_players,
+                                              })
+                                            : t('room.classroom.playerHint')}
+                                    </p>
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        ) : (
+                            <div className="min-w-0 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#FFFDE6] p-3 text-center sm:p-4">
+                                <p className="text-sm font-black">
+                                    {t('room.shareTitle')}
+                                </p>
+                                <p className="mt-1 text-xs font-bold text-slate-600">
+                                    {t('room.shareHint')}
+                                </p>
+                                <p
+                                    className="mt-2 font-display text-3xl font-black tracking-[0.2em] sm:text-5xl sm:tracking-[0.25em]"
+                                    data-testid="room-pin"
+                                >
+                                    {room.pin}
+                                </p>
+                                <p
+                                    className="mt-1 text-xs font-bold [overflow-wrap:anywhere] text-slate-600"
+                                    data-testid="room-link"
+                                >
+                                    {link}
+                                </p>
+                                <div className="mt-3 flex flex-wrap justify-center gap-2">
+                                    <ShareButton
+                                        onClick={() => copy('pin', room.pin)}
+                                        icon={Copy}
+                                        testId="room-copy-pin"
+                                        label={t('room.copyPinLabel')}
+                                    >
+                                        {copied === 'pin'
+                                            ? t('room.copied')
+                                            : t('room.copyPin')}
+                                    </ShareButton>
+                                    <ShareButton
+                                        onClick={() => copy('link', link)}
+                                        icon={Link2}
+                                        testId="room-copy-link"
+                                        label={t('room.copyLinkLabel')}
+                                    >
+                                        {copied === 'link'
+                                            ? t('room.copied')
+                                            : t('room.copyLink')}
+                                    </ShareButton>
+                                    <ShareButton
+                                        onClick={share}
+                                        icon={Share2}
+                                        testId="room-share"
+                                    >
+                                        {t('room.share')}
+                                    </ShareButton>
+                                    <WhatsAppShareButton
+                                        text={t('player.shareWaRoomText', {
+                                            game: title,
+                                            pin: room.pin,
+                                            url: link,
+                                        })}
+                                        label={t('player.shareWaRoom')}
+                                        testId="room-share-wa"
+                                    />
+                                </div>
+                                {shareError && (
+                                    <div className="mt-3">
+                                        <RoomError code={shareError} />
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {settings && <div className="min-w-0">{settings}</div>}
                     </div>
@@ -566,6 +764,7 @@ export function RoomLobby({
                                 )}
                             </ul>
                             {isHost &&
+                                !inClassroom &&
                                 room.local_seats &&
                                 onAddLocal &&
                                 active.length < room.max_players && (
@@ -647,7 +846,9 @@ export function RoomLobby({
                                 className="min-h-12 rounded-2xl border-2 border-[#1f2a44] bg-white px-4 font-black text-[#1f2a44]"
                             >
                                 <DoorOpen className="size-4" />
-                                {t('room.leave')}
+                                {inClassroom
+                                    ? t('nav.backToClassroom')
+                                    : t('room.leave')}
                             </Button>
                         </div>
                         {isHost && soloHint && active.length === 1 && (
