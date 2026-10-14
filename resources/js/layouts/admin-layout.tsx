@@ -1,12 +1,17 @@
 import { AdminBreadcrumbs } from '@/components/admin/admin-breadcrumbs';
-import { AdminFeatureSearch } from '@/components/search/admin-feature-search';
-import { isGroup, navItems, type NavItem, type NavGroup } from '@/lib/admin-navigation';
 import { LanguageToggle } from '@/components/language-toggle';
 import { OnlineDot } from '@/components/online-dot';
+import { AdminFeatureSearch } from '@/components/search/admin-feature-search';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useInitials } from '@/hooks/use-initials';
 import { useTranslations } from '@/hooks/use-translations';
 import { tr } from '@/lib/admin-i18n';
+import {
+    isGroup,
+    navItems,
+    type NavGroup,
+    type NavItem,
+} from '@/lib/admin-navigation';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
@@ -24,11 +29,11 @@ import {
     X,
 } from 'lucide-react';
 import {
-    type ReactNode,
     useCallback,
     useEffect,
     useRef,
     useState,
+    type ReactNode,
 } from 'react';
 
 function isActive(href: string, currentUrl: string, exact = false): boolean {
@@ -46,7 +51,7 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children, title }: AdminLayoutProps) {
-    const { auth } = usePage<SharedData>().props;
+    const { auth, adminBadges } = usePage<SharedData>().props;
     const { i18n } = useTranslations();
     const { resolvedAppearance, toggleAppearance } = useAppearance();
     const getInitials = useInitials();
@@ -113,6 +118,11 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
     );
     const renderLink = (item: NavItem) => {
         const active = isActive(item.href, currentUrl, item.exact);
+        const badge = adminBadges?.[item.href] ?? 0;
+        const label =
+            badge > 0
+                ? `${tr(item.title)} (${tr('{0} pending', [badge])})`
+                : tr(item.title);
         return (
             <Link
                 href={item.href}
@@ -124,11 +134,33 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                     sidebarCollapsed && 'md:justify-center md:px-2',
                 )}
                 aria-current={active ? 'page' : undefined}
-                title={tr(item.title)}
+                aria-label={label}
+                title={label}
             >
-                <item.icon className="size-4 shrink-0" />
+                <span className="relative shrink-0">
+                    <item.icon className="size-4" />
+                    {badge > 0 && sidebarCollapsed && (
+                        <span
+                            className="absolute -top-1.5 -right-1.5 hidden size-2.5 rounded-full bg-destructive ring-2 ring-sidebar md:block"
+                            aria-hidden="true"
+                        />
+                    )}
+                </span>
                 {!sidebarCollapsed && (
-                    <span className="truncate">{tr(item.title)}</span>
+                    <span className="min-w-0 flex-1 truncate">
+                        {tr(item.title)}
+                    </span>
+                )}
+                {badge > 0 && (
+                    <span
+                        className={cn(
+                            'ml-auto grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-destructive px-1.5 text-[11px] leading-none font-bold text-white tabular-nums',
+                            sidebarCollapsed && 'md:hidden',
+                        )}
+                        data-testid="admin-nav-badge"
+                    >
+                        {badge > 99 ? '99+' : badge}
+                    </span>
                 )}
             </Link>
         );

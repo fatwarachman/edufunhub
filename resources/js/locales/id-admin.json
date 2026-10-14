@@ -2088,5 +2088,7 @@
     "No questions match “{0}”.": "Tidak ada soal yang cocok dengan “{0}”.",
     "Matching questions": "Soal yang cocok",
     "{0} questions found": "{0} soal ditemukan",
-    "Show all {0} results": "Lihat semua {0} hasil"
+    "Show all {0} results": "Lihat semua {0} hasil",
+    "{0} pending": "{0} menunggu",
+    "Tells superadmins and admins that a player asked for teacher access.": "Memberi tahu superadmin dan admin saat pemain mengajukan diri menjadi guru."
 }

@@ -170,7 +170,7 @@ describe('whatsapp:send-pending-welcome', function (): void {
 test('the master switch is stored when the admin saves the settings', function (): void {
     $admin = User::factory()->superadmin()->create();
 
-    $this->actingAs($admin)->put('/admin/whatsapp', ['enabled' => true, 'events' => ['welcome' => true, 'ability_analysis' => true, 'friend_request' => true]])
+    $this->actingAs($admin)->put('/admin/whatsapp', ['enabled' => true, 'events' => ['welcome' => true, 'ability_analysis' => true, 'friend_request' => true, 'teacher_request' => true]])
         ->assertSessionHasNoErrors();
 
     expect(app(WhatsAppSettings::class)->enabled())->toBeTrue()

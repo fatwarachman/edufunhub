@@ -5,6 +5,7 @@ return [
         'welcome' => "Hi :name! 👋\n\nWelcome to *:app*. This WhatsApp number is saved, so we will let you know about learning analyses, friend requests and other important news.\n\nKeep playing and learning: :url\n\nDon't want WhatsApp messages? Turn them off on your profile page.",
         'ability_analysis' => "Hi :name! 📊\n\nYour learning ability analysis is ready.\n\n*Summary*\n:summary\n\n*Your strengths*\n:strengths\n\n*Study tips*\n:tips\n\nSee the full analysis: :link",
         'friend_request' => "Hi :name! 🤝\n\n*:from* wants to be your friend on :app.\n\nAccept or decline the request here: :link",
+        'teacher_request' => "Hi :name! 🎓\n\n*:from* asked for teacher access on :app.\nSubject: :subject\nMessage: :note\n\nReview the request here: :link",
         'test' => 'Test message from *:app*. If you got this, WhatsApp notifications are connected. ✅',
     ],
     'ability' => [

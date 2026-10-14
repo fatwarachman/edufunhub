@@ -5,6 +5,7 @@ return [
         'welcome' => "Halo :name! 👋\n\nSelamat datang di *:app*. Nomor WhatsApp ini sudah tersimpan, jadi kami akan mengabari kamu tentang hasil analisa belajar, permintaan pertemanan, dan info penting lainnya.\n\nYuk lanjut main sambil belajar: :url\n\nTidak mau menerima pesan WhatsApp? Matikan di halaman profil.",
         'ability_analysis' => "Halo :name! 📊\n\nAnalisa kemampuan belajar kamu sudah selesai.\n\n*Ringkasan*\n:summary\n\n*Kekuatan kamu*\n:strengths\n\n*Saran belajar*\n:tips\n\nLihat analisa lengkapnya: :link",
         'friend_request' => "Halo :name! 🤝\n\n*:from* ingin berteman denganmu di :app.\n\nTerima atau tolak permintaannya di sini: :link",
+        'teacher_request' => "Halo :name! 🎓\n\n*:from* mengajukan permintaan menjadi guru di :app.\nMata pelajaran: :subject\nPesan: :note\n\nTinjau permintaannya di sini: :link",
         'test' => 'Pesan uji dari *:app*. Jika pesan ini masuk, notifikasi WhatsApp sudah tersambung. ✅',
     ],
     'ability' => [

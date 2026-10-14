@@ -70,7 +70,7 @@ function waStub(Request $request): mixed
 
 function waEnable(array $events = []): void
 {
-    app(WhatsAppSettings::class)->save(true, [...['welcome' => true, 'ability_analysis' => true, 'friend_request' => true], ...$events]);
+    app(WhatsAppSettings::class)->save(true, [...['welcome' => true, 'ability_analysis' => true, 'friend_request' => true, 'teacher_request' => true], ...$events]);
 }
 
 function waPlayer(string $name = 'Ana', ?string $number = '6281234567890', array $attributes = []): User
@@ -341,7 +341,7 @@ describe('admin page', function (): void {
             ->where('connection.logged_in', true)
             ->where('connection.number', '6281111222333')
             ->where('settings.enabled', false)
-            ->has('settings.events', 3)
+            ->has('settings.events', 4)
             ->where('stats.sent', 1)
             ->where('messages.0.phone', '62812****7890'));
     });
@@ -383,7 +383,7 @@ describe('admin page', function (): void {
     it('saves the switches and logs the change', function (): void {
         $this->actingAs($this->admin)->put('/admin/whatsapp', [
             'enabled' => true,
-            'events' => ['welcome' => true, 'ability_analysis' => false, 'friend_request' => true],
+            'events' => ['welcome' => true, 'ability_analysis' => false, 'friend_request' => true, 'teacher_request' => true],
         ])->assertSessionHasNoErrors()->assertRedirect();
 
         $settings = app(WhatsAppSettings::class);

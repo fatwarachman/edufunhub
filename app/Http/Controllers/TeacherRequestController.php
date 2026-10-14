@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\TeacherRequestStoreRequest;
 use App\Models\Subject;
 use App\Models\TeacherRequest;
+use App\Services\TeacherRequestAlerts;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,7 +23,7 @@ class TeacherRequestController extends Controller
         ]);
     }
 
-    public function store(TeacherRequestStoreRequest $request): RedirectResponse
+    public function store(TeacherRequestStoreRequest $request, TeacherRequestAlerts $alerts): RedirectResponse
     {
         $existing = $request->user()->teacherRequests()->where('status', TeacherRequest::PENDING)->exists();
         if ($existing) {
@@ -36,6 +37,7 @@ class TeacherRequestController extends Controller
         ]);
 
         activity()->causedBy($request->user())->performedOn($teacherRequest)->log('Requested teacher access');
+        $alerts->notifyReviewers($teacherRequest);
 
         return redirect()->route('teacher-request.create')->with('success', __('teacher_requests.submitted'));
     }

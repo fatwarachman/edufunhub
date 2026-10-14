@@ -13,6 +13,7 @@ use App\Services\GameSounds;
 use App\Services\PlayerNotifications;
 use App\Services\PlayerPortal;
 use App\Services\ProfileWizard;
+use App\Services\TeacherRequestAlerts;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -109,6 +110,9 @@ class HandleInertiaRequests extends Middleware
             'unreadNotifications' => fn (): int => $user ? app(PlayerNotifications::class)->unreadCount($user) : 0,
             'unreadChats' => fn (): int => $user ? app(ChatService::class)->unreadTotal($user) : 0,
             'pendingFriends' => fn (): int => $user ? app(FriendService::class)->pendingCount($user) : 0,
+            'adminBadges' => fn (): array => $user?->is_superadmin && $request->is('admin', 'admin/*')
+                ? ['/admin/teacher-requests' => app(TeacherRequestAlerts::class)->pendingCount()]
+                : [],
             'chatLive' => fn (): ?array => $user && app(ChatServiceClient::class)->isConfigured()
                 ? ['wsUrl' => (string) config('chat-service.public_ws_url')]
                 : null,
