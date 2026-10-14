@@ -24,6 +24,24 @@
 
 return [
     [
+        'version' => '0.39.0',
+        'date' => '2026-10-14',
+        'changes' => [
+            [
+                'key' => 'admin-user-teacher-subjects-card',
+                'type' => 'fix',
+                'title' => ['id' => 'Mata pelajaran guru pindah dari header profil', 'en' => 'Teacher subjects moved out of the profile header'],
+                'body' => ['id' => 'Di halaman detail pengguna admin, pilihan mata pelajaran guru tidak lagi memenuhi kartu header profil. Kini tampil sebagai kartu sendiri di kolom kiri (hanya untuk akun guru), pilihan yang aktif diberi tanda centang, dan tombol simpan ada di dalam kartu.', 'en' => 'On the admin user detail page the teacher subject picker no longer crowds the profile header card. It is now its own card in the left column (teacher accounts only), selected subjects show a check mark, and the save button sits inside the card.'],
+            ],
+            [
+                'key' => 'admin-teacher-request-alerts',
+                'type' => 'feature',
+                'title' => ['id' => 'Badge dan WhatsApp untuk request guru', 'en' => 'Badge and WhatsApp for teacher requests'],
+                'body' => ['id' => 'Menu Request guru di panel admin kini menampilkan angka jumlah request yang menunggu (titik merah saat sidebar diciutkan). Setiap ada request baru, superadmin dan admin yang punya nomor WhatsApp aktif menerima pesan berisi nama pengaju, mata pelajaran, pesan, dan tautan ke halaman tinjauan. Jenis pesan ini bisa dimatikan di halaman Notifikasi WhatsApp.', 'en' => 'The Teacher requests menu in the admin panel now shows how many requests are waiting (a red dot when the sidebar is collapsed). Each new request sends superadmins and admins with an active WhatsApp number a message with the requester, subject, message and a link to the review page. This message type can be switched off on the WhatsApp notifications page.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.38.0',
         'date' => '2026-10-14',
         'changes' => [

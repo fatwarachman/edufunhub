@@ -146,6 +146,8 @@ export interface SharedData {
     profileWizard?: ProfileWizardPrefill | null;
     /** Game pages only: the classroom this game was opened from (else portal). */
     gameReturn?: { href: string; name: string } | null;
+    /** Admin pages, superadmin only: pending counts keyed by menu href. */
+    adminBadges?: Record<string, number>;
     [key: string]: unknown;
 }
 

@@ -335,3 +335,25 @@ test('user detail flags whether a finished AI ability analysis exists', function
         ->where('hasAbilityAssessment', true)
         ->missing('abilityAssessments'));
 });
+
+it('flags only teachers so the subject card stays off non-teacher profiles', function (): void {
+    $learner = learner(['grade' => 4]);
+    $teacher = User::factory()->create();
+    $teacher->roles()->attach(Role::query()->firstOrCreate(['slug' => Role::TEACHER], ['name' => 'Guru'])->id);
+
+    $this->actingAs($this->superadmin)->get("/admin/users/{$learner->id}")
+        ->assertInertia(fn (Assert $page) => $page->where('user.is_teacher', false));
+    $this->actingAs($this->superadmin)->get("/admin/users/{$teacher->id}")
+        ->assertInertia(fn (Assert $page) => $page->where('user.is_teacher', true)->has('teacherSubjects'));
+});
+
+it('keeps the teacher subject editor out of the profile header', function (): void {
+    $source = file_get_contents(resource_path('js/pages/admin/users/show.tsx'));
+    $start = strpos($source, '{/* Identity card */}');
+    $header = substr($source, $start, strpos($source, '{/* KPIs */}') - $start);
+
+    expect($start)->toBeInt();
+
+    expect($header)->not->toContain('user-teacher-subjects')
+        ->and($source)->toContain("props.viewerIsSuperadmin && user.is_teacher && (\n                            <Panel");
+});

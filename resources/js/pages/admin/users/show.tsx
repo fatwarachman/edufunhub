@@ -56,6 +56,7 @@ import {
     BrainCircuit,
     Cake,
     Calendar,
+    Check,
     CircleCheck,
     CircleX,
     Clock,
@@ -69,6 +70,7 @@ import {
     LogIn,
     Mail,
     Medal,
+    Save,
     School,
     Shield,
     ShieldCheck,
@@ -489,74 +491,6 @@ export default function ShowUser(props: Props) {
                                     {tr('AI ability analysis')}
                                 </a>
                             )}
-                            {props.viewerIsSuperadmin && user.is_teacher && (
-                                <div
-                                    className="flex w-full flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 p-2 text-sm"
-                                    data-testid="user-teacher-subjects"
-                                >
-                                    <span className="font-medium text-foreground">
-                                        {tr('Teacher subjects')}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setTeacherSubjects((current) =>
-                                                current.includes('*')
-                                                    ? []
-                                                    : ['*'],
-                                            )
-                                        }
-                                        className="rounded-md border border-border px-2 py-1 hover:bg-accent"
-                                    >
-                                        {tr('All subjects')}
-                                    </button>
-                                    {props.teacherSubjects.map((subject) => (
-                                        <button
-                                            key={subject.key}
-                                            type="button"
-                                            onClick={() =>
-                                                toggleAssignedSubject(
-                                                    subject.key,
-                                                )
-                                            }
-                                            className={cn(
-                                                'rounded-md border px-2 py-1',
-                                                teacherSubjects.includes('*') ||
-                                                    teacherSubjects.includes(
-                                                        subject.key,
-                                                    )
-                                                    ? 'border-primary bg-primary/10 text-primary'
-                                                    : 'border-border hover:bg-accent',
-                                            )}
-                                        >
-                                            {adminLocale() === 'en'
-                                                ? subject.name_en ||
-                                                  subject.name_id
-                                                : subject.name_id}
-                                        </button>
-                                    ))}
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            router.patch(
-                                                `/admin/users/${user.id}/teacher-subjects`,
-                                                {
-                                                    subjects:
-                                                        teacherSubjects.includes(
-                                                            '*',
-                                                        )
-                                                            ? []
-                                                            : teacherSubjects,
-                                                },
-                                                { preserveScroll: true },
-                                            )
-                                        }
-                                        className="rounded-md bg-primary px-2 py-1 text-primary-foreground hover:bg-primary/90"
-                                    >
-                                        {tr('Save subjects')}
-                                    </button>
-                                </div>
-                            )}
                             <button
                                 type="button"
                                 onClick={() =>
@@ -811,6 +745,99 @@ export default function ShowUser(props: Props) {
                                 )}
                             </div>
                         </Panel>
+                        {props.viewerIsSuperadmin && user.is_teacher && (
+                            <Panel
+                                title={tr('Teacher subjects')}
+                                icon={BookOpenCheck}
+                            >
+                                <div
+                                    className="flex flex-wrap items-center gap-2 text-sm"
+                                    data-testid="user-teacher-subjects"
+                                >
+                                    <button
+                                        type="button"
+                                        aria-pressed={teacherSubjects.includes(
+                                            '*',
+                                        )}
+                                        onClick={() =>
+                                            setTeacherSubjects((current) =>
+                                                current.includes('*')
+                                                    ? []
+                                                    : ['*'],
+                                            )
+                                        }
+                                        className={cn(
+                                            'inline-flex items-center gap-1 rounded-md border px-2.5 py-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                                            teacherSubjects.includes('*')
+                                                ? 'border-primary bg-primary/10 text-primary'
+                                                : 'border-border hover:bg-accent',
+                                        )}
+                                    >
+                                        {teacherSubjects.includes('*') && (
+                                            <Check className="size-3.5" />
+                                        )}
+                                        {tr('All subjects')}
+                                    </button>
+                                    {props.teacherSubjects.map((subject) => {
+                                        const selected =
+                                            teacherSubjects.includes('*') ||
+                                            teacherSubjects.includes(
+                                                subject.key,
+                                            );
+                                        return (
+                                            <button
+                                                key={subject.key}
+                                                type="button"
+                                                aria-pressed={selected}
+                                                onClick={() =>
+                                                    toggleAssignedSubject(
+                                                        subject.key,
+                                                    )
+                                                }
+                                                className={cn(
+                                                    'inline-flex items-center gap-1 rounded-md border px-2.5 py-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                                                    selected
+                                                        ? 'border-primary bg-primary/10 text-primary'
+                                                        : 'border-border hover:bg-accent',
+                                                )}
+                                            >
+                                                {selected && (
+                                                    <Check className="size-3.5" />
+                                                )}
+                                                {adminLocale() === 'en'
+                                                    ? subject.name_en ||
+                                                      subject.name_id
+                                                    : subject.name_id}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                <div className="mt-4 flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            router.patch(
+                                                `/admin/users/${user.id}/teacher-subjects`,
+                                                {
+                                                    subjects:
+                                                        teacherSubjects.includes(
+                                                            '*',
+                                                        )
+                                                            ? []
+                                                            : teacherSubjects,
+                                                },
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                        data-testid="user-teacher-subjects-save"
+                                        className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                    >
+                                        <Save className="size-4" />
+                                        {tr('Save subjects')}
+                                    </button>
+                                </div>
+                            </Panel>
+                        )}
                         <Panel title={tr('Account')} icon={KeyRound}>
                             <dl className="flex flex-col gap-3 text-sm">
                                 <Fact

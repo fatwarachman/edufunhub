@@ -54,6 +54,11 @@ return [
             'description' => 'Tells a player that someone wants to be their friend.',
             'default' => true,
         ],
+        'teacher_request' => [
+            'label' => 'Teacher requests',
+            'description' => 'Tells superadmins and admins that a player asked for teacher access.',
+            'default' => true,
+        ],
     ],
 
 ];
