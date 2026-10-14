@@ -18,7 +18,12 @@ import {
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { QuestionMedia } from '@/components/question-media';
-import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
+import {
+    BackButton,
+    NavButton,
+    SiteNav,
+    useGameBack,
+} from '@/components/site-nav';
 import { useMyUserId } from '@/hooks/use-chat-socket';
 import { type DuelState, useDuelConnection } from '@/hooks/use-duel-connection';
 import { useGameAudio } from '@/hooks/use-game-audio';
@@ -100,6 +105,7 @@ export default function QuizDuel({
     pin,
 }: QuizDuelProps) {
     const { t, i18n } = useTranslations();
+    const back = useGameBack();
     const myId = useMyUserId();
     const [subject, setSubject] = useState<GameSubject>(() =>
         typeof window === 'undefined' ? 'mix' : rememberedSubject(),
@@ -231,7 +237,11 @@ export default function QuizDuel({
         (code: string) => connection.send({ t: 'join', pin: code }),
         [connection],
     );
-    useRoomPin(online, state?.room?.pin, pin, joinRoom);
+    useRoomPin(online, state?.room?.pin, pin, joinRoom, {
+        game: 'quiz-duel',
+        classroom: (state?.room as { classroom?: number } | null | undefined)
+            ?.classroom,
+    });
     const roomSend = (msg: Record<string, unknown>) => {
         setRoomError(null);
         connection.send(msg);
@@ -244,11 +254,7 @@ export default function QuizDuel({
             <Head title={`${t('duel.title')} — EduFunHub`} />
             <header className="sticky top-0 z-50 flex items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
                 <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-                    <BackButton
-                        href="/portal"
-                        label={t('nav.backToPortal')}
-                        iconOnly
-                    />
+                    <BackButton href={back.href} label={back.label} iconOnly />
                     <BrandLink variant="mark" />
                     <h1 className="flex min-w-0 items-center gap-2 font-display text-lg font-bold sm:text-xl">
                         <Swords className="size-6 shrink-0" />
@@ -451,6 +457,9 @@ export default function QuizDuel({
                                     onCreate={() => roomSend({ t: 'create' })}
                                     onJoin={(code) =>
                                         roomSend({ t: 'join', pin: code })
+                                    }
+                                    onClassroom={() =>
+                                        roomSend({ t: 'classroom' })
                                     }
                                 />
                             </div>
@@ -848,6 +857,7 @@ function Result({
     onAgain: () => void;
 }) {
     const { t } = useTranslations();
+    const back = useGameBack();
     return (
         <Centered>
             <Trophy
@@ -883,7 +893,7 @@ function Result({
                     <RotateCcw className="size-5" />
                     {t('duel.result.again')}
                 </BigButton>
-                <NavButton href="/portal" label={t('duel.result.back')} />
+                <NavButton href={back.href} label={back.label} />
             </div>
             <AdSlot placement="arena.result" className="w-full max-w-md" />
         </Centered>

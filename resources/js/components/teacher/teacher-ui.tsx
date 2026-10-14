@@ -1,5 +1,6 @@
 import { useTranslations } from '@/hooks/use-translations';
 import { gradeShortLabel } from '@/lib/grade';
+import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 import { CircleCheck, type LucideIcon } from 'lucide-react';
@@ -41,6 +42,7 @@ export function StatCard({
     hint,
     accent,
     testId,
+    className,
 }: {
     icon: LucideIcon;
     label: string;
@@ -48,27 +50,35 @@ export function StatCard({
     hint?: ReactNode;
     accent: string;
     testId?: string;
+    className?: string;
 }) {
     return (
         <div
-            className="auth-card flex min-w-0 flex-col gap-3 !p-5"
+            className={cn(
+                'flex min-w-0 flex-col gap-1.5 rounded-2xl border-2 border-[#151b2e] bg-white p-3 shadow-[3px_3px_0_#151b2e] sm:gap-3 sm:p-5 sm:shadow-[4px_4px_0_#151b2e]',
+                className,
+            )}
             data-testid={testId}
         >
-            <div className="flex min-w-0 items-center gap-3">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <span
-                    className="grid size-11 shrink-0 place-items-center rounded-xl border-2 border-[#151b2e] text-[#151b2e]"
+                    className="grid size-8 shrink-0 place-items-center rounded-lg border-2 border-[#151b2e] text-[#151b2e] sm:size-11 sm:rounded-xl"
                     style={{ background: accent }}
                 >
-                    <Icon className="size-5" aria-hidden="true" />
+                    <Icon className="size-4 sm:size-5" aria-hidden="true" />
                 </span>
-                <p className="min-w-0 truncate text-2xl font-bold tabular-nums md:text-3xl">
+                <p className="min-w-0 truncate text-lg leading-tight font-bold tabular-nums sm:text-2xl md:text-3xl">
                     {value}
                 </p>
             </div>
             <div className="flex min-w-0 flex-col gap-0.5">
-                <p className="text-sm font-bold">{label}</p>
+                <p className="text-xs leading-snug font-bold break-words sm:text-sm">
+                    {label}
+                </p>
                 {hint && (
-                    <p className="text-xs text-muted-foreground">{hint}</p>
+                    <p className="text-[11px] leading-snug break-words text-muted-foreground sm:text-xs">
+                        {hint}
+                    </p>
                 )}
             </div>
         </div>

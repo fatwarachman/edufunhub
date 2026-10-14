@@ -1,3 +1,4 @@
+import { useGameCatalog } from '@/components/classroom/classroom-ui';
 import InputError from '@/components/input-error';
 import { BackButton } from '@/components/site-nav';
 import { teacherFieldClass, Toggle } from '@/components/teacher/teacher-ui';
@@ -48,6 +49,7 @@ export default function TeacherQuestionForm({
     subjects,
 }: TeacherFormProps) {
     const { t } = useTranslations();
+    const gameCatalog = useGameCatalog();
     const subjectName = useSubjectName();
     const editing = question !== null;
     const form = useForm({
@@ -322,7 +324,7 @@ export default function TeacherQuestionForm({
                                     }
                                     testId={`teacher-game-${game}`}
                                 >
-                                    {t(`teacher.games.${game}`)}
+                                    {gameCatalog.title(game)}
                                 </Toggle>
                             ))}
                         </div>
@@ -330,9 +332,7 @@ export default function TeacherQuestionForm({
                             <p className="text-xs text-muted-foreground">
                                 {t('teacher.form.skyChoiceOnly', {
                                     games: choiceOnlyGames
-                                        .map((game) =>
-                                            t(`teacher.games.${game}`),
-                                        )
+                                        .map((game) => gameCatalog.title(game))
                                         .join(', '),
                                 })}
                             </p>

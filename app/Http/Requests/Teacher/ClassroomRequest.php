@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Teacher;
 
 use App\Models\Classroom;
+use App\Models\ClassroomGame;
 use App\Models\Question;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
@@ -27,8 +28,21 @@ class ClassroomRequest extends FormRequest
             'max_members' => ['integer', 'min:1', 'max:'.Classroom::MAX_MEMBERS],
             'games' => ['required', 'array', 'min:1', 'max:'.self::MAX_GAMES],
             'games.*.game_key' => ['required', 'string', Rule::in(Question::GAMES)],
+            'games.*.max_plays' => ['nullable', 'integer', 'min:'.ClassroomGame::MIN_PLAYS, 'max:'.ClassroomGame::MAX_PLAYS],
             'games.*.question_ids' => ['array', 'max:'.self::MAX_QUESTIONS_PER_GAME],
             'games.*.question_ids.*' => ['distinct', 'integer', 'exists:questions,id'],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        $limits = ['min' => ClassroomGame::MIN_PLAYS, 'max' => ClassroomGame::MAX_PLAYS];
+
+        return [
+            'games.*.max_plays.integer' => __('classrooms.validation.max_plays_range', $limits),
+            'games.*.max_plays.min' => __('classrooms.validation.max_plays_range', $limits),
+            'games.*.max_plays.max' => __('classrooms.validation.max_plays_range', $limits),
         ];
     }
 
@@ -87,7 +101,7 @@ class ClassroomRequest extends FormRequest
         return $this->only(['name', 'description', 'starts_at', 'max_members']);
     }
 
-    /** @return list<array{game_key: string, sort_order: int, question_ids: list<int>}> */
+    /** @return list<array{game_key: string, sort_order: int, max_plays: int|null, question_ids: list<int>}> */
     public function games(): array
     {
         $games = (array) $this->validated('games');
@@ -95,6 +109,7 @@ class ClassroomRequest extends FormRequest
         return array_map(fn (int $i, array $game): array => [
             'game_key' => $game['game_key'],
             'sort_order' => $i,
+            'max_plays' => isset($game['max_plays']) && $game['max_plays'] !== '' ? (int) $game['max_plays'] : null,
             'question_ids' => array_map('intval', $game['question_ids'] ?? []),
         ], array_keys($games), $games);
     }

@@ -46,6 +46,21 @@ class ClassroomJoinTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_join_page_lists_games_as_objects_for_the_preview(): void
+    {
+        $this->classroom->games()->create(['game_key' => 'market-math', 'sort_order' => 0]);
+
+        $this->actingAs($this->player)
+            ->get('/portal/classrooms/123456')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('portal/classroom')
+                ->where('games.0.game_key', 'market-math')
+                ->where('games.0.question_count', 0)
+                ->where('classroom.games', ['market-math'])
+            );
+    }
+
     public function test_ended_classroom_shows_as_null(): void
     {
         Classroom::factory()->ended()->create(['pin' => '654321', 'teacher_id' => $this->teacher->id]);
@@ -58,6 +73,21 @@ class ClassroomJoinTest extends TestCase
             ->where('classroom', null)
             ->where('member', null)
         );
+    }
+
+    public function test_ended_classroom_shows_ended_screen_to_its_members(): void
+    {
+        $classroom = Classroom::factory()->ended()->create(['pin' => '654322', 'teacher_id' => $this->teacher->id]);
+        $member = $classroom->members()->create(['user_id' => $this->player->id, 'joined_at' => now()->subHour()]);
+
+        $this->actingAs($this->player)->get('/portal/classrooms/654322')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('classroom.status', 'ended')
+                ->where('member.id', $member->id)
+                ->where('world', null)
+                ->where('announcement', null)
+            );
     }
 
     public function test_invalid_pin_shows_null(): void

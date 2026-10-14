@@ -54,7 +54,7 @@ interface HostPlayer {
 }
 
 /** Players allowed in one café (host screen not counted). */
-const MAX_PLAYERS = 40;
+export const MAX_PLAYERS = 40;
 
 /**
  * Teacher / projector screen for Monster Café: creates the room, shows the
@@ -313,14 +313,10 @@ function HostLobby({
     act: (msg: Record<string, unknown>) => void;
 }) {
     const { t } = useTranslations();
-    const [subject, setSubject] = useState<GameSubject>('mix');
     const [copied, setCopied] = useState<string | null>(null);
     const link = inviteLink('monster-cafe', state.pin ?? '');
     const active = state.roster.filter((p) => !p.left);
     const enough = active.length >= 1;
-    const roomSubject = isGameSubject(state.subject ?? '')
-        ? (state.subject as GameSubject)
-        : subject;
 
     const copy = async (kind: string, text: string) => {
         try {
@@ -369,45 +365,7 @@ function HostLobby({
                     </div>
                 </div>
 
-                <fieldset className="flex flex-col gap-2" disabled={!online}>
-                    <legend className="mb-1 text-sm font-black">
-                        {t('monsterCafe.host.duration')}
-                    </legend>
-                    <div
-                        className="grid grid-cols-3 gap-2 sm:grid-cols-5"
-                        role="group"
-                        data-testid="mc-minutes"
-                    >
-                        {state.minutes_options.map((minutes) => (
-                            <Chip
-                                key={minutes}
-                                active={state.minutes === minutes}
-                                onClick={() => act({ t: 'configure', minutes })}
-                                testId={`mc-minutes-${minutes}`}
-                            >
-                                <Timer className="size-4" aria-hidden="true" />
-                                {t('monsterCafe.host.minutes', {
-                                    count: minutes,
-                                })}
-                            </Chip>
-                        ))}
-                    </div>
-                    <p className="text-xs font-bold text-slate-600">
-                        {t('monsterCafe.host.durationHint', {
-                            count: state.minutes,
-                        })}
-                    </p>
-                </fieldset>
-
-                <SubjectPicker
-                    value={roomSubject}
-                    onChange={(value) => {
-                        setSubject(value);
-                        act({ t: 'set_subject', subject: value });
-                    }}
-                    disabled={!online}
-                    compact
-                />
+                <CafeSettings state={state} online={online} act={act} />
                 <div className="flex flex-wrap justify-center gap-2">
                     <Button
                         onClick={() => act({ t: 'start_game' })}
@@ -480,6 +438,69 @@ function HostLobby({
                 )}
             </Panel>
         </div>
+    );
+}
+
+/**
+ * Duration + subject settings shared by the projector lobby and the
+ * classroom captain's lobby on the player pad.
+ */
+export function CafeSettings({
+    state,
+    online,
+    act,
+}: {
+    state: MonsterCafeState;
+    online: boolean;
+    act: (msg: Record<string, unknown>) => void;
+}) {
+    const { t } = useTranslations();
+    const [subject, setSubject] = useState<GameSubject>('mix');
+    const roomSubject = isGameSubject(state.subject ?? '')
+        ? (state.subject as GameSubject)
+        : subject;
+    return (
+        <>
+            <fieldset className="flex flex-col gap-2" disabled={!online}>
+                <legend className="mb-1 text-sm font-black">
+                    {t('monsterCafe.host.duration')}
+                </legend>
+                <div
+                    className="grid grid-cols-3 gap-2 sm:grid-cols-5"
+                    role="group"
+                    data-testid="mc-minutes"
+                >
+                    {state.minutes_options.map((minutes) => (
+                        <Chip
+                            key={minutes}
+                            active={state.minutes === minutes}
+                            onClick={() => act({ t: 'configure', minutes })}
+                            testId={`mc-minutes-${minutes}`}
+                        >
+                            <Timer className="size-4" aria-hidden="true" />
+                            {t('monsterCafe.host.minutes', {
+                                count: minutes,
+                            })}
+                        </Chip>
+                    ))}
+                </div>
+                <p className="text-xs font-bold text-slate-600">
+                    {t('monsterCafe.host.durationHint', {
+                        count: state.minutes,
+                    })}
+                </p>
+            </fieldset>
+
+            <SubjectPicker
+                value={roomSubject}
+                onChange={(value) => {
+                    setSubject(value);
+                    act({ t: 'set_subject', subject: value });
+                }}
+                disabled={!online}
+                compact
+            />
+        </>
     );
 }
 
@@ -660,7 +681,7 @@ function CopyButton({
     );
 }
 
-function EndGameButton({ onConfirm }: { onConfirm: () => void }) {
+export function EndGameButton({ onConfirm }: { onConfirm: () => void }) {
     const { t } = useTranslations();
     const [armed, setArmed] = useState(false);
 

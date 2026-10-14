@@ -489,8 +489,11 @@ export default function ShowUser(props: Props) {
                                     {tr('AI ability analysis')}
                                 </a>
                             )}
-                            {props.viewerIsSuperadmin && (
-                                <div className="flex w-full flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 p-2 text-sm">
+                            {props.viewerIsSuperadmin && user.is_teacher && (
+                                <div
+                                    className="flex w-full flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 p-2 text-sm"
+                                    data-testid="user-teacher-subjects"
+                                >
                                     <span className="font-medium text-foreground">
                                         {tr('Teacher subjects')}
                                     </span>
@@ -526,7 +529,10 @@ export default function ShowUser(props: Props) {
                                                     : 'border-border hover:bg-accent',
                                             )}
                                         >
-                                            {subject.name_en || subject.name_id}
+                                            {adminLocale() === 'en'
+                                                ? subject.name_en ||
+                                                  subject.name_id
+                                                : subject.name_id}
                                         </button>
                                     ))}
                                     <button

@@ -107,6 +107,19 @@ export function ChatLive({
                 ) {
                     return;
                 }
+                const conversationType = (
+                    event.conversation as { type?: string } | undefined
+                )?.type;
+                // In the 3D classroom: direct lines from people in the room
+                // show as bubbles/head counts there, not as this popup.
+                if (
+                    conversationType === 'direct' &&
+                    message.user_id &&
+                    chatLive.inClassroomWorld?.(message.user_id)
+                ) {
+                    playChatTing(true);
+                    return;
+                }
                 const onScreen =
                     chatLive.activeConversation === message.conversation_id;
                 playChatTing(

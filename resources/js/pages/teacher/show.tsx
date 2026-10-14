@@ -1,3 +1,4 @@
+import { useGameCatalog } from '@/components/classroom/classroom-ui';
 import {
     GradeChips,
     OutcomeBar,
@@ -84,6 +85,7 @@ interface Props {
 
 export default function TeacherQuestionShow({ question, stats, bands }: Props) {
     const { t, i18n } = useTranslations();
+    const games = useGameCatalog();
     const subjectName = useSubjectName();
     const english = i18n.language === 'en';
     const prompt =
@@ -151,7 +153,7 @@ export default function TeacherQuestionShow({ question, stats, bands }: Props) {
             </section>
 
             <section
-                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4"
                 data-testid="analysis-kpis"
             >
                 <StatCard
@@ -263,9 +265,7 @@ export default function TeacherQuestionShow({ question, stats, bands }: Props) {
                             >
                                 <div className="flex items-baseline justify-between gap-2 text-sm">
                                     <span className="font-bold">
-                                        {t(`teacher.games.${g.game_key}`, {
-                                            defaultValue: g.game_key,
-                                        })}
+                                        {games.title(g.game_key)}
                                     </span>
                                     <span className="text-xs text-muted-foreground tabular-nums">
                                         {g.answered}×

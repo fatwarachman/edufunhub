@@ -3,9 +3,11 @@
 namespace App\Jobs;
 
 use App\Models\Classroom;
+use App\Services\Ai\ClassroomAiText;
 use App\Services\Ai\ClassroomAnalyzer;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
@@ -37,22 +39,22 @@ class AnalyzeClassroom implements ShouldQueue
         try {
             $result = $analyzer->analyze($classroom);
 
-            $classroom->updateQuietly([
-                'ai_summary' => $result['summary'],
-                'ai_status' => 'done',
-                'report_generated_at' => now(),
-            ]);
+            DB::transaction(function () use ($classroom, $result): void {
+                $classroom->updateQuietly([
+                    'ai_summary' => ClassroomAiText::encode($result['summary']),
+                    'ai_status' => 'done',
+                    'report_generated_at' => now(),
+                ]);
 
-            if (isset($result['students']) && is_array($result['students'])) {
+                // A new analysis replaces every old feedback, so no student
+                // keeps text written for an earlier state of the class.
+                $classroom->members()->update(['ai_feedback' => null]);
                 foreach ($result['students'] as $student) {
-                    if (! isset($student['member_id'], $student['feedback'])) {
-                        continue;
-                    }
                     $classroom->members()
-                        ->where('id', $student['member_id'])
-                        ->update(['ai_feedback' => $student['feedback']]);
+                        ->whereKey($student['member_id'])
+                        ->update(['ai_feedback' => ClassroomAiText::encode($student['feedback'])]);
                 }
-            }
+            });
         } catch (Throwable $exception) {
             report($exception);
             $classroom->updateQuietly(['ai_status' => 'failed']);

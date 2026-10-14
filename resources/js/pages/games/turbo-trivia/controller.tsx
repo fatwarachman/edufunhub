@@ -4,10 +4,19 @@ import { GameFinale, podiumStandings } from '@/components/game-finale';
 import {
     ConnectionBadge,
     GamePinForm,
+    markClassroomRoom,
+    RoomEntry,
     RoomError,
+    RoomPinBadge,
 } from '@/components/multiplayer/room';
+import {
+    type GameSubject,
+    isGameSubject,
+    SubjectPicker,
+} from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { QuestionMedia } from '@/components/question-media';
+import { useGameBack } from '@/components/site-nav';
 import { HowToPlay } from '@/components/turbo-trivia/how-to-play';
 import {
     ACCENT,
@@ -33,10 +42,12 @@ import { cn } from '@/lib/utils';
 import { router } from '@inertiajs/react';
 import {
     Coins,
+    Crown,
     DoorOpen,
     Flag,
     Gauge,
     Package,
+    Play,
     Trophy,
     WifiOff,
 } from 'lucide-react';
@@ -77,6 +88,7 @@ export default function TurboTriviaController({
     pin,
 }: ControllerProps) {
     const { t, i18n } = useTranslations();
+    const back = useGameBack();
     const { play, muted, toggleMuted } = useTurboAudio();
     const [failure, setFailure] = useState<{
         code: string;
@@ -200,27 +212,44 @@ export default function TurboTriviaController({
         [send, player.id, player.character],
     );
 
-    // Invite link / QR: join once connected.
+    const classroom = classroomOf(state);
+    const isCaptain = classroom > 0 && captainOf(state) === player.id;
+    if (state.pin && classroom > 0) {
+        markClassroomRoom('turbo-trivia');
+    }
+    const enterClassroom = () =>
+        act({ t: 'classroom', avatar: player.character ?? null });
+    const leave = () => {
+        act({ t: 'leave_room' });
+        if (classroom > 0) {
+            // Back to the classroom even if the reply is lost.
+            window.setTimeout(() => window.location.assign(back.href), 800);
+        }
+    };
+
+    // Invite link / QR: join once connected (classrooms join by token).
     const joined = useRef(false);
     useEffect(() => {
-        if (!online || joined.current || !pin) {
+        if (!online || joined.current || !pin || back.inClassroom) {
             return;
         }
         joined.current = true;
         if (state.pin !== pin) {
             join(pin);
         }
-    }, [online, pin, state.pin, join]);
+    }, [online, pin, state.pin, join, back.inClassroom]);
 
-    // Keep the room PIN in the address bar so a reload rejoins.
+    // Keep the room PIN in the address bar so a reload rejoins; classroom
+    // rooms are never shared by PIN.
     useEffect(() => {
-        const path = state.pin
-            ? `/play/turbo-trivia/${state.pin}`
-            : '/play/turbo-trivia';
+        const path =
+            state.pin && !back.inClassroom
+                ? `/play/turbo-trivia/${state.pin}`
+                : '/play/turbo-trivia';
         if (window.location.pathname !== path) {
             window.history.replaceState(window.history.state, '', path);
         }
-    }, [state.pin]);
+    }, [state.pin, back.inClassroom]);
 
     useAdMoments(
         state.phase === 'RACE'
@@ -239,6 +268,18 @@ export default function TurboTriviaController({
                 {t('mini.unavailable')}
             </Panel>
         );
+    } else if ((state.phase === 'NONE' || !state.pin) && back.inClassroom) {
+        body = (
+            <RoomEntry
+                game="turbo-trivia"
+                status={status}
+                error={error}
+                intro=""
+                onCreate={() => undefined}
+                onJoin={join}
+                onClassroom={enterClassroom}
+            />
+        );
     } else if (state.phase === 'NONE' || !state.pin) {
         body = (
             <JoinPanel
@@ -253,6 +294,19 @@ export default function TurboTriviaController({
                         setError('unknown');
                     }
                 }}
+            />
+        );
+    } else if (state.phase === 'LOBBY' && classroom > 0) {
+        body = (
+            <ClassroomLobby
+                state={state}
+                status={status}
+                error={error}
+                online={online}
+                classroom={classroom}
+                isCaptain={isCaptain}
+                act={act}
+                onLeave={leave}
             />
         );
     } else if (state.phase === 'LOBBY') {
@@ -281,19 +335,63 @@ export default function TurboTriviaController({
                     {t('turboTrivia.rules')}
                 </p>
                 <RoomError code={error} />
-                <LeaveButton onLeave={() => act({ t: 'leave_room' })} />
+                <LeaveButton onLeave={leave} />
             </Panel>
         );
     } else if (state.phase === 'GAME_OVER') {
-        body = <ResultPanel state={state} />;
+        body = (
+            <>
+                <ResultPanel state={state} />
+                {classroom > 0 && (
+                    <Panel className="flex flex-col items-center gap-3 text-center">
+                        <RoomPinBadge
+                            pin={state.pin ?? ''}
+                            classroom={classroom}
+                        />
+                        {isCaptain ? (
+                            <Button
+                                onClick={() => act({ t: 'start_game' })}
+                                disabled={!online}
+                                data-testid="tt-again"
+                                className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#1f2a44] px-6 font-display font-black text-white shadow-[3px_3px_0px_#e11d48]"
+                            >
+                                <Play className="size-5" />
+                                {t('turboTrivia.arena.again')}
+                            </Button>
+                        ) : (
+                            <p className="text-sm font-bold text-slate-700">
+                                {t('room.waitingHost')}
+                            </p>
+                        )}
+                        <RoomError code={error} />
+                        <LeaveButton onLeave={leave} />
+                    </Panel>
+                )}
+            </>
+        );
     } else {
         body = (
-            <RacePad
-                state={state}
-                error={error}
-                act={act}
-                hitFlash={hitFlash}
-            />
+            <>
+                {classroom > 0 && (
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <RoomPinBadge
+                            pin={state.pin ?? ''}
+                            classroom={classroom}
+                        />
+                        {isCaptain && (
+                            <CaptainEndButton
+                                onConfirm={() => act({ t: 'end_game' })}
+                            />
+                        )}
+                    </div>
+                )}
+                <RacePad
+                    state={state}
+                    error={error}
+                    act={act}
+                    hitFlash={hitFlash}
+                />
+            </>
         );
     }
 
@@ -375,6 +473,219 @@ export default function TurboTriviaController({
 }
 
 type Act = (msg: Record<string, unknown>) => boolean;
+
+/** Classroom id of the room (0 for PIN rooms), sent in `state_sync`. */
+function classroomOf(state: TurboState): number {
+    return (state as { classroom?: number }).classroom ?? 0;
+}
+
+/** Player hosting a classroom room (no projector there). */
+function captainOf(state: TurboState): number {
+    return (state as { captain?: number }).captain ?? 0;
+}
+
+/**
+ * Lobby of a classroom room: classmates, and for the captain the host
+ * controls of the arena (questions, subject, start). Never shows the PIN.
+ */
+function ClassroomLobby({
+    state,
+    status,
+    error,
+    online,
+    classroom,
+    isCaptain,
+    act,
+    onLeave,
+}: {
+    state: TurboState;
+    status: ReturnType<typeof useTurboTrivia>['status'];
+    error: string | null;
+    online: boolean;
+    classroom: number;
+    isCaptain: boolean;
+    act: Act;
+    onLeave: () => void;
+}) {
+    const { t } = useTranslations();
+    const back = useGameBack();
+    const players = state.players.filter((p) => !p.left);
+    const enough = players.filter((p) => p.online).length >= state.min_players;
+    const captain = captainOf(state);
+    const subject = isGameSubject(state.subject ?? '')
+        ? (state.subject as GameSubject)
+        : 'mix';
+    return (
+        <Panel
+            className="flex flex-col gap-4"
+            data-testid="tt-classroom-lobby"
+            data-captain={isCaptain ? 'true' : 'false'}
+        >
+            <div className="flex flex-wrap items-center gap-2">
+                <ConnectionBadge status={status} />
+                <RoomPinBadge pin={state.pin ?? ''} classroom={classroom} />
+            </div>
+            <div className="flex flex-col gap-1">
+                <h2 className="font-display text-xl font-black">
+                    {t('room.classroom.title', {
+                        name: back.classroomName ?? '',
+                    })}
+                </h2>
+                <p className="text-sm font-bold text-slate-600">
+                    {isCaptain
+                        ? t('room.classroom.hostHint', {
+                              min: state.min_players,
+                          })
+                        : t('room.classroom.playerHint')}
+                </p>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+                <h3 className="font-display text-lg font-black">
+                    {t('turboTrivia.arena.joined')}
+                </h3>
+                <span className="text-sm font-black tabular-nums">
+                    {t('turboTrivia.arena.playersCount', {
+                        count: players.length,
+                    })}
+                </span>
+            </div>
+            <ul
+                className="grid grid-cols-2 gap-2 sm:grid-cols-3"
+                data-testid="tt-roster"
+            >
+                {players.map((p) => (
+                    <li
+                        key={p.user_id}
+                        className={cn(
+                            'flex min-w-0 items-center gap-2 rounded-2xl border-2 border-[#1f2a44] bg-white p-2',
+                            !p.online && 'opacity-50',
+                        )}
+                    >
+                        <span className="size-9 shrink-0">
+                            <PlayerAvatar
+                                character={p.character}
+                                seat={p.user_id}
+                                userId={p.user_id}
+                            />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-sm font-black">
+                            {p.name}
+                        </span>
+                        {p.user_id === captain && (
+                            <Crown
+                                className="size-4 shrink-0 fill-[#ffd93d] text-[#b45309]"
+                                aria-label={t('room.host')}
+                            />
+                        )}
+                    </li>
+                ))}
+            </ul>
+            {isCaptain && (
+                <>
+                    <fieldset className="flex flex-col gap-2">
+                        <legend className="mb-2 text-xs font-black text-slate-500 uppercase">
+                            {t('turboTrivia.arena.questions')}
+                        </legend>
+                        <div className="grid grid-cols-3 gap-2">
+                            {state.question_counts.map((n) => (
+                                <button
+                                    key={n}
+                                    type="button"
+                                    aria-pressed={state.total === n}
+                                    disabled={!online}
+                                    onClick={() =>
+                                        act({ t: 'configure', questions: n })
+                                    }
+                                    data-testid={`tt-count-${n}`}
+                                    className={cn(
+                                        'flex min-h-14 flex-col items-center justify-center rounded-2xl border-2 border-[#1f2a44] font-display font-black transition-colors',
+                                        state.total === n
+                                            ? 'bg-[#1f2a44] text-white shadow-[3px_3px_0px_#e11d48]'
+                                            : 'bg-white text-[#1f2a44] hover:bg-[#fff1f2]',
+                                    )}
+                                >
+                                    <span className="text-xl leading-none">
+                                        {n}
+                                    </span>
+                                    <span className="text-[11px] font-bold opacity-80">
+                                        {t('turboTrivia.arena.questionsUnit')}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </fieldset>
+                    <SubjectPicker
+                        value={subject}
+                        onChange={(value) =>
+                            act({ t: 'set_subject', subject: value })
+                        }
+                        disabled={!online}
+                        compact
+                    />
+                </>
+            )}
+            <RoomError code={error} />
+            <div className="flex flex-wrap items-center justify-center gap-2">
+                {isCaptain ? (
+                    <Button
+                        onClick={() => act({ t: 'start_game' })}
+                        disabled={!online || !enough}
+                        data-testid="tt-start"
+                        className="min-h-12 min-w-0 flex-1 rounded-2xl border-3 border-[#1f2a44] font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:brightness-95 disabled:bg-[#fecdd3] disabled:text-[#1f2a44] disabled:opacity-100"
+                        style={enough ? { background: ACCENT } : undefined}
+                    >
+                        <Flag className="size-5 shrink-0" />
+                        <span className="truncate">
+                            {enough
+                                ? t('turboTrivia.arena.start')
+                                : t('turboTrivia.arena.needPlayers', {
+                                      min: state.min_players,
+                                  })}
+                        </span>
+                    </Button>
+                ) : (
+                    <p
+                        className="w-full text-center font-display text-lg font-black"
+                        data-testid="tt-waiting-host"
+                    >
+                        {t('room.waitingHost')}
+                    </p>
+                )}
+                <LeaveButton onLeave={onLeave} />
+            </div>
+        </Panel>
+    );
+}
+
+/** End-race control of the classroom captain (asks once to confirm). */
+function CaptainEndButton({ onConfirm }: { onConfirm: () => void }) {
+    const { t } = useTranslations();
+    const [armed, setArmed] = useState(false);
+    useEffect(() => {
+        if (!armed) {
+            return;
+        }
+        const id = setTimeout(() => setArmed(false), 4000);
+        return () => clearTimeout(id);
+    }, [armed]);
+    return (
+        <Button
+            variant="outline"
+            onClick={() => (armed ? onConfirm() : setArmed(true))}
+            data-testid="tt-end"
+            title={armed ? t('turboTrivia.arena.endConfirm') : undefined}
+            className={cn(
+                'min-h-11 rounded-2xl border-2 border-[#1f2a44] px-4 font-black',
+                armed ? 'bg-[#e11d48] text-white' : 'bg-white text-[#1f2a44]',
+            )}
+        >
+            <Flag className="size-4" />
+            {armed
+                ? t('turboTrivia.arena.endNow')
+                : t('turboTrivia.arena.endGame')}
+        </Button>
+    );
+}
 
 function JoinPanel({
     name,

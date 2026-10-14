@@ -7,12 +7,16 @@ use App\Models\User;
 
 class ClassroomContext
 {
+    public function __construct(private ClassroomPlayLimit $limits) {}
+
     /**
      * Find the classroom the user is actively playing in for a given game.
+     * Still returned when the play limit is reached, so a game already
+     * running keeps its classroom; use canStart() before a new play.
      */
     public function currentFor(User $user, string $gameKey): ?Classroom
     {
-        $gameKey = str_ends_with($gameKey, '-host') ? substr($gameKey, 0, -5) : $gameKey;
+        $gameKey = ClassroomPlayLimit::baseGameKey($gameKey);
 
         $member = $user
             ->classroomMembers()
@@ -26,5 +30,16 @@ class ClassroomContext
             ->first();
 
         return $member?->classroom;
+    }
+
+    /**
+     * Whether the user may start a new classroom play of this game: true
+     * outside a classroom or when the game still has plays left.
+     */
+    public function canStart(User $user, string $gameKey): bool
+    {
+        $classroom = $this->currentFor($user, $gameKey);
+
+        return $classroom === null || $this->limits->remaining($classroom, $user, $gameKey) !== 0;
     }
 }

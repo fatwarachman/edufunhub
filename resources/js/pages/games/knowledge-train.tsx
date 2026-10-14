@@ -11,7 +11,12 @@ import {
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { QuestionMedia } from '@/components/question-media';
-import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
+import {
+    BackButton,
+    NavButton,
+    SiteNav,
+    useGameBack,
+} from '@/components/site-nav';
 import { useMyUserId } from '@/hooks/use-chat-socket';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import {
@@ -128,6 +133,7 @@ export default function KnowledgeTrain({
     wsUrl,
 }: KnowledgeTrainProps) {
     const { t, i18n } = useTranslations();
+    const back = useGameBack();
     const myId = useMyUserId();
     const [subject, setSubject] = useState<GameSubject>(() =>
         typeof window === 'undefined' ? 'mix' : rememberedSubject(),
@@ -466,11 +472,7 @@ export default function KnowledgeTrain({
             <Head title={`${t('train.title')} — EduFunHub`} />
             <header className="kt-header sticky top-0 z-50 flex shrink-0 items-center justify-between gap-2 border-b-2 border-[#20364a] bg-white px-3 py-3 sm:gap-3 sm:px-4">
                 <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-                    <BackButton
-                        href="/portal"
-                        label={t('nav.backToPortal')}
-                        iconOnly
-                    />
+                    <BackButton href={back.href} label={back.label} iconOnly />
                     <BrandLink variant="mark" />
                     <h1 className="flex min-w-0 items-center gap-2 font-display text-lg font-bold sm:text-xl">
                         <TrainFront className="size-6 shrink-0" />
@@ -800,6 +802,7 @@ function Overlay({
     onSubject: (subject: GameSubject) => void;
 }) {
     const { t } = useTranslations();
+    const back = useGameBack();
     const phase = state?.phase ?? 'ready';
     const result = state?.result;
     const total = state?.total ?? 10;
@@ -881,7 +884,7 @@ function Overlay({
                         <RotateCcw className="size-5" />
                         {t('train.playAgain')}
                     </StartButton>
-                    <NavButton href="/portal" label={t('nav.backToPortal')} />
+                    <NavButton href={back.href} label={back.label} />
                 </div>
                 <AdSlot placement="arena.result" className="w-full max-w-md" />
             </>

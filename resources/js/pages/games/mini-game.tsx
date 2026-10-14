@@ -13,11 +13,12 @@ import {
     RoomError,
     RoomLobby,
     type RoomPayload,
+    RoomPinBadge,
     useRoomPin,
 } from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { QuestionMedia } from '@/components/question-media';
-import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
+import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import {
@@ -408,7 +409,7 @@ export default function MiniGame({
     pin,
 }: MiniGameProps) {
     const { t, i18n } = useTranslations();
-    const backHref = useGameBackHref();
+    const back = useGameBack();
     const { play, muted, toggleMuted } = useGameAudio();
     const theme = THEMES[game];
     const [state, setState] = useState<Received | null>(null);
@@ -454,7 +455,10 @@ export default function MiniGame({
         (code: string) => connection.send({ t: 'join', pin: code }),
         [connection],
     );
-    useRoomPin(online, state?.pin, pin, join);
+    useRoomPin(online, state?.pin, pin, join, {
+        game,
+        classroom: (state as { classroom?: number } | null)?.classroom,
+    });
 
     const playing = state?.phase === 'playing';
     useAdMoments(
@@ -499,6 +503,7 @@ export default function MiniGame({
                 intro={t('mini.intro', { name: player.name })}
                 onCreate={() => send({ t: 'create' })}
                 onJoin={(code) => send({ t: 'join', pin: code })}
+                onClassroom={() => send({ t: 'classroom' })}
             >
                 <p className="rounded-2xl border-2 border-dashed border-[#1f2a44] px-3 py-2 text-xs font-bold text-slate-600">
                     {t('mini.rules', { rounds: total })}
@@ -559,9 +564,12 @@ export default function MiniGame({
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-2">
                             <ConnectionBadge status={connection.status} />
-                            <span className="rounded-xl border-2 border-[#1f2a44] bg-[#FFFDE6] px-3 py-1.5 font-display text-sm font-black tracking-widest">
-                                PIN {state.pin}
-                            </span>
+                            <RoomPinBadge
+                                pin={state.pin}
+                                classroom={
+                                    (state as { classroom?: number }).classroom
+                                }
+                            />
                         </div>
                         {playing && state.step !== 'countdown' && (
                             <span className="text-sm font-black">
@@ -840,8 +848,8 @@ export default function MiniGame({
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
-                            href={backHref}
-                            label={t('nav.backToPortal')}
+                            href={back.href}
+                            label={back.label}
                             iconOnly
                         />
                         <BrandLink variant="mark" />

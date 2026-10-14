@@ -4,7 +4,7 @@ import {
     BackButton,
     NavButton,
     SiteNav,
-    useGameBackHref,
+    useGameBack,
 } from '@/components/site-nav';
 import {
     LocalGame,
@@ -51,7 +51,7 @@ export default function SnakesAndLaddersGame({
 }: SnakesProps) {
     const { t } = useTranslations();
     const signedIn = player !== null;
-    const backHref = useGameBackHref();
+    const back = useGameBack();
     const { play, muted, toggleMuted } = useGameAudio();
     const [mode, setMode] = useState<Mode>(
         online || (signedIn && pin) ? 'online' : 'local',
@@ -78,12 +78,8 @@ export default function SnakesAndLaddersGame({
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
-                            href={backHref}
-                            label={t(
-                                signedIn
-                                    ? 'nav.backToPortal'
-                                    : 'nav.backToGames',
-                            )}
+                            href={back.href}
+                            label={back.label}
                             iconOnly
                         />
                         <div className="flex min-w-0 flex-col">

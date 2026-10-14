@@ -21,14 +21,27 @@ import {
     vibrate,
 } from '@/components/block-battle/shared';
 import { GameFinale, podiumStandings } from '@/components/game-finale';
-import { RoomLeaveControl } from '@/components/multiplayer/host-controls';
+import {
+    HostExitDialog,
+    RoomLeaveControl,
+} from '@/components/multiplayer/host-controls';
 import {
     ConnectionBadge,
     GamePinForm,
+    markClassroomRoom,
+    RoomEntry,
     RoomError,
+    RoomPinBadge,
 } from '@/components/multiplayer/room';
+import {
+    type GameSubject,
+    isGameSubject,
+    SubjectPicker,
+} from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { QuestionMedia } from '@/components/question-media';
+import { useGameBack } from '@/components/site-nav';
+import { Button } from '@/components/ui/button';
 import {
     type BBAction,
     type BBBoard,
@@ -45,10 +58,14 @@ import {
     ArrowDown,
     ArrowLeft,
     ArrowRight,
+    Check,
     ChevronsDown,
     Coins,
+    Crown,
     Eye,
+    Flag,
     Hammer,
+    Play as PlayIcon,
     RotateCw,
     Skull,
     Swords,
@@ -91,6 +108,7 @@ export default function BlockBattleController({
     pin,
 }: ControllerProps) {
     const { t, i18n } = useTranslations();
+    const back = useGameBack();
     const { play, muted, toggleMuted } = useBlockAudio();
     const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<Toast | null>(null);
@@ -228,27 +246,44 @@ export default function BlockBattleController({
         [send, player.id, player.character],
     );
 
-    // Invite link / QR: join once connected.
+    const classroom = classroomOf(state);
+    const isCaptain = classroom > 0 && captainOf(state) === player.id;
+    if (state.pin && classroom > 0) {
+        markClassroomRoom('block-battle');
+    }
+    const enterClassroom = () =>
+        act({ t: 'classroom', avatar: player.character ?? null });
+    const leave = () => {
+        act({ t: 'leave_room' });
+        if (classroom > 0) {
+            // Back to the classroom even if the reply is lost.
+            window.setTimeout(() => window.location.assign(back.href), 800);
+        }
+    };
+
+    // Invite link / QR: join once connected (classrooms join by token).
     const joined = useRef(false);
     useEffect(() => {
-        if (!online || joined.current || !pin) {
+        if (!online || joined.current || !pin || back.inClassroom) {
             return;
         }
         joined.current = true;
         if (state.pin !== pin) {
             join(pin);
         }
-    }, [online, pin, state.pin, join]);
+    }, [online, pin, state.pin, join, back.inClassroom]);
 
-    // Keep the room PIN in the address bar so a reload rejoins.
+    // Keep the room PIN in the address bar so a reload rejoins; classroom
+    // rooms are never shared by PIN.
     useEffect(() => {
-        const path = state.pin
-            ? `/play/block-battle/${state.pin}`
-            : '/play/block-battle';
+        const path =
+            state.pin && !back.inClassroom
+                ? `/play/block-battle/${state.pin}`
+                : '/play/block-battle';
         if (window.location.pathname !== path) {
             window.history.replaceState(window.history.state, '', path);
         }
-    }, [state.pin]);
+    }, [state.pin, back.inClassroom]);
 
     // Board sounds: cleared lines and incoming garbage.
     const lines = state.board?.lines ?? 0;
@@ -286,6 +321,18 @@ export default function BlockBattleController({
                 {t('mini.unavailable')}
             </Panel>
         );
+    } else if ((state.phase === 'NONE' || !state.pin) && back.inClassroom) {
+        body = (
+            <RoomEntry
+                game="block-battle"
+                status={status}
+                error={error}
+                intro=""
+                onCreate={() => undefined}
+                onJoin={join}
+                onClassroom={enterClassroom}
+            />
+        );
     } else if (state.phase === 'NONE' || !state.pin) {
         body = (
             <JoinPanel
@@ -300,6 +347,19 @@ export default function BlockBattleController({
                         setError('unknown');
                     }
                 }}
+            />
+        );
+    } else if (state.phase === 'LOBBY' && classroom > 0) {
+        body = (
+            <ClassroomLobby
+                state={state}
+                status={status}
+                error={error}
+                online={online}
+                classroom={classroom}
+                isCaptain={isCaptain}
+                act={act}
+                onLeave={leave}
             />
         );
     } else if (state.phase === 'LOBBY') {
@@ -341,14 +401,48 @@ export default function BlockBattleController({
                 <RoomError code={error} />
                 <RoomLeaveControl
                     isHost={false}
-                    onLeave={() => act({ t: 'leave_room' })}
-                    onStop={() => act({ t: 'leave_room' })}
+                    onLeave={leave}
+                    onStop={leave}
                     testId="bb-leave"
                 />
             </Panel>
         );
     } else if (state.phase === 'GAME_OVER') {
-        body = <ResultPanel state={state} />;
+        body = (
+            <>
+                <ResultPanel state={state} />
+                {classroom > 0 && (
+                    <Panel className="flex flex-col items-center gap-3 text-center">
+                        <RoomPinBadge
+                            pin={state.pin ?? ''}
+                            classroom={classroom}
+                        />
+                        {isCaptain ? (
+                            <Button
+                                onClick={() => act({ t: 'start_game' })}
+                                disabled={!online}
+                                data-testid="bb-again"
+                                className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#1f2a44] px-6 font-display font-black text-white shadow-[3px_3px_0px_#ca8a04]"
+                            >
+                                <PlayIcon className="size-5" />
+                                {t('blockBattle.arena.again')}
+                            </Button>
+                        ) : (
+                            <p className="text-sm font-bold text-slate-700">
+                                {t('room.waitingHost')}
+                            </p>
+                        )}
+                        <RoomError code={error} />
+                        <RoomLeaveControl
+                            isHost={false}
+                            onLeave={leave}
+                            onStop={leave}
+                            testId="bb-leave"
+                        />
+                    </Panel>
+                )}
+            </>
+        );
     } else if (state.mode === 'FORTRESS') {
         body = (
             <FortressPad
@@ -416,6 +510,15 @@ export default function BlockBattleController({
                     {toast.text}
                 </div>
             )}
+            {playing && classroom > 0 && (
+                <CaptainBar
+                    pin={state.pin ?? ''}
+                    classroom={classroom}
+                    isCaptain={isCaptain}
+                    onLeave={leave}
+                    onStop={() => act({ t: 'end_game' })}
+                />
+            )}
             {body}
             {(state.phase === 'NONE' || state.phase === 'LOBBY') && (
                 <HowToPlay className="mx-auto w-full max-w-xl" />
@@ -448,6 +551,335 @@ export default function BlockBattleController({
                 )}
             />
         </BlockShell>
+    );
+}
+
+/** Classroom id of the room (0 for PIN rooms), sent in `state_sync`. */
+function classroomOf(state: BBState): number {
+    return (state as { classroom?: number }).classroom ?? 0;
+}
+
+/** Player hosting a classroom room (no projector there). */
+function captainOf(state: BBState): number {
+    return (state as { captain?: number }).captain ?? 0;
+}
+
+/**
+ * Classroom badge during play; the captain can stop the game for everyone
+ * (the arena's end control) or leave alone.
+ */
+function CaptainBar({
+    pin,
+    classroom,
+    isCaptain,
+    onLeave,
+    onStop,
+}: {
+    pin: string;
+    classroom: number;
+    isCaptain: boolean;
+    onLeave: () => void;
+    onStop: () => void;
+}) {
+    const { t } = useTranslations();
+    const [confirm, setConfirm] = useState(false);
+    return (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+            <RoomPinBadge pin={pin} classroom={classroom} />
+            {isCaptain && (
+                <Button
+                    variant="outline"
+                    onClick={() => setConfirm(true)}
+                    data-testid="bb-end"
+                    className="min-h-10 rounded-xl border-2 border-[#1f2a44] bg-white px-3 font-black text-[#1f2a44]"
+                >
+                    <Flag className="size-4" />
+                    {t('blockBattle.arena.endGame')}
+                </Button>
+            )}
+            {confirm && (
+                <HostExitDialog
+                    onClose={() => setConfirm(false)}
+                    onLeave={() => {
+                        setConfirm(false);
+                        onLeave();
+                    }}
+                    onStop={() => {
+                        setConfirm(false);
+                        onStop();
+                    }}
+                />
+            )}
+        </div>
+    );
+}
+
+/**
+ * Lobby of a classroom room: classmates, and for the captain the host
+ * controls of the arena (mode, length, content, subject, start). Never
+ * shows the PIN.
+ */
+function ClassroomLobby({
+    state,
+    status,
+    error,
+    online,
+    classroom,
+    isCaptain,
+    act,
+    onLeave,
+}: {
+    state: BBState;
+    status: ReturnType<typeof useBlockBattle>['status'];
+    error: string | null;
+    online: boolean;
+    classroom: number;
+    isCaptain: boolean;
+    act: Act;
+    onLeave: () => void;
+}) {
+    const { t } = useTranslations();
+    const back = useGameBack();
+    const players = state.players.filter((p) => !p.left);
+    const min =
+        state.mode === 'BATTLE'
+            ? Math.max(2, state.min_players)
+            : Math.max(1, state.min_players);
+    const enough = players.filter((p) => p.online).length >= min;
+    const captain = captainOf(state);
+    const ModeIcon = MODE_STYLE[state.mode].icon;
+    const subject = isGameSubject(state.subject ?? '')
+        ? (state.subject as GameSubject)
+        : 'mix';
+    const choice = (active: boolean) =>
+        cn(
+            'flex min-h-12 min-w-0 flex-col items-center justify-center rounded-2xl border-2 border-[#1f2a44] px-1 text-center font-display text-sm leading-tight font-black transition-colors',
+            active
+                ? 'bg-[#1f2a44] text-white shadow-[3px_3px_0px_#ca8a04]'
+                : 'bg-white text-[#1f2a44] hover:bg-[#fefce8]',
+        );
+    return (
+        <Panel
+            className="flex flex-col gap-4"
+            data-testid="bb-classroom-lobby"
+            data-captain={isCaptain ? 'true' : 'false'}
+        >
+            <div className="flex flex-wrap items-center gap-2">
+                <ConnectionBadge status={status} />
+                <RoomPinBadge pin={state.pin ?? ''} classroom={classroom} />
+                <span
+                    className="inline-flex items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3 py-1.5 text-sm font-black text-white"
+                    style={{ background: MODE_STYLE[state.mode].tone }}
+                    data-testid="bb-lobby-mode"
+                >
+                    <ModeIcon className="size-4" aria-hidden="true" />
+                    {t(`blockBattle.modes.${state.mode}.title`)}
+                </span>
+            </div>
+            <div className="flex flex-col gap-1">
+                <h2 className="font-display text-xl font-black">
+                    {t('room.classroom.title', {
+                        name: back.classroomName ?? '',
+                    })}
+                </h2>
+                <p className="text-sm font-bold text-slate-600">
+                    {isCaptain
+                        ? t('room.classroom.hostHint', { min })
+                        : t('room.classroom.playerHint')}
+                </p>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+                <h3 className="font-display text-lg font-black">
+                    {t('blockBattle.arena.joined')}
+                </h3>
+                <span
+                    className="text-sm font-black tabular-nums"
+                    data-testid="bb-player-count"
+                >
+                    {t('blockBattle.arena.playersCount', {
+                        count: players.length,
+                        max: state.max_players,
+                    })}
+                </span>
+            </div>
+            <ul
+                className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3"
+                data-testid="bb-roster"
+            >
+                {players.map((p) => (
+                    <li
+                        key={p.user_id}
+                        className={cn(
+                            'flex min-w-0 items-center gap-2 rounded-2xl border-2 border-[#1f2a44] bg-white p-2',
+                            !p.online && 'opacity-50',
+                        )}
+                    >
+                        <span className="size-9 shrink-0">
+                            <PlayerAvatar
+                                character={p.character}
+                                seat={p.user_id}
+                                userId={p.user_id}
+                            />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-sm font-black">
+                            {p.name}
+                        </span>
+                        {p.user_id === captain && (
+                            <Crown
+                                className="size-4 shrink-0 fill-[#ffd93d] text-[#b45309]"
+                                aria-label={t('room.host')}
+                            />
+                        )}
+                    </li>
+                ))}
+            </ul>
+            {isCaptain ? (
+                <>
+                    <fieldset className="flex flex-col gap-2">
+                        <legend className="mb-2 text-xs font-black text-slate-500 uppercase">
+                            {t('blockBattle.arena.mode')}
+                        </legend>
+                        <div className="grid grid-cols-3 gap-2">
+                            {state.modes.map((mode) => {
+                                const { icon: Icon } = MODE_STYLE[mode];
+                                const selected = state.mode === mode;
+                                return (
+                                    <button
+                                        key={mode}
+                                        type="button"
+                                        aria-pressed={selected}
+                                        disabled={!online}
+                                        onClick={() =>
+                                            act({ t: 'configure', mode })
+                                        }
+                                        data-testid={`bb-mode-${mode}`}
+                                        className={choice(selected)}
+                                    >
+                                        <Icon
+                                            className="size-5"
+                                            aria-hidden="true"
+                                        />
+                                        <span className="flex items-center gap-1">
+                                            {t(
+                                                `blockBattle.modes.${mode}.title`,
+                                            )}
+                                            {selected && (
+                                                <Check
+                                                    className="size-3.5 shrink-0"
+                                                    aria-hidden="true"
+                                                />
+                                            )}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <p className="text-xs font-bold text-slate-600">
+                            {t(`blockBattle.modes.${state.mode}.desc`)}
+                        </p>
+                    </fieldset>
+                    <fieldset className="flex flex-col gap-2">
+                        <legend className="mb-2 text-xs font-black text-slate-500 uppercase">
+                            {t('blockBattle.arena.duration')}
+                        </legend>
+                        <div className="grid grid-cols-4 gap-2">
+                            {state.durations.map((n) => (
+                                <button
+                                    key={n}
+                                    type="button"
+                                    aria-pressed={state.minutes === n}
+                                    disabled={!online}
+                                    onClick={() =>
+                                        act({ t: 'configure', minutes: n })
+                                    }
+                                    data-testid={`bb-minutes-${n}`}
+                                    className={choice(state.minutes === n)}
+                                >
+                                    <span className="text-xl leading-none">
+                                        {n}
+                                    </span>
+                                    <span className="text-[11px] font-bold opacity-80">
+                                        {t('blockBattle.arena.minutesUnit')}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </fieldset>
+                    {state.mode === 'WORDS' && (
+                        <fieldset
+                            className="flex flex-col gap-2"
+                            data-testid="bb-content"
+                        >
+                            <legend className="mb-2 text-xs font-black text-slate-500 uppercase">
+                                {t('blockBattle.arena.content')}
+                            </legend>
+                            <div className="grid grid-cols-3 gap-2">
+                                {state.contents.map((content) => (
+                                    <button
+                                        key={content}
+                                        type="button"
+                                        aria-pressed={state.content === content}
+                                        disabled={!online}
+                                        onClick={() =>
+                                            act({ t: 'configure', content })
+                                        }
+                                        data-testid={`bb-content-${content}`}
+                                        className={choice(
+                                            state.content === content,
+                                        )}
+                                    >
+                                        {t(`blockBattle.contents.${content}`)}
+                                    </button>
+                                ))}
+                            </div>
+                        </fieldset>
+                    )}
+                    <SubjectPicker
+                        value={subject}
+                        onChange={(value) =>
+                            act({ t: 'set_subject', subject: value })
+                        }
+                        disabled={!online}
+                        compact
+                    />
+                </>
+            ) : (
+                <p className="text-sm font-bold text-slate-700">
+                    {t(`blockBattle.modes.${state.mode}.desc`)}
+                </p>
+            )}
+            <RoomError code={error} />
+            <div className="flex flex-wrap items-center justify-center gap-2">
+                {isCaptain ? (
+                    <Button
+                        onClick={() => act({ t: 'start_game' })}
+                        disabled={!online || !enough}
+                        data-testid="bb-start"
+                        className="h-auto min-h-12 max-w-full min-w-0 flex-1 rounded-2xl border-3 border-[#1f2a44] bg-[#ca8a04] font-display text-lg font-black whitespace-normal text-white shadow-[4px_4px_0px_#1f2a44] hover:brightness-95 disabled:bg-[#fef08a] disabled:text-[#1f2a44] disabled:opacity-100"
+                    >
+                        <Flag className="size-5 shrink-0" />
+                        <span className="truncate">
+                            {enough
+                                ? t('blockBattle.arena.start')
+                                : t('blockBattle.arena.needPlayers', { min })}
+                        </span>
+                    </Button>
+                ) : (
+                    <p
+                        className="w-full text-center font-display text-lg font-black"
+                        data-testid="bb-waiting-host"
+                    >
+                        {t('room.waitingHost')}
+                    </p>
+                )}
+                <RoomLeaveControl
+                    isHost={false}
+                    onLeave={onLeave}
+                    onStop={onLeave}
+                    testId="bb-leave"
+                />
+            </div>
+        </Panel>
     );
 }
 

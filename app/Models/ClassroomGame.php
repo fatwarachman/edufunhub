@@ -13,12 +13,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class ClassroomGame extends Model
 {
     /** @var list<string> */
-    protected $fillable = ['classroom_id', 'game_key', 'sort_order'];
+    protected $fillable = ['classroom_id', 'game_key', 'sort_order', 'max_plays'];
+
+    public const MIN_PLAYS = 1;
+
+    public const MAX_PLAYS = 50;
 
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['classroom_id' => 'integer', 'sort_order' => 'integer'];
+        return ['classroom_id' => 'integer', 'sort_order' => 'integer', 'max_plays' => 'integer'];
     }
 
     /** @return BelongsTo<Classroom, $this> */

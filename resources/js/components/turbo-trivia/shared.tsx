@@ -2,7 +2,7 @@ import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { ResponsiveTable } from '@/components/responsive-table';
-import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
+import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import {
     type TurboBanana,
@@ -216,7 +216,7 @@ export function TurboShell({
     children: ReactNode;
 }) {
     const { t } = useTranslations();
-    const backHref = useGameBackHref();
+    const back = useGameBack();
     return (
         <div
             className="min-h-dvh text-[#1f2a44]"
@@ -233,8 +233,8 @@ export function TurboShell({
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
-                            href={backHref}
-                            label={t('nav.backToPortal')}
+                            href={back.href}
+                            label={back.label}
                             iconOnly
                         />
                         <BrandLink variant="mark" />

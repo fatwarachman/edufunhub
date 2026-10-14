@@ -1,6 +1,6 @@
 import { useTranslations } from '@/hooks/use-translations';
 import { gameIcon } from '@/lib/games';
-import { questionLevelKey, QUESTION_LEVELS } from '@/lib/question-levels';
+import { QUESTION_LEVELS, questionLevelKey } from '@/lib/question-levels';
 import { cn } from '@/lib/utils';
 import { type GameMenuGame, type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -37,10 +37,20 @@ export function useGameCatalog() {
         return {
             get: (key: string) => map.get(key),
             title: (key: string) => {
+                if (typeof key !== 'string' || key === '') {
+                    return '';
+                }
                 const game = map.get(key);
                 return game
                     ? t(game.titleKey)
-                    : t(`teacher.games.${key}`, { defaultValue: key });
+                    : t(`teacher.games.${key}`, {
+                          defaultValue: key
+                              .split('-')
+                              .map(
+                                  (w) => w.charAt(0).toUpperCase() + w.slice(1),
+                              )
+                              .join(' '),
+                      });
             },
             icon: (key: string) => gameIcon(map.get(key)?.icon ?? ''),
             accent: (key: string) => map.get(key)?.accent ?? '#ffd93d',
@@ -220,10 +230,7 @@ export function useLocalized() {
             prompt: (item: { prompt_id: string; prompt_en: string | null }) =>
                 english && item.prompt_en ? item.prompt_en : item.prompt_id,
             topic: (
-                item:
-                    | Pick<TopicRef, 'name_id' | 'name_en'>
-                    | null
-                    | undefined,
+                item: Pick<TopicRef, 'name_id' | 'name_en'> | null | undefined,
             ) =>
                 item
                     ? english && item.name_en

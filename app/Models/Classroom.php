@@ -45,7 +45,7 @@ class Classroom extends Model
 
     /** @var list<string> */
     protected $fillable = [
-        'teacher_id', 'name', 'description', 'pin', 'starts_at', 'ends_at', 'max_members',
+        'teacher_id', 'name', 'description', 'pin', 'starts_at', 'ends_at', 'closed_at', 'max_members',
         'report', 'report_generated_at', 'ai_status', 'ai_summary',
     ];
 
@@ -57,6 +57,7 @@ class Classroom extends Model
             'max_members' => 'integer',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
+            'closed_at' => 'datetime',
             'report' => 'array',
             'report_generated_at' => 'datetime',
         ];
@@ -78,6 +79,12 @@ class Classroom extends Model
     public function members(): HasMany
     {
         return $this->hasMany(ClassroomMember::class);
+    }
+
+    /** @return HasMany<ClassroomAnnouncement, $this> */
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(ClassroomAnnouncement::class);
     }
 
     /** @return HasMany<GameHistory, $this> */

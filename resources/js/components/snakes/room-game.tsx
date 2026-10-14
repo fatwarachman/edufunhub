@@ -11,6 +11,7 @@ import {
     RoomError,
     RoomLobby,
     type RoomPayload,
+    RoomPinBadge,
     useRoomPin,
 } from '@/components/multiplayer/room';
 import {
@@ -247,7 +248,10 @@ export function RoomGame({
         (pin: string) => connection.send({ t: 'join', pin }),
         [connection],
     );
-    useRoomPin(online, state?.pin, initialPin, join);
+    useRoomPin(online, state?.pin, initialPin, join, {
+        game: 'snakes-and-ladders',
+        classroom: (state as { classroom?: number } | null)?.classroom,
+    });
 
     const move =
         state?.phase === 'playing' && state.step === 'move'
@@ -413,6 +417,7 @@ export function RoomGame({
                     })}
                     onCreate={() => send({ t: 'create' })}
                     onJoin={(pin) => send({ t: 'join', pin })}
+                    onClassroom={() => send({ t: 'classroom' })}
                 />
             </>
         );
@@ -541,9 +546,10 @@ export function RoomGame({
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl border-3 border-[#1f2a44] bg-white p-4 shadow-[4px_4px_0px_#1f2a44]">
                 <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <ConnectionBadge status={connection.status} />
-                    <span className="rounded-xl border-2 border-[#1f2a44] bg-[#FFFDE6] px-3 py-1.5 font-display text-sm font-black tracking-widest">
-                        PIN {state.pin}
-                    </span>
+                    <RoomPinBadge
+                        pin={state.pin}
+                        classroom={(state as { classroom?: number }).classroom}
+                    />
                     {state.phase === 'playing' && (
                         <span
                             className="inline-flex min-h-9 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#E8F1FF] px-3 text-xs font-black tabular-nums"

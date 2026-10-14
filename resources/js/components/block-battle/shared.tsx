@@ -2,7 +2,7 @@ import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { PlayerAvatar } from '@/components/player-avatar';
 import { ResponsiveTable } from '@/components/responsive-table';
-import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
+import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import {
     type BBEvent,
     type BBFortress,
@@ -191,7 +191,7 @@ export function BlockShell({
     children: ReactNode;
 }) {
     const { t } = useTranslations();
-    const backHref = useGameBackHref();
+    const back = useGameBack();
     return (
         <div
             className="min-h-dvh overflow-x-clip text-[#1f2a44]"
@@ -213,8 +213,8 @@ export function BlockShell({
                 >
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
-                            href={backHref}
-                            label={t('nav.backToPortal')}
+                            href={back.href}
+                            label={back.label}
                             iconOnly
                         />
                         <BrandLink variant="mark" />

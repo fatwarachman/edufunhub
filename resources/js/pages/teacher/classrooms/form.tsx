@@ -45,8 +45,13 @@ interface ClassroomFormProps {
 
 interface GameDraft {
     game_key: string;
+    /** Empty string = unlimited plays. */
+    max_plays: number | '';
     questions: QuestionPick[];
 }
+
+const MIN_PLAYS = 1;
+const MAX_PLAYS = 50;
 
 const DURATION_PRESETS = [15, 30, 45, 60, 90, 120, 1440];
 
@@ -86,6 +91,7 @@ export default function ClassroomForm({
         max_members: classroom?.max_members ?? Math.min(100, limits.maxMembers),
         games: (classroom?.games ?? []).map((game) => ({
             game_key: game.game_key,
+            max_plays: game.max_plays ?? '',
             questions: game.questions,
         })) as GameDraft[],
     });
@@ -111,6 +117,8 @@ export default function ClassroomForm({
                 max_members: Number(values.max_members),
                 games: values.games.map((game) => ({
                     game_key: game.game_key,
+                    max_plays:
+                        game.max_plays === '' ? null : Number(game.max_plays),
                     question_ids: game.questions.map((question) => question.id),
                 })),
             };
@@ -134,7 +142,10 @@ export default function ClassroomForm({
                 ? current.games.filter((game) => game.game_key !== key)
                 : current.games.length >= limits.maxGames
                   ? current.games
-                  : [...current.games, { game_key: key, questions: [] }],
+                  : [
+                        ...current.games,
+                        { game_key: key, max_plays: '', questions: [] },
+                    ],
         }));
     };
 
@@ -149,6 +160,24 @@ export default function ClassroomForm({
                               0,
                               limits.maxQuestionsPerGame,
                           ),
+                      }
+                    : game,
+            ),
+        }));
+    };
+
+    const setMaxPlays = (key: string, value: string) => {
+        const parsed = value === '' ? '' : Math.trunc(Number(value));
+        setData((current) => ({
+            ...current,
+            games: current.games.map((game) =>
+                game.game_key === key
+                    ? {
+                          ...game,
+                          max_plays:
+                              parsed === '' || Number.isNaN(parsed)
+                                  ? ''
+                                  : parsed,
                       }
                     : game,
             ),
@@ -484,6 +513,9 @@ export default function ClassroomForm({
                             )
                         }
                         onCopyFrom={(source) => copyFrom(game.game_key, source)}
+                        onMaxPlays={(value) =>
+                            setMaxPlays(game.game_key, value)
+                        }
                     />
                 ))}
 
@@ -551,6 +583,7 @@ function GameQuestions({
     onMove,
     onRemove,
     onCopyFrom,
+    onMaxPlays,
 }: {
     game: GameDraft;
     gameIndex: number;
@@ -563,11 +596,14 @@ function GameQuestions({
     onMove: (index: number, delta: number) => void;
     onRemove: (index: number) => void;
     onCopyFrom: (source: string) => void;
+    onMaxPlays: (value: string) => void;
 }) {
     const { t } = useTranslations();
     const catalog = useGameCatalog();
     const Icon = catalog.icon(game.game_key);
     const auto = game.questions.length === 0;
+    const maxPlaysError = errorFor(`games.${gameIndex}.max_plays`);
+    const maxPlaysId = `classroom-max-plays-${game.game_key}`;
     const questionErrors = Object.entries({} as Record<string, string>).concat(
         [
             `games.${gameIndex}.question_ids`,
@@ -668,6 +704,40 @@ function GameQuestions({
                         </select>
                     </label>
                 )}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+                <label
+                    htmlFor={maxPlaysId}
+                    className="text-sm font-bold text-slate-800"
+                >
+                    {t('classroom.form.maxPlays')}
+                </label>
+                <input
+                    id={maxPlaysId}
+                    type="number"
+                    inputMode="numeric"
+                    min={MIN_PLAYS}
+                    max={MAX_PLAYS}
+                    step={1}
+                    value={game.max_plays}
+                    placeholder={t('classroom.form.maxPlaysPlaceholder')}
+                    onChange={(event) => onMaxPlays(event.target.value)}
+                    aria-invalid={maxPlaysError ? true : undefined}
+                    aria-describedby={`${maxPlaysId}-hint`}
+                    className={`${teacherFieldClass} max-w-40`}
+                    data-testid={maxPlaysId}
+                />
+                <p
+                    id={`${maxPlaysId}-hint`}
+                    className="text-xs font-semibold text-slate-600"
+                >
+                    {t('classroom.form.maxPlaysHint', {
+                        min: MIN_PLAYS,
+                        max: MAX_PLAYS,
+                    })}
+                </p>
+                <InputError message={maxPlaysError} />
             </div>
 
             {choiceOnly && (

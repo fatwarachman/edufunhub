@@ -5,15 +5,21 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teacher\ClassroomQuestionOptionsRequest;
 use App\Http\Requests\Teacher\ClassroomRequest;
+use App\Http\Requests\Teacher\ClassroomShareRequest;
 use App\Jobs\AnalyzeClassroom;
 use App\Models\Classroom;
 use App\Models\ClassroomGame;
+use App\Models\ClassroomMember;
 use App\Models\Question;
 use App\Models\Subject;
 use App\Models\SubjectTopic;
 use App\Services\Ai\AiSettings;
+use App\Services\Ai\ClassroomAiText;
+use App\Services\Classrooms\ClassroomAnnouncer;
+use App\Services\Classrooms\ClassroomCloser;
 use App\Services\Classrooms\ClassroomLive;
 use App\Services\Classrooms\ClassroomReport;
+use App\Services\Classrooms\ClassroomWorldKicker;
 use App\Services\PlayerNotifications;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -29,6 +35,7 @@ class ClassroomController extends Controller
         private ClassroomLive $live,
         private ClassroomReport $report,
         private AiSettings $ai,
+        private ClassroomWorldKicker $kicker,
     ) {}
 
     public function index(Request $request): Response
@@ -92,6 +99,7 @@ class ClassroomController extends Controller
             $classroomGame = $classroom->games()->create([
                 'game_key' => $game['game_key'],
                 'sort_order' => $game['sort_order'],
+                'max_plays' => $game['max_plays'],
             ]);
 
             if ($game['question_ids'] !== []) {
@@ -127,6 +135,7 @@ class ClassroomController extends Controller
                 'max_members' => $classroom->max_members,
                 'games' => $classroom->games->map(fn (ClassroomGame $g): array => [
                     'game_key' => $g->game_key,
+                    'max_plays' => $g->max_plays,
                     'questions' => $g->questions->map(fn (Question $q): array => [
                         'id' => $q->id,
                         'prompt_id' => $q->prompt_id,
@@ -135,7 +144,7 @@ class ClassroomController extends Controller
                     ]),
                 ]),
                 'ai_status' => $classroom->ai_status,
-                'ai_summary' => $classroom->ai_summary,
+                'ai_summary' => ClassroomAiText::decode($classroom->ai_summary, ClassroomAiText::SUMMARY_SECTIONS, 'overview'),
                 'ai_available' => $this->ai->configured(),
                 'report_generated_at' => $classroom->report_generated_at?->toIso8601String(),
             ],
@@ -148,7 +157,41 @@ class ClassroomController extends Controller
             $props['report'] = $this->report->forClassroom($classroom);
         }
 
+        $props['announcements'] = app(ClassroomAnnouncer::class)->recent($classroom);
+
         return Inertia::render('teacher/classrooms/show', $props);
+    }
+
+    public function participants(Classroom $classroom): Response
+    {
+        Gate::authorize('view', $classroom);
+
+        $report = $this->report->forClassroom($classroom);
+        $students = collect($report['students'])->values();
+
+        return Inertia::render('teacher/classrooms/participants', [
+            'classroom' => [
+                'id' => $classroom->id,
+                'name' => $classroom->name,
+                'pin' => $classroom->pin,
+                'status' => $classroom->status(),
+            ],
+            'summary' => $report['summary'],
+            'students' => $students->all(),
+            'top' => $students
+                ->filter(fn (array $student): bool => $student['plays'] > 0)
+                ->sortBy([['points', 'desc'], ['accuracy', 'desc'], ['name', 'asc']])
+                ->take(3)
+                ->map(fn (array $student): array => [
+                    'member_id' => $student['member_id'],
+                    'name' => $student['name'],
+                    'points' => $student['points'],
+                    'accuracy' => $student['accuracy'],
+                    'mastery' => $student['mastery'],
+                ])
+                ->values()
+                ->all(),
+        ]);
     }
 
     public function live(Classroom $classroom, Request $request): JsonResponse
@@ -176,6 +219,7 @@ class ClassroomController extends Controller
                 'max_members' => $classroom->max_members,
                 'games' => $classroom->games->map(fn (ClassroomGame $g): array => [
                     'game_key' => $g->game_key,
+                    'max_plays' => $g->max_plays,
                     'question_ids' => $g->questions->pluck('id')->all(),
                 ])->all(),
             ],
@@ -187,12 +231,15 @@ class ClassroomController extends Controller
     {
         Gate::authorize('update', $classroom);
 
+        $endsAt = now()->parse($request->validated('starts_at'))->addMinutes((int) $request->validated('duration_minutes'));
         $classroom->update([
             'name' => $request->validated('name'),
             'description' => $request->validated('description'),
             'starts_at' => $request->validated('starts_at'),
-            'ends_at' => now()->parse($request->validated('starts_at'))->addMinutes((int) $request->validated('duration_minutes')),
+            'ends_at' => $endsAt,
             'max_members' => $request->validated('max_members', $classroom->max_members),
+            // A new end time in the future re-arms the automatic close.
+            'closed_at' => $endsAt->isFuture() ? null : $classroom->closed_at,
         ]);
 
         $classroom->games()->delete();
@@ -200,6 +247,7 @@ class ClassroomController extends Controller
             $classroomGame = $classroom->games()->create([
                 'game_key' => $game['game_key'],
                 'sort_order' => $game['sort_order'],
+                'max_plays' => $game['max_plays'],
             ]);
 
             if ($game['question_ids'] !== []) {
@@ -232,6 +280,8 @@ class ClassroomController extends Controller
 
         $classroom->update(['ends_at' => now()]);
 
+        app(ClassroomCloser::class)->close($classroom);
+
         return redirect()->route('teacher.classrooms.show', $classroom)->with('success', __('classrooms.ended'));
     }
 
@@ -241,6 +291,8 @@ class ClassroomController extends Controller
 
         $member = $classroom->members()->findOrFail((int) $request->input('member_id'));
         $member->update(['left_at' => now()]);
+
+        $this->kicker->kick($classroom->id, (int) $member->user_id);
 
         return back()->with('success', __('classrooms.member_removed'));
     }
@@ -255,6 +307,10 @@ class ClassroomController extends Controller
 
         if (in_array($classroom->ai_status, ['queued', 'running'], true)) {
             return back()->withErrors(['ai' => __('classrooms.analysis_running')]);
+        }
+
+        if (! $classroom->gameHistories()->exists()) {
+            return back()->withErrors(['ai' => __('classrooms.analysis_no_data')]);
         }
 
         $classroom->update(['ai_status' => 'queued']);
@@ -310,15 +366,13 @@ class ClassroomController extends Controller
         return response()->json($picks);
     }
 
-    public function share(Request $request, Classroom $classroom, PlayerNotifications $notifications): RedirectResponse
+    public function share(ClassroomShareRequest $request, Classroom $classroom, PlayerNotifications $notifications): RedirectResponse
     {
         Gate::authorize('share', $classroom);
 
-        $member = $classroom->members()->findOrFail((int) $request->input('member_id'));
-        $report = $this->report->forStudent($member);
-
+        $member = $classroom->members()->whereNull('left_at')->findOrFail((int) $request->validated('member_id'));
         $member->update([
-            'report' => $report,
+            'report' => $this->sharedReport($member, $request->validated('note')),
             'report_shared_at' => now(),
         ]);
 
@@ -333,7 +387,7 @@ class ClassroomController extends Controller
         return back()->with('success', __('classrooms.report_shared'));
     }
 
-    public function shareAll(Request $request, Classroom $classroom, PlayerNotifications $notifications): RedirectResponse
+    public function shareAll(ClassroomShareRequest $request, Classroom $classroom, PlayerNotifications $notifications): RedirectResponse
     {
         Gate::authorize('share', $classroom);
 
@@ -344,9 +398,8 @@ class ClassroomController extends Controller
 
         $count = 0;
         foreach ($members as $member) {
-            $report = $this->report->forStudent($member);
             $member->update([
-                'report' => $report,
+                'report' => $this->sharedReport($member, $request->validated('note')),
                 'report_shared_at' => now(),
             ]);
 
@@ -361,6 +414,18 @@ class ClassroomController extends Controller
         }
 
         return back()->with('success', __('classrooms.reports_shared', ['count' => $count]));
+    }
+
+    /**
+     * Student report snapshot with the teacher's optional note.
+     *
+     * @return array<string, mixed>
+     */
+    private function sharedReport(ClassroomMember $member, ?string $note): array
+    {
+        $note = $note === null ? null : trim(strip_tags($note));
+
+        return [...$this->report->forStudent($member), 'teacher_note' => $note === '' ? null : $note];
     }
 
     /** @return array<string, mixed> */

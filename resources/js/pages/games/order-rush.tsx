@@ -3,12 +3,12 @@ import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale, podiumStandings } from '@/components/game-finale';
 import { GameLanguageToggle } from '@/components/game-language-toggle';
-import { useRoomPin } from '@/components/multiplayer/room';
+import { markClassroomRoom, useRoomPin } from '@/components/multiplayer/room';
 import { HostScreen } from '@/components/order-rush/host-screen';
 import { HowToPlay } from '@/components/order-rush/how-to-play';
 import { PlayerScreen } from '@/components/order-rush/player-screen';
 import { ACCENT, BG, Panel } from '@/components/order-rush/shared';
-import { BackButton, SiteNav, useGameBackHref } from '@/components/site-nav';
+import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import { useGameAudio } from '@/hooks/use-game-audio';
 import { type RushRole, useOrderRush } from '@/hooks/use-order-rush';
 import { useTranslations } from '@/hooks/use-translations';
@@ -58,7 +58,7 @@ export default function OrderRush({
     role,
 }: OrderRushProps) {
     const { t, i18n } = useTranslations();
-    const backHref = useGameBackHref();
+    const back = useGameBack();
     const { play, muted, toggleMuted } = useGameAudio();
     const [error, setError] = useState<string | null>(null);
     const playRef = useRef(play);
@@ -86,7 +86,9 @@ export default function OrderRush({
         }
     }, []);
     const onError = useCallback((code: string) => setError(code), []);
-    const chosenRole: RushRole | null = role ?? (pin ? 'player' : null);
+    // A game opened from a classroom skips the role picker: always a player.
+    const chosenRole: RushRole | null =
+        role ?? (pin || back.inClassroom ? 'player' : null);
     const { state, status, send } = useOrderRush(
         serviceReady && chosenRole ? wsUrl : null,
         chosenRole ?? 'player',
@@ -116,10 +118,19 @@ export default function OrderRush({
             }),
         [send, player.id, player.name, player.character],
     );
+    const { classroom = 0, captain = 0 } = state as {
+        classroom?: number;
+        captain?: number;
+    };
+    const isCaptain = classroom > 0 && captain === player.id;
+    if (state.pin && classroom > 0) {
+        markClassroomRoom('order-rush');
+    }
+    // Classroom rooms are never shared by PIN: keep it out of the address bar.
     useRoomPin(
         online && chosenRole === 'player',
-        state.pin,
-        chosenRole === 'player' ? pin : null,
+        classroom > 0 ? undefined : state.pin,
+        chosenRole === 'player' && !back.inClassroom ? pin : null,
         join,
     );
 
@@ -170,6 +181,7 @@ export default function OrderRush({
                     }
                 }}
                 onHost={() => chooseRole('host')}
+                userId={player.id}
             />
         );
     }
@@ -190,8 +202,8 @@ export default function OrderRush({
                 <div className="mx-auto flex min-h-16 items-center justify-between gap-2 px-3 py-2 sm:px-6 lg:px-8">
                     <div className="edu-game-brand flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <BackButton
-                            href={backHref}
-                            label={t('nav.backToPortal')}
+                            href={back.href}
+                            label={back.label}
                             iconOnly
                         />
                         <BrandLink variant="mark" />
@@ -281,7 +293,7 @@ export default function OrderRush({
                     (row) => `${t('orderRush.accuracy')} ${row.accuracy}%`,
                 )}
                 onPlayAgain={
-                    chosenRole === 'host'
+                    chosenRole === 'host' || isCaptain
                         ? () => act({ t: 'start_game' })
                         : undefined
                 }
