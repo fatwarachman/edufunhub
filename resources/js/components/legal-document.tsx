@@ -1,5 +1,6 @@
 import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
+import { MobileTabBar } from '@/components/mobile-tab-bar';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
@@ -44,7 +45,7 @@ export function LegalDocument({ document }: { document: LegalDocumentKey }) {
     const contactEmail = t('legal.contactEmail');
 
     return (
-        <div className="min-h-screen bg-[#FFF9E6] selection:bg-[#FF6584] selection:text-white">
+        <div className="edu-has-tabbar min-h-screen bg-[#FFF9E6] selection:bg-[#FF6584] selection:text-white">
             <Head title={t(`legal.${document}.title`)}>
                 <meta
                     name="description"
@@ -134,6 +135,7 @@ export function LegalDocument({ document }: { document: LegalDocumentKey }) {
                     />
                 </div>
             </main>
+            <MobileTabBar />
         </div>
     );
 }

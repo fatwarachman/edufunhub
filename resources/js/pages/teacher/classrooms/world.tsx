@@ -21,7 +21,7 @@ export default function TeacherClassroomWorld({ classroom, world }: Props) {
     }, [classroom.id]);
 
     return (
-        <PlayerLayout title={classroom.name} fill>
+        <PlayerLayout title={classroom.name} fill tabBar={false}>
             <ClassroomWorld
                 classroomId={classroom.id}
                 classroomName={classroom.name}

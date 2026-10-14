@@ -1,5 +1,6 @@
 import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
+import { MobileTabBar } from '@/components/mobile-tab-bar';
 import { SiteNav } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
@@ -10,11 +11,14 @@ import '../../css/auth-landing.css';
 export default function PlayerLayout({
     title,
     fill = false,
+    tabBar = true,
     children,
 }: {
     title: string;
     /** Content fills the viewport height below the header (chat). */
     fill?: boolean;
+    /** Phone bottom tab bar; off for immersive scenes (3D classroom). */
+    tabBar?: boolean;
     children: ReactNode;
 }) {
     const { i18n } = useTranslations();
@@ -28,9 +32,13 @@ export default function PlayerLayout({
 
     return (
         <div
-            className={
-                fill ? 'auth-landing flex h-dvh flex-col' : 'auth-landing'
-            }
+            className={[
+                'auth-landing',
+                tabBar && 'edu-has-tabbar',
+                fill && 'flex h-dvh flex-col',
+            ]
+                .filter(Boolean)
+                .join(' ')}
         >
             <Head title={title}>
                 <link
@@ -54,6 +62,7 @@ export default function PlayerLayout({
             >
                 {children}
             </main>
+            {tabBar && <MobileTabBar />}
         </div>
     );
 }
