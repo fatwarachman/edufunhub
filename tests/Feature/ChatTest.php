@@ -3,8 +3,10 @@
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
 use App\Models\PlayerProfile;
+use App\Models\Role;
 use App\Models\User;
 use Database\Factories\ChatConversationFactory;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
@@ -351,4 +353,45 @@ it('does not expose read state of conversations to non-members', function (): vo
     $this->actingAs($intruder)->postJson("/chat/conversations/{$conversation->id}/read")->assertNotFound();
     expect($this->actingAs($intruder)->getJson('/chat/inbox')->json('conversations'))->toBe([]);
     Http::assertNotSent(fn (HttpRequest $request): bool => (json_decode($request->body(), true)['event']['t'] ?? null) === 'read');
+});
+
+it('shows school and teacher badges to everyone but emails only to admins', function (): void {
+    $rani = chatPlayer('Rani');
+    $budi = chatPlayer('Budi Guru');
+    PlayerProfile::query()->where('user_id', $budi->id)->update(['school_name' => 'SDN Pakuan 1']);
+    $budi->roles()->attach(Role::query()->firstOrCreate(['slug' => Role::TEACHER], ['name' => 'Guru'])->id);
+    $admin = chatPlayer('Admin');
+    $admin->forceFill(['is_superadmin' => true])->save();
+
+    $seenByPlayer = $this->actingAs($rani)->getJson('/chat/people?q=budi')->assertOk()->json('people.0');
+    expect($seenByPlayer)->toMatchArray(['name' => 'Budi Guru', 'school' => 'SDN Pakuan 1', 'is_teacher' => true])
+        ->and($seenByPlayer)->not->toHaveKey('email');
+    expect($this->actingAs($rani)->getJson('/chat/people?q='.urlencode($budi->email))->json('people'))->toBe([]);
+
+    $seenByAdmin = $this->actingAs($admin)->getJson('/chat/people?q=budi')->json('people.0');
+    expect($seenByAdmin['email'])->toBe($budi->email)
+        ->and(collect($this->actingAs($admin)->getJson('/chat/people?q='.urlencode($budi->email))->json('people'))->pluck('id')->all())->toBe([$budi->id]);
+    expect($this->actingAs($admin)->getJson('/chat/people?q=rani')->json('people.0'))
+        ->toMatchArray(['school' => $rani->playerProfile->school_name ?: null, 'is_teacher' => false]);
+});
+
+it('opens a direct chat from a profile and lands on the chat page with it selected', function (): void {
+    $this->withoutMiddleware(PreventRequestForgery::class);
+    $admin = chatPlayer('Admin');
+    $admin->forceFill(['is_superadmin' => true])->save();
+    $budi = chatPlayer('Budi');
+
+    $response = $this->actingAs($admin)->post('/chat/direct/open', ['user_id' => $budi->id]);
+    $id = ChatConversation::query()->where('direct_key', ChatConversation::directKey($admin->id, $budi->id))->value('id');
+
+    expect($id)->not->toBeNull();
+    $response->assertRedirect(route('chat.index', ['c' => $id]));
+    $this->actingAs($admin)->post('/chat/direct/open', ['user_id' => $budi->id])->assertRedirect(route('chat.index', ['c' => $id]));
+    expect(ChatConversation::query()->count())->toBe(1);
+
+    $this->actingAs($admin)->post('/chat/direct/open', ['user_id' => $admin->id])->assertSessionHasErrors('user_id');
+    $budi->forceFill(['disabled_at' => now()])->save();
+    $this->actingAs($admin)->post('/chat/direct/open', ['user_id' => $budi->id])->assertSessionHasErrors('user_id');
+    auth()->logout();
+    $this->post('/chat/direct/open', ['user_id' => $budi->id])->assertRedirect(route('login'));
 });

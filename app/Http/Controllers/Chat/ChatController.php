@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\Chat\ChatService;
 use App\Services\Chat\ChatServiceClient;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -85,6 +86,17 @@ class ChatController extends Controller
         $conversation = $this->chat->direct($request->user(), User::query()->findOrFail($request->integer('user_id')));
 
         return response()->json(['conversation' => $this->chat->presentConversation($conversation, $request->user())], 201);
+    }
+
+    /**
+     * Start (or reuse) a direct chat and land on the chat page with it open,
+     * e.g. from the "Chat" button on an admin user profile.
+     */
+    public function openDirect(StartDirectChatRequest $request): RedirectResponse
+    {
+        $conversation = $this->chat->direct($request->user(), User::query()->findOrFail($request->integer('user_id')));
+
+        return to_route('chat.index', ['c' => $conversation->id]);
     }
 
     public function storeGroup(StoreChatGroupRequest $request): JsonResponse

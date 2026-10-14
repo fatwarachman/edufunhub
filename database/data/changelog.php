@@ -24,6 +24,24 @@
 
 return [
     [
+        'version' => '0.40.0',
+        'date' => '2026-10-14',
+        'changes' => [
+            [
+                'key' => 'admin-user-chat-button',
+                'type' => 'feature',
+                'title' => ['id' => 'Tombol Obrolan di profil pengguna admin', 'en' => 'Chat button on the admin user profile'],
+                'body' => ['id' => 'Halaman detail pengguna di panel admin kini punya tombol Obrolan. Tombol ini membuka (atau melanjutkan) obrolan pribadi dengan pengguna tersebut dan langsung membawa ke halaman Chat dengan obrolan itu terbuka. Tombol tidak tampil di profil sendiri atau akun yang ditangguhkan.', 'en' => 'The admin user detail page now has a Chat button. It opens (or resumes) a direct chat with that user and takes you straight to the Chat page with the conversation open. It is hidden on your own profile and on suspended accounts.'],
+            ],
+            [
+                'key' => 'chat-people-badges',
+                'type' => 'improvement',
+                'title' => ['id' => 'Badge sekolah, email, dan guru saat memilih teman chat', 'en' => 'School, email and teacher badges when picking who to chat with'],
+                'body' => ['id' => 'Di modal Chat baru dan Grup baru, setiap nama kini menampilkan badge asal sekolah dan badge Guru bila orang itu guru, sehingga nama yang mirip mudah dibedakan. Email hanya tampil (dan bisa dicari) oleh admin, agar alamat email pemain tidak terlihat pemain lain.', 'en' => 'In the New chat and New group pickers each name now shows a school badge and a Teacher badge when the person is a teacher, so similar names are easy to tell apart. Emails are shown (and searchable) for admins only, so player addresses stay hidden from other players.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.39.0',
         'date' => '2026-10-14',
         'changes' => [

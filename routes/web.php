@@ -153,6 +153,7 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::post('/token', [ChatController::class, 'token'])->middleware('throttle:30,1,chat.token')->name('token');
         Route::get('/people', [ChatController::class, 'people'])->middleware('throttle:60,1,chat.people')->name('people');
         Route::post('/direct', [ChatController::class, 'direct'])->middleware('throttle:30,1,chat.direct')->name('direct');
+        Route::post('/direct/open', [ChatController::class, 'openDirect'])->middleware('throttle:30,1,chat.direct')->name('direct.open');
         Route::post('/groups', [ChatController::class, 'storeGroup'])->middleware('throttle:10,1,groups.store')->name('groups.store');
         Route::get('/conversations/{conversation}', [ChatController::class, 'show'])->name('show');
         Route::patch('/groups/{conversation}', [ChatController::class, 'updateGroup'])->middleware('throttle:30,1,groups.update')->name('groups.update');

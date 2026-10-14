@@ -10,12 +10,15 @@ import {
     ArrowLeft,
     Check,
     Crown,
+    GraduationCap,
     Info,
     Loader2,
     LogOut,
+    Mail,
     MessageCirclePlus,
     Pencil,
     RotateCcw,
+    School,
     Search,
     SendHorizontal,
     UserPlus,
@@ -40,6 +43,14 @@ interface Member {
     name: string;
     character: CharacterLook | null;
     role?: string;
+}
+
+/** A search result in the new chat / group pickers. */
+interface Person extends Member {
+    school?: string | null;
+    is_teacher?: boolean;
+    /** Only sent to admins. */
+    email?: string;
 }
 
 interface Message {
@@ -264,12 +275,12 @@ function PeoplePicker({
 }) {
     const { t } = useTranslations();
     const [q, setQ] = useState('');
-    const [people, setPeople] = useState<Member[] | null>(null);
+    const [people, setPeople] = useState<Person[] | null>(null);
 
     useEffect(() => {
         let cancelled = false;
         const timer = setTimeout(async () => {
-            const { ok, data } = await api<{ people: Member[] }>(
+            const { ok, data } = await api<{ people: Person[] }>(
                 `/chat/people?q=${encodeURIComponent(q)}`,
             );
             if (!cancelled && ok) {
@@ -347,8 +358,58 @@ function PeoplePicker({
                                             userId={p.id}
                                         />
                                     </span>
-                                    <span className="min-w-0 flex-1 truncate">
-                                        {p.name}
+                                    <span className="flex min-w-0 flex-1 flex-col gap-1">
+                                        <span className="flex min-w-0 items-center gap-1.5">
+                                            <span className="truncate">
+                                                {p.name}
+                                            </span>
+                                            {p.is_teacher && (
+                                                <span
+                                                    className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#151b2e] bg-[#c7f9cc] px-2 py-0.5 text-[10px] leading-none font-bold text-[#14532d]"
+                                                    data-testid="chat-person-teacher"
+                                                >
+                                                    <GraduationCap
+                                                        className="size-3"
+                                                        aria-hidden="true"
+                                                    />
+                                                    {t('chat.teacherBadge')}
+                                                </span>
+                                            )}
+                                        </span>
+                                        {(p.school || p.email) && (
+                                            <span className="flex min-w-0 flex-wrap gap-1 text-[11px] leading-none font-semibold text-slate-700">
+                                                {p.school && (
+                                                    <span
+                                                        className="inline-flex max-w-full min-w-0 items-center gap-1 rounded-full border border-[#151b2e]/30 bg-[#eef2ff] px-2 py-1"
+                                                        title={p.school}
+                                                        data-testid="chat-person-school"
+                                                    >
+                                                        <School
+                                                            className="size-3 shrink-0"
+                                                            aria-hidden="true"
+                                                        />
+                                                        <span className="truncate">
+                                                            {p.school}
+                                                        </span>
+                                                    </span>
+                                                )}
+                                                {p.email && (
+                                                    <span
+                                                        className="inline-flex max-w-full min-w-0 items-center gap-1 rounded-full border border-[#151b2e]/30 bg-[#fff3c4] px-2 py-1"
+                                                        title={p.email}
+                                                        data-testid="chat-person-email"
+                                                    >
+                                                        <Mail
+                                                            className="size-3 shrink-0"
+                                                            aria-hidden="true"
+                                                        />
+                                                        <span className="truncate">
+                                                            {p.email}
+                                                        </span>
+                                                    </span>
+                                                )}
+                                            </span>
+                                        )}
                                     </span>
                                     {multiple && (
                                         <span

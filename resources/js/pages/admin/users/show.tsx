@@ -48,7 +48,8 @@ import { adminLocale, tr } from '@/lib/admin-i18n';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { hasGrade } from '@/lib/grade';
 import { cn } from '@/lib/utils';
-import { Deferred, Head, Link, router } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { Deferred, Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Activity,
     ArrowRight,
@@ -67,9 +68,11 @@ import {
     GraduationCap,
     History,
     KeyRound,
+    Loader2,
     LogIn,
     Mail,
     Medal,
+    MessageCircle,
     Save,
     School,
     Shield,
@@ -108,6 +111,7 @@ interface UserDetail {
     last_seen_at: string | null;
     email_verified_at: string | null;
     disabled_at: string | null;
+    deleted_at?: string | null;
     onboarded_at: string | null;
     password_updated_at: string | null;
     status: 'active' | 'suspended';
@@ -385,6 +389,9 @@ export default function ShowUser(props: Props) {
         !user.roles.some((role) => role.slug === 'admin');
     const [deleting, setDeleting] = useState(false);
     const suspended = user.status === 'suspended';
+    const { auth } = usePage<SharedData>().props;
+    const canChat = user.id !== auth.user.id && !suspended && !user.deleted_at;
+    const [openingChat, setOpeningChat] = useState(false);
     useAdminBreadcrumbs([{ title: profile?.nickname || user.name }]);
     const completeness = [
         hasGrade(profile?.grade),
@@ -477,6 +484,33 @@ export default function ShowUser(props: Props) {
                             </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
+                            {canChat && (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        router.post(
+                                            '/chat/direct/open',
+                                            { user_id: user.id },
+                                            {
+                                                onStart: () =>
+                                                    setOpeningChat(true),
+                                                onFinish: () =>
+                                                    setOpeningChat(false),
+                                            },
+                                        )
+                                    }
+                                    disabled={openingChat}
+                                    data-testid="user-open-chat"
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-sky-500/40 bg-sky-500/10 px-3 py-2 text-sm font-medium whitespace-nowrap text-sky-700 hover:bg-sky-500/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-60 dark:text-sky-300"
+                                >
+                                    {openingChat ? (
+                                        <Loader2 className="size-4 animate-spin" />
+                                    ) : (
+                                        <MessageCircle className="size-4" />
+                                    )}
+                                    {tr('Chat')}
+                                </button>
+                            )}
                             {props.hasAbilityAssessment && (
                                 <a
                                     href="?tab=ability"
