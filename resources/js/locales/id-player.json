@@ -515,7 +515,8 @@
         "account": "Akun",
         "withCount": "{{label}} ({{count}} baru)",
         "myClassrooms": "Kelasku",
-        "search": "Cari game & fitur"
+        "search": "Cari game & fitur",
+        "tabBar": "Navigasi bawah"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",

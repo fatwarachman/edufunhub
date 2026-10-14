@@ -246,7 +246,7 @@ export default function PortalClassroomRoom({
 
     if (inWorld && world) {
         return (
-            <PlayerLayout title={classroom.name} fill>
+            <PlayerLayout title={classroom.name} fill tabBar={false}>
                 <ClassroomAnnouncementGate
                     pin={pin}
                     classroomId={classroom.id}

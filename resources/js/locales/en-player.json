@@ -516,7 +516,8 @@
         "account": "Account",
         "withCount": "{{label}} ({{count}} new)",
         "myClassrooms": "My classes",
-        "search": "Search games & features"
+        "search": "Search games & features",
+        "tabBar": "Bottom navigation"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",

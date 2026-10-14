@@ -24,6 +24,18 @@
 
 return [
     [
+        'version' => '0.43.0',
+        'date' => '2026-10-14',
+        'changes' => [
+            [
+                'key' => 'mobile-tab-bar',
+                'type' => 'feature',
+                'title' => ['id' => 'Tampilan ponsel seperti aplikasi dengan menu bawah', 'en' => 'App-like phone layout with a bottom menu'],
+                'body' => ['id' => 'Di ponsel, halaman di luar permainan (beranda, daftar game, portal, chat, profil, guru, dan halaman legal) kini punya menu bawah seperti aplikasi: Beranda, Game, Portal, Chat, dan Profil, lengkap dengan penanda halaman aktif dan jumlah chat belum dibaca. Tamu mendapat Beranda, Game, Masuk, dan Daftar. Header atas lebih ringkas dan menghormati poni layar. Saat bermain game dan di ruang kelas 3D, menu bawah disembunyikan agar layar penuh untuk permainan.', 'en' => 'On phones, pages outside a game (home, game list, portal, chat, profile, teacher and legal pages) now have an app-style bottom menu: Home, Games, Portal, Chat and Profile, with the active page highlighted and the unread chat count. Guests get Home, Games, Log in and Sign up. The top header is more compact and respects the screen notch. While playing a game and in the 3D classroom the bottom menu is hidden so the game keeps the full screen.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.42.0',
         'date' => '2026-10-14',
         'changes' => [

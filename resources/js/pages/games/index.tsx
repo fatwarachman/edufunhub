@@ -1,5 +1,6 @@
 import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
+import { MobileTabBar } from '@/components/mobile-tab-bar';
 import { PlayerCountBadge } from '@/components/player-count-badge';
 import { BackButton, NavButton, SiteNav } from '@/components/site-nav';
 import { isTkjGame, TkjBadge } from '@/components/tkj-badge';
@@ -449,7 +450,7 @@ export default function GameList({
     ];
 
     return (
-        <div className="min-h-screen bg-[#FFF9E6] selection:bg-[#FF6584] selection:text-white">
+        <div className="edu-has-tabbar min-h-screen bg-[#FFF9E6] selection:bg-[#FF6584] selection:text-white">
             <Head title={`${t('gameList.title')} - EduFunHub`}>
                 <meta name="description" content={t('gameList.meta')} />
             </Head>
@@ -1261,6 +1262,7 @@ export default function GameList({
                     )}
                 </div>
             </main>
+            <MobileTabBar />
         </div>
     );
 }
