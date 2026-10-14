@@ -366,7 +366,7 @@ it('shows school and teacher badges to everyone but emails only to admins', func
     $seenByPlayer = $this->actingAs($rani)->getJson('/chat/people?q=budi')->assertOk()->json('people.0');
     expect($seenByPlayer)->toMatchArray(['name' => 'Budi Guru', 'school' => 'SDN Pakuan 1', 'is_teacher' => true])
         ->and($seenByPlayer)->not->toHaveKey('email');
-    expect($this->actingAs($rani)->getJson('/chat/people?q='.urlencode($budi->email))->json('people'))->toBe([]);
+    expect($this->actingAs($rani)->getJson('/chat/people?q='.urlencode(substr($budi->email, 0, 6)))->json('people'))->toBe([]);
 
     $seenByAdmin = $this->actingAs($admin)->getJson('/chat/people?q=budi')->json('people.0');
     expect($seenByAdmin['email'])->toBe($budi->email)
@@ -394,4 +394,19 @@ it('opens a direct chat from a profile and lands on the chat page with it select
     $this->actingAs($admin)->post('/chat/direct/open', ['user_id' => $budi->id])->assertSessionHasErrors('user_id');
     auth()->logout();
     $this->post('/chat/direct/open', ['user_id' => $budi->id])->assertRedirect(route('login'));
+});
+
+it('finds people by school for everyone and by email only on an exact match for players', function (): void {
+    $rani = chatPlayer('Rani');
+    $budi = chatPlayer('Budi');
+    $budi->forceFill(['email' => 'budi.santoso@sekolah.test'])->save();
+    PlayerProfile::query()->where('user_id', $budi->id)->update(['school_name' => 'SD Negeri Cibinong 3']);
+    $admin = chatPlayer('Admin');
+    $admin->forceFill(['is_superadmin' => true])->save();
+
+    expect(collect($this->actingAs($rani)->getJson('/chat/people?q=cibinong')->json('people'))->pluck('id')->all())->toBe([$budi->id]);
+    expect(collect($this->actingAs($rani)->getJson('/chat/people?q=BUDI.SANTOSO@sekolah.test')->json('people'))->pluck('id')->all())->toBe([$budi->id])
+        ->and($this->actingAs($rani)->getJson('/chat/people?q=budi.santoso@sekolah.test')->json('people.0'))->not->toHaveKey('email');
+    expect($this->actingAs($rani)->getJson('/chat/people?q=sekolah.test')->json('people'))->toBe([]);
+    expect(collect($this->actingAs($admin)->getJson('/chat/people?q=sekolah.test')->json('people'))->pluck('id')->all())->toBe([$budi->id]);
 });

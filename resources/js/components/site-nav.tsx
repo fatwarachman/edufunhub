@@ -10,6 +10,7 @@ import {
     NavMenuSection,
 } from '@/components/nav-menu';
 import { NotificationBell } from '@/components/notification-bell';
+import { PlayerFeatureSearch } from '@/components/search/player-feature-search';
 import { useNavFold } from '@/hooks/use-nav-fold';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
@@ -32,6 +33,7 @@ import {
     MessageCircle,
     MessageSquarePlus,
     School,
+    Search,
     ShieldCheck,
     Trophy,
     UserPlus,
@@ -398,6 +400,7 @@ export function SiteNav({
             </div>
             {signedIn && (
                 <div className="edu-nav-links">
+                    <PlayerFeatureSearch />
                     <JoinByPinButton />
                 </div>
             )}
@@ -543,6 +546,18 @@ function MobileMenu({
                     </div>
                 )}
                 <ul>
+                    {signedIn && (
+                        <li>
+                            <PlayerFeatureSearch className="edu-game-menu-item">
+                                <span className="edu-game-menu-icon edu-nav-more-icon">
+                                    <Search aria-hidden="true" />
+                                </span>
+                                <span className="edu-game-menu-title">
+                                    {t('nav.search')}
+                                </span>
+                            </PlayerFeatureSearch>
+                        </li>
+                    )}
                     {signedIn && (
                         <li>
                             <JoinByPinButton className="edu-game-menu-item">
