@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BulkQuestionRequest;
 use App\Http\Requests\Admin\QuestionRequest;
+use App\Http\Requests\Admin\QuestionSearchRequest;
 use App\Models\Question;
 use App\Models\QuestionGeneration;
 use App\Models\Subject;
@@ -15,6 +16,7 @@ use App\Services\QuestionAnalytics;
 use App\Services\QuestionVisual;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -56,6 +58,33 @@ class QuestionController extends Controller
                 ]),
             ],
             ...$this->options(),
+        ]);
+    }
+
+    /**
+     * Live search suggestions: the best matching questions (any subject) plus the total match count.
+     */
+    public function search(QuestionSearchRequest $request): JsonResponse
+    {
+        $term = $request->term();
+        $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term);
+        $like = '%'.$escaped.'%';
+        $query = Question::query()->where(fn (Builder $q) => $q
+            ->whereRaw("prompt_id LIKE ? ESCAPE '!'", [$like])
+            ->orWhereRaw("prompt_en LIKE ? ESCAPE '!'", [$like])
+            ->orWhereRaw("`key` LIKE ? ESCAPE '!'", [$like]));
+
+        $results = (clone $query)
+            ->orderByRaw("CASE WHEN `key` = ? THEN 0 WHEN prompt_id LIKE ? ESCAPE '!' THEN 1 ELSE 2 END", [$term, $escaped.'%'])
+            ->orderByDesc('is_active')
+            ->orderBy('id')
+            ->limit(8)
+            ->get(['id', 'key', 'subject', 'band', 'level', 'type', 'prompt_id', 'is_active', 'source']);
+
+        return response()->json([
+            'term' => $term,
+            'total' => $query->count(),
+            'results' => $results,
         ]);
     }
 

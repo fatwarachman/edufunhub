@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRoleRequest;
 use App\Http\Requests\Admin\UpdateRoleRequest;
 use App\Models\Module;
+use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,17 +16,24 @@ use Inertia\Response;
 class RoleController extends Controller
 {
     /**
-     * All roles with permission count and user count.
+     * All roles with their permissions (grouped client-side by module) and user count.
      */
     public function index(): Response
     {
         $roles = Role::query()
+            ->with([
+                'permissions' => fn ($query) => $query
+                    ->select('permissions.id', 'permissions.name', 'permissions.slug', 'permissions.module_id')
+                    ->orderBy('permissions.name'),
+                'permissions.module:id,name',
+            ])
             ->withCount(['permissions', 'users'])
             ->orderBy('name')
             ->paginate(20);
 
         return Inertia::render('admin/roles/index', [
             'roles' => $roles,
+            'totalPermissions' => Permission::query()->count(),
         ]);
     }
 
