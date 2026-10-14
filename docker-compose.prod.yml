@@ -1,5 +1,5 @@
 # Production stack (edufunhub-prod 172.16.200.23).
-# cloudflared -> localhost:8096 -> gateway -> app (Laravel) | game (Go WebSocket).
+# cloudflared -> localhost:8096 -> gateway -> app (Laravel) | game (Go WebSocket) | classroom (Go WebSocket).
 # Project name stays "edufunhub" so existing volumes (DB, storage) are reused.
 name: edufunhub
 
@@ -45,6 +45,25 @@ services:
       GAME_ALLOWED_ORIGINS: ${GAME_ALLOWED_ORIGINS:-edufunhub.com,*.edufunhub.com,172.16.200.23:*,localhost:*,127.0.0.1:*}
     expose:
       - "8090"
+    networks:
+      - edufunhub-net
+
+  # Go classroom service (separate container): 3D classroom world WebSocket.
+  # Same module as the game service; Laravel kicks via /internal/classroom/kick.
+  classroom:
+    build:
+      context: ./services/game
+      dockerfile: Dockerfile.classroom
+    image: edufunhub-classroom:latest
+    container_name: edufunhub-classroom
+    restart: unless-stopped
+    environment:
+      CLASSROOM_ADDR: ":8092"
+      GAME_SERVICE_SECRET: ${GAME_SERVICE_SECRET:?GAME_SERVICE_SECRET is required}
+      CLASSROOM_CHAT_URL: ${CLASSROOM_CHAT_URL:-http://edufunhub-app:8000/api/internal/classroom-chat}
+      CLASSROOM_ALLOWED_ORIGINS: ${CLASSROOM_ALLOWED_ORIGINS:-edufunhub.com,*.edufunhub.com,172.16.200.23:*,localhost:*,127.0.0.1:*}
+    expose:
+      - "8092"
     networks:
       - edufunhub-net
 
@@ -108,6 +127,8 @@ services:
       app:
         condition: service_healthy
       game:
+        condition: service_healthy
+      classroom:
         condition: service_healthy
       chat:
         condition: service_healthy

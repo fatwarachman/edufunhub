@@ -105,3 +105,59 @@ func TestVerifyKeepsClassroomAndClampsNegative(t *testing.T) {
 		t.Fatalf("missing claim must decode as 0: %v %d", err, c.Classroom)
 	}
 }
+
+func TestVerifySanitisesBooths(t *testing.T) {
+	now := time.Unix(1_800_000_000, 0)
+	many := []string{}
+	for i := 0; i < 15; i++ {
+		many = append(many, "g"+strings.Repeat("a", i+1))
+	}
+	cases := map[string]struct {
+		in   []string
+		want []string
+	}{
+		"none":            {nil, nil},
+		"valid in order":  {[]string{"ping-pong", "snake"}, []string{"ping-pong", "snake"}},
+		"invalid dropped": {[]string{"Ping", "", "a b", "../x", strings.Repeat("a", 41), "ok-1"}, []string{"ok-1"}},
+		"dedupe":          {[]string{"snake", "snake", "crossword"}, []string{"snake", "crossword"}},
+		"max ten":         {many, many[:MaxBooths]},
+	}
+	for name, tc := range cases {
+		c := validClaims(now)
+		c.Booths = tc.in
+		tok, _ := Sign(c, secret)
+		got, err := Verify(tok, secret, "flag-quest", now)
+		if err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+		if strings.Join(got.Booths, ",") != strings.Join(tc.want, ",") || len(got.Booths) != len(tc.want) {
+			t.Errorf("%s: got %v want %v", name, got.Booths, tc.want)
+		}
+	}
+}
+
+func TestVerifyClampsSeats(t *testing.T) {
+	now := time.Unix(1_800_000_000, 0)
+	for in, want := range map[int]int{0: 0, 1: 1, 120: 120, 200: 200, 201: MaxSeats, 9999: MaxSeats, -4: 0} {
+		c := validClaims(now)
+		c.Seats = in
+		tok, _ := Sign(c, secret)
+		got, err := Verify(tok, secret, "flag-quest", now)
+		if err != nil || got.Seats != want {
+			t.Errorf("seats %d: got %d (%v), want %d", in, got.Seats, err, want)
+		}
+	}
+}
+
+func TestVerifyTeacherID(t *testing.T) {
+	now := time.Unix(1_800_000_000, 0)
+	for in, want := range map[int64]int64{0: 0, 7: 7, -3: 0} {
+		c := validClaims(now)
+		c.TeacherID = in
+		tok, _ := Sign(c, secret)
+		got, err := Verify(tok, secret, "flag-quest", now)
+		if err != nil || got.TeacherID != want {
+			t.Errorf("teacher_id %d: got %d (%v), want %d", in, got.TeacherID, err, want)
+		}
+	}
+}

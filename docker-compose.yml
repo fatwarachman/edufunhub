@@ -87,6 +87,25 @@ services:
     networks:
       - edufunhub-net
 
+  # Go classroom service (separate container): 3D classroom world WebSocket.
+  # Same module as the game service; Laravel kicks via /internal/classroom/kick.
+  classroom:
+    build:
+      context: ./services/game
+      dockerfile: Dockerfile.classroom
+    image: edufunhub-classroom:latest
+    container_name: edufunhub-classroom
+    restart: unless-stopped
+    environment:
+      CLASSROOM_ADDR: ":8092"
+      GAME_SERVICE_SECRET: ${GAME_SERVICE_SECRET:?GAME_SERVICE_SECRET is required}
+      CLASSROOM_CHAT_URL: ${CLASSROOM_CHAT_URL:-http://edufunhub-dashboard:8000/api/internal/classroom-chat}
+      CLASSROOM_ALLOWED_ORIGINS: ${CLASSROOM_ALLOWED_ORIGINS:-*}
+    expose:
+      - "8092"
+    networks:
+      - edufunhub-net
+
   # Go chat service (separate container): live delivery of player chat.
   # Laravel stores messages and posts each one to /internal/publish.
   chat:
@@ -150,6 +169,8 @@ services:
       dashboard:
         condition: service_healthy
       game:
+        condition: service_healthy
+      classroom:
         condition: service_healthy
       chat:
         condition: service_healthy

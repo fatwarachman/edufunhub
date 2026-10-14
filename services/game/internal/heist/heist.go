@@ -92,24 +92,25 @@ const (
 
 // Errors share their codes with the client (room.errors.*).
 var (
-	ErrNotFound   = lobby.ErrNotFound
-	ErrFull       = lobby.ErrFull
-	ErrNotHost    = lobby.ErrNotHost
-	ErrPlayers    = lobby.ErrPlayers
-	ErrPhase      = lobby.ErrPhase
-	ErrNoRoom     = lobby.ErrNoRoom
-	ErrHostOnly   = errors.New("host_only")
-	ErrPlayerOnly = errors.New("player_only")
-	ErrOption     = errors.New("invalid_option")
-	ErrTooEarly   = errors.New("too_early")
-	ErrStage      = errors.New("wrong_stage")
-	ErrStale      = errors.New("stale_question")
-	ErrChest      = errors.New("invalid_chest")
-	ErrTarget     = errors.New("invalid_target")
-	ErrConfig     = errors.New("invalid_config")
-	ErrIdentity   = errors.New("invalid_player")
-	ErrClosed     = errors.New("room_closed")
-	ErrBusy       = errors.New("busy")
+	ErrNotFound    = lobby.ErrNotFound
+	ErrFull        = lobby.ErrFull
+	ErrNotHost     = lobby.ErrNotHost
+	ErrPlayers     = lobby.ErrPlayers
+	ErrPhase       = lobby.ErrPhase
+	ErrNoRoom      = lobby.ErrNoRoom
+	ErrNoClassroom = lobby.ErrNoClassroom
+	ErrHostOnly    = errors.New("host_only")
+	ErrPlayerOnly  = errors.New("player_only")
+	ErrOption      = errors.New("invalid_option")
+	ErrTooEarly    = errors.New("too_early")
+	ErrStage       = errors.New("wrong_stage")
+	ErrStale       = errors.New("stale_question")
+	ErrChest       = errors.New("invalid_chest")
+	ErrTarget      = errors.New("invalid_target")
+	ErrConfig      = errors.New("invalid_config")
+	ErrIdentity    = errors.New("invalid_player")
+	ErrClosed      = errors.New("room_closed")
+	ErrBusy        = errors.New("busy")
 )
 
 // Config holds the timings. Tests shorten them; production uses Defaults.

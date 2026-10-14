@@ -118,6 +118,7 @@ type command struct {
 	avatar  []byte
 	at      time.Time
 	fn      func(r *Room) any
+	reason  string
 	reply   chan reply
 }
 
@@ -131,6 +132,9 @@ type Room struct {
 	host       *Client
 	hostClaims auth.Claims
 	hostOnline bool
+	// classroomID is set on classroom rooms (no host screen): hostClaims is
+	// then the captain, a seated player who may run the host commands.
+	classroomID int64
 
 	players []*Player
 	byID    map[int64]*Player
@@ -234,7 +238,11 @@ func (r *Room) handle(cmd command, now time.Time) {
 	case "inspect":
 		res.v = cmd.fn(r)
 	case "close":
-		r.close(now, "closed")
+		reason := cmd.reason
+		if reason == "" {
+			reason = "closed"
+		}
+		r.close(now, reason)
 	}
 	if res.err == nil && cmd.kind != "inspect" && cmd.kind != "sync" {
 		r.touched = now
@@ -312,6 +320,57 @@ func (r *Room) join(c *Client, avatar []byte, now time.Time) error {
 	return nil
 }
 
+// canHost reports whether c may run host commands: the host screen, or the
+// captain of a classroom room (a seated player).
+func (r *Room) canHost(c *Client) bool {
+	return c.Host || (r.classroomID > 0 && c.ID() == r.hostClaims.Subject)
+}
+
+// captain is the user id of the classroom room captain (0 elsewhere).
+func (r *Room) captain() int64 {
+	if r.classroomID <= 0 {
+		return 0
+	}
+	return r.hostClaims.Subject
+}
+
+// joinable reports whether a classroom player may still take a seat.
+func (r *Room) joinable() bool {
+	return !r.playing() && r.active() < MaxPlayers
+}
+
+// keepCaptain hands the captain role of a classroom room to the next active
+// player (online first, then join order) when the captain left or stayed
+// offline past LobbyDrop, and closes the room once nobody is seated.
+func (r *Room) keepCaptain(now time.Time) {
+	if r.classroomID <= 0 || r.closed || r.joined == 0 {
+		return
+	}
+	cur := r.byID[r.hostClaims.Subject]
+	away := cur != nil && !cur.left && !cur.online && !cur.offlineAt.IsZero() && now.Sub(cur.offlineAt) >= r.cfg.LobbyDrop
+	if cur != nil && !cur.left && !away {
+		return
+	}
+	var next *Player
+	for _, q := range r.players {
+		if q.left {
+			continue
+		}
+		if next == nil || (q.online && !next.online) || (q.online == next.online && q.order < next.order) {
+			next = q
+		}
+	}
+	if away && (next == nil || !next.online) {
+		return
+	}
+	if next == nil {
+		r.close(now, "empty")
+		return
+	}
+	r.hostClaims = next.Claims
+	r.broadcastState(now)
+}
+
 func (r *Room) active() int {
 	n := 0
 	for _, p := range r.players {
@@ -356,6 +415,7 @@ func (r *Room) leave(c *Client, now time.Time) error {
 		}
 	}
 	c.push(Message{"t": "state_sync", "phase": "NONE", "role": "player"})
+	r.keepCaptain(now)
 	return nil
 }
 
@@ -384,7 +444,7 @@ func (r *Room) detach(c *Client, now time.Time) {
 }
 
 func (r *Room) setSubject(c *Client, subject string, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if r.playing() {
@@ -406,7 +466,7 @@ func oneOf(v string, list []string) bool {
 }
 
 func (r *Room) configure(c *Client, mode string, minutes int, content string, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if r.playing() {
@@ -450,7 +510,7 @@ func MinPlayersFor(mode string) int {
 // --- game flow ------------------------------------------------------------
 
 func (r *Room) start(c *Client, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if r.playing() {
@@ -522,7 +582,7 @@ func (r *Room) begin(now time.Time) {
 }
 
 func (r *Room) end(c *Client, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if !r.playing() {
@@ -1271,6 +1331,10 @@ func (r *Room) housekeep(now time.Time) {
 			r.dirtyLobby = true
 		}
 	}
+	r.keepCaptain(now)
+	if r.closed {
+		return
+	}
 	anyone := r.hostOnline
 	for _, p := range r.players {
 		anyone = anyone || p.online
@@ -1509,7 +1573,8 @@ func (r *Room) sendState(c *Client, now time.Time) {
 		"t": "state_sync", "pin": r.Pin, "phase": r.phase, "role": role,
 		"mode": r.mode, "minutes": r.minutes, "content": r.content,
 		"modes": Modes, "durations": Durations, "contents": Contents, "subject": subjectOrMix(r.subject),
-		"host":    Message{"user_id": r.hostClaims.Subject, "name": r.hostClaims.Name, "online": r.hostOnline},
+		"host":      Message{"user_id": r.hostClaims.Subject, "name": r.hostClaims.Name, "online": r.hostOnline},
+		"classroom": r.classroomID, "captain": r.captain(),
 		"players": roster, "min_players": MinPlayersFor(r.mode), "max_players": MaxPlayers,
 	}
 	if r.phase == PhaseCountdown {

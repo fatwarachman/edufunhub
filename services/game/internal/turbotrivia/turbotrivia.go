@@ -109,26 +109,28 @@ const (
 
 // Errors share their codes with the client (room.errors.*).
 var (
-	ErrNotFound   = lobby.ErrNotFound
-	ErrFull       = lobby.ErrFull
-	ErrStarted    = lobby.ErrStarted
-	ErrNotHost    = lobby.ErrNotHost
-	ErrPlayers    = lobby.ErrPlayers
-	ErrPhase      = lobby.ErrPhase
-	ErrNoRoom     = lobby.ErrNoRoom
-	ErrHostOnly   = errors.New("host_only")
-	ErrPlayerOnly = errors.New("player_only")
-	ErrLocked     = errors.New("answers_locked")
-	ErrOption     = errors.New("invalid_option")
-	ErrAnswered   = errors.New("already_answered")
-	ErrTooEarly   = errors.New("too_early")
-	ErrClosed     = errors.New("room_closed")
-	ErrBusy       = errors.New("busy")
-	ErrConfig     = errors.New("invalid_config")
-	ErrItem       = errors.New("invalid_item")
-	ErrNoItem     = errors.New("no_item")
-	ErrNoTarget   = errors.New("no_target")
-	ErrFinished   = errors.New("kart_finished")
+	ErrNotFound = lobby.ErrNotFound
+	ErrFull     = lobby.ErrFull
+	ErrStarted  = lobby.ErrStarted
+	ErrNotHost  = lobby.ErrNotHost
+	ErrPlayers  = lobby.ErrPlayers
+	ErrPhase    = lobby.ErrPhase
+	ErrNoRoom   = lobby.ErrNoRoom
+	// ErrNoClassroom refuses {t:"classroom"} from a token without a classroom.
+	ErrNoClassroom = lobby.ErrNoClassroom
+	ErrHostOnly    = errors.New("host_only")
+	ErrPlayerOnly  = errors.New("player_only")
+	ErrLocked      = errors.New("answers_locked")
+	ErrOption      = errors.New("invalid_option")
+	ErrAnswered    = errors.New("already_answered")
+	ErrTooEarly    = errors.New("too_early")
+	ErrClosed      = errors.New("room_closed")
+	ErrBusy        = errors.New("busy")
+	ErrConfig      = errors.New("invalid_config")
+	ErrItem        = errors.New("invalid_item")
+	ErrNoItem      = errors.New("no_item")
+	ErrNoTarget    = errors.New("no_target")
+	ErrFinished    = errors.New("kart_finished")
 )
 
 // Config holds the timings. Tests shorten them; production uses Defaults.

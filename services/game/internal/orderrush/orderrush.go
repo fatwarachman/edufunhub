@@ -113,6 +113,7 @@ var (
 	ErrPlayers     = lobby.ErrPlayers
 	ErrPhase       = lobby.ErrPhase
 	ErrNoRoom      = lobby.ErrNoRoom
+	ErrNoClassroom = lobby.ErrNoClassroom
 	ErrHostOnly    = errors.New("host_only")
 	ErrPlayerOnly  = errors.New("player_only")
 	ErrStale       = errors.New("stale_question")

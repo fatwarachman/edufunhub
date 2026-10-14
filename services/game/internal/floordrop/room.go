@@ -103,6 +103,7 @@ type command struct {
 	limit   int
 	at      time.Time
 	fn      func(r *Room) any
+	reason  string
 	reply   chan reply
 }
 
@@ -123,6 +124,9 @@ type Room struct {
 	host       *Client
 	hostClaims auth.Claims
 	hostOnline bool
+	// classroomID is set on classroom rooms (no host screen): hostClaims is
+	// then the captain, a seated player who may run the host commands.
+	classroomID int64
 
 	players []*Player
 	byID    map[int64]*Player
@@ -277,7 +281,11 @@ func (r *Room) handle(cmd command, now time.Time) {
 	case "inspect":
 		res.v = cmd.fn(r)
 	case "close":
-		r.close(now, "closed")
+		reason := cmd.reason
+		if reason == "" {
+			reason = "closed"
+		}
+		r.close(now, reason)
 	}
 	if res.err == nil && cmd.kind != "inspect" && cmd.kind != "sync" {
 		r.touched = now
@@ -320,11 +328,14 @@ func (r *Room) join(c *Client, now time.Time) error {
 	if p := r.byID[c.ID()]; p != nil && !p.left {
 		return r.attach(c, now)
 	}
-	if r.phase != PhaseLobby {
+	if r.phase != PhaseLobby && (r.classroomID == 0 || r.phase != PhaseOver) {
 		return ErrStarted
 	}
 	if r.active() >= r.limit {
 		return ErrFull
+	}
+	if old := r.byID[c.ID()]; old != nil {
+		r.remove(old)
 	}
 	r.joined++
 	p := &Player{Claims: c.Claims, client: c, order: r.joined, online: true, alive: true, lives: Lives, choice: -1}
@@ -334,6 +345,57 @@ func (r *Room) join(c *Client, now time.Time) error {
 	r.dirtyLobby = true
 	r.sendState(c, now)
 	return nil
+}
+
+// canHost reports whether c may run host commands: the host screen, or the
+// captain of a classroom room (a seated player).
+func (r *Room) canHost(c *Client) bool {
+	return c.Host || (r.classroomID > 0 && c.ID() == r.hostClaims.Subject)
+}
+
+// captain is the user id of the classroom room captain (0 elsewhere).
+func (r *Room) captain() int64 {
+	if r.classroomID <= 0 {
+		return 0
+	}
+	return r.hostClaims.Subject
+}
+
+// joinable reports whether a classroom player may still take a seat.
+func (r *Room) joinable() bool {
+	return (r.phase == PhaseLobby || r.phase == PhaseOver) && r.active() < r.limit
+}
+
+// keepCaptain hands the captain role of a classroom room to the next active
+// player (online first, then join order) when the captain left or stayed
+// offline past LobbyDrop, and closes the room once nobody is seated.
+func (r *Room) keepCaptain(now time.Time) {
+	if r.classroomID <= 0 || r.closed || r.joined == 0 {
+		return
+	}
+	cur := r.byID[r.hostClaims.Subject]
+	away := cur != nil && !cur.left && !cur.online && !cur.offlineAt.IsZero() && now.Sub(cur.offlineAt) >= r.cfg.LobbyDrop
+	if cur != nil && !cur.left && !away {
+		return
+	}
+	var next *Player
+	for _, q := range r.players {
+		if q.left {
+			continue
+		}
+		if next == nil || (q.online && !next.online) || (q.online == next.online && q.order < next.order) {
+			next = q
+		}
+	}
+	if away && (next == nil || !next.online) {
+		return
+	}
+	if next == nil {
+		r.close(now, "empty")
+		return
+	}
+	r.hostClaims = next.Claims
+	r.broadcastState(now)
 }
 
 func (r *Room) active() int {
@@ -369,6 +431,7 @@ func (r *Room) leave(c *Client, now time.Time) error {
 		}
 	}
 	c.push(Message{"t": "state_sync", "phase": "NONE", "role": "player"})
+	r.keepCaptain(now)
 	return nil
 }
 
@@ -397,7 +460,7 @@ func (r *Room) detach(c *Client, now time.Time) {
 }
 
 func (r *Room) setSubject(c *Client, subject string, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if r.phase != PhaseLobby && r.phase != PhaseOver {
@@ -413,7 +476,7 @@ func (r *Room) setSubject(c *Client, subject string, now time.Time) error {
 // before the game (host only). A limit below the players already in the
 // room is refused.
 func (r *Room) setSettings(c *Client, minutes, limit int, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if r.phase != PhaseLobby && r.phase != PhaseOver {
@@ -439,7 +502,7 @@ func (r *Room) setSettings(c *Client, minutes, limit int, now time.Time) error {
 // --- game flow ------------------------------------------------------------
 
 func (r *Room) start(c *Client, now time.Time) error {
-	if !c.Host {
+	if !r.canHost(c) {
 		return ErrHostOnly
 	}
 	if r.phase != PhaseLobby && r.phase != PhaseOver {
@@ -965,6 +1028,10 @@ func (r *Room) housekeep(now time.Time) {
 	}
 	r.eliminate(gone, "disconnected", now)
 
+	r.keepCaptain(now)
+	if r.closed {
+		return
+	}
 	anyone := r.hostOnline
 	for _, p := range r.players {
 		anyone = anyone || p.online
@@ -1076,7 +1143,8 @@ func (r *Room) sendState(c *Client, now time.Time) {
 	}
 	msg := Message{
 		"t": "state_sync", "pin": r.Pin, "phase": r.phase, "role": role, "subject": subjectOrMix(r.subject),
-		"host":    Message{"user_id": r.hostClaims.Subject, "name": r.hostClaims.Name, "online": r.hostOnline},
+		"host":      Message{"user_id": r.hostClaims.Subject, "name": r.hostClaims.Name, "online": r.hostOnline},
+		"classroom": r.classroomID, "captain": r.captain(),
 		"players": players, "alive": r.aliveCount(), "answered": answered,
 		"min_players": MinPlayers, "max_players": r.limit, "max_rounds": MaxRounds,
 		"round": r.round.Number, "lives_max": Lives,
@@ -1120,7 +1188,7 @@ func (r *Room) sendState(c *Client, now time.Time) {
 		podium := r.podium(now)
 		msg["podium"] = podium[:min(3, len(podium))]
 		msg["ranking"] = podium
-		if p := r.byID[c.ID()]; p != nil && !c.Host {
+		if p := r.byID[c.ID()]; p != nil && !c.Host && p.rank > 0 {
 			msg["result"] = r.youResult(p, now)
 		}
 	}

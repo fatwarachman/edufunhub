@@ -141,6 +141,9 @@ func (s *Server) serveBlockBattle(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			err = s.block.Join(client, pin, in.Avatar)
+		case "classroom":
+			// The classroom comes from the signed token claim only.
+			err = s.block.EnterClassroom(client, at, in.Avatar)
 		case "configure":
 			err = s.block.Configure(client, in.Mode, in.Minutes, in.Content)
 		case "set_subject":

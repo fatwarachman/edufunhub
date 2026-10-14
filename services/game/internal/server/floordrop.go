@@ -125,6 +125,9 @@ func (s *Server) serveFloorDrop(w http.ResponseWriter, r *http.Request) {
 			_, err = s.floor.Create(client, at)
 		case "join_room":
 			err = s.floor.Join(client, in.Pin)
+		case "classroom":
+			// The classroom comes from the signed token claim only.
+			err = s.floor.EnterClassroom(client, at)
 		case "start_game":
 			err = s.floor.Start(client)
 		case "set_subject":

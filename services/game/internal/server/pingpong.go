@@ -123,6 +123,8 @@ func (s *Server) servePingPong(w http.ResponseWriter, r *http.Request) {
 			_, ids = s.pingpong.Create(claims, now)
 		case "join":
 			ids, err = s.pingpong.Enter(claims, in.Pin, now)
+		case "classroom":
+			ids, err = s.pingpong.EnterClassroom(claims, now)
 		case "leave":
 			var paid int
 			ids, paid = s.pingpong.Leave(claims.Subject, now)

@@ -143,6 +143,9 @@ func (s *Server) serveMonsterCafe(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			err = s.cafe.Join(client, pin, in.Avatar)
+		case "classroom":
+			// Classroom id comes from the signed token claim only.
+			_, err = s.cafe.EnterClassroom(client, in.Avatar, at)
 		case "configure":
 			err = s.cafe.Configure(client, in.Minutes)
 		case "set_subject":

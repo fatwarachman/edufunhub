@@ -152,6 +152,12 @@ func (h *Hub) Enter(c auth.Claims, pin string, now time.Time) ([]int64, error) {
 	return h.rooms.Enter(c, pin, now)
 }
 
+// EnterClassroom joins or opens the shared room of the player's classroom; a
+// new room starts at level 1 (the client's default), the host may change it.
+func (h *Hub) EnterClassroom(c auth.Claims, now time.Time) ([]int64, error) {
+	return h.rooms.EnterClassroom(c, now, func(r *room) { r.Game = game{level: Levels[0].Number, winner: -1} })
+}
+
 // Create opens a room at a level (1–4).
 func (h *Hub) Create(c auth.Claims, level int, now time.Time) ([]int64, error) {
 	if _, ok := FindLevel(level); !ok {
@@ -438,6 +444,17 @@ func (h *Hub) TakeResults() []Result {
 	out := h.pending
 	h.pending = nil
 	return out
+}
+
+// CloseClassroom closes every room of classroom id (the teacher ended the
+// classroom). Unfinished games pay what players achieved, like Prune. It
+// returns the account holders who were seated, so the server can tell them.
+func (h *Hub) CloseClassroom(id int64, now time.Time) []int64 {
+	return h.rooms.CloseClassroom(id, func(r *room) {
+		for i := range r.Seats {
+			h.settle(r, i, false, now)
+		}
+	})
 }
 
 // Prune drops idle rooms; unfinished games pay what was achieved.
