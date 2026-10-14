@@ -8,13 +8,27 @@ import {
 import { CheckCircle2, Download, Share, Smartphone } from 'lucide-react';
 import { useState, useSyncExternalStore } from 'react';
 
+/** Latest Android build published by the server (see App\\Services\\AndroidApk). */
+export interface AndroidApk {
+    url: string;
+    size: number;
+    updated_at: string;
+    hash: string;
+}
+
+function formatSize(bytes: number, locale: string): string {
+    return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(bytes / 1048576)} MB`;
+}
+
 /**
- * Dashboard card that installs EduFunHub as an app (PWA). Uses the browser
- * install prompt where available, step-by-step help on iPhone/iPad, and a
- * short hint for other browsers.
+ * Dashboard card that installs EduFunHub as an app: a direct download of
+ * the latest Android APK when one is published, plus the PWA install (the
+ * browser install prompt where available, step-by-step help on iPhone/iPad,
+ * and a short hint for other browsers).
  */
-export function InstallAppCard() {
-    const { t } = useTranslations();
+export function InstallAppCard({ apk = null }: { apk?: AndroidApk | null }) {
+    const { t, i18n } = useTranslations();
+    const locale = i18n.language === 'en' ? 'en-US' : 'id-ID';
     const state = useSyncExternalStore<InstallState>(
         subscribeInstall,
         installState,
@@ -47,6 +61,33 @@ export function InstallAppCard() {
             ) : (
                 <>
                     <p className="text-sm">{t('pwa.intro')}</p>
+                    {apk && (
+                        <div className="flex flex-col gap-1.5">
+                            <a
+                                href={apk.url}
+                                download="edufunhub.apk"
+                                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-[#151b2e] bg-[#ffd93d] px-4 text-center font-bold text-[#151b2e] shadow-[2px_2px_0_#151b2e] hover:bg-[#ffe680] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7]"
+                                data-testid="install-app-apk"
+                            >
+                                <Download
+                                    className="size-5 shrink-0"
+                                    aria-hidden="true"
+                                />
+                                {t('pwa.apk')}
+                            </a>
+                            <p
+                                className="text-center text-xs font-semibold text-[#3a4258]"
+                                data-testid="install-app-apk-meta"
+                            >
+                                {t('pwa.apkMeta', {
+                                    size: formatSize(apk.size, locale),
+                                    date: new Intl.DateTimeFormat(locale, {
+                                        dateStyle: 'medium',
+                                    }).format(new Date(apk.updated_at)),
+                                })}
+                            </p>
+                        </div>
+                    )}
                     {state === 'available' ? (
                         <button
                             type="button"
@@ -60,7 +101,7 @@ export function InstallAppCard() {
                             data-testid="install-app-button"
                         >
                             <Download className="size-5" aria-hidden="true" />
-                            {t('pwa.install')}
+                            {apk ? t('pwa.installWeb') : t('pwa.install')}
                         </button>
                     ) : (
                         <>
@@ -75,7 +116,7 @@ export function InstallAppCard() {
                                     className="size-5"
                                     aria-hidden="true"
                                 />
-                                {t('pwa.install')}
+                                {apk ? t('pwa.installWeb') : t('pwa.install')}
                             </button>
                             {showHelp && (
                                 <ol

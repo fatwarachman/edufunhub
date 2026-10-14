@@ -25,4 +25,10 @@ return [
         explode(',', (string) env('ANDROID_SHA256_CERT_FINGERPRINTS', '')),
     ))),
 
+    /*
+    | Sideload APK offered by the dashboard "Install the app" card. Publish a
+    | new build by copying android/dist/edufunhub.apk to this path.
+    */
+    'apk_path' => env('ANDROID_APK_PATH', storage_path('app/private/android/edufunhub.apk')),
+
 ];
