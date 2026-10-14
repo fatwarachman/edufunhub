@@ -1564,7 +1564,8 @@
         "unread": "{{count}} belum dibaca",
         "typingHint": "Enter untuk kirim, Shift+Enter baris baru",
         "sent": "Terkirim",
-        "read": "Sudah dibaca"
+        "read": "Sudah dibaca",
+        "teacherBadge": "Guru"
     },
     "ads": {
         "sponsor": "Sponsor",

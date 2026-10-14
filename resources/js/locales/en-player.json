@@ -1565,7 +1565,8 @@
         "unread": "{{count}} unread",
         "typingHint": "Enter to send, Shift+Enter for a new line",
         "sent": "Sent",
-        "read": "Read"
+        "read": "Read",
+        "teacherBadge": "Teacher"
     },
     "ads": {
         "sponsor": "Sponsor",

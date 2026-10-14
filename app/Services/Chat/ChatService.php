@@ -6,6 +6,7 @@ use App\Models\ChatConversation;
 use App\Models\ChatMessage;
 use App\Models\ChatParticipant;
 use App\Models\PlayerProfile;
+use App\Models\Role;
 use App\Models\User;
 use App\Notifications\PlayerNotification;
 use App\Services\CharacterShop;
@@ -280,17 +281,27 @@ class ChatService
      *
      * @return list<array{id: int, name: string, character: array<string, mixed>|null}>
      */
+    /**
+     * People the viewer can start a chat with. Everyone sees the school and a
+     * teacher flag; only admins see (and can search by) the email, so player
+     * addresses never leak to other players.
+     *
+     * @return list<array{id: int, name: string, character: array<string, mixed>|null, school: string|null, is_teacher: bool, email?: string}>
+     */
     public function searchPeople(User $user, string $term, int $limit = 12): array
     {
         $term = trim($term);
+        $like = '%'.$this->escapeLike($term).'%';
+        $showEmail = $user->isAdmin();
         $users = User::query()
             ->whereKeyNot($user->id)
             ->whereNull('disabled_at')
             ->whereHas('playerProfile')
-            ->with('playerProfile')
+            ->with(['playerProfile', 'roles:id,slug'])
             ->when($term !== '', fn (Builder $q) => $q->where(fn (Builder $w) => $w
-                ->where('name', 'like', '%'.$this->escapeLike($term).'%')
-                ->orWhereHas('playerProfile', fn (Builder $p) => $p->where('nickname', 'like', '%'.$this->escapeLike($term).'%'))))
+                ->where('name', 'like', $like)
+                ->orWhereHas('playerProfile', fn (Builder $p) => $p->where('nickname', 'like', $like))
+                ->when($showEmail, fn (Builder $e) => $e->orWhere('email', 'like', $like))))
             ->orderBy('name')
             ->limit($limit)
             ->get();
@@ -300,7 +311,10 @@ class ChatService
             'id' => $u->id,
             'name' => $this->displayName($u),
             'character' => $looks[$u->id] ?? null,
-        ])->all();
+            'school' => $u->playerProfile?->school_name ?: null,
+            'is_teacher' => $u->roles->contains('slug', Role::TEACHER),
+            ...($showEmail ? ['email' => $u->email] : []),
+        ])->values()->all();
     }
 
     /** Player language for system lines (Indonesian by default). */
