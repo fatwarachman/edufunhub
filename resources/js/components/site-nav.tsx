@@ -21,6 +21,7 @@ import {
     CircleUserRound,
     Gamepad2,
     Globe,
+    GraduationCap,
     Home,
     Info,
     KeyRound,
@@ -216,6 +217,14 @@ const ADMIN_ITEM: NavItem = {
     testId: 'nav-admin',
 };
 
+/** Signed-in players: classrooms they joined with their own scores. */
+const MY_CLASSROOMS_ITEM: NavItem = {
+    href: '/my-classrooms',
+    labelKey: 'nav.myClassrooms',
+    icon: GraduationCap,
+    testId: 'nav-my-classrooms',
+};
+
 /** Signed-in players: own ability analysis. */
 const ABILITY_ITEM: NavItem = {
     href: '/ability',
@@ -294,6 +303,7 @@ function playerGroups({
             items: [
                 PROFILE_ITEM,
                 CHARACTER_ITEM,
+                MY_CLASSROOMS_ITEM,
                 ABILITY_ITEM,
                 FEEDBACK_ITEM,
                 ...(isTeacher
@@ -563,8 +573,38 @@ function MobileMenu({
     );
 }
 
-/** Href for "back" from a game: portal when signed in, game list otherwise. */
+/**
+ * Href for "back" from a game: the classroom when the game was opened from
+ * an active classroom, the portal when signed in, the game list otherwise.
+ */
 export function useGameBackHref(): string {
+    return useGameBack().href;
+}
+
+/** "Back" target of a game page with its translated label. */
+export function useGameBack(): {
+    href: string;
+    label: string;
+    inClassroom: boolean;
+    /** Name of the classroom the game was opened from. */
+    classroomName?: string;
+} {
     const { props } = usePage<SharedData>();
-    return props.auth?.user ? '/portal' : '/gamelist';
+    const { t } = useTranslations();
+    const classroom = props.gameReturn;
+    if (classroom?.href.startsWith('/portal/classrooms/')) {
+        return {
+            href: classroom.href,
+            label: t('nav.backToClassroom'),
+            inClassroom: true,
+            classroomName: classroom.name,
+        };
+    }
+    return props.auth?.user
+        ? { href: '/portal', label: t('nav.backToPortal'), inClassroom: false }
+        : {
+              href: '/gamelist',
+              label: t('nav.backToGames'),
+              inClassroom: false,
+          };
 }

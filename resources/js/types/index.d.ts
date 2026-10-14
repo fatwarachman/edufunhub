@@ -144,6 +144,8 @@ export interface SharedData {
     features?: Record<string, boolean>;
     show_experience_survey?: boolean;
     profileWizard?: ProfileWizardPrefill | null;
+    /** Game pages only: the classroom this game was opened from (else portal). */
+    gameReturn?: { href: string; name: string } | null;
     [key: string]: unknown;
 }
 

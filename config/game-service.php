@@ -18,11 +18,16 @@ return [
     'public_ping_pong_ws_url' => env('GAME_SERVICE_PUBLIC_PING_PONG_WS_URL', '/game-ws/ping-pong'),
     'public_block_battle_ws_url' => env('GAME_SERVICE_PUBLIC_BLOCK_BATTLE_WS_URL', '/game-ws/block-battle'),
     'public_monster_cafe_ws_url' => env('GAME_SERVICE_PUBLIC_MONSTER_CAFE_WS_URL', '/game-ws/monster-cafe'),
+    'public_classroom_ws_url' => env('GAME_SERVICE_PUBLIC_CLASSROOM_WS_URL', '/game-ws/classroom'),
     'public_minigame_ws_base' => env('GAME_SERVICE_PUBLIC_MINIGAME_WS_BASE', '/game-ws'),
     /* Signed endpoint listing the rooms a player is seated in (portal "continue playing"). */
     'presence_url' => env('GAME_SERVICE_PRESENCE_URL', 'http://edufunhub-game:8090/internal/presence'),
     /* Signed endpoint listing the open rooms that own a PIN (join with only the code). */
     'room_url' => env('GAME_SERVICE_ROOM_URL', 'http://edufunhub-game:8090/internal/room'),
+    /* Signed endpoint that disconnects a student (or everyone with user 0) from the classroom world. */
+    'classroom_kick_url' => env('GAME_SERVICE_CLASSROOM_KICK_URL', 'http://edufunhub-classroom:8092/internal/classroom/kick'),
+    /* Signed endpoint that closes every game room of an ended classroom. */
+    'classroom_close_url' => env('GAME_SERVICE_CLASSROOM_CLOSE_URL', 'http://edufunhub-game:8090/internal/classroom/close'),
     'presence_timeout' => (float) env('GAME_SERVICE_PRESENCE_TIMEOUT', 1.5),
     'token_ttl' => (int) env('GAME_SERVICE_TOKEN_TTL', 900),
     'signature_tolerance' => (int) env('GAME_SERVICE_SIGNATURE_TOLERANCE', 300),

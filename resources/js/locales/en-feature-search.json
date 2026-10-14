@@ -190,8 +190,8 @@
             "teacherOnly": true
         },
         "portalClassroom": {
-            "href": "/portal/classrooms",
-            "title": "Classroom (Player Portal)",
+            "href": "/my-classrooms",
+            "title": "My classes (joined classrooms)",
             "superadminOnly": false,
             "teacherOnly": false
         }

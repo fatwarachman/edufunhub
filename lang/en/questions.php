@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'search_min' => 'Type at least 2 characters to search.',
+    'search_max' => 'The search text may not be longer than 100 characters.',
     'created' => 'Question created.',
     'updated' => 'Question updated.',
     'deleted' => 'Question deleted.',
