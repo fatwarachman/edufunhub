@@ -1,5 +1,11 @@
+import { type CharacterRig } from '@/lib/character/character-3d';
+import {
+    character3D,
+    loadCharacter3D,
+} from '@/lib/character/character-3d-loader';
 import {
     type CharacterLook,
+    type CharacterPose,
     drawCharacter,
 } from '@/lib/character/draw-character';
 import {
@@ -95,9 +101,77 @@ const tileColors: Record<string, string> = {
 
 export class FlagQuestRenderer {
     private ground: GroundCache | null = null;
+    /** 3D player model, rebuilt only when the look changes. */
+    private playerRig: CharacterRig | null = null;
+    private playerRigKey = '';
+    private playerRigLook: CharacterLook | null = null;
+    /** Device pixels per map unit of the current frame (dpr * zoom). */
+    private pixelScale = 1;
+    private readonly walkPose: CharacterPose = {
+        phase: 0,
+        bob: 0,
+        facingBack: false,
+        flip: 1,
+    };
 
     invalidate(): void {
         this.ground = null;
+    }
+
+    /** Releases the 3D player model (call when the map unmounts). */
+    dispose(): void {
+        this.releaseRig();
+        this.playerRigKey = '';
+        this.playerRigLook = null;
+    }
+
+    private releaseRig(): void {
+        if (this.playerRig) {
+            character3D()?.disposeCharacter(this.playerRig);
+        }
+        this.playerRig = null;
+    }
+
+    private rigFor(look: CharacterLook): CharacterRig | null {
+        const stack = character3D();
+        if (!stack) {
+            // First frames draw the 2D character while three.js loads.
+            void loadCharacter3D();
+            return null;
+        }
+        const last = this.playerRigLook;
+        // The frame state spreads a new look object every frame; compare the
+        // fields by reference first so the signature is only built on change.
+        if (
+            last &&
+            last.color === look.color &&
+            last.gender === look.gender &&
+            last.skin === look.skin &&
+            last.hair === look.hair &&
+            last.items === look.items &&
+            last.accessory === look.accessory
+        ) {
+            return this.playerRig;
+        }
+        this.playerRigLook = look;
+        const key = JSON.stringify([
+            look.color,
+            look.gender,
+            look.skin,
+            look.hair,
+            look.items,
+            look.accessory,
+        ]);
+        if (key !== this.playerRigKey) {
+            this.releaseRig();
+            this.playerRigKey = key;
+            try {
+                this.playerRig = stack.buildCharacter(look);
+            } catch {
+                this.playerRig = null;
+            }
+        }
+        return this.playerRig;
     }
 
     private buildGround(world: WorldData, rotation: number): GroundCache {
@@ -317,6 +391,7 @@ export class FlagQuestRenderer {
         const ground = this.buildGround(s.world, s.rotation);
         const cam = project(s.world, s.camera, s.rotation);
         const z = s.zoom;
+        this.pixelScale = dpr * z;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.fillStyle = '#4aa9dd';
         ctx.fillRect(0, 0, width, height);
@@ -1022,7 +1097,20 @@ export class FlagQuestRenderer {
         ctx.stroke();
         this.shadow(ctx, x, y, 14, 6);
 
-        drawCharacter(ctx, x, y, s.look, { phase, bob, facingBack, flip });
+        const pose = this.walkPose;
+        pose.phase = phase;
+        pose.bob = bob;
+        pose.facingBack = facingBack;
+        pose.flip = flip;
+        const rig = this.rigFor(s.look);
+        const stack = character3D();
+        if (
+            rig &&
+            stack?.drawCharacter3DAt(ctx, x, y, this.pixelScale, rig, pose)
+        ) {
+            return;
+        }
+        drawCharacter(ctx, x, y, s.look, pose);
     }
 
     private drawLabel(

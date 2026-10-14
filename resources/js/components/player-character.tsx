@@ -1,3 +1,8 @@
+import { type Character3D } from '@/lib/character/character-3d';
+import {
+    character3D,
+    loadCharacter3D,
+} from '@/lib/character/character-3d-loader';
 import {
     CHARACTER_HEIGHT,
     type CharacterLook,
@@ -17,6 +22,10 @@ const VIEW_UNITS = CHARACTER_HEIGHT + 38;
 const FEET_Y = VIEW_UNITS - 10;
 /** Idle animation frame rate: smooth enough, light on phones with many avatars. */
 const FRAME_MS = 1000 / 30;
+/** Slowest idle rate the adaptive throttle may fall back to (12 fps). */
+const SLOWEST_FRAME_MS = 1000 / 12;
+/** Time budget (ms) all avatars may take per frame before throttling. */
+const FRAME_BUDGET_MS = 8;
 
 export interface CharacterData extends CharacterLook {
     nickname: string | null;
@@ -42,14 +51,27 @@ type Frame = (now: number) => void;
 const frames = new Set<Frame>();
 let loop = 0;
 let lastTick = 0;
+/** Current idle frame interval; grows when rendering all avatars is slow. */
+let frameMs = FRAME_MS;
+/** Smoothed time (ms) one tick of all avatars takes. */
+let tickCost = 0;
 
 function tick(now: number) {
     loop = requestAnimationFrame(tick);
-    if (now - lastTick < FRAME_MS) {
+    if (now - lastTick < frameMs) {
         return;
     }
     lastTick = now;
+    const started = performance.now();
     frames.forEach((frame) => frame(now));
+    // Adaptive throttle: slow devices (or many 3D avatars) animate at a
+    // lower rate instead of making the whole page janky.
+    tickCost = tickCost * 0.8 + (performance.now() - started) * 0.2;
+    if (tickCost > FRAME_BUDGET_MS) {
+        frameMs = Math.min(SLOWEST_FRAME_MS, frameMs * 1.2);
+    } else if (tickCost < FRAME_BUDGET_MS / 2) {
+        frameMs = Math.max(FRAME_MS, frameMs * 0.95);
+    }
 }
 
 function subscribe(frame: Frame): () => void {
@@ -75,10 +97,26 @@ function hash(text: string): number {
 }
 
 /**
- * Portal avatar that reuses the exact in-game character drawing (Flag Quest),
- * so dashboard, portal, shop and game always show the same model. It idles
- * with a random, non-repeating sequence of moves; reduced-motion users and
- * off-screen avatars get the still pose.
+ * Builds the 3D rig; null when the model cannot be built (the 2D drawing
+ * is used instead).
+ */
+function tryBuild(
+    stack: Character3D,
+    look: CharacterLook,
+): ReturnType<Character3D['buildCharacter']> | null {
+    try {
+        return stack.buildCharacter(look);
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Portal avatar: the 3D model of the in-game character (same shapes as the
+ * Flag Quest drawing), rendered through one shared WebGL renderer, with the
+ * 2D drawing as fallback when WebGL is unavailable. It idles with a random,
+ * non-repeating sequence of moves; reduced-motion users and off-screen
+ * avatars get the still pose.
  */
 export default function PlayerCharacter({
     character,
@@ -103,6 +141,10 @@ export default function PlayerCharacter({
             { front: Boolean(items.weapon), back: Boolean(items.offhand) },
         );
         let scale = 1;
+        let stack: Character3D | null = character3D();
+        let rig = stack ? tryBuild(stack, look) : null;
+        let lastPose: CharacterPose = STANDING_POSE;
+        let disposed = false;
 
         const resize = () => {
             const px = canvas.clientWidth || size || 192;
@@ -116,6 +158,21 @@ export default function PlayerCharacter({
         };
 
         const draw = (pose: CharacterPose) => {
+            lastPose = pose;
+            if (stack && rig) {
+                stack.poseCharacter(rig, pose);
+                if (
+                    stack.renderCharacterTo(canvas, rig, {
+                        backdrop,
+                        pixelSize: canvas.width,
+                        bob: pose.bob,
+                    })
+                ) {
+                    canvas.dataset.render = '3d';
+                    return;
+                }
+            }
+            canvas.dataset.render = '2d';
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (backdrop) {
@@ -150,6 +207,18 @@ export default function PlayerCharacter({
 
         resize();
         draw(STANDING_POSE);
+        // three.js loads lazily: show the 2D drawing until the 3D stack is
+        // ready, then switch over (or stay 2D if it cannot load).
+        if (!stack) {
+            void loadCharacter3D().then((loaded) => {
+                if (disposed || !loaded) {
+                    return;
+                }
+                stack = loaded;
+                rig = tryBuild(loaded, look);
+                draw(lastPose);
+            });
+        }
         const observer = new ResizeObserver(() => {
             resize();
             draw(STANDING_POSE);
@@ -157,8 +226,18 @@ export default function PlayerCharacter({
         observer.observe(canvas);
 
         const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+        const release = () => {
+            disposed = true;
+            if (stack && rig) {
+                stack.disposeCharacter(rig);
+            }
+            rig = null;
+        };
         if (!animated || typeof IntersectionObserver === 'undefined') {
-            return () => observer.disconnect();
+            return () => {
+                observer.disconnect();
+                release();
+            };
         }
 
         let unsubscribe: (() => void) | null = null;
@@ -190,6 +269,7 @@ export default function PlayerCharacter({
             document.removeEventListener('visibilitychange', sync);
             reduced?.removeEventListener?.('change', sync);
             unsubscribe?.();
+            release();
         };
     }, [signature, size, backdrop, animated]);
 
