@@ -68,7 +68,7 @@ export function LanguageToggle({
                     'shrink-0',
                     variant === 'player'
                         ? 'mx-1 size-4 text-[#151b2e]'
-                        : 'mx-1 size-3.5 text-muted-foreground',
+                        : 'mx-1 hidden size-3.5 text-muted-foreground sm:block',
                 )}
             />
             {LANGUAGES.map((language) => {
@@ -88,7 +88,7 @@ export function LanguageToggle({
                             'inline-flex items-center justify-center font-bold transition-colors focus-visible:outline-none disabled:cursor-wait',
                             variant === 'player'
                                 ? 'min-h-9 min-w-11 rounded-lg px-2.5 text-sm text-[#151b2e] focus-visible:ring-3 focus-visible:ring-[#6c5ce7]'
-                                : 'h-7 min-w-9 rounded-md px-2 text-xs focus-visible:ring-2 focus-visible:ring-ring',
+                                : 'h-7 min-w-7 rounded-md px-1.5 text-xs focus-visible:ring-2 focus-visible:ring-ring sm:min-w-9 sm:px-2',
                             active
                                 ? variant === 'player'
                                     ? 'bg-[#ffd93d]'

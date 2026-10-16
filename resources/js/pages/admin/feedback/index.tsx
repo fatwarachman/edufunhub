@@ -159,7 +159,7 @@ export default function FeedbackIndex({
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Feedback">
             <Head title={tr('Feedback')} />
             <div className="flex flex-col gap-6">
                 <div>

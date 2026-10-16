@@ -134,7 +134,7 @@ export default function WhatsAppSettings({
     const linked = connection.reachable && connection.logged_in;
 
     return (
-        <AdminLayout>
+        <AdminLayout title="WhatsApp Notifications">
             <Head title={tr('WhatsApp Notifications')} />
             <div className="flex w-full flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">

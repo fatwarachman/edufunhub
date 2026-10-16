@@ -31,7 +31,7 @@ import {
     rateTone,
 } from '@/components/admin/game-stats';
 import AdminLayout from '@/layouts/admin-layout';
-import { tr } from '@/lib/admin-i18n';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
@@ -184,7 +184,7 @@ export default function Dashboard(props: DashboardProps) {
         kpis.profiles > 0
             ? Math.round((kpis.profile_complete / kpis.profiles) * 100)
             : 0;
-    const today = new Date().toLocaleDateString(undefined, {
+    const today = new Date().toLocaleDateString(adminLocale(), {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
@@ -468,7 +468,7 @@ export default function Dashboard(props: DashboardProps) {
                                         tick={axisTick}
                                         tickFormatter={(v: string) =>
                                             new Date(v).toLocaleDateString(
-                                                undefined,
+                                                adminLocale(),
                                                 {
                                                     day: 'numeric',
                                                     month: 'short',
@@ -498,11 +498,14 @@ export default function Dashboard(props: DashboardProps) {
                                         labelFormatter={(v) =>
                                             new Date(
                                                 String(v),
-                                            ).toLocaleDateString(undefined, {
-                                                weekday: 'short',
-                                                day: 'numeric',
-                                                month: 'short',
-                                            })
+                                            ).toLocaleDateString(
+                                                adminLocale(),
+                                                {
+                                                    weekday: 'short',
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                },
+                                            )
                                         }
                                     />
                                     <Area

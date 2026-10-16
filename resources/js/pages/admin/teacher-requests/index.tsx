@@ -35,7 +35,7 @@ export default function TeacherRequests({ requests, subjects }: Props) {
                 (item.subject_key ? [item.subject_key] : []),
         });
     return (
-        <AdminLayout>
+        <AdminLayout title="Teacher requests">
             <Head title="Teacher requests" />
             <div className="flex flex-col gap-6">
                 <div>

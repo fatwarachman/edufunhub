@@ -14,7 +14,7 @@ class AdminAssistantQuery implements Tool
 
     public function description(): string
     {
-        return 'Read live EduFunHub data. Operations: catalog (game configuration); players (search name/nickname/school, max 20); player (required user_id, profile plus stats); results (game history); matches; points (net includes shop spending); questions (current bank and dated answer stats); screen_time (active screen seconds); ads (impressions/clicks/plays). Optional from/to YYYY-MM-DD, inclusive, default last 30 days, max 366 days. game filter only results/matches/ads; user_id only player/results/matches/points/screen_time; search only players. Omit unused filters, never send null. No SQL or custom fields. Catalog and players ignore dates; do not send them. Recent lists max 20, not exhaustive. Returned source URL and timestamp are authoritative.';
+        return 'Read live EduFunHub data. Extra operations: overview (whole app), question_difficulty (most wrong questions), subjects, game_ranking, player_progress, ai_analyses, classrooms, teachers, score_leaderboard (game score), changelog; subject filter only question_difficulty/subjects. Operations: catalog (game configuration); players (search name/nickname/school, max 20); player (required user_id, profile plus stats); results (game history); matches; points (net includes shop spending); questions (current bank and dated answer stats); screen_time (active screen seconds); ads (impressions/clicks/plays). Optional from/to YYYY-MM-DD, inclusive, default last 30 days, max 366 days. game filter only results/matches/ads; user_id only player/results/matches/points/screen_time; search only players. Omit unused filters, never send null. No SQL or custom fields. Catalog and players ignore dates; do not send them. Recent lists max 20, not exhaustive. Returned source URL and timestamp are authoritative.';
     }
 
     public function handle(Request $request): string
@@ -34,6 +34,7 @@ class AdminAssistantQuery implements Tool
             'search' => $schema->string()->description('Name, nickname or school, 2-100 characters.'),
             'user_id' => $schema->integer()->min(1),
             'game' => $schema->string()->description('Exact key from catalog.'),
+            'subject' => $schema->string()->description('Exact subject key.'),
             'from' => $schema->string()->description('Inclusive date YYYY-MM-DD.'),
             'to' => $schema->string()->description('Inclusive date YYYY-MM-DD.'),
         ];

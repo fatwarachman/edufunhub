@@ -1,6 +1,6 @@
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
-import { tr } from '@/lib/admin-i18n';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { type AdminUser, type Role } from '@/types/admin';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -76,7 +76,7 @@ export default function EditUser({
     };
 
     const formatDate = (str: string) =>
-        new Date(str).toLocaleDateString(undefined, {
+        new Date(str).toLocaleDateString(adminLocale(), {
             year: 'numeric',
             month: 'long',
             day: 'numeric',

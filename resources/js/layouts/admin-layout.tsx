@@ -378,7 +378,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
             {/* Main area */}
             <div className="flex min-w-0 flex-1 flex-col">
                 {/* Header */}
-                <header className="sticky top-0 z-30 flex h-14 min-w-0 items-center gap-2 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:gap-3 sm:px-4">
+                <header className="sticky top-0 z-30 flex h-14 min-w-0 items-center gap-1.5 border-b border-border bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:gap-3 sm:px-4">
                     {/* Mobile hamburger */}
                     <button
                         onClick={() => setSidebarOpen(true)}
@@ -390,14 +390,20 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
 
                     {/* Title */}
                     {title && (
-                        <h1 className="min-w-0 truncate font-display text-lg font-semibold text-foreground">
+                        <h1
+                            className="line-clamp-2 min-w-0 flex-1 font-display text-[15px] leading-tight font-semibold break-words text-foreground sm:text-base lg:text-lg xl:line-clamp-1 xl:block xl:flex-initial xl:truncate"
+                            data-testid="admin-header-title"
+                        >
                             {tr(title)}
                         </h1>
                     )}
 
-                    <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+                    <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-2">
                         <AdminFeatureSearch />
-                        <LanguageToggle variant="admin" />
+                        <LanguageToggle
+                            variant="admin"
+                            className="hidden min-[400px]:inline-flex"
+                        />
                         {/* Theme toggle */}
                         <button
                             onClick={toggleAppearance}
@@ -437,7 +443,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                         className="edu-online-dot--round"
                                     />
                                 </div>
-                                <span className="hidden text-sm font-medium text-foreground sm:block">
+                                <span className="hidden max-w-40 truncate text-sm font-medium text-foreground lg:block">
                                     {user.name}
                                 </span>
                             </button>
@@ -454,6 +460,15 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                                         <p className="truncate text-xs text-muted-foreground">
                                             {user.email}
                                         </p>
+                                    </div>
+                                    <div
+                                        className="flex items-center justify-between gap-2 border-b border-border px-3 py-2 min-[400px]:hidden"
+                                        data-testid="admin-menu-language"
+                                    >
+                                        <span className="text-xs text-muted-foreground">
+                                            {tr('Language')}
+                                        </span>
+                                        <LanguageToggle variant="admin" />
                                     </div>
                                     <Link
                                         href="/profile"

@@ -2,7 +2,7 @@ import { FlashMessages } from '@/components/admin/admin-kit';
 import { Panel, fieldClass } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import AdminLayout from '@/layouts/admin-layout';
-import { tr } from '@/lib/admin-i18n';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { Head, useForm } from '@inertiajs/react';
 import { BellRing, History, Loader2, Send, Users } from 'lucide-react';
 import { type FormEvent } from 'react';
@@ -76,7 +76,7 @@ export default function Notifications({ audiences, counts, sent }: Props) {
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Notifications">
             <Head title={tr('Notifications')} />
             <div className="flex w-full flex-col gap-6">
                 <div>
@@ -261,7 +261,9 @@ export default function Notifications({ audiences, counts, sent }: Props) {
                                             {item.sent_at
                                                 ? new Date(
                                                       item.sent_at,
-                                                  ).toLocaleString()
+                                                  ).toLocaleString(
+                                                      adminLocale(),
+                                                  )
                                                 : ''}
                                         </span>
                                     </div>

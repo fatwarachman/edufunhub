@@ -2,7 +2,7 @@ import { Panel, StatTile } from '@/components/admin/game-stats';
 import InputError from '@/components/input-error';
 import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
-import { tr } from '@/lib/admin-i18n';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
@@ -127,7 +127,9 @@ export default function CompensationIndex({
                         label={tr('Last rate change')}
                         value={
                             lastUpdated?.at
-                                ? new Date(lastUpdated.at).toLocaleDateString()
+                                ? new Date(lastUpdated.at).toLocaleDateString(
+                                      adminLocale(),
+                                  )
                                 : '—'
                         }
                         hint={lastUpdated?.by ?? undefined}

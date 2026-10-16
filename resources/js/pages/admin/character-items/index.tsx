@@ -118,7 +118,7 @@ export default function CharacterItemsIndex({
     );
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Character Items">
             <Head title={tr('Character Items')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-4">

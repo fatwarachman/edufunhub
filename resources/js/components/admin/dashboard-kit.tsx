@@ -1,6 +1,6 @@
 import { formatNumber, gameLabel } from '@/components/admin/game-stats';
 import { OnlineDot } from '@/components/online-dot';
-import { tr } from '@/lib/admin-i18n';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
@@ -72,7 +72,7 @@ export function timeAgo(value: string | null | undefined): string {
     if (hrs < 24) return tr('{0}h ago', [hrs]);
     const days = Math.floor(hrs / 24);
     if (days < 30) return tr('{0}d ago', [days]);
-    return new Date(value).toLocaleDateString(undefined, {
+    return new Date(value).toLocaleDateString(adminLocale(), {
         day: 'numeric',
         month: 'short',
         year: 'numeric',

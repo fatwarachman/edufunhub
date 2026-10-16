@@ -122,7 +122,7 @@ export default function AdsIndex({
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Advertising">
             <Head title={tr('Advertising')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">

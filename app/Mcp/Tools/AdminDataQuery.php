@@ -3,6 +3,7 @@
 namespace App\Mcp\Tools;
 
 use App\Mcp\AdminAccess;
+use App\Models\Subject;
 use App\Services\Ai\AdminAssistantData;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Database\QueryException;
@@ -15,7 +16,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsOpenWorld;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[Name('admin-data-query')]
-#[Description('Query bounded read-only admin projections. Read admin-context for operation-specific filters. player requires user_id. No SQL, writes, private chat or arbitrary fields. Dates default to last 30 calendar days; responses carry source and query time.')]
+#[Description('Query bounded read-only admin projections of live EduFunHub data. Read admin-context for operation-specific filters. overview = whole-app snapshot; question_difficulty = most wrongly answered questions; score_leaderboard = highest game scores; leaderboard = highest account points; player_progress / ai_analyses = per-player progress and AI analysis coverage. player requires user_id. No SQL, writes, private chat or arbitrary fields. Ranges default to last 30 days except all-time operations; responses carry source and query time.')]
 #[IsReadOnly]
 #[IsOpenWorld(false)]
 class AdminDataQuery extends Tool
@@ -37,9 +38,10 @@ class AdminDataQuery extends Tool
 
         return [
             'operation' => $schema->string()->enum(AdminAssistantData::OPERATIONS)->required(),
-            'search' => $schema->string()->min(2)->max(100)->description('Only players: name, nickname or school.'),
-            'user_id' => $schema->integer()->min(1)->description('Required for player; optional for results, matches, points and screen_time.'),
-            'game' => $schema->string()->enum($games)->description('Only results, matches and ads.'),
+            'search' => $schema->string()->min(2)->max(100)->description('Only players, player_progress and ai_analyses: name, nickname or school.'),
+            'user_id' => $schema->integer()->min(1)->description('Required for player; optional for results, matches, points, screen_time, question_difficulty, subjects, player_progress and ai_analyses.'),
+            'game' => $schema->string()->enum($games)->description('Only results, matches, ads, question_difficulty and score_leaderboard.'),
+            'subject' => $schema->string()->enum(Subject::keys())->description('Only question_difficulty and subjects.'),
             'from' => $schema->string()->format('date')->description('Inclusive start date YYYY-MM-DD.'),
             'to' => $schema->string()->format('date')->description('Inclusive end date YYYY-MM-DD.'),
         ];

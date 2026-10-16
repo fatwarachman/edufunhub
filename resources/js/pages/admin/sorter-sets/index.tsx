@@ -104,7 +104,7 @@ export default function SorterSetsIndex({ sets, limits }: Props) {
     const [processing, setProcessing] = useState(false);
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Sorter Bank">
             <Head title={tr('Sorter Bank')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4">

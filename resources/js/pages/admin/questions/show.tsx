@@ -24,7 +24,7 @@ import {
 } from '@/components/question-media';
 import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
-import { tr } from '@/lib/admin-i18n';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link } from '@inertiajs/react';
 import {
@@ -631,7 +631,7 @@ export default function QuestionShow({ question, stats }: Props) {
                                                     new Date(
                                                         v,
                                                     ).toLocaleDateString(
-                                                        undefined,
+                                                        adminLocale(),
                                                         {
                                                             day: 'numeric',
                                                             month: 'short',

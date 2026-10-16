@@ -78,7 +78,7 @@ export default function PointRules({
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Point Rules">
             <Head title={tr('Point Rules')} />
             <div className="flex w-full flex-col gap-6">
                 <div>

@@ -125,7 +125,7 @@ export default function SubjectsIndex({ subjects, icons }: Props) {
         router.patch(url, data, { preserveScroll: true });
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Subjects">
             <Head title={tr('Subjects')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-4">

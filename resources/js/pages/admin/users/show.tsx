@@ -316,7 +316,7 @@ function formatDate(
     withTime = false,
 ): string {
     if (!value) return '—';
-    return new Date(value).toLocaleDateString(undefined, {
+    return new Date(value).toLocaleDateString(adminLocale(), {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -325,7 +325,7 @@ function formatDate(
 }
 
 function formatBirthDate(value: string): string {
-    return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+    return new Date(`${value}T00:00:00`).toLocaleDateString(adminLocale(), {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -974,7 +974,7 @@ export default function ShowUser(props: Props) {
                                                     new Date(
                                                         v,
                                                     ).toLocaleDateString(
-                                                        undefined,
+                                                        adminLocale(),
                                                         {
                                                             day: 'numeric',
                                                             month: 'short',
@@ -1216,7 +1216,7 @@ export default function ShowUser(props: Props) {
                                             tick={axisTick}
                                             tickFormatter={(v: string) =>
                                                 new Date(v).toLocaleDateString(
-                                                    undefined,
+                                                    adminLocale(),
                                                     {
                                                         day: 'numeric',
                                                         month: 'short',

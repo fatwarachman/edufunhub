@@ -284,7 +284,7 @@ export default function Backups({
     const ftpNeeded = form.data.destination !== 'local';
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Database Backups">
             <Head title={tr('Database Backups')} />
             <div className="flex w-full min-w-0 flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-4">

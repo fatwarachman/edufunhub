@@ -17,7 +17,7 @@ import {
 } from '@/components/admin/game-stats';
 import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
-import { tr } from '@/lib/admin-i18n';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, Link, router } from '@inertiajs/react';
 import {
@@ -356,7 +356,7 @@ export default function PlayingTime({
                                         minTickGap={18}
                                         tickFormatter={(value: string) =>
                                             new Date(value).toLocaleDateString(
-                                                undefined,
+                                                adminLocale(),
                                                 {
                                                     day: 'numeric',
                                                     month: 'short',

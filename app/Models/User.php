@@ -142,6 +142,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(PlayerProfile::class);
     }
 
+    /** @return HasMany<UserAbilityAssessment, $this> */
+    public function abilityAssessments(): HasMany
+    {
+        return $this->hasMany(UserAbilityAssessment::class);
+    }
+
+    /** Newest AI ability analysis in any status. @return HasOne<UserAbilityAssessment, $this> */
+    public function latestAbilityAssessment(): HasOne
+    {
+        return $this->hasOne(UserAbilityAssessment::class)->latestOfMany();
+    }
+
     /** @return HasMany<PointLedger, $this> */
     public function pointLedgers(): HasMany
     {

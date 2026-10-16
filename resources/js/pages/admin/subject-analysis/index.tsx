@@ -62,7 +62,7 @@ export default function SubjectAnalysis({
     const labelName = useSubjectLabel();
     const totalAnswers = totalsBySubject.reduce((s, r) => s + r.answered, 0);
     return (
-        <AdminLayout>
+        <AdminLayout title="Subject Analysis">
             <Head title={tr('Subject Analysis')} />
             <div className="flex flex-col gap-6" data-testid="subject-analysis">
                 <div className="flex flex-col gap-2">

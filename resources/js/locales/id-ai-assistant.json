@@ -8,12 +8,12 @@
     "settings": "Pengaturan AI",
     "conversation": "Percakapan dengan asisten AI",
     "welcome": "Data aplikasi, dalam percakapan.",
-    "description": "Tanyakan statistik, cari pemain, atau telusuri performa permainan. Sebutkan nama pemain dan rentang tanggal agar jawaban lebih tepat.",
+    "description": "Tanyakan apa saja tentang aplikasi: pemain, nilai, soal yang sering salah, mata pelajaran, game, ruang kelas, guru, hingga analisa AI. Jawaban selalu diambil dari data terbaru.",
     "suggestions": [
-        "Bagaimana ringkasan aktivitas pemain 7 hari terakhir?",
-        "Siapa pemain dengan poin tertinggi?",
-        "Game apa yang paling sering dimainkan bulan ini?",
-        "Jelaskan perbedaan poin akun dan skor permainan."
+        "Bagaimana ringkasan kondisi aplikasi 7 hari terakhir?",
+        "Siapa pemain dengan nilai tertinggi saat ini?",
+        "Soal apa yang paling banyak dijawab salah?",
+        "Pemain mana yang sudah bermain tapi belum punya analisa AI?"
     ],
     "you": "Anda",
     "sources": "Sumber data",
