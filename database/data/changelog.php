@@ -31,6 +31,37 @@
 
 return [
     [
+        'version' => '0.48.0',
+        'date' => '2026-10-17',
+        'time' => '00:45',
+        'changes' => [
+            [
+                'key' => 'dashboard-ability-accordion',
+                'type' => 'improvement',
+                'title' => ['id' => 'Analisa kemampuan di beranda jadi akordion', 'en' => 'Ability analysis on the home page is an accordion'],
+                'body' => ['id' => 'Bagian Analisa kemampuanmu di beranda pemain kini tertutup secara bawaan dan terbuka atau tertutup dengan animasi halus saat judulnya diketuk. Di ponsel, Papan peringkat tampil di atas analisa kemampuan.', 'en' => 'The Your ability analysis section on the player home is now closed by default and opens or closes smoothly when its title is tapped. On phones the Leaderboard shows above the ability analysis.'],
+            ],
+            [
+                'key' => 'teacher-tanya-aku-menu',
+                'type' => 'feature',
+                'title' => ['id' => 'Tanya Aku AI mudah ditemukan guru', 'en' => 'Tanya Aku AI is easy for teachers to find'],
+                'body' => ['id' => 'Tanya Aku AI kini ada di menu Akun guru, di tab menu guru pada halaman Bank Soal, dan di pencarian fitur.', 'en' => 'Tanya Aku AI is now in the teacher Account menu, in the teacher tabs on the Question bank page and in feature search.'],
+            ],
+            [
+                'key' => 'classroom-difficulty-labels',
+                'type' => 'fix',
+                'title' => ['id' => 'Label tingkat kesulitan kelas', 'en' => 'Classroom difficulty labels'],
+                'body' => ['id' => 'Pilihan tingkat kesulitan soal di pengaturan ruang kelas tidak lagi menampilkan kode mentah, ada keterangan bahwa hanya guru yang melihatnya, dan tingkat yang dipilih tampil di detail kelas guru.', 'en' => 'The question difficulty choice in classroom settings no longer shows raw keys, explains that only teachers see it, and the chosen level shows on the teacher classroom detail.'],
+            ],
+            [
+                'key' => 'admin-online-page-heartbeat',
+                'type' => 'fix',
+                'title' => ['id' => 'Halaman pengguna online selalu terbaru', 'en' => 'Online users page is always current'],
+                'body' => ['id' => 'Halaman yang sedang dibuka pengguna dikirim ulang setiap menit selama tab aktif, sehingga daftar pengguna online di admin selalu menampilkan halaman tepatnya. Pengguna yang belum mengirim data ditandai Halaman belum tercatat.', 'en' => 'The page a user is viewing is sent again every minute while the tab is active, so the admin online list always shows the exact page. Users who have not reported yet are marked Page not recorded yet.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.47.0',
         'date' => '2026-10-16',
         'time' => '23:30',

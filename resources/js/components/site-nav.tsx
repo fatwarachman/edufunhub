@@ -31,6 +31,7 @@ import {
     type LucideIcon,
     Menu,
     MessageCircle,
+    MessageCircleQuestion,
     MessageSquarePlus,
     School,
     Search,
@@ -205,6 +206,14 @@ const TEACHER_REQUEST_ITEM: NavItem = {
     testId: 'nav-teacher-request',
 };
 
+/** Teachers: "Tanya Aku" AI assistant scoped to the app and teacher tasks. */
+const TEACHER_AI_ITEM: NavItem = {
+    href: '/teacher/ai-assistant',
+    labelKey: 'nav.teacherAi',
+    icon: MessageCircleQuestion,
+    testId: 'nav-teacher-ai',
+};
+
 const CLASSROOM_ITEM: NavItem = {
     href: '/teacher/classrooms',
     labelKey: 'nav.classrooms',
@@ -319,7 +328,7 @@ function playerGroups({
                 ABILITY_ITEM,
                 FEEDBACK_ITEM,
                 ...(isTeacher
-                    ? [TEACHER_ITEM, CLASSROOM_ITEM]
+                    ? [TEACHER_ITEM, CLASSROOM_ITEM, TEACHER_AI_ITEM]
                     : [TEACHER_REQUEST_ITEM]),
                 ...(isAdmin ? [ADMIN_ITEM] : []),
                 ABOUT_ITEM,

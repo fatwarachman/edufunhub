@@ -527,7 +527,8 @@
         "myClassrooms": "Kelasku",
         "search": "Cari game & fitur",
         "tabBar": "Navigasi bawah",
-        "myTeachers": "Guru & kelasku"
+        "myTeachers": "Guru & kelasku",
+        "teacherAi": "Tanya Aku AI"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -2677,7 +2678,9 @@
             "openPage": "Buka halaman analisa",
             "shareSummary": "Ringkasan",
             "shareStrengths": "Kekuatan",
-            "shareGrowth": "Perlu ditingkatkan"
+            "shareGrowth": "Perlu ditingkatkan",
+            "expand": "Buka analisa kemampuan",
+            "collapse": "Tutup analisa kemampuan"
         },
         "online": {
             "label": "Pemain online",
@@ -3694,7 +3697,10 @@
             "saving": "Menyimpan…",
             "maxPlays": "Maksimal main per siswa",
             "maxPlaysPlaceholder": "Tanpa batas",
-            "maxPlaysHint": "Kosongkan untuk tanpa batas, atau isi {{min}}–{{max}} kali."
+            "maxPlaysHint": "Kosongkan untuk tanpa batas, atau isi {{min}}–{{max}} kali.",
+            "difficulty": "Tingkat kesulitan soal",
+            "difficultyDefault": "Ikuti level soal tiap siswa",
+            "difficultyHint": "Hanya terlihat oleh guru. Dipakai saat game memilih soal di kelas ini."
         },
         "picker": {
             "title": "Pilih soal untuk {{game}}",

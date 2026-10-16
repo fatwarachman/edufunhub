@@ -7,6 +7,7 @@ import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
     BrainCircuit,
+    ChevronDown,
     ExternalLink,
     Eye,
     Lightbulb,
@@ -77,6 +78,7 @@ export function AbilityCard({
     defaultOpen = false,
     showPageLink = true,
     title,
+    collapsible = false,
 }: {
     ability: PlayerAbility | null | undefined;
     /** Name used in the share text; defaults to the signed-in player. */
@@ -87,13 +89,17 @@ export function AbilityCard({
     showPageLink?: boolean;
     /** Card heading; defaults to the player's own "your analysis" label. */
     title?: string;
+    /** Accordion mode (dashboard): only the header shows until opened. */
+    collapsible?: boolean;
 }) {
     const { t, i18n } = useTranslations();
     const subjectName = useSubjectName();
     const subjects = useSubjects();
     const [open, setOpen] = useState(defaultOpen);
     const [copied, setCopied] = useState(false);
+    const [expanded, setExpanded] = useState(!collapsible);
     const panelId = useId();
+    const bodyId = useId();
     const { auth } = usePage<SharedData>().props;
     const userName = ownerName ?? auth?.user?.name ?? '';
 
@@ -151,21 +157,52 @@ export function AbilityCard({
 
     return (
         <section
-            className="auth-card flex min-w-0 flex-col gap-4 !p-4 sm:!p-5"
+            className={`auth-card flex min-w-0 flex-col !p-4 sm:!p-5 ${expanded ? 'gap-4' : 'gap-0'} transition-[gap] duration-300`}
             aria-labelledby="dash-ability-title"
             data-testid="dash-ability"
         >
             <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2
                     id="dash-ability-title"
-                    className="flex min-w-0 items-center gap-2 text-lg font-bold sm:text-xl"
+                    className="flex min-w-0 flex-1 items-center gap-2 text-lg font-bold sm:text-xl"
                 >
-                    <span
-                        className={`grid size-8 shrink-0 place-items-center rounded-xl border-2 ${INK} bg-[#cfe6ff]`}
-                    >
-                        <BrainCircuit className="size-4" aria-hidden />
-                    </span>
-                    {title ?? t('playerDash.ability.title')}
+                    {collapsible ? (
+                        <button
+                            type="button"
+                            onClick={() => setExpanded((value) => !value)}
+                            aria-expanded={expanded}
+                            aria-controls={bodyId}
+                            className="flex min-w-0 flex-1 items-center gap-2 rounded-xl text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#151b2e]"
+                            data-testid="dash-ability-accordion"
+                        >
+                            <span
+                                className={`grid size-8 shrink-0 place-items-center rounded-xl border-2 ${INK} bg-[#cfe6ff]`}
+                            >
+                                <BrainCircuit className="size-4" aria-hidden />
+                            </span>
+                            <span className="min-w-0 truncate">
+                                {title ?? t('playerDash.ability.title')}
+                            </span>
+                            <ChevronDown
+                                className={`ml-auto size-5 shrink-0 transition-transform duration-300 ease-out motion-reduce:transition-none ${expanded ? 'rotate-180' : ''}`}
+                                aria-hidden
+                            />
+                            <span className="sr-only">
+                                {expanded
+                                    ? t('playerDash.ability.collapse')
+                                    : t('playerDash.ability.expand')}
+                            </span>
+                        </button>
+                    ) : (
+                        <>
+                            <span
+                                className={`grid size-8 shrink-0 place-items-center rounded-xl border-2 ${INK} bg-[#cfe6ff]`}
+                            >
+                                <BrainCircuit className="size-4" aria-hidden />
+                            </span>
+                            {title ?? t('playerDash.ability.title')}
+                        </>
+                    )}
                 </h2>
                 <div className="flex items-center gap-2">
                     {date && (
@@ -199,173 +236,191 @@ export function AbilityCard({
                 </div>
             </div>
 
-            <p
-                className="text-sm leading-relaxed [overflow-wrap:anywhere] whitespace-pre-line"
-                data-testid="dash-ability-summary"
+            <div
+                id={bodyId}
+                className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+                aria-hidden={!expanded}
+                inert={!expanded}
+                data-testid="dash-ability-body"
             >
-                {ability.summary}
-            </p>
-
-            {scores.length > 0 && (
-                <div className="flex flex-col gap-2">
-                    <Heading icon={Sparkles}>
-                        {t('playerDash.ability.scores')}
-                    </Heading>
-                    <ul className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
-                        {scores.map(([subject, score]) => {
-                            const info = subjects.find(
-                                (item) => item.key === subject,
-                            );
-                            return (
-                                <li
-                                    key={subject}
-                                    className="flex min-w-0 flex-col gap-1 sm:last:odd:col-span-2"
-                                >
-                                    <div className="flex items-center justify-between gap-2 text-sm">
-                                        <span className="flex min-w-0 items-center gap-1.5 font-bold">
-                                            <SubjectIcon
-                                                icon={info?.icon}
-                                                className="size-4 shrink-0"
-                                            />
-                                            <span className="truncate">
-                                                {subjectName(subject)}
-                                            </span>
-                                        </span>
-                                        <span className="shrink-0 font-bold tabular-nums">
-                                            {score}
-                                        </span>
-                                    </div>
-                                    <div
-                                        className={`h-3 overflow-hidden rounded-full border-2 ${INK} bg-white`}
-                                        role="meter"
-                                        aria-valuemin={0}
-                                        aria-valuemax={100}
-                                        aria-valuenow={score}
-                                        aria-label={subjectName(subject)}
-                                    >
-                                        <div
-                                            className="h-full"
-                                            style={{
-                                                width: `${Math.max(0, Math.min(100, score))}%`,
-                                                background:
-                                                    info?.color ?? '#7cc4ff',
-                                            }}
-                                        />
-                                    </div>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                </div>
-            )}
-
-            <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="flex min-w-0 flex-col gap-2">
-                    <Heading icon={ThumbsUp}>
-                        {t('playerDash.ability.strengths')}
-                    </Heading>
-                    <Points
-                        items={ability.strengths}
-                        tone="border-[#151b2e] bg-[#e9fbe9]"
-                    />
-                </div>
-                <div className="flex min-w-0 flex-col gap-2">
-                    <Heading icon={Sprout}>
-                        {t('playerDash.ability.growth')}
-                    </Heading>
-                    <Points
-                        items={ability.weaknesses}
-                        tone="border-[#151b2e] bg-[#fff4e0]"
-                    />
-                </div>
-            </div>
-
-            {hasMore && (
-                <div className="flex flex-col">
-                    <div
-                        id={panelId}
-                        className={`grid transition-[grid-template-rows,opacity,margin] duration-300 ease-out motion-reduce:transition-none ${open ? 'mb-4 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
-                        aria-hidden={!open}
-                        inert={!open}
+                <div className="flex min-h-0 flex-col gap-4 overflow-hidden">
+                    <p
+                        className="text-sm leading-relaxed [overflow-wrap:anywhere] whitespace-pre-line"
+                        data-testid="dash-ability-summary"
                     >
-                        <div className="flex min-h-0 flex-col gap-4 overflow-hidden">
-                            {ability.recommendations.length > 0 && (
-                                <div className="flex flex-col gap-2">
-                                    <Heading icon={Lightbulb}>
-                                        {t('playerDash.ability.tips')}
-                                    </Heading>
-                                    <ol className="flex flex-col gap-2">
-                                        {ability.recommendations.map(
-                                            (item, index) => (
-                                                <li
-                                                    key={index}
-                                                    className="flex gap-2.5 text-sm"
-                                                >
-                                                    <span
-                                                        className={`grid size-6 shrink-0 place-items-center rounded-full border-2 ${INK} bg-[#ffd93d] text-xs font-bold`}
-                                                    >
-                                                        {index + 1}
+                        {ability.summary}
+                    </p>
+
+                    {scores.length > 0 && (
+                        <div className="flex flex-col gap-2">
+                            <Heading icon={Sparkles}>
+                                {t('playerDash.ability.scores')}
+                            </Heading>
+                            <ul className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
+                                {scores.map(([subject, score]) => {
+                                    const info = subjects.find(
+                                        (item) => item.key === subject,
+                                    );
+                                    return (
+                                        <li
+                                            key={subject}
+                                            className="flex min-w-0 flex-col gap-1 sm:last:odd:col-span-2"
+                                        >
+                                            <div className="flex items-center justify-between gap-2 text-sm">
+                                                <span className="flex min-w-0 items-center gap-1.5 font-bold">
+                                                    <SubjectIcon
+                                                        icon={info?.icon}
+                                                        className="size-4 shrink-0"
+                                                    />
+                                                    <span className="truncate">
+                                                        {subjectName(subject)}
                                                     </span>
-                                                    <span className="min-w-0 [overflow-wrap:anywhere]">
-                                                        {item}
-                                                    </span>
-                                                </li>
-                                            ),
-                                        )}
-                                    </ol>
-                                </div>
-                            )}
-                            {ability.learning_style !== '' && (
-                                <div className="flex flex-col gap-1.5">
-                                    <Heading icon={Eye}>
-                                        {t('playerDash.ability.style')}
-                                    </Heading>
-                                    <p className="text-sm leading-relaxed [overflow-wrap:anywhere]">
-                                        {ability.learning_style}
-                                    </p>
-                                </div>
-                            )}
-                            {ability.progress_vs_previous !== '' && (
-                                <div className="flex flex-col gap-1.5">
-                                    <Heading icon={TrendingUp}>
-                                        {t('playerDash.ability.progress')}
-                                    </Heading>
-                                    <p className="text-sm leading-relaxed [overflow-wrap:anywhere]">
-                                        {ability.progress_vs_previous}
-                                    </p>
-                                </div>
-                            )}
+                                                </span>
+                                                <span className="shrink-0 font-bold tabular-nums">
+                                                    {score}
+                                                </span>
+                                            </div>
+                                            <div
+                                                className={`h-3 overflow-hidden rounded-full border-2 ${INK} bg-white`}
+                                                role="meter"
+                                                aria-valuemin={0}
+                                                aria-valuemax={100}
+                                                aria-valuenow={score}
+                                                aria-label={subjectName(
+                                                    subject,
+                                                )}
+                                            >
+                                                <div
+                                                    className="h-full"
+                                                    style={{
+                                                        width: `${Math.max(0, Math.min(100, score))}%`,
+                                                        background:
+                                                            info?.color ??
+                                                            '#7cc4ff',
+                                                    }}
+                                                />
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    )}
+
+                    <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="flex min-w-0 flex-col gap-2">
+                            <Heading icon={ThumbsUp}>
+                                {t('playerDash.ability.strengths')}
+                            </Heading>
+                            <Points
+                                items={ability.strengths}
+                                tone="border-[#151b2e] bg-[#e9fbe9]"
+                            />
+                        </div>
+                        <div className="flex min-w-0 flex-col gap-2">
+                            <Heading icon={Sprout}>
+                                {t('playerDash.ability.growth')}
+                            </Heading>
+                            <Points
+                                items={ability.weaknesses}
+                                tone="border-[#151b2e] bg-[#fff4e0]"
+                            />
                         </div>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => setOpen((value) => !value)}
-                        aria-expanded={open}
-                        aria-controls={panelId}
-                        className={`self-start rounded-xl border-2 ${INK} bg-white px-3 py-1.5 text-sm font-bold shadow-[2px_2px_0_#151b2e] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#151b2e]`}
-                        data-testid="dash-ability-toggle"
-                    >
-                        {open
-                            ? t('playerDash.ability.less')
-                            : t('playerDash.ability.more')}
-                    </button>
-                </div>
-            )}
 
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-[#151b2e]/80">
-                    {t('playerDash.ability.note')}
-                </p>
-                {showPageLink && (
-                    <Link
-                        href={ability.share_url}
-                        className={`inline-flex items-center gap-1.5 rounded-xl border-2 ${INK} bg-[#cfe6ff] px-3 py-1.5 text-sm font-bold shadow-[2px_2px_0_#151b2e] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#151b2e]`}
-                        data-testid="dash-ability-page"
-                    >
-                        <ExternalLink className="size-4 shrink-0" aria-hidden />
-                        {t('playerDash.ability.openPage')}
-                    </Link>
-                )}
+                    {hasMore && (
+                        <div className="flex flex-col">
+                            <div
+                                id={panelId}
+                                className={`grid transition-[grid-template-rows,opacity,margin] duration-300 ease-out motion-reduce:transition-none ${open ? 'mb-4 grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+                                aria-hidden={!open}
+                                inert={!open}
+                            >
+                                <div className="flex min-h-0 flex-col gap-4 overflow-hidden">
+                                    {ability.recommendations.length > 0 && (
+                                        <div className="flex flex-col gap-2">
+                                            <Heading icon={Lightbulb}>
+                                                {t('playerDash.ability.tips')}
+                                            </Heading>
+                                            <ol className="flex flex-col gap-2">
+                                                {ability.recommendations.map(
+                                                    (item, index) => (
+                                                        <li
+                                                            key={index}
+                                                            className="flex gap-2.5 text-sm"
+                                                        >
+                                                            <span
+                                                                className={`grid size-6 shrink-0 place-items-center rounded-full border-2 ${INK} bg-[#ffd93d] text-xs font-bold`}
+                                                            >
+                                                                {index + 1}
+                                                            </span>
+                                                            <span className="min-w-0 [overflow-wrap:anywhere]">
+                                                                {item}
+                                                            </span>
+                                                        </li>
+                                                    ),
+                                                )}
+                                            </ol>
+                                        </div>
+                                    )}
+                                    {ability.learning_style !== '' && (
+                                        <div className="flex flex-col gap-1.5">
+                                            <Heading icon={Eye}>
+                                                {t('playerDash.ability.style')}
+                                            </Heading>
+                                            <p className="text-sm leading-relaxed [overflow-wrap:anywhere]">
+                                                {ability.learning_style}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {ability.progress_vs_previous !== '' && (
+                                        <div className="flex flex-col gap-1.5">
+                                            <Heading icon={TrendingUp}>
+                                                {t(
+                                                    'playerDash.ability.progress',
+                                                )}
+                                            </Heading>
+                                            <p className="text-sm leading-relaxed [overflow-wrap:anywhere]">
+                                                {ability.progress_vs_previous}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setOpen((value) => !value)}
+                                aria-expanded={open}
+                                aria-controls={panelId}
+                                className={`self-start rounded-xl border-2 ${INK} bg-white px-3 py-1.5 text-sm font-bold shadow-[2px_2px_0_#151b2e] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#151b2e]`}
+                                data-testid="dash-ability-toggle"
+                            >
+                                {open
+                                    ? t('playerDash.ability.less')
+                                    : t('playerDash.ability.more')}
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs text-[#151b2e]/80">
+                            {t('playerDash.ability.note')}
+                        </p>
+                        {showPageLink && (
+                            <Link
+                                href={ability.share_url}
+                                className={`inline-flex items-center gap-1.5 rounded-xl border-2 ${INK} bg-[#cfe6ff] px-3 py-1.5 text-sm font-bold shadow-[2px_2px_0_#151b2e] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#151b2e]`}
+                                data-testid="dash-ability-page"
+                            >
+                                <ExternalLink
+                                    className="size-4 shrink-0"
+                                    aria-hidden
+                                />
+                                {t('playerDash.ability.openPage')}
+                            </Link>
+                        )}
+                    </div>
+                </div>
             </div>
         </section>
     );

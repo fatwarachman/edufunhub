@@ -257,6 +257,12 @@
             "title": "My teachers & classes",
             "superadminOnly": false,
             "teacherOnly": false
+        },
+        "teacherAiAssistant": {
+            "href": "/teacher/ai-assistant",
+            "title": "Tanya Aku: teacher AI assistant",
+            "superadminOnly": false,
+            "teacherOnly": true
         }
     }
 }

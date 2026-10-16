@@ -528,7 +528,8 @@
         "myClassrooms": "My classes",
         "search": "Search games & features",
         "tabBar": "Bottom navigation",
-        "myTeachers": "My teachers & classes"
+        "myTeachers": "My teachers & classes",
+        "teacherAi": "Tanya Aku AI"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -2678,7 +2679,9 @@
             "openPage": "Open analysis page",
             "shareSummary": "Summary",
             "shareStrengths": "Strengths",
-            "shareGrowth": "Room to grow"
+            "shareGrowth": "Room to grow",
+            "expand": "Open ability analysis",
+            "collapse": "Close ability analysis"
         },
         "online": {
             "label": "Players online",
@@ -3695,7 +3698,10 @@
             "saving": "Saving…",
             "maxPlays": "Max plays per student",
             "maxPlaysPlaceholder": "Unlimited",
-            "maxPlaysHint": "Leave empty for unlimited, or enter {{min}}–{{max}} plays."
+            "maxPlaysHint": "Leave empty for unlimited, or enter {{min}}–{{max}} plays.",
+            "difficulty": "Question difficulty",
+            "difficultyDefault": "Follow each student's question level",
+            "difficultyHint": "Visible to teachers only. Used when the game picks questions in this class."
         },
         "picker": {
             "title": "Pick questions for {{game}}",

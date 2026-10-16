@@ -114,3 +114,35 @@ it('translates every admin panel string to Indonesian', function () {
         ->and($missing->values()->all())->toBe([])
         ->and(array_filter($catalog))->toHaveCount(count($catalog));
 });
+
+it('translates every player and teacher key used in classroom, teacher and dashboard pages', function () {
+    $catalogs = collect(['id', 'en'])->mapWithKeys(fn (string $lang): array => [
+        $lang => json_decode(file_get_contents(resource_path("js/locales/{$lang}-player.json")), true),
+    ]);
+    $files = collect([
+        ...glob(resource_path('js/pages/teacher/{,*/}*.tsx'), GLOB_BRACE),
+        ...glob(resource_path('js/pages/portal/*.tsx')),
+        ...glob(resource_path('js/components/classroom/*.tsx')),
+        resource_path('js/pages/user/dashboard.tsx'),
+        resource_path('js/components/ability-card.tsx'),
+        resource_path('js/components/site-nav.tsx'),
+    ]);
+
+    $keys = $files->flatMap(function (string $file): array {
+        preg_match_all("/\\bt\\(\\s*'((?:classroom|teacher|playerDash|nav)\\.[A-Za-z0-9_.]+)'/", file_get_contents($file), $matches);
+
+        return $matches[1];
+    })->unique();
+
+    $missing = $catalogs->flatMap(fn (array $catalog, string $lang) => $keys
+        ->reject(function (string $key) use ($catalog): bool {
+            $leaf = data_get($catalog, $key);
+
+            return is_string($leaf) || is_array(data_get($catalog, $key.'_one')) || is_string(data_get($catalog, $key.'_one'));
+        })
+        ->map(fn (string $key): string => "{$lang}: {$key}"))
+        ->values()
+        ->all();
+
+    expect($keys)->not->toBeEmpty()->and($missing)->toBe([]);
+});

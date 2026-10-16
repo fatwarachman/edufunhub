@@ -201,6 +201,8 @@ export interface ClassroomDetail {
         game_key: string;
         question_count?: number;
         max_plays?: number | null;
+        /** Teacher-only question difficulty (1 easy, 2 medium, 3 hard). */
+        difficulty?: number | null;
         questions?: Pick<
             QuestionPick,
             'id' | 'prompt_id' | 'prompt_en' | 'type'

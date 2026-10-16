@@ -73,6 +73,13 @@ import {
 } from 'lucide-react';
 import { useCallback, useState, type FormEvent } from 'react';
 
+/** Classroom game difficulty (1–3) to its `classroom.difficulty.*` label. */
+const DIFFICULTY_KEYS: Record<number, 'easy' | 'medium' | 'hard'> = {
+    1: 'easy',
+    2: 'medium',
+    3: 'hard',
+};
+
 interface ClassroomShowProps {
     classroom: ClassroomDetail;
     live: Live | null;
@@ -239,6 +246,19 @@ export default function ClassroomShow({
                                             })}
                                         </span>
                                     )}
+                                    {game.difficulty ? (
+                                        <span
+                                            className="rounded-full border-2 border-[#1f2a44] bg-[#efeaff] px-2 py-0.5 text-xs font-bold"
+                                            title={t(
+                                                'classroom.form.difficultyHint',
+                                            )}
+                                            data-testid={`classroom-difficulty-${game.game_key}`}
+                                        >
+                                            {t(
+                                                `classroom.difficulty.${DIFFICULTY_KEYS[game.difficulty] ?? 'medium'}`,
+                                            )}
+                                        </span>
+                                    ) : null}
                                 </li>
                             ))}
                         </ul>

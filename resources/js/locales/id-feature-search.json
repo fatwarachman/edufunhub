@@ -257,6 +257,12 @@
             "title": "Guru & kelasku",
             "superadminOnly": false,
             "teacherOnly": false
+        },
+        "teacherAiAssistant": {
+            "href": "/teacher/ai-assistant",
+            "title": "Tanya Aku: asisten AI guru",
+            "superadminOnly": false,
+            "teacherOnly": true
         }
     }
 }

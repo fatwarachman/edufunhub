@@ -803,7 +803,7 @@ export default function UsersIndex({
                                                           className="size-3"
                                                           aria-hidden="true"
                                                       />
-                                                      {tr('Browsing portal')}
+                                                      {tr('Page not recorded yet')}
                                                   </span>
                                               ),
                                       },

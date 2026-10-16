@@ -129,9 +129,9 @@ export default function ClassroomForm({
                 games: values.games.map((game) => ({
                     game_key: game.game_key,
                     max_plays:
-                    game.max_plays === '' ? null : Number(game.max_plays),
+                        game.max_plays === '' ? null : Number(game.max_plays),
                     difficulty:
-                    game.difficulty === '' ? null : Number(game.difficulty),
+                        game.difficulty === '' ? null : Number(game.difficulty),
                     subjects: game.questions.length > 0 ? [] : game.subjects,
                     question_ids: game.questions.map((question) => question.id),
                 })),
@@ -797,7 +797,10 @@ function GameQuestions({
             </div>
 
             <div className="flex flex-col gap-1.5">
-                <label htmlFor={difficultyId} className="text-sm font-bold text-slate-800">
+                <label
+                    htmlFor={difficultyId}
+                    className="text-sm font-bold text-slate-800"
+                >
                     {t('classroom.form.difficulty')}
                 </label>
                 <select
@@ -808,11 +811,18 @@ function GameQuestions({
                     data-testid={difficultyId}
                     aria-invalid={difficultyError ? true : undefined}
                 >
-                    <option value="">{t('classroom.form.difficultyDefault')}</option>
+                    <option value="">
+                        {t('classroom.form.difficultyDefault')}
+                    </option>
                     <option value="1">{t('classroom.difficulty.easy')}</option>
-                    <option value="2">{t('classroom.difficulty.medium')}</option>
+                    <option value="2">
+                        {t('classroom.difficulty.medium')}
+                    </option>
                     <option value="3">{t('classroom.difficulty.hard')}</option>
                 </select>
+                <p className="text-xs font-semibold text-slate-600">
+                    {t('classroom.form.difficultyHint')}
+                </p>
                 <InputError message={difficultyError} />
             </div>
 

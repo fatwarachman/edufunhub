@@ -438,8 +438,9 @@ export default function Dashboard({
                 />
             </Deferred>
 
+            {/* Phones: both columns flatten (max-lg:contents) so the leaderboard can sit above the ability card. */}
             <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px] xl:gap-8">
-                <div className="flex min-w-0 flex-col gap-6">
+                <div className="flex min-w-0 flex-col gap-6 max-lg:contents">
                     <Deferred
                         data="stats"
                         fallback={
@@ -453,6 +454,7 @@ export default function Dashboard({
                         <AbilityCard
                             ability={ability}
                             ownerName={displayName}
+                            collapsible
                         />
                         <Analytics stats={stats} number={number} />
                     </Deferred>
@@ -471,25 +473,30 @@ export default function Dashboard({
                     <Vault items={vault} character={character} />
                 </div>
 
-                <aside className="flex min-w-0 flex-col gap-6">
-                    <Deferred
-                        data="leaderboards"
-                        fallback={
-                            <div
-                                className="flex flex-col gap-3"
-                                role="status"
-                                aria-label={t('playerDash.board.loading')}
-                            >
-                                <SkeletonBlock className="h-44" />
-                                <SkeletonBlock className="h-96" />
-                            </div>
-                        }
+                <aside className="flex min-w-0 flex-col gap-6 max-lg:contents">
+                    <div
+                        className="min-w-0 max-lg:order-first"
+                        data-testid="dash-leaderboard-slot"
                     >
-                        <LeaderboardCard
-                            boards={leaderboards}
-                            number={number}
-                        />
-                    </Deferred>
+                        <Deferred
+                            data="leaderboards"
+                            fallback={
+                                <div
+                                    className="flex flex-col gap-3"
+                                    role="status"
+                                    aria-label={t('playerDash.board.loading')}
+                                >
+                                    <SkeletonBlock className="h-44" />
+                                    <SkeletonBlock className="h-96" />
+                                </div>
+                            }
+                        >
+                            <LeaderboardCard
+                                boards={leaderboards}
+                                number={number}
+                            />
+                        </Deferred>
+                    </div>
 
                     <h2 className="mt-2 flex items-center gap-2 text-sm font-bold tracking-wide text-[#151b2e]/70 uppercase">
                         <Settings2 className="size-4" aria-hidden />

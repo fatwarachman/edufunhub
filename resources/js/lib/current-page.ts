@@ -2,6 +2,7 @@ import { router } from '@inertiajs/react';
 
 const ENDPOINT = '/current-page';
 const MIN_GAP_MS = 15_000;
+const HEARTBEAT_MS = 60_000;
 const MAX_LABEL_LENGTH = 160;
 
 let started = false;
@@ -76,10 +77,23 @@ export function startCurrentPageTracking(
     if (started || typeof window === 'undefined') return;
     started = true;
 
-    window.setTimeout(() => send(initialProps, true), 400);
+    let props = initialProps;
+    window.setTimeout(() => send(props, true), 400);
 
     router.on('navigate', (event) => {
-        const props = event.detail.page.props as Record<string, unknown>;
+        props = event.detail.page.props as Record<string, unknown>;
         window.setTimeout(() => send(props), 400);
+    });
+
+    /** Keep the admin "online" list current for users who stay on one page. */
+    window.setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            send(props, true);
+        }
+    }, HEARTBEAT_MS);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            send(props);
+        }
     });
 }
