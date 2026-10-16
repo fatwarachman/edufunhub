@@ -357,14 +357,15 @@ func (s *Session) stateLocked(feedback Message, now time.Time) Message {
 			opts[i] = o.Get(s.Locale)
 		}
 		msg["question"] = Message{
-			"id":          fmt.Sprintf("%d-%d", s.started.UnixNano(), s.round),
-			"subject":     s.question.Subject,
-			"text":        s.question.Prompt.Get(s.Locale),
-			"media":       s.question.Media(),
-			"options":     opts,
-			"delay":       max(0, -s.elapsed(now).Milliseconds()),
-			"approach_ms": Approach(s.Claims.Grade, s.wagons).Milliseconds(),
-			"elapsed_ms":  max(0, s.elapsed(now).Milliseconds()),
+			"id":           fmt.Sprintf("%d-%d", s.started.UnixNano(), s.round),
+			"subject":      s.question.Subject,
+			"text":         s.question.Prompt.Get(s.Locale),
+			"media":        s.question.Media(),
+			"options":      opts,
+			"option_media": s.question.OptionMedia(),
+			"delay":        max(0, -s.elapsed(now).Milliseconds()),
+			"approach_ms":  Approach(s.Claims.Grade, s.wagons).Milliseconds(),
+			"elapsed_ms":   max(0, s.elapsed(now).Milliseconds()),
 		}
 	}
 	if feedback != nil {

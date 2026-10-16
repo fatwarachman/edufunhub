@@ -1,5 +1,15 @@
+import {
+    QuestionVisualEditor,
+    visualDraft,
+    visualPayload,
+} from '@/components/admin/question-visual-editor';
 import { useGameCatalog } from '@/components/classroom/classroom-ui';
 import InputError from '@/components/input-error';
+import { type QuestionMediaData } from '@/components/question-media';
+import {
+    QuestionOptionMedia,
+    type QuestionOptionMediaData,
+} from '@/components/question-option-media';
 import { BackButton } from '@/components/site-nav';
 import { teacherFieldClass, Toggle } from '@/components/teacher/teacher-ui';
 import { useTranslations } from '@/hooks/use-translations';
@@ -13,6 +23,7 @@ import { type FormEvent, type ReactNode } from 'react';
 interface Option {
     id: string;
     en: string;
+    media?: QuestionOptionMediaData;
 }
 
 interface QuestionData {
@@ -21,7 +32,9 @@ interface QuestionData {
     subject: string;
     prompt_id: string;
     prompt_en: string | null;
-    options: { id: string; en?: string }[] | null;
+    options:
+        { id: string; en?: string; media?: QuestionOptionMediaData }[] | null;
+    visual: QuestionMediaData | null;
     answer: number;
     hint_id: string | null;
     hint_en: string | null;
@@ -61,6 +74,7 @@ export default function TeacherQuestionForm({
         options: (question?.options?.map((option) => ({
             id: option.id,
             en: option.en ?? '',
+            media: option.media,
         })) ?? [
             blankOption(),
             blankOption(),
@@ -72,6 +86,7 @@ export default function TeacherQuestionForm({
         hint_en: question?.hint_en ?? '',
         games: question?.games ?? [...games],
         is_active: question?.is_active ?? true,
+        visual: visualDraft(question?.visual ?? null),
     });
     const { data, setData, errors, processing } = form;
     const isChoice = data.type === 'choice';
@@ -80,6 +95,10 @@ export default function TeacherQuestionForm({
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
+        form.transform(({ visual, ...rest }) => ({
+            ...rest,
+            visual: visualPayload(visual),
+        }));
         if (editing) {
             form.put(`/teacher/questions/${question.id}`);
         } else {
@@ -380,6 +399,18 @@ export default function TeacherQuestionForm({
                 </Section>
 
                 <Section
+                    title={t('teacher.form.visual')}
+                    description={t('teacher.form.visualDescription')}
+                >
+                    <QuestionVisualEditor
+                        value={data.visual}
+                        onChange={(visual) => setData('visual', visual)}
+                        errors={errors as Record<string, string>}
+                        endpoint="/teacher/questions/media"
+                    />
+                </Section>
+
+                <Section
                     title={t('teacher.form.answer')}
                     description={
                         isChoice
@@ -389,6 +420,9 @@ export default function TeacherQuestionForm({
                 >
                     {isChoice ? (
                         <div className="flex flex-col gap-2">
+                            <p className="text-xs font-medium text-muted-foreground">
+                                {t('teacher.form.optionImageHint')}
+                            </p>
                             {data.options.map((option, index) => {
                                 const number = index + 1;
                                 const correct = data.answer === index;
@@ -454,6 +488,36 @@ export default function TeacherQuestionForm({
                                                 'teacher.form.optionEn',
                                             )}
                                             className={`${teacherFieldClass} col-span-2 col-start-2 font-medium sm:col-span-1 sm:col-start-auto`}
+                                        />
+                                        <QuestionOptionMedia
+                                            value={option.media}
+                                            onChange={(media) =>
+                                                setData(
+                                                    'options',
+                                                    data.options.map(
+                                                        (current, i) =>
+                                                            i === index
+                                                                ? {
+                                                                      ...current,
+                                                                      media,
+                                                                  }
+                                                                : current,
+                                                    ),
+                                                )
+                                            }
+                                            label={t(
+                                                'teacher.form.optionImage',
+                                            )}
+                                            uploadLabel={t(
+                                                'teacher.form.uploadFailed',
+                                            )}
+                                            removeLabel={t(
+                                                'teacher.form.removeOptionImage',
+                                            )}
+                                            endpoint="/teacher/questions/media"
+                                            error={errorFor(
+                                                `options.${index}.media.src`,
+                                            )}
                                         />
                                         <button
                                             type="button"

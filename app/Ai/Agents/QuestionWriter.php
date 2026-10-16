@@ -39,6 +39,7 @@ class QuestionWriter implements Agent, HasProviderOptions, HasStructuredOutput
         - Questions must be factually correct, unambiguous, short (max 200 characters) and friendly for children. No trick questions, no sensitive topics.
         - Every question must be different from the others and from the "avoid" list.
         - hint_id / hint_en: one short sentence explaining the correct answer.
+        - picture and option_emoji: emoji lists for picture questions, only when the request allows them; otherwise return empty lists.
         Return JSON only, following the schema.
         TEXT;
     }
@@ -55,6 +56,8 @@ class QuestionWriter implements Agent, HasProviderOptions, HasStructuredOutput
                         'en' => $schema->string()->required(),
                     ]))->required(),
                     'answer' => $schema->integer()->required(),
+                    'picture' => $schema->array()->items($schema->string())->required(),
+                    'option_emoji' => $schema->array()->items($schema->string())->required(),
                     'hint_id' => $schema->string()->required(),
                     'hint_en' => $schema->string()->required(),
                 ])

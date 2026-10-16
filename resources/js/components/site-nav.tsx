@@ -31,6 +31,7 @@ import {
     type LucideIcon,
     Menu,
     MessageCircle,
+    MessageCircleQuestion,
     MessageSquarePlus,
     School,
     Search,
@@ -38,6 +39,7 @@ import {
     Trophy,
     UserPlus,
     UserRound,
+    UserRoundCheck,
     Users,
     X,
 } from 'lucide-react';
@@ -204,6 +206,14 @@ const TEACHER_REQUEST_ITEM: NavItem = {
     testId: 'nav-teacher-request',
 };
 
+/** Teachers: "Tanya Aku" AI assistant scoped to the app and teacher tasks. */
+const TEACHER_AI_ITEM: NavItem = {
+    href: '/teacher/ai-assistant',
+    labelKey: 'nav.teacherAi',
+    icon: MessageCircleQuestion,
+    testId: 'nav-teacher-ai',
+};
+
 const CLASSROOM_ITEM: NavItem = {
     href: '/teacher/classrooms',
     labelKey: 'nav.classrooms',
@@ -225,6 +235,14 @@ const MY_CLASSROOMS_ITEM: NavItem = {
     labelKey: 'nav.myClassrooms',
     icon: GraduationCap,
     testId: 'nav-my-classrooms',
+};
+
+/** Signed-in players: teachers they learned with and those classes. */
+const MY_TEACHERS_ITEM: NavItem = {
+    href: '/my-classrooms/teachers',
+    labelKey: 'nav.myTeachers',
+    icon: UserRoundCheck,
+    testId: 'nav-my-teachers',
 };
 
 /** Signed-in players: own ability analysis. */
@@ -306,10 +324,11 @@ function playerGroups({
                 PROFILE_ITEM,
                 CHARACTER_ITEM,
                 MY_CLASSROOMS_ITEM,
+                MY_TEACHERS_ITEM,
                 ABILITY_ITEM,
                 FEEDBACK_ITEM,
                 ...(isTeacher
-                    ? [TEACHER_ITEM, CLASSROOM_ITEM]
+                    ? [TEACHER_ITEM, CLASSROOM_ITEM, TEACHER_AI_ITEM]
                     : [TEACHER_REQUEST_ITEM]),
                 ...(isAdmin ? [ADMIN_ITEM] : []),
                 ABOUT_ITEM,

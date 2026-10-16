@@ -4,6 +4,7 @@ namespace App\Http\Requests\Concerns;
 
 use App\Models\Question;
 use App\Models\Subject;
+use App\Services\QuestionVisual;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -25,8 +26,18 @@ trait QuestionRules
         }
 
         return collect($options ?? [])
-            ->map(fn ($option): array => ['id' => trim((string) ($option['id'] ?? '')), 'en' => trim((string) ($option['en'] ?? ''))])
-            ->filter(fn (array $option): bool => $option['id'] !== '')
+            ->map(function ($option): array {
+                $media = is_array($option['media'] ?? null) && ($option['media']['kind'] ?? null) === 'image'
+                    ? ['kind' => 'image', 'src' => (string) ($option['media']['src'] ?? '')]
+                    : null;
+
+                return array_filter([
+                    'id' => trim((string) ($option['id'] ?? '')),
+                    'en' => trim((string) ($option['en'] ?? '')),
+                    'media' => $media,
+                ], fn (mixed $value): bool => $value !== null);
+            })
+            ->filter(fn (array $option): bool => $option['id'] !== '' || isset($option['media']))
             ->values()
             ->all();
     }
@@ -47,11 +58,15 @@ trait QuestionRules
             'prompt_id' => ['required', 'string', 'min:3', 'max:500'],
             'prompt_en' => ['nullable', 'string', 'max:500'],
             'options' => $isChoice ? ['required', 'array', 'min:3', 'max:6'] : ['nullable'],
-            'options.*.id' => ['required', 'string', 'max:150'],
+            'options.*.id' => ['required_without:options.*.media.src', 'nullable', 'string', 'max:150'],
             'options.*.en' => ['nullable', 'string', 'max:150'],
+            'options.*.media' => ['nullable', 'array'],
+            'options.*.media.kind' => ['nullable', 'in:image'],
+            'options.*.media.src' => ['required_if:options.*.media.kind,image', 'nullable', 'string', 'max:120', 'regex:#^'.preg_quote(QuestionVisual::URL_PREFIX, '#').QuestionVisual::FILE_PATTERN.'$#'],
             'answer' => ['required', 'integer', 'min:0', $isChoice ? 'max:'.max(0, count($input['options'] ?? []) - 1) : 'max:1'],
             'hint_id' => ['nullable', 'string', 'max:300'],
             'hint_en' => ['nullable', 'string', 'max:300'],
+            ...QuestionVisual::rules(),
             'games' => ['required', 'array', 'min:1'],
             'games.*' => ['required', 'distinct', Rule::in(Question::GAMES)],
             'is_active' => ['boolean'],
@@ -111,10 +126,30 @@ trait QuestionRules
             $validator->errors()->add('games', __('questions.choice_only_games'));
         }
 
-        $options = collect($input['options'] ?? [])->pluck('id')->map(fn (string $id): string => mb_strtolower($id));
+        $options = collect($input['options'] ?? [])
+            ->map(fn (mixed $option): string => is_array($option) ? mb_strtolower(trim((string) ($option['id'] ?? ''))) : '')
+            ->filter(fn (string $id): bool => $id !== '');
         if ($options->count() !== $options->unique()->count()) {
             $validator->errors()->add('options', __('questions.options_unique'));
         }
+
+        foreach ((array) ($input['options'] ?? []) as $index => $option) {
+            $src = is_array($option['media'] ?? null) ? ($option['media']['src'] ?? null) : null;
+            if (is_string($src) && $src !== '' && ! QuestionVisual::imageExists($src)) {
+                $validator->errors()->add("options.{$index}.media.src", __('questions.visual.image_missing'));
+            }
+        }
+    }
+
+    /** @return array<string, string> */
+    protected function questionMediaMessages(): array
+    {
+        return [
+            'options.*.media.kind.in' => __('questions.visual.image_file'),
+            'options.*.media.src.required_if' => __('questions.visual.image_required'),
+            'options.*.media.src.regex' => __('questions.visual.image_missing'),
+            'options.*.id.required_without' => __('questions.visual.option_text_or_image'),
+        ];
     }
 
     /** @return array<string, string> */

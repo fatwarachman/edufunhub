@@ -188,7 +188,7 @@ class UserController extends Controller
 
         return Inertia::render('admin/users/show', [
             'user' => [
-                ...$user->only(['id', 'name', 'email', 'avatar_url', 'whatsapp_number', 'is_superadmin', 'created_at', 'last_seen_at', 'email_verified_at', 'disabled_at', 'onboarded_at', 'password_updated_at', 'deleted_at']),
+                ...$user->only(['id', 'name', 'email', 'avatar_url', 'whatsapp_number', 'is_superadmin', 'created_at', 'last_seen_at', 'current_page_path', 'current_page_label', 'email_verified_at', 'disabled_at', 'onboarded_at', 'password_updated_at', 'deleted_at']),
                 'status' => $user->disabled_at ? 'suspended' : 'active',
                 'two_factor_enabled' => $user->two_factor_confirmed_at !== null,
                 'roles' => $user->roles->map(fn ($role): array => ['id' => $role->id, 'name' => $role->name, 'slug' => $role->slug])->all(),

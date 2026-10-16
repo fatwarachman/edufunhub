@@ -50,11 +50,21 @@
             "demoInvite": "Solo with bot · Duel with a friend",
             "demoWinner": "5 : 3 — Victory!",
             "demoQuestion": "What is 7 × 8?",
-            "demoOptions": ["54", "56", "63", "48"],
+            "demoOptions": [
+                "54",
+                "56",
+                "63",
+                "48"
+            ],
             "demoAnswer": "Answer: 56",
             "demoRally": "Rally 6 · turns alternate",
             "demoRallyQuestion": "Which planet is closest to the Sun?",
-            "demoRallyOptions": ["Venus", "Mercury", "Mars", "Earth"],
+            "demoRallyOptions": [
+                "Venus",
+                "Mercury",
+                "Mars",
+                "Earth"
+            ],
             "demo": {
                 "subject": "PICK A SUBJECT",
                 "read": "READ THE QUESTION",
@@ -517,7 +527,9 @@
         "withCount": "{{label}} ({{count}} new)",
         "myClassrooms": "My classes",
         "search": "Search games & features",
-        "tabBar": "Bottom navigation"
+        "tabBar": "Bottom navigation",
+        "myTeachers": "My teachers & classes",
+        "teacherAi": "Tanya Aku AI"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -595,7 +607,8 @@
         "finished": "Flight finished. See your results below.",
         "finishedPassed": "Great job! You answered more than 70% correctly.",
         "joystick": "Joystick: drag to steer the jet",
-        "joystickHint": "Drag the joystick to fly, press Fire to shoot."
+        "joystickHint": "Drag the joystick to fly, press Fire to shoot.",
+        "optionPictures": "Answer option pictures"
     },
     "teacher": {
         "title": "Teacher room",
@@ -647,7 +660,8 @@
             "playedBy": "Answered by grade",
             "prev": "Previous",
             "next": "Next",
-            "page": "Page {{current}} of {{last}}"
+            "page": "Page {{current}} of {{last}}",
+            "picture": "Picture"
         },
         "form": {
             "createTitle": "Create a question",
@@ -683,7 +697,13 @@
             "cancel": "Cancel",
             "save": "Save changes",
             "create": "Save question",
-            "saving": "Saving…"
+            "saving": "Saving…",
+            "visual": "Visual",
+            "visualDescription": "Optional question picture.",
+            "optionImage": "Image",
+            "uploadFailed": "Upload failed. Try again.",
+            "removeOptionImage": "Remove option image",
+            "optionImageHint": "Each option can be text, a picture, or both. Option pictures: max 512 KB, 64–2000 px per side; big photos are resized automatically."
         },
         "importPage": {
             "title": "Import questions from CSV",
@@ -743,7 +763,8 @@
             "label": "Teacher menu",
             "questions": "Questions",
             "topics": "Topics",
-            "classrooms": "Classrooms"
+            "classrooms": "Classrooms",
+            "assistant": "Tanya Aku AI"
         },
         "topics": {
             "pageTitle": "Subject Topics",
@@ -2613,7 +2634,11 @@
             "loading": "Loading leaderboard…",
             "points": "{{formatted}} points",
             "seeAll": "See all",
-            "seeAllLabel": "See the full leaderboard"
+            "seeAllLabel": "See the full leaderboard",
+            "share": "Share",
+            "shareTitle": "Share ranking",
+            "shareText": "{{name}} is ranked #{{rank}} on the EduFunHub leaderboard ({{period}}) with {{points}} points! Come beat {{name}}!",
+            "shareTextUnranked": "{{name}} invites you to play and climb the EduFunHub leaderboard ({{period}})!"
         },
         "history": {
             "title": "Latest results",
@@ -2623,6 +2648,12 @@
             "page": "Page {{page}} of {{last}}"
         },
         "loadingStats": "Loading stats…",
+        "share": {
+            "title": "Share your dashboard",
+            "button": "Share stats",
+            "shared": "Copied!",
+            "statsText": "{{name}}'s EduFunHub dashboard: {{plays}} games played, {{accuracy}} accuracy, {{points}} points, rank {{rank}}."
+        },
         "settings": "Profile & settings",
         "settingsReadOnly": "These details can only be changed on the profile page.",
         "settingsEdit": "Edit on profile page",
@@ -2648,7 +2679,9 @@
             "openPage": "Open analysis page",
             "shareSummary": "Summary",
             "shareStrengths": "Strengths",
-            "shareGrowth": "Room to grow"
+            "shareGrowth": "Room to grow",
+            "expand": "Open ability analysis",
+            "collapse": "Close ability analysis"
         },
         "online": {
             "label": "Players online",
@@ -2903,6 +2936,14 @@
             "alt": "Profile photo of {{name}}",
             "errorType": "The photo must be a JPG, PNG or WEBP image.",
             "errorSize": "The photo may be at most 2 MB."
+        },
+        "classrooms": {
+            "title": "Class history",
+            "subtitle": "Classes you have joined, with teachers and details.",
+            "empty": "You have not joined any classes yet.",
+            "joined": "Joined {{date}}",
+            "left": "Left",
+            "active": "Still joined"
         }
     },
     "questionLevel": {
@@ -3358,7 +3399,12 @@
             "demoPin": "Sample PIN",
             "demoWinner": "Tail cleared — Champion!",
             "demoQuestion": "What is 7 × 8?",
-            "demoOptions": ["54", "56", "63", "48"],
+            "demoOptions": [
+                "54",
+                "56",
+                "63",
+                "48"
+            ],
             "demo": {
                 "room": "CREATE A ROOM & PICK A MODE",
                 "read": "READ THE QUESTION",
@@ -3406,7 +3452,9 @@
         "cableLabel": "{{count}} wires in order, number 1 on the left",
         "fiberLabel": "{{count}} fibre cores in order, number 1 on the left",
         "topologyLabel": "Network topology diagram",
-        "terminal": "Terminal"
+        "terminal": "Terminal",
+        "optionImageAlt": "Answer option picture",
+        "emojiLabel": "Picture with {{count}} emoji"
     },
     "classroom": {
         "show": {
@@ -3650,7 +3698,10 @@
             "saving": "Saving…",
             "maxPlays": "Max plays per student",
             "maxPlaysPlaceholder": "Unlimited",
-            "maxPlaysHint": "Leave empty for unlimited, or enter {{min}}–{{max}} plays."
+            "maxPlaysHint": "Leave empty for unlimited, or enter {{min}}–{{max}} plays.",
+            "difficulty": "Question difficulty",
+            "difficultyDefault": "Follow each student's question level",
+            "difficultyHint": "Visible to teachers only. Used when the game picks questions in this class."
         },
         "picker": {
             "title": "Pick questions for {{game}}",
@@ -3901,6 +3952,47 @@
             "activeLeft": "Active · {{count}} s left",
             "finished": "Finished",
             "stop": "Stop"
+        },
+        "history": {
+            "title": "Class history",
+            "subtitle": "All your classes with every student who ever joined, including those who left, with their points and accuracy.",
+            "emptyTitle": "No student history yet",
+            "emptyHint": "Students appear after joining a class.",
+            "classCount": "{{count}} classes",
+            "joined": "Joined {{date}}",
+            "left": "Left {{date}}",
+            "active": "Still joined",
+            "search": "Search class or student",
+            "view": "View",
+            "by": {
+                "classes": "By class",
+                "students": "By student"
+            },
+            "members": "{{count}} students · {{active}} active",
+            "noStudents": "No students have joined this class yet.",
+            "score": "{{plays}} plays · accuracy {{accuracy}}"
+        },
+        "teachers": {
+            "title": "My teachers & classes",
+            "subtitle": "Teachers who taught you and every class you joined with them, with your scores.",
+            "kpiTeachers": "Teachers",
+            "emptyTitle": "No teachers yet",
+            "search": "Search teacher or class",
+            "unknown": "Teacher",
+            "classes_one": "{{count}} class",
+            "classes_other": "{{count}} classes",
+            "lastJoined": "Last joined {{date}}",
+            "open": "See teachers & classes"
         }
+    },
+    "shareMenu": {
+        "label": "Share options",
+        "native": "Share…",
+        "whatsapp": "WhatsApp",
+        "facebook": "Facebook",
+        "x": "X (Twitter)",
+        "telegram": "Telegram",
+        "copyLink": "Copy link",
+        "copied": "Link copied!"
     }
 }

@@ -16,11 +16,13 @@ use Illuminate\Support\Str;
  * - cable: UTP or fibre wires in order (pin 1 first), each a colour and an optional stripe.
  * - topology: a network topology diagram (star, bus, ring, mesh, tree, point).
  * - terminal: a few monospace console lines (ping, ipconfig, router CLI).
+ * - emoji: a row of emoji pictures (count the apples, which animal is this),
+ *   made by teachers or the AI writer for TK and SD without any upload.
  * Every kind may carry a bilingual caption.
  */
 class QuestionVisual
 {
-    public const KINDS = ['image', 'cable', 'topology', 'terminal'];
+    public const KINDS = ['image', 'cable', 'topology', 'terminal', 'emoji'];
 
     public const CABLE_STYLES = ['utp', 'fiber'];
 
@@ -35,6 +37,29 @@ class QuestionVisual
     public const MAX_LINE = 80;
 
     public const MAX_CAPTION = 120;
+
+    /** Emoji pictures per visual (enough to count up to 20). */
+    public const MAX_EMOJI = 20;
+
+    /** One emoji cluster (flags and skin tones use several code points). */
+    public const MAX_EMOJI_LENGTH = 16;
+
+    public const MAX_OPTION_MEDIA = 6;
+
+    /** Question picture: at most 1 MB. */
+    public const QUESTION_MAX_KB = 1024;
+
+    /** Answer option picture: at most 512 KB (small tiles in game buttons). */
+    public const OPTION_MAX_KB = 512;
+
+    /** Shortest allowed side in pixels. */
+    public const MIN_SIDE = 64;
+
+    /** Longest allowed side in pixels (the browser downsizes bigger photos before upload). */
+    public const MAX_SIDE = 2000;
+
+    /** Longest side may be at most 3x the shortest (no banner strips that become tiny in game boxes). */
+    public const MAX_RATIO = 3;
 
     public const FOLDER = 'question-media';
 
@@ -67,6 +92,8 @@ class QuestionVisual
             $key.'.shape' => [$kind('topology'), 'nullable', 'string', 'in:'.implode(',', self::TOPOLOGIES)],
             $key.'.lines' => [$kind('terminal'), 'nullable', 'array', 'min:1', 'max:'.self::MAX_LINES],
             $key.'.lines.*' => ['nullable', 'string', 'max:'.self::MAX_LINE],
+            $key.'.items' => [$kind('emoji'), 'nullable', 'array', 'min:1', 'max:'.self::MAX_EMOJI],
+            $key.'.items.*' => ['required', 'string', 'max:'.self::MAX_EMOJI_LENGTH, 'not_regex:/[<>\p{L}\p{N}]/u'],
             $key.'.caption' => ['nullable', 'array'],
             $key.'.caption.id' => ['nullable', 'string', 'max:'.self::MAX_CAPTION],
             $key.'.caption.en' => ['nullable', 'string', 'max:'.self::MAX_CAPTION],
@@ -98,6 +125,10 @@ class QuestionVisual
                 ]), (array) $visual['wires'])),
             ],
             'topology' => ['kind' => 'topology', 'shape' => (string) $visual['shape']],
+            'emoji' => ['kind' => 'emoji', 'items' => array_values(array_filter(array_map(
+                fn (mixed $item): string => trim(mb_substr((string) $item, 0, self::MAX_EMOJI_LENGTH)),
+                array_slice((array) $visual['items'], 0, self::MAX_EMOJI),
+            ), fn (string $item): bool => $item !== ''))],
             'terminal' => ['kind' => 'terminal', 'lines' => array_values(array_map(
                 fn (mixed $line): string => rtrim(mb_substr((string) $line, 0, self::MAX_LINE)),
                 (array) $visual['lines'],

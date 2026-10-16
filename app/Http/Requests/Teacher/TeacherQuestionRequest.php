@@ -4,6 +4,7 @@ namespace App\Http\Requests\Teacher;
 
 use App\Http\Requests\Concerns\QuestionRules;
 use App\Models\Question;
+use App\Services\QuestionVisual;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -47,7 +48,7 @@ class TeacherQuestionRequest extends FormRequest
     /** @return array<string, string> */
     public function messages(): array
     {
-        return $this->questionMessages();
+        return [...$this->questionMessages(), ...$this->questionMediaMessages()];
     }
 
     /**
@@ -63,6 +64,7 @@ class TeacherQuestionRequest extends FormRequest
 
         return [
             ...$data,
+            'visual' => QuestionVisual::normalize($data['visual'] ?? null),
             'grades' => $grades,
             'band' => Question::bandForGrades($grades),
             'level' => Question::normalizeLevel($data['level']),

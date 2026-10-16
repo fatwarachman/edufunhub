@@ -178,6 +178,7 @@ func (h *Hub) SetLocale(uid int64, l string)          { h.rooms.SetLocale(uid, l
 func (h *Hub) Offline(uid int64)                      { h.rooms.Offline(uid) }
 func (h *Hub) Peers(uid int64) []int64                { return h.rooms.Peers(uid) }
 func (h *Hub) Counts() (int, int)                     { return h.rooms.Counts() }
+func (h *Hub) RoomsSummary() []lobby.RoomSummary      { return h.rooms.RoomsSummary() }
 func (h *Hub) Leave(uid int64, now time.Time) []int64 { return h.rooms.Leave(uid, now) }
 
 // HandOver moves the host role away from a host disconnected for longer
@@ -525,7 +526,7 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 		"t": "mini_state", "game": h.Spec.Key, "phase": "none", "you": -1, "total": Rounds,
 		"min_players": MinPlayers, "max_players": MaxPlayers, "local_seats": false,
 	}
-	h.rooms.View(claims.Subject, func(r *room) {
+	h.rooms.ViewFor(claims, func(r *room) {
 		if r == nil {
 			return
 		}
@@ -566,7 +567,7 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 			}
 			question := Message{
 				"id": fmt.Sprintf("%s-%d", r.Pin, g.round), "subject": q.Subject, "worth": q.Worth(),
-				"text": q.Prompt.Get(locale), "media": q.Media(), "options": opts, "choice": choice,
+				"text": q.Prompt.Get(locale), "media": q.Media(), "options": opts, "option_media": q.OptionMedia(), "choice": choice,
 				"visual": localize(g.current.Visual, locale), "round_ms": g.roundTime.Milliseconds(),
 			}
 			if g.step == StepQuestion {

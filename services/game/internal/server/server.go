@@ -198,6 +198,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /internal/classroom/close", s.serveClassroomClose)
 	mux.HandleFunc("GET /internal/stats", s.serveStats)
 	mux.HandleFunc("GET /internal/presence", s.servePresence)
+	mux.HandleFunc("GET /internal/live-rooms", s.serveLiveRooms)
+	mux.HandleFunc("GET /internal/spectate", s.serveSpectate)
 	mux.HandleFunc("GET /internal/room", s.serveFindPin)
 	return mux
 }

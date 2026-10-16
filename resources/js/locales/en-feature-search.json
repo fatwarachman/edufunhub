@@ -245,6 +245,24 @@
             "title": "User chat logs",
             "superadminOnly": true,
             "teacherOnly": false
+        },
+        "teacherClassroomHistory": {
+            "href": "/teacher/classrooms/history",
+            "title": "Teacher classroom student history",
+            "superadminOnly": false,
+            "teacherOnly": true
+        },
+        "myTeachers": {
+            "href": "/my-classrooms/teachers",
+            "title": "My teachers & classes",
+            "superadminOnly": false,
+            "teacherOnly": false
+        },
+        "teacherAiAssistant": {
+            "href": "/teacher/ai-assistant",
+            "title": "Tanya Aku: teacher AI assistant",
+            "superadminOnly": false,
+            "teacherOnly": true
         }
     }
 }

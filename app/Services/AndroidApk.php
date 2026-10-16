@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 class AndroidApk
 {
     /**
-     * @return array{url: string, size: int, updated_at: string, hash: string}|null
+     * @return array{url: string, size: int, updated_at: string, hash: string, sha256: string, version: string}|null
      */
     public function present(): ?array
     {
@@ -24,17 +24,20 @@ class AndroidApk
 
         $size = (int) filesize($path);
         $modified = (int) filemtime($path);
-        $hash = Cache::remember(
-            "android-apk:{$size}:{$modified}",
+        $sha256 = Cache::remember(
+            "android-apk-sha256:{$size}:{$modified}",
             now()->addDay(),
-            fn (): string => substr((string) hash_file('sha256', $path), 0, 12),
+            fn (): string => (string) hash_file('sha256', $path),
         );
+        $hash = substr($sha256, 0, 12);
 
         return [
             'url' => route('android.apk', ['v' => $hash]),
             'size' => $size,
             'updated_at' => date(DATE_ATOM, $modified),
             'hash' => $hash,
+            'sha256' => $sha256,
+            'version' => (string) config('android.apk_version'),
         ];
     }
 

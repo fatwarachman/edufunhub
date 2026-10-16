@@ -31,4 +31,10 @@ return [
     */
     'apk_path' => env('ANDROID_APK_PATH', storage_path('app/private/android/edufunhub.apk')),
 
+    /*
+    | versionName of the published APK (android/app/build.gradle). Shown on
+    | the landing download section; bump it together with a new build.
+    */
+    'apk_version' => env('ANDROID_APK_VERSION', '1.0.0'),
+
 ];

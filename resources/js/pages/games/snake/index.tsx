@@ -426,6 +426,7 @@ export default function MainUlar({ player, serviceReady, wsUrl, pin }: Props) {
                                         options={question?.options ?? []}
                                         labels={question?.labels ?? []}
                                         media={question?.media}
+                                        optionMedia={question?.option_media}
                                     />
                                     {reading && question && me?.alive && (
                                         <div

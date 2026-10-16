@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Inertia\Testing\AssertableInertia as Assert;
 
 it('blocks non-superadmin users from accessing user management', function () {
     $user = User::factory()->create(['is_superadmin' => false]);
@@ -36,6 +37,53 @@ it('supports searching users by email', function () {
     $response = $this->actingAs($admin)->get('/admin/users?search=findme');
 
     $response->assertOk();
+});
+
+it('persists exact current page for authenticated users', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->postJson('/current-page', [
+            'path' => '/admin/users?activity=online',
+            'label' => 'Online users',
+        ])
+        ->assertOk()
+        ->assertJson(['ok' => true]);
+
+    expect($user->refresh()->current_page_path)->toBe('/admin/users?activity=online')
+        ->and($user->current_page_label)->toBe('Online users')
+        ->and($user->last_seen_at)->not->toBeNull();
+});
+
+it('rejects guest current page updates', function () {
+    $this->postJson('/current-page', [
+        'path' => '/dashboard',
+        'label' => 'Dashboard',
+    ])->assertUnauthorized();
+});
+
+it('shows exact current page in online user list and detail', function () {
+    $admin = User::factory()->create([
+        'is_superadmin' => true,
+        'last_seen_at' => now()->subMinutes(User::ONLINE_MINUTES + 1),
+    ]);
+    $user = User::factory()->create([
+        'name' => 'Tracked Online User',
+        'last_seen_at' => now(),
+        'current_page_path' => '/admin/users?activity=online',
+        'current_page_label' => 'Online users',
+    ]);
+
+    $this->actingAs($admin)->get('/admin/users?activity=online&search=Tracked%20Online')
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('users.data', 1)
+            ->where('users.data.0.current_page_path', '/admin/users?activity=online')
+            ->where('users.data.0.current_page_label', 'Online users'));
+
+    $this->actingAs($admin)->get("/admin/users/{$user->id}")
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('user.current_page_path', '/admin/users?activity=online')
+            ->where('user.current_page_label', 'Online users'));
 });
 
 it('can promote a user to superadmin', function () {

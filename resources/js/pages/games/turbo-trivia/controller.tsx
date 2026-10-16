@@ -15,7 +15,11 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { QuestionMedia } from '@/components/question-media';
+import {
+    OptionContent,
+    optionImage,
+    QuestionMedia,
+} from '@/components/question-media';
 import { useGameBack } from '@/components/site-nav';
 import { HowToPlay } from '@/components/turbo-trivia/how-to-play';
 import {
@@ -967,9 +971,13 @@ function RacePad({
                                     <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white font-display font-black text-[#1f2a44]">
                                         {LETTERS[i]}
                                     </span>
-                                    <span className="min-w-0 break-words">
-                                        {option}
-                                    </span>
+                                    <OptionContent
+                                        text={option}
+                                        image={optionImage(
+                                            quiz.option_media,
+                                            i,
+                                        )}
+                                    />
                                 </button>
                             );
                         })}

@@ -23,6 +23,14 @@ class MyClassroomController extends Controller
         ]);
     }
 
+    /** Teachers the student learned with and the classes joined with each. */
+    public function teachers(Request $request): Response
+    {
+        return Inertia::render('portal/my-teachers', [
+            'teachers' => $this->progress->teachers($request->user()),
+        ]);
+    }
+
     public function show(ClassroomMember $member, Request $request): Response
     {
         abort_unless($member->user_id === $request->user()->id && $member->classroom()->exists(), 404);

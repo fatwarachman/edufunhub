@@ -137,6 +137,7 @@ func (h *Hub) SetLocale(uid int64, l string)          { h.rooms.SetLocale(uid, l
 func (h *Hub) Offline(uid int64)                      { h.rooms.Offline(uid) }
 func (h *Hub) Peers(uid int64) []int64                { return h.rooms.Peers(uid) }
 func (h *Hub) Counts() (int, int)                     { return h.rooms.Counts() }
+func (h *Hub) RoomsSummary() []lobby.RoomSummary      { return h.rooms.RoomsSummary() }
 func (h *Hub) Leave(uid int64, now time.Time) []int64 { return h.rooms.Leave(uid, now) }
 
 // HandOver moves the host role away from a host disconnected for longer
@@ -474,7 +475,7 @@ func (h *Hub) State(c auth.Claims, now time.Time) Message {
 		"min_players": MinPlayers, "max_players": MaxPlayers, "local_seats": false,
 		"levels": levelList(),
 	}
-	h.rooms.View(c.Subject, func(r *room) {
+	h.rooms.ViewFor(c, func(r *room) {
 		if r == nil {
 			return
 		}

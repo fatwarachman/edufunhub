@@ -1,5 +1,12 @@
 import { useGameCatalog } from '@/components/classroom/classroom-ui';
 import {
+    OptionContent,
+    optionImage,
+    type OptionMediaData,
+    QuestionMedia,
+    type QuestionMediaData,
+} from '@/components/question-media';
+import {
     GradeChips,
     OutcomeBar,
     StatCard,
@@ -30,8 +37,12 @@ interface QuestionDetail {
     subject: string;
     prompt_id: string;
     prompt_en: string | null;
-    options: Record<string, { id: string; en: string | null }> | null;
-    answer: string | string[];
+    options:
+        | { id: string; en: string | null; media?: OptionMediaData | null }[]
+        | Record<string, { id: string; en: string | null }>
+        | null;
+    visual: QuestionMediaData | null;
+    answer: string | string[] | number;
     hint_id: string | null;
     hint_en: string | null;
     games: string[];
@@ -91,6 +102,18 @@ export default function TeacherQuestionShow({ question, stats, bands }: Props) {
     const prompt =
         english && question.prompt_en ? question.prompt_en : question.prompt_id;
     const [showRaw, setShowRaw] = useState<Record<string, boolean>>({});
+    const optionList: {
+        id: string;
+        en: string | null;
+        media?: OptionMediaData | null;
+    }[] = Array.isArray(question.options)
+        ? question.options
+        : Object.values(question.options ?? {});
+    const optionMedia = optionList.map((option) => option.media ?? null);
+    const correctIndex =
+        question.type === 'choice' && typeof question.answer === 'number'
+            ? question.answer
+            : -1;
 
     const band = bands.find((b) => b.value === question.band);
 
@@ -136,6 +159,50 @@ export default function TeacherQuestionShow({ question, stats, bands }: Props) {
                     )}
                 </div>
                 <p className="text-lg font-semibold">{prompt}</p>
+                {question.visual && (
+                    <div className="w-full max-w-md">
+                        <QuestionMedia media={question.visual} />
+                    </div>
+                )}
+                {optionList.length > 0 && (
+                    <ul
+                        className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+                        data-testid="teacher-question-options"
+                    >
+                        {optionList.map((option, index) => (
+                            <li
+                                key={index}
+                                className={cn(
+                                    'flex min-w-0 items-center gap-2 rounded-xl border-2 p-2 text-sm font-semibold',
+                                    index === correctIndex
+                                        ? 'border-[#1aab8a] bg-[#dff7ea]'
+                                        : 'border-[#151b2e]/20 bg-white',
+                                )}
+                            >
+                                <span className="grid size-6 shrink-0 place-items-center rounded-full border-2 border-[#151b2e] bg-white text-xs font-bold">
+                                    {String.fromCharCode(65 + index)}
+                                </span>
+                                <OptionContent
+                                    text={
+                                        english
+                                            ? option.en || option.id
+                                            : option.id
+                                    }
+                                    image={optionImage(optionMedia, index)}
+                                    size="sm"
+                                />
+                                {index === correctIndex && (
+                                    <CircleCheck
+                                        className="ml-auto size-4 shrink-0 text-[#116a56]"
+                                        aria-label={t(
+                                            'teacher.analysis.correct',
+                                        )}
+                                    />
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                )}
                 <div className="flex flex-wrap gap-1.5 text-xs">
                     <span className="font-bold text-muted-foreground">
                         {t('teacher.form.grades')}:
@@ -216,12 +283,34 @@ export default function TeacherQuestionShow({ question, stats, bands }: Props) {
                                         >
                                             {key}:{' '}
                                             {english
-                                                ? (question.options?.[key]
-                                                      ?.en ??
-                                                  question.options?.[key]?.id ??
+                                                ? ((
+                                                      question.options as Record<
+                                                          string,
+                                                          {
+                                                              id: string;
+                                                              en: string | null;
+                                                          }
+                                                      > | null
+                                                  )?.[key]?.en ??
+                                                  (
+                                                      question.options as Record<
+                                                          string,
+                                                          {
+                                                              id: string;
+                                                              en: string | null;
+                                                          }
+                                                      > | null
+                                                  )?.[key]?.id ??
                                                   key)
-                                                : (question.options?.[key]
-                                                      ?.id ?? key)}
+                                                : ((
+                                                      question.options as Record<
+                                                          string,
+                                                          {
+                                                              id: string;
+                                                              en: string | null;
+                                                          }
+                                                      > | null
+                                                  )?.[key]?.id ?? key)}
                                             {isCorrect && (
                                                 <CircleCheck className="ml-1 inline size-3.5 text-[#116a56]" />
                                             )}

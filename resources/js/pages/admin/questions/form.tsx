@@ -15,6 +15,10 @@ import {
 } from '@/components/admin/question-visual-editor';
 import InputError from '@/components/input-error';
 import { type QuestionMediaData } from '@/components/question-media';
+import {
+    QuestionOptionMedia,
+    type QuestionOptionMediaData,
+} from '@/components/question-option-media';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
@@ -25,6 +29,7 @@ import { type FormEventHandler, type ReactNode } from 'react';
 interface Option {
     id: string;
     en: string;
+    media?: QuestionOptionMediaData;
 }
 
 interface QuestionData {
@@ -36,7 +41,8 @@ interface QuestionData {
     subject: string;
     prompt_id: string;
     prompt_en: string | null;
-    options: { id: string; en?: string }[] | null;
+    options:
+        { id: string; en?: string; media?: QuestionOptionMediaData }[] | null;
     visual: QuestionMediaData | null;
     answer: number;
     hint_id: string | null;
@@ -88,6 +94,7 @@ export default function QuestionForm({
         options: (question?.options?.map((option) => ({
             id: option.id,
             en: option.en ?? '',
+            media: option.media,
         })) ?? [
             blankOption(),
             blankOption(),
@@ -502,6 +509,31 @@ export default function QuestionForm({
                                         className={cn(
                                             fieldClass,
                                             'col-span-2 col-start-2 w-full sm:col-span-1 sm:col-start-auto',
+                                        )}
+                                    />
+                                    <QuestionOptionMedia
+                                        value={option.media}
+                                        onChange={(media) =>
+                                            setData(
+                                                'options',
+                                                data.options.map(
+                                                    (current, i) =>
+                                                        i === index
+                                                            ? {
+                                                                  ...current,
+                                                                  media,
+                                                              }
+                                                            : current,
+                                                ),
+                                            )
+                                        }
+                                        label={tr('Image')}
+                                        uploadLabel={tr(
+                                            'Upload failed. Try again.',
+                                        )}
+                                        removeLabel={tr('Remove option image')}
+                                        error={errorFor(
+                                            `options.${index}.media.src`,
                                         )}
                                     />
                                     <button

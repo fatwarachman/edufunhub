@@ -14,6 +14,14 @@ import (
 type Text struct {
 	ID string `json:"id"`
 	EN string `json:"en"`
+	// Media is an optional answer option picture (bank options only).
+	Media *OptionMedia `json:"media,omitempty"`
+}
+
+// OptionMedia is a picture attached to one answer option.
+type OptionMedia struct {
+	Kind string `json:"kind"`
+	Src  string `json:"src"`
 }
 
 // Get returns the text for a locale, defaulting to Indonesian.
@@ -56,6 +64,22 @@ func (q Question) Media() json.RawMessage {
 		return nil
 	}
 	return q.Visual
+}
+
+// OptionMedia returns the option pictures aligned with Options, or nil when
+// no option has one (clients then render text-only options).
+func (q Question) OptionMedia() []*OptionMedia {
+	var out []*OptionMedia
+	for i, o := range q.Options {
+		if o.Media == nil || o.Media.Src == "" {
+			continue
+		}
+		if out == nil {
+			out = make([]*OptionMedia, len(q.Options))
+		}
+		out[i] = o.Media
+	}
+	return out
 }
 
 // Original returns the original bank option index of the displayed option
@@ -134,52 +158,52 @@ func bi(pairs ...string) []Text {
 
 var choiceBank = [4][]mc{
 	{ // Grade 1-3
-		{"science", Text{"Hewan yang hidup di air dan bernapas dengan insang adalah…", "An animal that lives in water and breathes with gills is a…"}, bi("Ikan", "Fish", "Kucing", "Cat", "Ayam", "Chicken", "Kambing", "Goat"), 0, Text{"Insang ada pada ikan.", "Fish have gills."}},
-		{"science", Text{"Matahari terbit dari arah…", "The sun rises in the…"}, bi("Timur", "East", "Barat", "West", "Utara", "North", "Selatan", "South"), 0, Text{"Matahari terbit di timur.", "The sun rises in the east."}},
-		{"science", Text{"Tumbuhan membutuhkan … untuk tumbuh.", "Plants need … to grow."}, bi("Air dan cahaya", "Water and light", "Pasir saja", "Only sand", "Plastik", "Plastic", "Gelap", "Darkness"), 0, Text{"Tumbuhan butuh air dan cahaya matahari.", "Plants need water and sunlight."}},
-		{"language", Text{"Lawan kata \"besar\" adalah…", "The opposite of \"big\" is…"}, bi("Kecil", "Small", "Tinggi", "Tall", "Luas", "Wide", "Berat", "Heavy"), 0, Text{"Besar lawan katanya kecil.", "Big is the opposite of small."}},
-		{"language", Text{"Huruf vokal adalah…", "Which one is a vowel?"}, opts("A", "B", "K", "T"), 0, Text{"Vokal: A, I, U, E, O.", "Vowels: A, E, I, O, U."}},
-		{"social", Text{"Warna bendera Indonesia adalah…", "The colours of Indonesia's flag are…"}, bi("Merah putih", "Red and white", "Biru putih", "Blue and white", "Merah kuning", "Red and yellow", "Hijau putih", "Green and white"), 0, Text{"Sang Saka Merah Putih.", "The Red and White flag."}},
-		{"social", Text{"Dalam seminggu ada … hari.", "There are … days in a week."}, opts("7", "5", "6", "10"), 0, Text{"Senin sampai Minggu = 7 hari.", "Monday to Sunday = 7 days."}},
-		{"english", Text{"Bahasa Inggris dari \"kucing\" adalah…", "Which word means a small furry pet that says \"meow\"?"}, opts("Cat", "Dog", "Bird", "Fish"), 0, Text{"Kucing = cat.", "A cat says meow."}},
-		{"civics", Text{"Sila pertama Pancasila adalah…", "The first principle of Pancasila is…"}, bi("Ketuhanan Yang Maha Esa", "Belief in the One and Only God", "Persatuan Indonesia", "Unity of Indonesia", "Keadilan sosial", "Social justice", "Kerakyatan", "Democracy"), 0, Text{"Sila ke-1: Ketuhanan Yang Maha Esa.", "Principle 1: Belief in the One and Only God."}},
-		{"science", Text{"Bagian tubuh untuk melihat adalah…", "The body part we use to see is the…"}, bi("Mata", "Eyes", "Telinga", "Ears", "Hidung", "Nose", "Lidah", "Tongue"), 0, Text{"Kita melihat dengan mata.", "We see with our eyes."}},
+		{"science", Text{ID: "Hewan yang hidup di air dan bernapas dengan insang adalah…", EN: "An animal that lives in water and breathes with gills is a…"}, bi("Ikan", "Fish", "Kucing", "Cat", "Ayam", "Chicken", "Kambing", "Goat"), 0, Text{ID: "Insang ada pada ikan.", EN: "Fish have gills."}},
+		{"science", Text{ID: "Matahari terbit dari arah…", EN: "The sun rises in the…"}, bi("Timur", "East", "Barat", "West", "Utara", "North", "Selatan", "South"), 0, Text{ID: "Matahari terbit di timur.", EN: "The sun rises in the east."}},
+		{"science", Text{ID: "Tumbuhan membutuhkan … untuk tumbuh.", EN: "Plants need … to grow."}, bi("Air dan cahaya", "Water and light", "Pasir saja", "Only sand", "Plastik", "Plastic", "Gelap", "Darkness"), 0, Text{ID: "Tumbuhan butuh air dan cahaya matahari.", EN: "Plants need water and sunlight."}},
+		{"language", Text{ID: "Lawan kata \"besar\" adalah…", EN: "The opposite of \"big\" is…"}, bi("Kecil", "Small", "Tinggi", "Tall", "Luas", "Wide", "Berat", "Heavy"), 0, Text{ID: "Besar lawan katanya kecil.", EN: "Big is the opposite of small."}},
+		{"language", Text{ID: "Huruf vokal adalah…", EN: "Which one is a vowel?"}, opts("A", "B", "K", "T"), 0, Text{ID: "Vokal: A, I, U, E, O.", EN: "Vowels: A, E, I, O, U."}},
+		{"social", Text{ID: "Warna bendera Indonesia adalah…", EN: "The colours of Indonesia's flag are…"}, bi("Merah putih", "Red and white", "Biru putih", "Blue and white", "Merah kuning", "Red and yellow", "Hijau putih", "Green and white"), 0, Text{ID: "Sang Saka Merah Putih.", EN: "The Red and White flag."}},
+		{"social", Text{ID: "Dalam seminggu ada … hari.", EN: "There are … days in a week."}, opts("7", "5", "6", "10"), 0, Text{ID: "Senin sampai Minggu = 7 hari.", EN: "Monday to Sunday = 7 days."}},
+		{"english", Text{ID: "Bahasa Inggris dari \"kucing\" adalah…", EN: "Which word means a small furry pet that says \"meow\"?"}, opts("Cat", "Dog", "Bird", "Fish"), 0, Text{ID: "Kucing = cat.", EN: "A cat says meow."}},
+		{"civics", Text{ID: "Sila pertama Pancasila adalah…", EN: "The first principle of Pancasila is…"}, bi("Ketuhanan Yang Maha Esa", "Belief in the One and Only God", "Persatuan Indonesia", "Unity of Indonesia", "Keadilan sosial", "Social justice", "Kerakyatan", "Democracy"), 0, Text{ID: "Sila ke-1: Ketuhanan Yang Maha Esa.", EN: "Principle 1: Belief in the One and Only God."}},
+		{"science", Text{ID: "Bagian tubuh untuk melihat adalah…", EN: "The body part we use to see is the…"}, bi("Mata", "Eyes", "Telinga", "Ears", "Hidung", "Nose", "Lidah", "Tongue"), 0, Text{ID: "Kita melihat dengan mata.", EN: "We see with our eyes."}},
 	},
 	{ // Grade 4-6
-		{"science", Text{"Proses tumbuhan membuat makanan sendiri disebut…", "The process by which plants make their own food is called…"}, bi("Fotosintesis", "Photosynthesis", "Respirasi", "Respiration", "Evaporasi", "Evaporation", "Penyerbukan", "Pollination"), 0, Text{"Fotosintesis memakai cahaya matahari.", "Photosynthesis uses sunlight."}},
-		{"science", Text{"Planet terdekat dengan Matahari adalah…", "The planet closest to the Sun is…"}, bi("Merkurius", "Mercury", "Venus", "Venus", "Bumi", "Earth", "Mars", "Mars"), 0, Text{"Urutan: Merkurius, Venus, Bumi…", "Order: Mercury, Venus, Earth…"}},
-		{"science", Text{"Perubahan wujud air menjadi uap disebut…", "Water changing into vapour is called…"}, bi("Menguap", "Evaporation", "Membeku", "Freezing", "Mencair", "Melting", "Mengembun", "Condensation"), 0, Text{"Cair ke gas = menguap.", "Liquid to gas = evaporation."}},
-		{"social", Text{"Ibu kota Provinsi Jawa Barat adalah…", "The capital of West Java province is…"}, opts("Bandung", "Semarang", "Surabaya", "Serang"), 0, Text{"Bandung adalah ibu kota Jawa Barat.", "Bandung is West Java's capital."}},
-		{"social", Text{"Proklamasi kemerdekaan Indonesia dibacakan tahun…", "Indonesia's independence was proclaimed in…"}, opts("1945", "1942", "1949", "1950"), 0, Text{"17 Agustus 1945.", "17 August 1945."}},
-		{"language", Text{"Kalimat yang menggunakan tanda tanya adalah kalimat…", "A sentence that ends with a question mark is a…"}, bi("Tanya", "Question", "Perintah", "Command", "Berita", "Statement", "Seru", "Exclamation"), 0, Text{"Kalimat tanya diakhiri tanda tanya.", "Questions end with a question mark."}},
-		{"english", Text{"\"I … to school every day.\"", "\"I … to school every day.\""}, opts("go", "goes", "going", "went"), 0, Text{"Subjek I memakai go.", "Subject I uses go."}},
-		{"civics", Text{"Lambang negara Indonesia adalah…", "Indonesia's national emblem is…"}, bi("Garuda Pancasila", "Garuda Pancasila", "Bintang", "A star", "Banteng", "A bull", "Padi dan kapas", "Rice and cotton"), 0, Text{"Garuda Pancasila.", "Garuda Pancasila."}},
-		{"science", Text{"Hewan pemakan tumbuhan disebut…", "Animals that eat only plants are called…"}, bi("Herbivora", "Herbivores", "Karnivora", "Carnivores", "Omnivora", "Omnivores", "Dekomposer", "Decomposers"), 0, Text{"Herbivora makan tumbuhan.", "Herbivores eat plants."}},
-		{"social", Text{"Mata uang Indonesia adalah…", "Indonesia's currency is the…"}, opts("Rupiah", "Ringgit", "Baht", "Peso"), 0, Text{"Rupiah (Rp).", "Rupiah (Rp)."}},
+		{"science", Text{ID: "Proses tumbuhan membuat makanan sendiri disebut…", EN: "The process by which plants make their own food is called…"}, bi("Fotosintesis", "Photosynthesis", "Respirasi", "Respiration", "Evaporasi", "Evaporation", "Penyerbukan", "Pollination"), 0, Text{ID: "Fotosintesis memakai cahaya matahari.", EN: "Photosynthesis uses sunlight."}},
+		{"science", Text{ID: "Planet terdekat dengan Matahari adalah…", EN: "The planet closest to the Sun is…"}, bi("Merkurius", "Mercury", "Venus", "Venus", "Bumi", "Earth", "Mars", "Mars"), 0, Text{ID: "Urutan: Merkurius, Venus, Bumi…", EN: "Order: Mercury, Venus, Earth…"}},
+		{"science", Text{ID: "Perubahan wujud air menjadi uap disebut…", EN: "Water changing into vapour is called…"}, bi("Menguap", "Evaporation", "Membeku", "Freezing", "Mencair", "Melting", "Mengembun", "Condensation"), 0, Text{ID: "Cair ke gas = menguap.", EN: "Liquid to gas = evaporation."}},
+		{"social", Text{ID: "Ibu kota Provinsi Jawa Barat adalah…", EN: "The capital of West Java province is…"}, opts("Bandung", "Semarang", "Surabaya", "Serang"), 0, Text{ID: "Bandung adalah ibu kota Jawa Barat.", EN: "Bandung is West Java's capital."}},
+		{"social", Text{ID: "Proklamasi kemerdekaan Indonesia dibacakan tahun…", EN: "Indonesia's independence was proclaimed in…"}, opts("1945", "1942", "1949", "1950"), 0, Text{ID: "17 Agustus 1945.", EN: "17 August 1945."}},
+		{"language", Text{ID: "Kalimat yang menggunakan tanda tanya adalah kalimat…", EN: "A sentence that ends with a question mark is a…"}, bi("Tanya", "Question", "Perintah", "Command", "Berita", "Statement", "Seru", "Exclamation"), 0, Text{ID: "Kalimat tanya diakhiri tanda tanya.", EN: "Questions end with a question mark."}},
+		{"english", Text{ID: "\"I … to school every day.\"", EN: "\"I … to school every day.\""}, opts("go", "goes", "going", "went"), 0, Text{ID: "Subjek I memakai go.", EN: "Subject I uses go."}},
+		{"civics", Text{ID: "Lambang negara Indonesia adalah…", EN: "Indonesia's national emblem is…"}, bi("Garuda Pancasila", "Garuda Pancasila", "Bintang", "A star", "Banteng", "A bull", "Padi dan kapas", "Rice and cotton"), 0, Text{ID: "Garuda Pancasila.", EN: "Garuda Pancasila."}},
+		{"science", Text{ID: "Hewan pemakan tumbuhan disebut…", EN: "Animals that eat only plants are called…"}, bi("Herbivora", "Herbivores", "Karnivora", "Carnivores", "Omnivora", "Omnivores", "Dekomposer", "Decomposers"), 0, Text{ID: "Herbivora makan tumbuhan.", EN: "Herbivores eat plants."}},
+		{"social", Text{ID: "Mata uang Indonesia adalah…", EN: "Indonesia's currency is the…"}, opts("Rupiah", "Ringgit", "Baht", "Peso"), 0, Text{ID: "Rupiah (Rp).", EN: "Rupiah (Rp)."}},
 	},
 	{ // Grade 7-9
-		{"science", Text{"Satuan kuat arus listrik dalam SI adalah…", "The SI unit of electric current is the…"}, bi("Ampere", "Ampere", "Volt", "Volt", "Ohm", "Ohm", "Watt", "Watt"), 0, Text{"Arus diukur dalam ampere.", "Current is measured in amperes."}},
-		{"science", Text{"Organel tempat fotosintesis adalah…", "The organelle where photosynthesis happens is the…"}, bi("Kloroplas", "Chloroplast", "Mitokondria", "Mitochondrion", "Ribosom", "Ribosome", "Vakuola", "Vacuole"), 0, Text{"Kloroplas mengandung klorofil.", "Chloroplasts contain chlorophyll."}},
-		{"science", Text{"Rumus kimia air adalah…", "The chemical formula of water is…"}, opts("H₂O", "CO₂", "O₂", "NaCl"), 0, Text{"Dua hidrogen, satu oksigen.", "Two hydrogens, one oxygen."}},
-		{"social", Text{"ASEAN didirikan melalui Deklarasi…", "ASEAN was founded through the … Declaration."}, opts("Bangkok", "Jakarta", "Manila", "Kuala Lumpur"), 0, Text{"Deklarasi Bangkok 1967.", "The 1967 Bangkok Declaration."}},
-		{"social", Text{"Garis khayal yang membagi bumi utara dan selatan adalah…", "The imaginary line dividing north and south is the…"}, bi("Khatulistiwa", "Equator", "Meridian", "Meridian", "Garis balik", "Tropic", "Garis bujur", "Longitude"), 0, Text{"Khatulistiwa = lintang 0°.", "The equator is 0° latitude."}},
-		{"language", Text{"Teks yang bertujuan meyakinkan pembaca disebut teks…", "A text written to convince readers is a … text."}, bi("Persuasi", "Persuasive", "Narasi", "Narrative", "Deskripsi", "Descriptive", "Prosedur", "Procedure"), 0, Text{"Persuasi = mengajak/meyakinkan.", "Persuasive texts convince."}},
-		{"english", Text{"Past tense of \"write\" is…", "The past tense of \"write\" is…"}, opts("wrote", "writed", "written", "writes"), 0, Text{"write – wrote – written.", "write – wrote – written."}},
-		{"civics", Text{"Lembaga yang berwenang mengubah UUD 1945 adalah…", "The body authorised to amend the 1945 Constitution is the…"}, opts("MPR", "DPR", "MA", "KPU"), 0, Text{"MPR berwenang mengubah UUD.", "The MPR can amend the constitution."}},
-		{"math", Text{"Gradien garis y = 3x + 2 adalah…", "The gradient of y = 3x + 2 is…"}, opts("3", "2", "5", "1/3"), 0, Text{"y = mx + c, m = 3.", "y = mx + c, m = 3."}},
-		{"math", Text{"Sudut-sudut segitiga berjumlah…", "The angles of a triangle add up to…"}, opts("180°", "90°", "360°", "270°"), 0, Text{"Jumlah sudut segitiga 180°.", "Triangle angles sum to 180°."}},
+		{"science", Text{ID: "Satuan kuat arus listrik dalam SI adalah…", EN: "The SI unit of electric current is the…"}, bi("Ampere", "Ampere", "Volt", "Volt", "Ohm", "Ohm", "Watt", "Watt"), 0, Text{ID: "Arus diukur dalam ampere.", EN: "Current is measured in amperes."}},
+		{"science", Text{ID: "Organel tempat fotosintesis adalah…", EN: "The organelle where photosynthesis happens is the…"}, bi("Kloroplas", "Chloroplast", "Mitokondria", "Mitochondrion", "Ribosom", "Ribosome", "Vakuola", "Vacuole"), 0, Text{ID: "Kloroplas mengandung klorofil.", EN: "Chloroplasts contain chlorophyll."}},
+		{"science", Text{ID: "Rumus kimia air adalah…", EN: "The chemical formula of water is…"}, opts("H₂O", "CO₂", "O₂", "NaCl"), 0, Text{ID: "Dua hidrogen, satu oksigen.", EN: "Two hydrogens, one oxygen."}},
+		{"social", Text{ID: "ASEAN didirikan melalui Deklarasi…", EN: "ASEAN was founded through the … Declaration."}, opts("Bangkok", "Jakarta", "Manila", "Kuala Lumpur"), 0, Text{ID: "Deklarasi Bangkok 1967.", EN: "The 1967 Bangkok Declaration."}},
+		{"social", Text{ID: "Garis khayal yang membagi bumi utara dan selatan adalah…", EN: "The imaginary line dividing north and south is the…"}, bi("Khatulistiwa", "Equator", "Meridian", "Meridian", "Garis balik", "Tropic", "Garis bujur", "Longitude"), 0, Text{ID: "Khatulistiwa = lintang 0°.", EN: "The equator is 0° latitude."}},
+		{"language", Text{ID: "Teks yang bertujuan meyakinkan pembaca disebut teks…", EN: "A text written to convince readers is a … text."}, bi("Persuasi", "Persuasive", "Narasi", "Narrative", "Deskripsi", "Descriptive", "Prosedur", "Procedure"), 0, Text{ID: "Persuasi = mengajak/meyakinkan.", EN: "Persuasive texts convince."}},
+		{"english", Text{ID: "Past tense of \"write\" is…", EN: "The past tense of \"write\" is…"}, opts("wrote", "writed", "written", "writes"), 0, Text{ID: "write – wrote – written.", EN: "write – wrote – written."}},
+		{"civics", Text{ID: "Lembaga yang berwenang mengubah UUD 1945 adalah…", EN: "The body authorised to amend the 1945 Constitution is the…"}, opts("MPR", "DPR", "MA", "KPU"), 0, Text{ID: "MPR berwenang mengubah UUD.", EN: "The MPR can amend the constitution."}},
+		{"math", Text{ID: "Gradien garis y = 3x + 2 adalah…", EN: "The gradient of y = 3x + 2 is…"}, opts("3", "2", "5", "1/3"), 0, Text{ID: "y = mx + c, m = 3.", EN: "y = mx + c, m = 3."}},
+		{"math", Text{ID: "Sudut-sudut segitiga berjumlah…", EN: "The angles of a triangle add up to…"}, opts("180°", "90°", "360°", "270°"), 0, Text{ID: "Jumlah sudut segitiga 180°.", EN: "Triangle angles sum to 180°."}},
 	},
 	{ // Grade 10-12
-		{"science", Text{"Hukum Newton II dirumuskan sebagai…", "Newton's second law is written as…"}, opts("F = m·a", "E = m·c²", "V = I·R", "P = W/t"), 0, Text{"Gaya = massa × percepatan.", "Force = mass × acceleration."}},
-		{"science", Text{"Bilangan Avogadro kira-kira…", "Avogadro's number is approximately…"}, opts("6,02 × 10²³", "3,00 × 10⁸", "9,81", "1,6 × 10⁻¹⁹"), 0, Text{"Jumlah partikel per mol.", "Particles per mole."}},
-		{"science", Text{"Molekul pembawa informasi genetik adalah…", "The molecule that carries genetic information is…"}, opts("DNA", "ATP", "Glukosa", "Lipid"), 0, Text{"DNA menyimpan kode genetik.", "DNA stores the genetic code."}},
-		{"math", Text{"Turunan dari f(x) = x³ adalah…", "The derivative of f(x) = x³ is…"}, opts("3x²", "x²", "3x", "x⁴/4"), 0, Text{"d/dx xⁿ = n·xⁿ⁻¹.", "d/dx xⁿ = n·xⁿ⁻¹."}},
-		{"math", Text{"Nilai sin 30° adalah…", "The value of sin 30° is…"}, opts("1/2", "√3/2", "1", "0"), 0, Text{"sin 30° = 0,5.", "sin 30° = 0.5."}},
-		{"math", Text{"log₁₀ 1000 = …", "log₁₀ 1000 = …"}, opts("3", "2", "10", "100"), 0, Text{"10³ = 1000.", "10³ = 1000."}},
-		{"social", Text{"Konferensi Asia Afrika 1955 diadakan di…", "The 1955 Asian–African Conference was held in…"}, opts("Bandung", "Jakarta", "Yogyakarta", "Bogor"), 0, Text{"KAA di Bandung.", "It took place in Bandung."}},
-		{"social", Text{"Inflasi adalah kenaikan … secara umum dan terus-menerus.", "Inflation is a general, continuous rise in…"}, bi("Harga", "Prices", "Upah saja", "Wages only", "Ekspor", "Exports", "Pajak", "Taxes"), 0, Text{"Inflasi = harga naik terus.", "Inflation = rising prices."}},
-		{"english", Text{"\"If I … rich, I would travel the world.\"", "\"If I … rich, I would travel the world.\""}, opts("were", "am", "will be", "being"), 0, Text{"Conditional tipe 2 memakai were.", "Second conditional uses were."}},
-		{"language", Text{"Majas yang membandingkan secara langsung tanpa kata \"seperti\" adalah…", "A figure of speech comparing directly without \"like\" is a…"}, bi("Metafora", "Metaphor", "Simile", "Simile", "Hiperbola", "Hyperbole", "Personifikasi", "Personification"), 0, Text{"Metafora = perbandingan langsung.", "A metaphor compares directly."}},
+		{"science", Text{ID: "Hukum Newton II dirumuskan sebagai…", EN: "Newton's second law is written as…"}, opts("F = m·a", "E = m·c²", "V = I·R", "P = W/t"), 0, Text{ID: "Gaya = massa × percepatan.", EN: "Force = mass × acceleration."}},
+		{"science", Text{ID: "Bilangan Avogadro kira-kira…", EN: "Avogadro's number is approximately…"}, opts("6,02 × 10²³", "3,00 × 10⁸", "9,81", "1,6 × 10⁻¹⁹"), 0, Text{ID: "Jumlah partikel per mol.", EN: "Particles per mole."}},
+		{"science", Text{ID: "Molekul pembawa informasi genetik adalah…", EN: "The molecule that carries genetic information is…"}, opts("DNA", "ATP", "Glukosa", "Lipid"), 0, Text{ID: "DNA menyimpan kode genetik.", EN: "DNA stores the genetic code."}},
+		{"math", Text{ID: "Turunan dari f(x) = x³ adalah…", EN: "The derivative of f(x) = x³ is…"}, opts("3x²", "x²", "3x", "x⁴/4"), 0, Text{ID: "d/dx xⁿ = n·xⁿ⁻¹.", EN: "d/dx xⁿ = n·xⁿ⁻¹."}},
+		{"math", Text{ID: "Nilai sin 30° adalah…", EN: "The value of sin 30° is…"}, opts("1/2", "√3/2", "1", "0"), 0, Text{ID: "sin 30° = 0,5.", EN: "sin 30° = 0.5."}},
+		{"math", Text{ID: "log₁₀ 1000 = …", EN: "log₁₀ 1000 = …"}, opts("3", "2", "10", "100"), 0, Text{ID: "10³ = 1000.", EN: "10³ = 1000."}},
+		{"social", Text{ID: "Konferensi Asia Afrika 1955 diadakan di…", EN: "The 1955 Asian–African Conference was held in…"}, opts("Bandung", "Jakarta", "Yogyakarta", "Bogor"), 0, Text{ID: "KAA di Bandung.", EN: "It took place in Bandung."}},
+		{"social", Text{ID: "Inflasi adalah kenaikan … secara umum dan terus-menerus.", EN: "Inflation is a general, continuous rise in…"}, bi("Harga", "Prices", "Upah saja", "Wages only", "Ekspor", "Exports", "Pajak", "Taxes"), 0, Text{ID: "Inflasi = harga naik terus.", EN: "Inflation = rising prices."}},
+		{"english", Text{ID: "\"If I … rich, I would travel the world.\"", EN: "\"If I … rich, I would travel the world.\""}, opts("were", "am", "will be", "being"), 0, Text{ID: "Conditional tipe 2 memakai were.", EN: "Second conditional uses were."}},
+		{"language", Text{ID: "Majas yang membandingkan secara langsung tanpa kata \"seperti\" adalah…", EN: "A figure of speech comparing directly without \"like\" is a…"}, bi("Metafora", "Metaphor", "Simile", "Simile", "Hiperbola", "Hyperbole", "Personifikasi", "Personification"), 0, Text{ID: "Metafora = perbandingan langsung.", EN: "A metaphor compares directly."}},
 	},
 }
 
@@ -191,36 +215,36 @@ type tf struct {
 
 var truthBank = [4][]tf{
 	{
-		{"science", Text{"Ikan bernapas menggunakan paru-paru.", "Fish breathe with lungs."}, false},
-		{"science", Text{"Es akan mencair jika dipanaskan.", "Ice melts when heated."}, true},
-		{"social", Text{"Indonesia merdeka pada tanggal 17 Agustus.", "Indonesia became independent on 17 August."}, true},
-		{"science", Text{"Bulan memancarkan cahayanya sendiri.", "The Moon makes its own light."}, false},
-		{"english", Text{"\"Apple\" dalam bahasa Indonesia berarti apel.", "An apple is a fruit."}, true},
-		{"science", Text{"Laba-laba memiliki enam kaki.", "Spiders have six legs."}, false},
+		{"science", Text{ID: "Ikan bernapas menggunakan paru-paru.", EN: "Fish breathe with lungs."}, false},
+		{"science", Text{ID: "Es akan mencair jika dipanaskan.", EN: "Ice melts when heated."}, true},
+		{"social", Text{ID: "Indonesia merdeka pada tanggal 17 Agustus.", EN: "Indonesia became independent on 17 August."}, true},
+		{"science", Text{ID: "Bulan memancarkan cahayanya sendiri.", EN: "The Moon makes its own light."}, false},
+		{"english", Text{ID: "\"Apple\" dalam bahasa Indonesia berarti apel.", EN: "An apple is a fruit."}, true},
+		{"science", Text{ID: "Laba-laba memiliki enam kaki.", EN: "Spiders have six legs."}, false},
 	},
 	{
-		{"science", Text{"Jantung berfungsi memompa darah.", "The heart pumps blood."}, true},
-		{"science", Text{"Bumi berputar pada porosnya disebut revolusi.", "Earth spinning on its axis is called revolution."}, false},
-		{"social", Text{"Pulau terbesar di Indonesia adalah Pulau Jawa.", "Java is Indonesia's largest island."}, false},
-		{"civics", Text{"Pancasila memiliki lima sila.", "Pancasila has five principles."}, true},
-		{"science", Text{"Kelelawar termasuk mamalia.", "Bats are mammals."}, true},
-		{"english", Text{"\"She go to school\" adalah kalimat yang benar.", "\"She go to school\" is grammatically correct."}, false},
+		{"science", Text{ID: "Jantung berfungsi memompa darah.", EN: "The heart pumps blood."}, true},
+		{"science", Text{ID: "Bumi berputar pada porosnya disebut revolusi.", EN: "Earth spinning on its axis is called revolution."}, false},
+		{"social", Text{ID: "Pulau terbesar di Indonesia adalah Pulau Jawa.", EN: "Java is Indonesia's largest island."}, false},
+		{"civics", Text{ID: "Pancasila memiliki lima sila.", EN: "Pancasila has five principles."}, true},
+		{"science", Text{ID: "Kelelawar termasuk mamalia.", EN: "Bats are mammals."}, true},
+		{"english", Text{ID: "\"She go to school\" adalah kalimat yang benar.", EN: "\"She go to school\" is grammatically correct."}, false},
 	},
 	{
-		{"science", Text{"Cahaya merambat lebih cepat daripada bunyi.", "Light travels faster than sound."}, true},
-		{"science", Text{"Mitokondria adalah tempat respirasi sel.", "Mitochondria are where cellular respiration happens."}, true},
-		{"social", Text{"Indonesia terletak di antara dua benua dan dua samudra.", "Indonesia lies between two continents and two oceans."}, true},
-		{"science", Text{"Logam adalah isolator listrik yang baik.", "Metals are good electrical insulators."}, false},
-		{"civics", Text{"DPR adalah lembaga yudikatif.", "The DPR is a judicial institution."}, false},
-		{"english", Text{"\"Children\" adalah bentuk jamak dari \"child\".", "\"Children\" is the plural of \"child\"."}, true},
+		{"science", Text{ID: "Cahaya merambat lebih cepat daripada bunyi.", EN: "Light travels faster than sound."}, true},
+		{"science", Text{ID: "Mitokondria adalah tempat respirasi sel.", EN: "Mitochondria are where cellular respiration happens."}, true},
+		{"social", Text{ID: "Indonesia terletak di antara dua benua dan dua samudra.", EN: "Indonesia lies between two continents and two oceans."}, true},
+		{"science", Text{ID: "Logam adalah isolator listrik yang baik.", EN: "Metals are good electrical insulators."}, false},
+		{"civics", Text{ID: "DPR adalah lembaga yudikatif.", EN: "The DPR is a judicial institution."}, false},
+		{"english", Text{ID: "\"Children\" adalah bentuk jamak dari \"child\".", EN: "\"Children\" is the plural of \"child\"."}, true},
 	},
 	{
-		{"science", Text{"Elektron bermuatan positif.", "Electrons carry a positive charge."}, false},
-		{"science", Text{"Enzim adalah biokatalisator.", "Enzymes are biological catalysts."}, true},
-		{"math", Text{"Bilangan π adalah bilangan rasional.", "π is a rational number."}, false},
-		{"social", Text{"Sumpah Pemuda diikrarkan pada tahun 1928.", "The Youth Pledge was declared in 1928."}, true},
-		{"science", Text{"Percepatan gravitasi bumi kira-kira 9,8 m/s².", "Earth's gravitational acceleration is about 9.8 m/s²."}, true},
-		{"english", Text{"\"Has been\" menandakan present perfect continuous.", "\"Has been + -ing\" forms the present perfect continuous."}, true},
+		{"science", Text{ID: "Elektron bermuatan positif.", EN: "Electrons carry a positive charge."}, false},
+		{"science", Text{ID: "Enzim adalah biokatalisator.", EN: "Enzymes are biological catalysts."}, true},
+		{"math", Text{ID: "Bilangan π adalah bilangan rasional.", EN: "π is a rational number."}, false},
+		{"social", Text{ID: "Sumpah Pemuda diikrarkan pada tahun 1928.", EN: "The Youth Pledge was declared in 1928."}, true},
+		{"science", Text{ID: "Percepatan gravitasi bumi kira-kira 9,8 m/s².", EN: "Earth's gravitational acceleration is about 9.8 m/s²."}, true},
+		{"english", Text{ID: "\"Has been\" menandakan present perfect continuous.", EN: "\"Has been + -ing\" forms the present perfect continuous."}, true},
 	},
 }
 
@@ -304,6 +328,9 @@ func (g *Generator) items(kind string) []Item {
 // (no grade, level or subject filter, no fallback flag).
 func (g *Generator) source(kind string) ([]Item, bool) {
 	if pool := g.classroomItems(kind); len(pool) > 0 {
+		if difficulty, ok := Current().ClassroomDifficulty(g.Classroom, g.Game); ok && difficulty > 0 {
+			return g.byLevel(pool), true
+		}
 		return pool, true
 	}
 	return g.bankItems(kind), false

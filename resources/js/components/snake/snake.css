@@ -366,7 +366,7 @@
     background: #fff;
     box-shadow: 2px 2px 0 #1f2a44;
 }
-.sn-options span {
+.sn-options li > span {
     flex-shrink: 0;
     display: grid;
     place-items: center;
@@ -379,6 +379,7 @@
     color: #1f2a44;
 }
 .sn-options strong {
+    flex: 1 1 auto;
     min-width: 0;
     font-size: 15px;
     line-height: 1.25;

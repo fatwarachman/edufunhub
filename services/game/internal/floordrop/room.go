@@ -598,7 +598,7 @@ func (r *Room) ask(now time.Time) {
 		return Message{
 			"t": "question_start", "round_id": r.round.ID, "round": r.round.Number,
 			"time_limit": r.answerLimit.Milliseconds(), "remaining_ms": r.answerLimit.Milliseconds(),
-			"question": r.questionView(locale), "options": r.optionsView(locale), "alive": alive,
+			"question": r.questionView(locale), "options": r.optionsView(locale), "option_media": r.round.Question.OptionMedia(), "alive": alive,
 			"ends_ms": max(0, r.endsAt.Sub(now).Milliseconds()),
 		}
 	})
@@ -1175,6 +1175,7 @@ func (r *Room) sendState(c *Client, now time.Time) {
 		msg["remaining_ms"] = max(0, r.round.Deadline.Sub(now).Milliseconds())
 		msg["question"] = r.questionView(locale)
 		msg["options"] = r.optionsView(locale)
+		msg["option_media"] = r.round.Question.OptionMedia()
 		if r.phase != PhaseQuestion {
 			msg["tiles"] = append([]int(nil), r.round.Tiles[:len(r.round.Question.Options)]...)
 		}

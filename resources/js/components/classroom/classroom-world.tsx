@@ -160,6 +160,7 @@ export function ClassroomWorld({
     /** Partner id of the open DM panel (read by socket handlers). */
     const openDmId = useRef(0);
     const isTeacher = world.role === 'teacher';
+    const isObserver = world.role === 'observer';
     const teacherLabel = t('classroom.world.teacherBadge');
     const [full, setFull] = useState(false);
     const [webgl] = useState(supportsWebgl);
@@ -731,6 +732,9 @@ export function ClassroomWorld({
 
     const submitChat = (e: FormEvent) => {
         e.preventDefault();
+        if (isObserver) {
+            return;
+        }
         const text = clampChat(draft).trim();
         if (!text) {
             return;
@@ -769,7 +773,7 @@ export function ClassroomWorld({
 
     const submitDm = (e: FormEvent) => {
         e.preventDefault();
-        if (!dm) {
+        if (isObserver || !dm) {
             return;
         }
         const text = clampChat(dmDraft).trim();
@@ -783,11 +787,12 @@ export function ClassroomWorld({
         }
     };
 
-    const activeBooth = isTeacher
-        ? null
-        : (welcome?.booths.find((b) => b.i === booth) ?? null);
+    const activeBooth =
+        isTeacher || isObserver
+            ? null
+            : (welcome?.booths.find((b) => b.i === booth) ?? null);
     const activeLimit =
-        !isTeacher && activeBooth
+        !isTeacher && !isObserver && activeBooth
             ? (hud.limits?.[activeBooth.game] ?? null)
             : null;
     const dmOpen = panel === 'dm' && dm !== null;

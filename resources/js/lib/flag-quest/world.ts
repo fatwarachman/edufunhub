@@ -1,4 +1,7 @@
-import { type QuestionMediaData } from '@/components/question-media';
+import {
+    type OptionMediaData,
+    type QuestionMediaData,
+} from '@/components/question-media';
 
 /**
  * Shared Flag Quest protocol types and a client-side mirror of the Go collision
@@ -75,6 +78,7 @@ export interface ChallengeState {
         media?: QuestionMediaData | null;
         subject: string;
         options: string[];
+        option_media?: OptionMediaData[] | null;
     };
     feedback?: ChallengeFeedback;
     board?: {

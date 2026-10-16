@@ -1,5 +1,8 @@
 import { PlayerAvatar } from '@/components/player-avatar';
 import {
+    OptionContent,
+    optionImage,
+    type OptionMediaData,
     QuestionMedia,
     type QuestionMediaData,
 } from '@/components/question-media';
@@ -100,12 +103,14 @@ export function QuestionCard({
 /** 2–4 answer buttons; the index sent is the displayed option index. */
 export function OptionPads({
     options,
+    optionMedia,
     disabled = false,
     selected,
     correct,
     onChoose,
 }: {
     options: string[];
+    optionMedia?: OptionMediaData[] | null;
     disabled?: boolean;
     selected?: number;
     correct?: number;
@@ -132,7 +137,13 @@ export function OptionPads({
                     <span aria-hidden="true">
                         {String.fromCharCode(65 + index)}
                     </span>
-                    <strong>{option}</strong>
+                    <strong>
+                        <OptionContent
+                            text={option}
+                            image={optionImage(optionMedia, index)}
+                            size="sm"
+                        />
+                    </strong>
                 </button>
             ))}
         </div>

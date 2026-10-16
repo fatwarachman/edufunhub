@@ -13,12 +13,21 @@ use Illuminate\Validation\ValidationException;
  * `changelog_entries`. Entries are upserted by `<version>:<key>`, so running
  * it again only applies what changed; recorded entries removed from the file
  * are deleted. Manual entries written in the admin panel are never touched.
+ *
+ * `published_at` is the release `date` plus its optional `time` (HH:MM in
+ * Asia/Jakarta, default 12:00) converted to UTC; it is refreshed on every
+ * sync so corrected times show up for rows that already exist.
  */
 class SyncChangelog extends Command
 {
     protected $signature = 'changelog:sync {--path= : PHP file returning the release list}';
 
     protected $description = 'Sync the recorded app changelog into the admin changelog page';
+
+    /** Timezone the recorded `date` + `time` are written in (owner is in Indonesia, WIB). */
+    public const TIMEZONE = 'Asia/Jakarta';
+
+    private const DEFAULT_TIME = '12:00';
 
     public function handle(): int
     {
@@ -80,7 +89,13 @@ class SyncChangelog extends Command
                 $errors[] = "Release {$label}: version must follow Semantic Versioning (e.g. 0.1.0).";
             }
 
-            $date = $this->date($release['date'] ?? null);
+            $time = $release['time'] ?? self::DEFAULT_TIME;
+            if (! is_string($time) || preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $time) !== 1) {
+                $errors[] = "Release {$label}: time must be HH:MM (24-hour, Asia/Jakarta).";
+                $time = self::DEFAULT_TIME;
+            }
+
+            $date = $this->date($release['date'] ?? null, $time);
             if ($date === null) {
                 $errors[] = "Release {$label}: date must be YYYY-MM-DD.";
             }
@@ -133,14 +148,17 @@ class SyncChangelog extends Command
         return $entries;
     }
 
-    private function date(mixed $value): ?Carbon
+    /**
+     * Release moment from a YYYY-MM-DD date and HH:MM time in Asia/Jakarta, as UTC.
+     */
+    private function date(mixed $value, string $time): ?Carbon
     {
         if (! is_string($value) || preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) !== 1) {
             return null;
         }
 
-        $date = Carbon::createFromFormat('!Y-m-d', $value);
+        $date = Carbon::createFromFormat('!Y-m-d H:i', "{$value} {$time}", self::TIMEZONE);
 
-        return $date !== null && $date->format('Y-m-d') === $value ? $date->setTime(12, 0) : null;
+        return $date !== null && $date->format('Y-m-d') === $value ? $date->utc() : null;
     }
 }

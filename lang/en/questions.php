@@ -20,11 +20,16 @@ return [
     'visual' => [
         'image_required' => 'Upload a picture for an image visual.',
         'image_missing' => 'The question picture was not found. Upload it again.',
-        'image_file' => 'The picture must be JPG, PNG or WEBP, at most 2 MB, 64–4096 px per side.',
+        'image_file' => 'The picture must be JPG, PNG or WEBP.',
         'wires_required' => 'A cable needs 2–12 core colours.',
         'color_invalid' => 'Colours must be hex, e.g. #2563eb.',
         'shape_required' => 'Choose a topology shape.',
         'lines_required' => 'Write at least one terminal line.',
+        'image_size' => 'A question picture may be at most 1 MB.',
+        'option_image_size' => 'An answer option picture may be at most 512 KB.',
+        'image_dimensions' => 'Each side of the picture must be 64–2000 px.',
+        'image_ratio' => 'The picture is too stretched. The longest side may be at most 3 times the shortest.',
+        'option_text_or_image' => 'Every answer option needs text or a picture.',
     ],
     'bulk' => [
         'activate' => ':count question(s) activated.',

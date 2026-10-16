@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\DeviceAnalyticsRequest;
 use App\Http\Requests\Admin\DeviceGamesRequest;
 use App\Services\DeviceAnalytics;
 use Inertia\Inertia;
@@ -14,6 +15,17 @@ use Inertia\Response;
  */
 class DeviceUsageController extends Controller
 {
+    public function index(DeviceAnalyticsRequest $request, DeviceAnalytics $devices): Response
+    {
+        return Inertia::render('admin/device-usage/index', $devices->detail(
+            $request->days(),
+            $request->string('os')->trim()->value() ?: null,
+            $request->string('device')->trim()->value() ?: null,
+            $request->string('role')->trim()->value() ?: null,
+            (int) $request->integer('users_page', 1),
+        ));
+    }
+
     public function games(DeviceGamesRequest $request, DeviceAnalytics $devices): Response
     {
         $days = $request->days();

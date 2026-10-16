@@ -635,13 +635,14 @@ func (h *Hub) stateLocked(uid int64, claims auth.Claims, now time.Time) Message 
 			opts[i] = o.Get(locale)
 		}
 		q := Message{
-			"id":      fmt.Sprintf("%s-%d", m.id, m.round),
-			"subject": m.question.Subject,
-			"worth":   m.question.Worth(),
-			"text":    m.question.Prompt.Get(locale),
-			"media":   m.question.Media(),
-			"options": opts,
-			"choice":  me.choice,
+			"id":           fmt.Sprintf("%s-%d", m.id, m.round),
+			"subject":      m.question.Subject,
+			"worth":        m.question.Worth(),
+			"text":         m.question.Prompt.Get(locale),
+			"media":        m.question.Media(),
+			"options":      opts,
+			"option_media": m.question.OptionMedia(),
+			"choice":       me.choice,
 		}
 		if m.phase == PhaseQuestion {
 			q["id"] = fmt.Sprintf("%s-%d", m.id, m.round+1)

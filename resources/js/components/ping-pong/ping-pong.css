@@ -264,7 +264,7 @@
         background 0.15s,
         transform 0.15s;
 }
-.pp-pad span {
+.pp-pad > span {
     flex-shrink: 0;
     display: grid;
     place-items: center;
@@ -276,6 +276,7 @@
     font-weight: 900;
 }
 .pp-pad strong {
+    flex: 1 1 auto;
     min-width: 0;
     font-size: 16px;
     line-height: 1.25;
@@ -816,7 +817,7 @@
         min-height: 46px;
         padding: 5px 8px;
     }
-    .pp-answer-panel .pp-pad span {
+    .pp-answer-panel .pp-pad > span {
         width: 22px;
         height: 22px;
     }
@@ -877,7 +878,7 @@
         gap: 6px;
         border-bottom-width: 4px;
     }
-    .pp-answer-panel .pp-pad span {
+    .pp-answer-panel .pp-pad > span {
         width: 22px;
         height: 22px;
         font-size: 11px;
@@ -925,7 +926,7 @@
     .pp-answer-panel .pp-pad {
         padding: 4px 6px;
     }
-    .pp-answer-panel .pp-pad span {
+    .pp-answer-panel .pp-pad > span {
         width: 20px;
         height: 20px;
     }

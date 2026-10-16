@@ -78,7 +78,52 @@ it('rejects a changelog file with invalid versions or missing copy', function (a
     'bad type' => [['version' => '0.1.0', 'date' => '2026-10-09', 'changes' => [changelogChange('a', 'chore')]]],
     'missing english' => [['version' => '0.1.0', 'date' => '2026-10-09', 'changes' => [[...changelogChange('a'), 'body' => ['id' => 'Isi', 'en' => '']]]]],
     'duplicate key' => [['version' => '0.1.0', 'date' => '2026-10-09', 'changes' => [changelogChange('a'), changelogChange('a')]]],
+    'bad time' => [['version' => '0.1.0', 'date' => '2026-10-09', 'time' => '25:00', 'changes' => [changelogChange('a')]]],
+    'time without minutes' => [['version' => '0.1.0', 'date' => '2026-10-09', 'time' => '9', 'changes' => [changelogChange('a')]]],
 ]);
+
+it('stores the release date and WIB time as UTC and refreshes existing rows', function (): void {
+    $this->artisan('changelog:sync', ['--path' => changelogFile([
+        ['version' => '0.1.0', 'date' => '2026-10-16', 'time' => '20:42', 'changes' => [changelogChange('games')]],
+        ['version' => '0.0.0', 'date' => '2026-10-09', 'changes' => [changelogChange('baseline')]],
+    ])])->assertSuccessful();
+
+    expect(ChangelogEntry::query()->firstWhere('source_key', '0.1.0:games')->published_at->utc()->toDateTimeString())->toBe('2026-10-16 13:42:00')
+        ->and(ChangelogEntry::query()->firstWhere('source_key', '0.0.0:baseline')->published_at->utc()->toDateTimeString())->toBe('2026-10-09 05:00:00');
+
+    $this->artisan('changelog:sync', ['--path' => changelogFile([
+        ['version' => '0.1.0', 'date' => '2026-10-16', 'time' => '06:05', 'changes' => [changelogChange('games')]],
+        ['version' => '0.0.0', 'date' => '2026-10-09', 'changes' => [changelogChange('baseline')]],
+    ])])->assertSuccessful();
+
+    expect(ChangelogEntry::query()->firstWhere('source_key', '0.1.0:games')->published_at->utc()->toDateTimeString())->toBe('2026-10-15 23:05:00');
+});
+
+it('records a valid WIB time for every shipped release, newest first', function (): void {
+    $releases = require database_path('data/changelog.php');
+    $moments = collect($releases)->map(function (array $release): string {
+        expect($release['time'] ?? null)->toMatch('/^([01]\d|2[0-3]):[0-5]\d$/');
+
+        return $release['date'].' '.$release['time'];
+    });
+
+    expect($moments->all())->toBe($moments->sortDesc()->values()->all());
+});
+
+it('exposes release and change timestamps on the admin changelog page', function (): void {
+    $this->artisan('changelog:sync', ['--path' => changelogFile([
+        ['version' => '0.2.0', 'date' => '2026-10-16', 'time' => '20:42', 'changes' => [changelogChange('late'), changelogChange('fix', 'fix')]],
+        ['version' => '0.1.0', 'date' => '2026-10-16', 'time' => '08:15', 'changes' => [changelogChange('early')]],
+    ])])->assertSuccessful();
+
+    $this->actingAs($this->superadmin)->get('/admin/changelog')->assertInertia(fn (Assert $page) => $page
+        ->component('admin/changelog')
+        ->where('releases.0.version', '0.2.0')
+        ->where('releases.0.date', '2026-10-16T13:42:00+00:00')
+        ->where('releases.0.entries.0.published_at', '2026-10-16T13:42:00+00:00')
+        ->where('releases.1.version', '0.1.0')
+        ->where('releases.1.date', '2026-10-16T01:15:00+00:00'));
+});
 
 it('orders versions by Semantic Versioning precedence', function (string $lower, string $higher): void {
     expect(ChangelogEntry::compareVersions($lower, $higher))->toBe(-1)

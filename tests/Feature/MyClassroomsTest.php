@@ -9,6 +9,7 @@ use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function (): void {
+    $this->withoutVite();
     $this->student = User::factory()->create();
     $this->classroom = Classroom::factory()->create(['name' => 'Kelas Saya']);
     $this->member = $this->classroom->members()->create(['user_id' => $this->student->id, 'joined_at' => now()]);
@@ -113,4 +114,40 @@ it('does not show another student their classmate detail', function (): void {
 it('requires login', function (): void {
     $this->get('/my-classrooms')->assertRedirect();
     $this->get("/my-classrooms/{$this->member->id}")->assertRedirect();
+});
+
+it('groups the classrooms a student joined by teacher on the teachers page', function (): void {
+    $teacher = $this->classroom->teacher;
+    $teacher->playerProfile()->updateOrCreate([], ['nickname' => 'Bu Sari', 'school_name' => 'SDN Bogor 1', 'birth_date' => now()->subYears(30)->toDateString(), 'color' => 'amber', 'accessory' => 'none']);
+    $second = Classroom::factory()->create(['teacher_id' => $teacher->id, 'name' => 'Kelas Dua']);
+    $second->members()->create(['user_id' => $this->student->id, 'joined_at' => now()->addMinute(), 'left_at' => now()->addHour()]);
+    $otherTeacherClass = Classroom::factory()->create(['name' => 'Kelas Pak Budi']);
+    $otherTeacherClass->members()->create(['user_id' => $this->student->id, 'joined_at' => now()->subDay()]);
+    Classroom::factory()->create(['teacher_id' => $teacher->id, 'name' => 'Kelas Tidak Diikuti']);
+
+    $this->actingAs($this->student)->get('/my-classrooms/teachers')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('portal/my-teachers', false)
+            ->has('teachers', 2)
+            ->where('teachers.0.teacher.id', $teacher->id)
+            ->where('teachers.0.teacher.name', 'Bu Sari')
+            ->where('teachers.0.teacher.school', 'SDN Bogor 1')
+            ->where('teachers.0.totals.classes', 2)
+            ->where('teachers.0.totals.points', 40)
+            ->where('teachers.0.totals.accuracy', 75)
+            ->where('teachers.0.classes.0.classroom.name', 'Kelas Dua')
+            ->where('teachers.0.classes.0.left', true)
+            ->where('teachers.0.classes.1.classroom.name', 'Kelas Saya')
+            ->where('teachers.1.teacher.id', $otherTeacherClass->teacher_id)
+            ->where('teachers.1.totals.classes', 1));
+});
+
+it('shows an empty teachers page and requires sign in', function (): void {
+    $this->actingAs(User::factory()->create())->get('/my-classrooms/teachers')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->has('teachers', 0));
+
+    auth()->logout();
+    $this->get('/my-classrooms/teachers')->assertRedirect('/login');
 });

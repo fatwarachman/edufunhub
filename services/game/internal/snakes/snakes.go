@@ -278,7 +278,8 @@ func (h *Hub) Offline(uid int64) { h.rooms.Offline(uid) }
 func (h *Hub) Peers(uid int64) []int64 { return h.rooms.Peers(uid) }
 
 // Counts reports open rooms and seated players for the server monitor.
-func (h *Hub) Counts() (rooms, players int) { return h.rooms.Counts() }
+func (h *Hub) Counts() (rooms, players int)      { return h.rooms.Counts() }
+func (h *Hub) RoomsSummary() []lobby.RoomSummary { return h.rooms.RoomsSummary() }
 
 // TakeResults drains results waiting to be reported.
 func (h *Hub) TakeResults() []Result {
@@ -704,7 +705,7 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 		"durations": Durations, "finish_bonus": FinishBonus,
 		"roll_ms": RollTime.Milliseconds(),
 	}
-	h.rooms.View(claims.Subject, func(r *room) {
+	h.rooms.ViewFor(claims, func(r *room) {
 		if r == nil {
 			return
 		}
@@ -755,7 +756,7 @@ func (h *Hub) State(claims auth.Claims, now time.Time) Message {
 			}
 			q := Message{
 				"id": fmt.Sprintf("%s-%d", r.Pin, g.round), "subject": g.question.Subject, "worth": g.question.Worth(),
-				"text": g.question.Prompt.Get(locale), "media": g.question.Media(), "options": opts, "target": g.landing,
+				"text": g.question.Prompt.Get(locale), "media": g.question.Media(), "options": opts, "option_media": g.question.OptionMedia(), "target": g.landing,
 			}
 			if g.step == StepQuestion {
 				q["remaining_ms"] = max(0, (answerTime(g) - elapsed).Milliseconds())

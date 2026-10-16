@@ -4,6 +4,7 @@ use App\Http\Controllers\AbilityController;
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\AndroidApkController;
+use App\Http\Controllers\AndroidApkInfoController;
 use App\Http\Controllers\AndroidAssetLinksController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\LoginController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\ClassroomReportController;
 use App\Http\Controllers\ClassroomWorldChatController;
 use App\Http\Controllers\ClassroomWorldController;
 use App\Http\Controllers\CrosswordController;
+use App\Http\Controllers\CurrentPageController;
 use App\Http\Controllers\EconomyHeistController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\FlagQuestController;
@@ -56,6 +58,7 @@ use App\Http\Controllers\SubjectDetailController;
 use App\Http\Controllers\Teacher\ClassroomAnnouncementController as TeacherClassroomAnnouncementController;
 use App\Http\Controllers\Teacher\ClassroomController;
 use App\Http\Controllers\Teacher\ClassroomWorldController as TeacherClassroomWorldController;
+use App\Http\Controllers\Teacher\TeacherAiAssistantController;
 use App\Http\Controllers\Teacher\TeacherQuestionController;
 use App\Http\Controllers\Teacher\TeacherTopicController;
 use App\Http\Controllers\TeacherRequestController;
@@ -82,10 +85,14 @@ Route::get('/about', function () {
 
 Route::get('/.well-known/assetlinks.json', AndroidAssetLinksController::class)->name('android.asset-links');
 Route::get('/download/edufunhub.apk', AndroidApkController::class)->middleware('throttle:20,1,android.apk')->name('android.apk');
+Route::get('/download/apk', AndroidApkController::class)->middleware('throttle:20,1,android.apk')->name('android.apk.latest');
+Route::get('/download/apk.json', AndroidApkInfoController::class)->middleware('throttle:60,1,android.apk.info')->name('android.apk.info');
 
 Route::get('/landing/stats', LandingStatsController::class)->middleware('throttle:60,1,landing.stats')->name('landing.stats');
 Route::get('/player-details/regencies', RegencyController::class)->middleware('throttle:30,1,player-details.regencies')->name('player-details.regencies');
 Route::get('/player-details/school-list', SchoolListController::class)->middleware('throttle:120,1,player-details.school-list')->name('player-details.school-list');
+
+Route::post('/current-page', CurrentPageController::class)->middleware(['auth', 'throttle:60,1,current-page'])->name('current-page.store');
 
 Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): void {
     Route::get('/teacher-request', [TeacherRequestController::class, 'create'])->name('teacher-request.create');
@@ -133,6 +140,7 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::get('/portal/classrooms/{pin}/announcement', [ClassroomAnnouncementController::class, 'show'])->where('pin', '[0-9]{6}')->middleware('throttle:60,1,classrooms.announcement')->name('classrooms.announcement');
     Route::get('/portal/classrooms/report/{member}', [ClassroomReportController::class, 'show'])->name('classrooms.report');
     Route::get('/my-classrooms', [MyClassroomController::class, 'index'])->name('my-classrooms.index');
+    Route::get('/my-classrooms/teachers', [MyClassroomController::class, 'teachers'])->name('my-classrooms.teachers');
     Route::get('/my-classrooms/{member}', [MyClassroomController::class, 'show'])->whereNumber('member')->middleware('throttle:60,1,my-classrooms.show')->name('my-classrooms.show');
     Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
     Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('throttle:feedback')->name('feedback.store');
@@ -171,6 +179,7 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::get('/questions/template', [TeacherQuestionController::class, 'template'])->name('questions.template');
         Route::resource('questions', TeacherQuestionController::class)->except(['store', 'update']);
         Route::post('/questions', [TeacherQuestionController::class, 'store'])->middleware('throttle:30,1,teacher.questions.store')->name('questions.store');
+        Route::post('/questions/media', [QuestionMediaController::class, 'store'])->middleware('throttle:30,1,teacher.questions.media')->name('questions.media.store');
         Route::put('/questions/{question}', [TeacherQuestionController::class, 'update'])->middleware('throttle:60,1,teacher.questions.update')->name('questions.update');
 
         // Teacher topics
@@ -179,7 +188,13 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::put('/topics/{topic}', [TeacherTopicController::class, 'update'])->middleware('throttle:60,1,teacher.topics.update')->name('topics.update');
         Route::delete('/topics/{topic}', [TeacherTopicController::class, 'destroy'])->middleware('throttle:30,1,teacher.topics.destroy')->name('topics.destroy');
 
+        Route::get('/ai-assistant', [TeacherAiAssistantController::class, 'index'])->name('ai-assistant.index');
+        Route::post('/ai-assistant/messages', [TeacherAiAssistantController::class, 'store'])->middleware('throttle:10,1,teacher.ai-assistant.messages')->name('ai-assistant.messages');
+        Route::get('/ai-assistant/conversations/{conversation}', [TeacherAiAssistantController::class, 'show'])->whereUuid('conversation')->name('ai-assistant.conversations.show');
+        Route::delete('/ai-assistant/conversations/{conversation}', [TeacherAiAssistantController::class, 'destroy'])->whereUuid('conversation')->middleware('throttle:30,1,teacher.ai-assistant.conversations')->name('ai-assistant.conversations.destroy');
+
         // Teacher classrooms
+        Route::get('/classrooms/history', [ClassroomController::class, 'history'])->name('classrooms.history');
         Route::get('/classrooms', [ClassroomController::class, 'index'])->name('classrooms.index');
         Route::get('/classrooms/create', [ClassroomController::class, 'create'])->name('classrooms.create');
         Route::post('/classrooms', [ClassroomController::class, 'store'])->middleware('throttle:10,1,classrooms.store')->name('classrooms.store');

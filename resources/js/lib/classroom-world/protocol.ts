@@ -117,7 +117,7 @@ export interface WorldProps {
     me: { id: number; name: string; character: CharacterLook | null };
     /** Classroom teacher (absent on old servers). */
     teacher?: { id: number; name: string; character: CharacterLook | null };
-    role?: 'student' | 'teacher';
+    role?: 'student' | 'teacher' | 'observer';
     /** User ids of the other people of this classroom (teacher + members). */
     people?: number[];
     /** Waiting direct chats of this classroom (GET; POST `/reply`, `/read`). */

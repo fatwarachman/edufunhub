@@ -3,8 +3,11 @@
 use App\Models\CrosswordWord;
 use App\Models\GameMatch;
 use App\Models\User;
+use App\Services\GameServiceSigner;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Activitylog\Models\Activity;
 
 beforeEach(function (): void {
     config(['scout.driver' => 'null', 'game-service.secret' => str_repeat('h', 40)]);
@@ -152,6 +155,71 @@ it('shows match history and who a player met, with head-to-head records', functi
     $this->get('/admin/matches?search=111111')->assertInertia(fn (Assert $page) => $page->where('matches.total', 1));
 });
 
+it('loads signed live rooms for super admins and keeps non-super admins blocked', function (): void {
+    $admin = User::factory()->create(['is_superadmin' => true]);
+
+    Http::fake([
+        config('game-service.live_rooms_url') => Http::response([
+            'rooms' => [
+                ['game' => 'snakes-and-ladders', 'pin' => '482913', 'phase' => 'playing', 'players' => 2, 'state' => ['secret' => true]],
+            ],
+        ]),
+    ]);
+
+    $this->actingAs($admin)->get('/admin/matches')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('admin/matches/index')
+        ->where('liveRooms.0.game', 'snakes-and-ladders')
+        ->where('liveRooms.0.pin', '482913')
+        ->where('liveRooms.0.phase', 'playing')
+        ->where('liveRooms.0.players', 2)
+        ->missing('liveRooms.0.state'));
+
+    Http::assertSent(fn ($request): bool => $request->url() === config('game-service.live_rooms_url')
+        && $request->hasHeader('X-Game-Timestamp')
+        && hash_equals(
+            app(GameServiceSigner::class)->sign($request->header('X-Game-Timestamp')[0], ''),
+            $request->header('X-Game-Signature')[0],
+        ));
+
+    $this->actingAs(User::factory()->create())->get('/admin/matches')->assertForbidden();
+});
+
 it('keeps match history for super admins only', function (): void {
     $this->actingAs(User::factory()->create())->get('/admin/matches')->assertForbidden();
+});
+
+it('lets super admins watch a live room read-only through a signed spectate request', function (): void {
+    $admin = User::factory()->create(['is_superadmin' => true]);
+    $snapshot = ['t' => 'snakes_state', 'pin' => '482913', 'phase' => 'playing', 'you' => -1, 'spectator' => true, 'players' => [['user_id' => 5, 'name' => 'Budi', 'score' => 30]]];
+    Http::fake([config('game-service.spectate_url').'*' => Http::response(['room' => $snapshot])]);
+
+    $this->actingAs($admin)->get('/admin/matches/live/snakes-and-ladders/482913')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/matches/live')
+            ->where('game', 'snakes-and-ladders')
+            ->where('pin', '482913')
+            ->where('room.spectator', true)
+            ->where('room.players.0.name', 'Budi')
+            ->where('stateUrl', route('admin.matches.live.state', ['game' => 'snakes-and-ladders', 'pin' => '482913'])));
+
+    $this->actingAs($admin)->getJson('/admin/matches/live/snakes-and-ladders/482913/state')
+        ->assertOk()->assertJsonPath('room.pin', '482913');
+
+    Http::assertSent(fn ($request): bool => str_starts_with($request->url(), config('game-service.spectate_url'))
+        && $request['game'] === 'snakes-and-ladders' && $request['pin'] === '482913'
+        && hash_equals(app(GameServiceSigner::class)->sign($request->header('X-Game-Timestamp')[0], ''), $request->header('X-Game-Signature')[0]));
+
+    expect(Activity::query()->where('description', 'Watched live match')->count())->toBe(1);
+});
+
+it('shows an ended room as unavailable and keeps spectating admin only', function (): void {
+    $admin = User::factory()->create(['is_superadmin' => true]);
+    Http::fake([config('game-service.spectate_url').'*' => Http::response(['room' => null], 404)]);
+
+    $this->actingAs($admin)->get('/admin/matches/live/ping-pong/111111')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('room', null));
+    $this->actingAs($admin)->get('/admin/matches/live/ping-pong/12ab')->assertNotFound();
+
+    $this->actingAs(User::factory()->create())->get('/admin/matches/live/ping-pong/111111')->assertForbidden();
+    $this->actingAs(User::factory()->create())->getJson('/admin/matches/live/ping-pong/111111/state')->assertForbidden();
 });

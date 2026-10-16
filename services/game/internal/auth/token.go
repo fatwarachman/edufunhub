@@ -49,9 +49,15 @@ type Claims struct {
 	Seats int `json:"seats,omitempty"`
 	// TeacherID is the classroom owner (0 = unknown). A token whose Subject
 	// equals TeacherID is the teacher's own token. Verify maps negatives to 0.
-	TeacherID int64  `json:"teacher_id,omitempty"`
-	Expires   int64  `json:"exp"`
-	Nonce     string `json:"nonce"`
+	TeacherID int64 `json:"teacher_id,omitempty"`
+	Observer  bool  `json:"observer,omitempty"`
+	// Spectate is the PIN of the live room an admin watches read-only
+	// ("" = normal player token). A spectator connection is never seated,
+	// sends no gameplay input and never earns points. Verify accepts only
+	// 6 digit PINs.
+	Spectate string `json:"spectate,omitempty"`
+	Expires  int64  `json:"exp"`
+	Nonce    string `json:"nonce"`
 }
 
 // MaxBooths caps the classroom world booths carried in a token.
@@ -61,6 +67,8 @@ const MaxBooths = 10
 const MaxSeats = 200
 
 var boothKey = regexp.MustCompile(`^[a-z0-9-]{1,40}$`)
+
+var spectatePin = regexp.MustCompile(`^[0-9]{6}$`)
 
 // cleanBooths keeps valid, unique game keys in order, at most MaxBooths.
 func cleanBooths(in []string) []string {
@@ -122,6 +130,9 @@ func Verify(token string, secret []byte, game string, now time.Time) (Claims, er
 	}
 	name := strings.TrimSpace(claims.Name)
 	if claims.Subject <= 0 || claims.Game != game || claims.Grade < 0 || claims.Grade > 12 || name == "" || len([]rune(name)) > 60 {
+		return claims, ErrClaims
+	}
+	if claims.Spectate != "" && !spectatePin.MatchString(claims.Spectate) {
 		return claims, ErrClaims
 	}
 	claims.Name = name

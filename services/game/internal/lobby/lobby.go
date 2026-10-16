@@ -747,6 +747,46 @@ func (h *Hub[S, P]) Peers(uid int64) []int64 {
 	return nil
 }
 
+// RoomSummary describes one live room without exposing game state.
+type RoomSummary struct {
+	Pin     string
+	Phase   string
+	Players int
+}
+
+// RoomsSummary returns every non-finished room.
+func (h *Hub[S, P]) RoomsSummary() []RoomSummary {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	out := make([]RoomSummary, 0, len(h.rooms))
+	for _, r := range h.rooms {
+		if r.Phase == PhaseDone || r.ClassroomID > 0 {
+			continue
+		}
+		out = append(out, RoomSummary{Pin: r.Pin, Phase: r.Phase, Players: r.Active()})
+	}
+	return out
+}
+
+// ViewFor calls fn under the lock with the room claims looks at: for a
+// spectator token (claims.Spectate, admin monitoring) the room with that
+// PIN, else the viewer's own room (like View). Spectators are never seated
+// or counted as members, so watching never changes the room. Classroom
+// rooms are hidden from spectators like from PIN lookup (fn gets nil).
+func (h *Hub[S, P]) ViewFor(claims auth.Claims, fn func(r *Room[S, P])) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	if claims.Spectate == "" {
+		fn(h.roomOf(claims.Subject))
+		return
+	}
+	r := h.rooms[claims.Spectate]
+	if r != nil && r.ClassroomID > 0 {
+		r = nil
+	}
+	fn(r)
+}
+
 // Counts reports open rooms and seated account holders.
 func (h *Hub[S, P]) Counts() (rooms, players int) {
 	h.mu.Lock()

@@ -1,8 +1,10 @@
 {
     "title": "Asisten AI",
-    "subtitle": "Tanya data pemain dan operasional EduFunHub.",
+    "subtitle": "Bantu kelola soal, kelas, siswa, dan nilai milikmu.",
+    "scopeNote": "Tanya Aku AI hanya membaca kelas, siswa, nilai, dan soal milikmu.",
     "newChat": "Percakapan baru",
     "readOnly": "Khusus superadmin · hanya baca",
+    "teacherReadOnly": "Khusus guru · hanya baca",
     "model": "Model",
     "notConfigured": "Hubungkan penyedia AI dan pilih model sebelum mulai bertanya.",
     "settings": "Pengaturan AI",
@@ -38,5 +40,36 @@
     "closeHistory": "Tutup riwayat",
     "openHistory": "Buka riwayat",
     "untitled": "Percakapan tanpa judul",
-    "savedHistory": "Percakapan tersimpan di akun superadmin Anda"
+    "savedHistory": "Percakapan tersimpan di akun superadmin Anda",
+    "teacherSavedHistory": "Percakapan tersimpan di akun guru Anda",
+    "teacherTitle": "Tanya Aku",
+    "teacherSubtitle": "Asisten AI untuk guru: cara pakai aplikasi, membuat soal dan kelas, serta nilai siswa di kelasmu.",
+    "teacherWelcome": "Tanya apa saja tentang tugasmu sebagai guru.",
+    "teacherDescription": "Tanya Aku hanya menjawab seputar aplikasi EduFunHub dan tugas guru: cara membuat soal, mengatur kelas, melihat nilai dan analisa siswa di kelasmu sendiri. Data kelas dan siswa guru lain tidak bisa dibuka.",
+    "teacherSuggestions": [
+        "Bagaimana cara membuat soal bergambar untuk kelas 1 SD?",
+        "Bagaimana cara membuat ruang kelas dan membagikan PIN ke siswa?",
+        "Bagaimana nilai siswa di kelas terakhirku?",
+        "Soal mana yang paling sering dijawab salah oleh siswaku?",
+        "Bagaimana mengatur tingkat kesulitan soal di ruang kelas?",
+        "Siapa saja siswa yang pernah ikut kelasku?"
+    ],
+    "teacherPlaceholder": "Contoh: bagaimana cara mengimpor soal dari template?",
+    "teacherPageLinks": {
+        "/teacher/questions": "Bank soal",
+        "/teacher/questions/create": "Buat soal",
+        "/teacher/questions/import": "Impor soal",
+        "/teacher/questions/template": "Template Excel",
+        "/teacher/topics": "Materi",
+        "/teacher/classrooms": "Ruang kelas",
+        "/teacher/classrooms/create": "Buat ruang kelas",
+        "/teacher/classrooms/history": "Riwayat kelas",
+        "/teacher/ai-assistant": "Tanya Aku AI",
+        "/my-classrooms": "Kelasku",
+        "/my-classrooms/teachers": "Guru & kelasku",
+        "/profile": "Profil",
+        "/dashboard": "Beranda"
+    },
+    "teacherOpenClassroom": "Detail kelas",
+    "teacherOpenQuestion": "Detail soal"
 }

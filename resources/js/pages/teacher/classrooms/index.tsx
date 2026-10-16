@@ -1,4 +1,3 @@
-import { NavButton } from '@/components/site-nav';
 import {
     EmptyBox,
     GameChip,
@@ -10,8 +9,9 @@ import {
     type ClassroomStatus,
     type Paginated,
 } from '@/components/classroom/types';
-import { SuccessNotice } from '@/components/teacher/teacher-ui';
+import { NavButton } from '@/components/site-nav';
 import { TeacherTabs } from '@/components/teacher/teacher-tabs';
+import { SuccessNotice } from '@/components/teacher/teacher-ui';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
@@ -76,6 +76,15 @@ export default function ClassroomIndex({
             </div>
 
             <TeacherTabs active="classrooms" />
+
+            <Link
+                href="/teacher/classrooms/history"
+                className="inline-flex min-h-11 items-center gap-2 self-start rounded-xl border-2 border-[#151b2e] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#151b2e] hover:bg-[#fff9e6]"
+                data-testid="classroom-history-link"
+            >
+                <Users className="size-4" aria-hidden="true" />
+                {t('classroom.history.title')}
+            </Link>
 
             <SuccessNotice />
 

@@ -467,6 +467,15 @@ export default function ClassroomsIndex({
                                                                 classroom.status
                                                             }
                                                         />
+                                                        {classroom.status === 'active' && (
+                                                            <Link
+                                                                href={`${URL}/${classroom.id}/world`}
+                                                                className="text-xs font-semibold text-primary hover:underline"
+                                                                data-testid="classroom-monitor-link"
+                                                            >
+                                                                {tr('Monitor')}
+                                                            </Link>
+                                                        )}
                                                         <span className="font-mono text-xs text-muted-foreground">
                                                             {tr('PIN')}{' '}
                                                             {classroom.pin}
@@ -565,6 +574,15 @@ export default function ClassroomsIndex({
                                                                 classroom.status
                                                             }
                                                         />
+                                                        {classroom.status === 'active' && (
+                                                            <Link
+                                                                href={`${URL}/${classroom.id}/world`}
+                                                                className="text-xs font-semibold text-primary hover:underline"
+                                                                data-testid="classroom-monitor-link"
+                                                            >
+                                                                {tr('Monitor')}
+                                                            </Link>
+                                                        )}
                                                         <span className="font-mono text-xs text-muted-foreground">
                                                             {tr('PIN')}{' '}
                                                             {classroom.pin}

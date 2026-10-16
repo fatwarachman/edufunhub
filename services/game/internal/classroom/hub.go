@@ -98,6 +98,7 @@ type Room struct {
 	// (0 = unknown). The player with this id is the teacher avatar.
 	teacherID int64
 	players   map[int64]*Player
+	observers map[int64]*Client
 	geo       Geometry
 	solids    []Box
 	stop      chan struct{}
@@ -156,6 +157,9 @@ func (h *Hub) Join(claims auth.Claims, c *Client) error {
 	if claims.Classroom <= 0 {
 		return errors.New("no classroom")
 	}
+	if claims.Observer {
+		return h.joinObserver(claims, c)
+	}
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	now := h.cfg.Now()
@@ -164,7 +168,7 @@ func (h *Hub) Join(claims auth.Claims, c *Client) error {
 		// The first joiner's seats claim sizes the room; later joiners keep
 		// it until the room empties (empty rooms are dropped).
 		geo := Layout(claims.Booths, claims.Seats)
-		room = &Room{ID: claims.Classroom, players: map[int64]*Player{}, geo: geo, solids: geo.Solids(), stop: make(chan struct{}), lastStep: now}
+		room = &Room{ID: claims.Classroom, players: map[int64]*Player{}, observers: map[int64]*Client{}, geo: geo, solids: geo.Solids(), stop: make(chan struct{}), lastStep: now}
 	}
 	p, existing := room.players[claims.Subject]
 	if !existing && len(room.players) >= MaxPlayers {
@@ -208,6 +212,32 @@ func (h *Hub) Join(claims auth.Claims, c *Client) error {
 	room.broadcast(room.roster())
 	room.broadcast(room.state())
 	room.lastState = now
+	return nil
+}
+
+func (h *Hub) joinObserver(claims auth.Claims, c *Client) error {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	room, ok := h.rooms[claims.Classroom]
+	if !ok {
+		now := h.cfg.Now()
+		geo := Layout(claims.Booths, claims.Seats)
+		room = &Room{ID: claims.Classroom, players: map[int64]*Player{}, observers: map[int64]*Client{}, geo: geo, solids: geo.Solids(), stop: make(chan struct{}), lastState: now, lastStep: now}
+		h.rooms[room.ID] = room
+		if !h.cfg.Manual {
+			go h.run(room)
+		}
+	}
+	if claims.TeacherID > 0 {
+		room.teacherID = claims.TeacherID
+	}
+	if old := room.observers[claims.Subject]; old != nil {
+		old.end()
+	}
+	room.observers[claims.Subject] = c
+	c.push(h.welcome(room, nil))
+	c.push(room.roster())
+	c.push(room.state())
 	return nil
 }
 
@@ -281,12 +311,20 @@ func (r *Room) teacherSeat() (float64, float64) {
 
 func (h *Hub) welcome(room *Room, p *Player) Message {
 	tx, tz := room.teacherSeat()
+	you := int64(0)
+	if p != nil {
+		you = p.ID
+	}
+	spawn := map[string]float64{"x": round2(room.geo.Spawn.X), "z": round2(room.geo.Spawn.Z)}
+	if p != nil {
+		spawn = map[string]float64{"x": round2(p.X), "z": round2(p.Z)}
+	}
 	return Message{
-		"t": "welcome", "you": p.ID,
+		"t": "welcome", "you": you,
 		"room":         room.geo.Room,
 		"seats":        room.geo.Seats,
 		"entry":        room.geo.Spawn,
-		"spawn":        map[string]float64{"x": round2(p.X), "z": round2(p.Z)},
+		"spawn":        spawn,
 		"desks":        room.geo.Desks,
 		"teacher_desk": room.geo.TeacherDesk,
 		"booths":       room.geo.Booths,
@@ -303,6 +341,14 @@ func (h *Hub) Leave(classroom, uid int64, c *Client) {
 	if !ok {
 		return
 	}
+	if observer, ok := room.observers[uid]; ok && observer == c {
+		delete(room.observers, uid)
+		if len(room.players) == 0 && len(room.observers) == 0 {
+			delete(h.rooms, room.ID)
+			close(room.stop)
+		}
+		return
+	}
 	if p, ok := room.players[uid]; ok && p.client == c {
 		h.remember(room, p, h.cfg.Now())
 		delete(room.players, uid)
@@ -312,7 +358,7 @@ func (h *Hub) Leave(classroom, uid int64, c *Client) {
 
 // afterRemove sends the new roster or drops an empty room. Caller holds mu.
 func (h *Hub) afterRemove(room *Room) {
-	if len(room.players) == 0 {
+	if len(room.players) == 0 && len(room.observers) == 0 {
 		delete(h.rooms, room.ID)
 		close(room.stop)
 		return
@@ -351,6 +397,18 @@ func (h *Hub) Kick(classroom, user int64) int {
 		delete(room.players, id)
 		n++
 	}
+	if user == 0 {
+		for id, c := range room.observers {
+			c.push(Message{"t": "kicked", "reason": reason})
+			c.end()
+			delete(room.observers, id)
+		}
+		if n == 0 {
+			delete(h.rooms, room.ID)
+			close(room.stop)
+			return 0
+		}
+	}
 	if n > 0 {
 		h.afterRemove(room)
 	}
@@ -383,6 +441,9 @@ func (h *Hub) Handle(classroom, uid int64, c *Client, in Inbound) {
 	}()
 	room, ok := h.rooms[classroom]
 	if !ok {
+		return
+	}
+	if _, observer := room.observers[uid]; observer {
 		return
 	}
 	p, ok := room.players[uid]
@@ -566,6 +627,9 @@ func (r *Room) state() Message {
 func (r *Room) broadcast(m Message) {
 	for _, p := range r.players {
 		p.client.push(m)
+	}
+	for _, c := range r.observers {
+		c.push(m)
 	}
 }
 

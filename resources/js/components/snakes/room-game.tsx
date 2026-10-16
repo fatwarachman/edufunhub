@@ -833,6 +833,7 @@ export function RoomGame({
                             text: state.question.text,
                             media: state.question.media,
                             options: state.question.options,
+                            option_media: state.question.option_media,
                         }}
                         dice={state.dice ?? 0}
                         target={state.question.target}

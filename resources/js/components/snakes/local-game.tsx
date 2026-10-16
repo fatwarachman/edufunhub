@@ -464,6 +464,7 @@ export const LocalGame = forwardRef<
                         level: question.level,
                         text: question.question,
                         options: question.options,
+                        option_media: question.option_media,
                     }}
                     dice={dice}
                     target={target}

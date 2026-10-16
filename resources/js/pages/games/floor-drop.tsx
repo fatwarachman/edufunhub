@@ -19,7 +19,11 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { QuestionMedia } from '@/components/question-media';
+import {
+    OptionContent,
+    optionImage,
+    QuestionMedia,
+} from '@/components/question-media';
 import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
@@ -1104,9 +1108,13 @@ function HostTile({
                         LETTERS[index]
                     )}
                 </span>
-                <span className="min-w-0 flex-1 self-center font-display text-xl leading-snug font-black break-words sm:text-3xl">
-                    {text}
-                </span>
+                <OptionContent
+                    text={text}
+                    image={optionImage(state.option_media, index)}
+                    size="sm"
+                    className="self-center"
+                    textClassName="flex-1 self-center font-display text-xl leading-snug font-black sm:text-3xl"
+                />
                 {mode !== 'open' && (
                     <span className="shrink-0 rounded-full border-2 border-white bg-white/15 px-2.5 py-0.5 text-sm font-black tabular-nums">
                         {count}
@@ -1629,9 +1637,15 @@ function PlayerScreen({
                                         LETTERS[index]
                                     )}
                                 </span>
-                                <span className="w-full text-center font-display text-3xl leading-tight font-black break-words sm:text-4xl">
-                                    {text}
-                                </span>
+                                <OptionContent
+                                    text={text}
+                                    image={optionImage(
+                                        state.option_media,
+                                        index,
+                                    )}
+                                    className="w-full"
+                                    textClassName="w-full text-center font-display text-3xl leading-tight font-black sm:text-4xl"
+                                />
                                 {chosen && (
                                     <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full border-2 border-[#1f2a44] bg-[#ffd93d] px-2 py-0.5 text-[11px] font-black text-[#1f2a44]">
                                         <Check

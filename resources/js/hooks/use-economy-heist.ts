@@ -1,4 +1,7 @@
-import { type QuestionMediaData } from '@/components/question-media';
+import {
+    type OptionMediaData,
+    type QuestionMediaData,
+} from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { useCallback, useReducer } from 'react';
@@ -50,6 +53,7 @@ export interface HeistQuestion {
     media?: QuestionMediaData | null;
     subject: string;
     options: string[];
+    option_media?: OptionMediaData[] | null;
 }
 
 export interface HeistChest {

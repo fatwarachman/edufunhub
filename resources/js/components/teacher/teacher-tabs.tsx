@@ -1,14 +1,25 @@
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
-import { BookOpenCheck, Layers, School, type LucideIcon } from 'lucide-react';
+import {
+    BookOpenCheck,
+    Layers,
+    MessageCircleQuestion,
+    School,
+    type LucideIcon,
+} from 'lucide-react';
 
-export type TeacherTabKey = 'questions' | 'topics' | 'classrooms';
+export type TeacherTabKey = 'questions' | 'topics' | 'classrooms' | 'assistant';
 
 const TABS: { key: TeacherTabKey; href: string; icon: LucideIcon }[] = [
     { key: 'questions', href: '/teacher/questions', icon: BookOpenCheck },
     { key: 'topics', href: '/teacher/topics', icon: Layers },
     { key: 'classrooms', href: '/teacher/classrooms', icon: School },
+    {
+        key: 'assistant',
+        href: '/teacher/ai-assistant',
+        icon: MessageCircleQuestion,
+    },
 ];
 
 /** Section switcher shared by every teacher page (bank, topics, classrooms). */

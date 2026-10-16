@@ -15,6 +15,7 @@ import { ImpersonationBanner } from './components/impersonation-banner';
 import { ProfileWizard } from './components/profile-wizard';
 import { ToastProvider } from './components/ui/toast';
 import { initializeTheme } from './hooks/use-appearance';
+import { startCurrentPageTracking } from './lib/current-page';
 import i18n from './lib/i18n';
 import { initPwa } from './lib/pwa';
 import { startScreenTime } from './lib/screen-time';
@@ -94,6 +95,9 @@ createInertiaApp({
         }
 
         startScreenTime(props.initialPage.props as Record<string, unknown>);
+        startCurrentPageTracking(
+            props.initialPage.props as Record<string, unknown>,
+        );
 
         // Set initial document direction
         setDocumentDirection(locale);

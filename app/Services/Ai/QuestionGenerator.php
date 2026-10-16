@@ -7,6 +7,7 @@ use App\Models\Question;
 use App\Models\QuestionGeneration;
 use App\Models\Subject;
 use App\Models\SubjectTopic;
+use App\Services\QuestionVisual;
 use Closure;
 use Illuminate\Support\Str;
 use JsonException;
@@ -31,6 +32,13 @@ class QuestionGenerator
     private ?SubjectTopic $topic = null;
 
     private bool $topicSet = false;
+
+    /** Extra instruction for TK and SD: picture questions built from emoji. */
+    private const PICTURE_GUIDE = "Picture questions (TK and SD): make about half of the questions picture questions.\n"
+        ."- picture: a list of 1-20 emoji shown above the question, e.g. counting [\"🍎\",\"🍎\",\"🍎\"] for \"Ada berapa apel?\", or [\"🐘\"] for \"Hewan apa ini?\".\n"
+        ."- option_emoji: optional, one emoji per option in the same order (e.g. [\"🐟\",\"🐈\",\"🐔\",\"🐄\"]) when the answers are things that have an emoji.\n"
+        ."- Use only real single emoji, never letters or numbers inside picture/option_emoji. The question text must still make sense and must match the picture exactly (count carefully).\n"
+        ."- Leave picture and option_emoji empty for questions that do not need a picture.\n";
 
     public function __construct(private OpenAiCompatibleClient $client, private AiSettings $settings) {}
 
@@ -74,7 +82,7 @@ class QuestionGenerator
                 if ($created >= $count) {
                     break;
                 }
-                $clean = $this->clean($item);
+                $clean = $this->clean($item, self::picturesAllowed($grade));
                 if ($clean === null || $this->isDuplicate($clean['prompt_id'], $subject, $grade)) {
                     $skipped++;
 
@@ -125,6 +133,7 @@ class QuestionGenerator
         $gradeLabel = $grade === Question::KINDERGARTEN ? 'TK (kindergarten, age 4-6)' : "kelas {$grade} (grade {$grade})";
         $prompt = "Write {$count} new multiple choice questions.\nSubject: ".Subject::aiDescription($subject)."\nGrade: {$gradeLabel}\n"
             .($topic !== null ? $this->topicFocus($topic) : '')
+            .(self::picturesAllowed($grade) ? self::PICTURE_GUIDE : "Do not use emoji pictures (picture and option_emoji stay empty).\n")
             .'Difficulty: '.self::LEVEL_GUIDE[$level]."\n"
             .($avoid !== '' ? "Avoid these existing questions:\n{$avoid}\n" : '');
 
@@ -149,17 +158,22 @@ class QuestionGenerator
     }
 
     /**
-     * @return array{prompt_id: string, prompt_en: string, options: list<array{id: string, en: string}>, answer: int, hint_id: ?string, hint_en: ?string}|null
+     * @return array{prompt_id: string, prompt_en: ?string, visual: array<string, mixed>|null, options: list<array{id: string, en: string}>, answer: int, hint_id: ?string, hint_en: ?string}|null
      */
-    private function clean(mixed $item): ?array
+    private function clean(mixed $item, bool $pictures = false): ?array
     {
         if (! is_array($item)) {
             return null;
         }
+        $item = $pictures ? $this->withPictures($item) : $item;
         $text = fn (mixed $value, int $max): string => Str::limit(trim(strip_tags((string) (is_scalar($value) ? $value : ''))), $max, '');
         $promptId = $text($item['prompt_id'] ?? '', 500);
         $options = collect(is_array($item['options'] ?? null) ? $item['options'] : [])
-            ->map(fn ($option): array => ['id' => $text(is_array($option) ? ($option['id'] ?? '') : $option, 150), 'en' => $text(is_array($option) ? ($option['en'] ?? '') : '', 150)])
+            ->map(fn ($option): array => array_filter([
+                'id' => $text(is_array($option) ? ($option['id'] ?? '') : $option, 150),
+                'en' => $text(is_array($option) ? ($option['en'] ?? '') : '', 150),
+                'emoji' => is_array($option) ? ($option['emoji'] ?? null) : null,
+            ], fn (mixed $value): bool => $value !== null))
             ->values();
         $answer = filter_var($item['answer'] ?? null, FILTER_VALIDATE_INT);
 
@@ -170,14 +184,65 @@ class QuestionGenerator
             return null;
         }
 
+        $visual = $pictures && isset($item['visual']) ? $item['visual'] : null;
+        $optionsOut = $options->map(function (array $option): array {
+            $emoji = $option['emoji'] ?? null;
+            unset($option['emoji']);
+            if (is_string($emoji) && $emoji !== '') {
+                $option['id'] = trim($emoji.' '.$option['id']);
+                $option['en'] = trim($emoji.' '.$option['en']);
+            }
+
+            return $option;
+        });
+
         return [
             'prompt_id' => $promptId,
             'prompt_en' => $text($item['prompt_en'] ?? '', 500) ?: null,
-            'options' => $options->all(),
+            'visual' => $visual,
+            'options' => $optionsOut->all(),
             'answer' => $answer,
             'hint_id' => $text($item['hint_id'] ?? '', 300) ?: null,
             'hint_en' => $text($item['hint_en'] ?? '', 300) ?: null,
         ];
+    }
+
+    /** TK and SD (grades 0-6) may get emoji pictures; older grades stay text only. */
+    public static function picturesAllowed(int $grade): bool
+    {
+        return $grade >= Question::KINDERGARTEN && $grade <= 6;
+    }
+
+    /**
+     * Turns the writer's `picture` emoji list into a validated emoji visual and
+     * keeps one emoji per option; anything that is not a plain emoji is dropped.
+     *
+     * @param  array<string, mixed>  $item
+     * @return array<string, mixed>
+     */
+    private function withPictures(array $item): array
+    {
+        $isEmoji = fn (mixed $value): bool => is_string($value)
+            && ($value = trim($value)) !== ''
+            && mb_strlen($value) <= QuestionVisual::MAX_EMOJI_LENGTH
+            && preg_match('/[<>\p{L}\p{N}\s]/u', $value) !== 1
+            && preg_match('/\p{So}|\p{Sk}|[\x{1F000}-\x{1FAFF}]/u', $value) === 1;
+
+        $picture = array_values(array_filter(array_slice((array) ($item['picture'] ?? []), 0, QuestionVisual::MAX_EMOJI), $isEmoji));
+        $item['visual'] = $picture === [] ? null : QuestionVisual::normalize(['kind' => 'emoji', 'items' => $picture]);
+
+        if (is_array($item['options'] ?? null)) {
+            $emoji = (array) ($item['option_emoji'] ?? []);
+            $item['options'] = array_map(function (mixed $option, int $index) use ($emoji, $isEmoji): mixed {
+                if (is_array($option) && $isEmoji($emoji[$index] ?? null)) {
+                    $option['emoji'] = trim((string) $emoji[$index]);
+                }
+
+                return $option;
+            }, $item['options'], array_keys($item['options']));
+        }
+
+        return $item;
     }
 
     private function isDuplicate(string $prompt, string $subject, int $grade): bool

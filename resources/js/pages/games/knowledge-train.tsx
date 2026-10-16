@@ -10,7 +10,11 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { QuestionMedia } from '@/components/question-media';
+import {
+    OptionContent,
+    optionImage,
+    QuestionMedia,
+} from '@/components/question-media';
 import {
     BackButton,
     NavButton,
@@ -709,7 +713,15 @@ export default function KnowledgeTrain({
                                                     )}
                                                     data-testid={`train-option-${lane}`}
                                                 >
-                                                    {text}
+                                                    <OptionContent
+                                                        text={text}
+                                                        image={optionImage(
+                                                            state.question
+                                                                ?.option_media,
+                                                            lane,
+                                                        )}
+                                                        size="sm"
+                                                    />
                                                 </button>
                                             </li>
                                         ),

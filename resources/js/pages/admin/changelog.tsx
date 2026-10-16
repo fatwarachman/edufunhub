@@ -90,13 +90,28 @@ function tint(accent: string, percent: number): string {
     return `color-mix(in oklab, ${accent} ${percent}%, transparent)`;
 }
 
-function formatDate(value: string | null): string {
+/** Release times are recorded in WIB (Asia/Jakarta), the owner's timezone. */
+const RELEASE_TIME_ZONE = 'Asia/Jakarta';
+
+/** Date + time in WIB, e.g. "16 Okt 2026, 20.42 WIB". */
+function formatDateTime(value: string | null): string {
     if (!value) return '—';
-    return new Date(value).toLocaleDateString(adminLocale(), {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '—';
+    const locale = adminLocale();
+    const day = date.toLocaleDateString(locale, {
         day: 'numeric',
-        month: 'long',
+        month: 'short',
         year: 'numeric',
+        timeZone: RELEASE_TIME_ZONE,
     });
+    const time = date.toLocaleTimeString(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+        timeZone: RELEASE_TIME_ZONE,
+    });
+    return `${day}, ${time} WIB`;
 }
 
 /** English copy when the panel is in English and the entry has it. */
@@ -271,7 +286,7 @@ export default function ChangelogIndex({
                             >
                                 <Panel
                                     title={`v${release.version}`}
-                                    description={formatDate(release.date)}
+                                    description={formatDateTime(release.date)}
                                     icon={Tag}
                                     actions={
                                         <div className="flex flex-wrap items-center gap-1.5">
@@ -467,6 +482,15 @@ function EntryRow({
                 <p className="text-sm break-words whitespace-pre-line text-muted-foreground">
                     {localized(entry.body, entry.body_en)}
                 </p>
+                {(entry.published_at ?? entry.created_at) && (
+                    <time
+                        dateTime={entry.published_at ?? entry.created_at ?? ''}
+                        className="text-xs text-muted-foreground/80 tabular-nums"
+                        data-testid={`changelog-entry-time-${entry.id}`}
+                    >
+                        {formatDateTime(entry.published_at ?? entry.created_at)}
+                    </time>
+                )}
             </div>
             <div className="flex shrink-0 items-center gap-0.5 self-end sm:self-start">
                 {entry.recorded ? (

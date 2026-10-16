@@ -1,5 +1,9 @@
 import SnakesChallenge from '@/components/flag-quest/snakes-challenge';
-import { QuestionMedia } from '@/components/question-media';
+import {
+    OptionContent,
+    optionImage,
+    QuestionMedia,
+} from '@/components/question-media';
 import { useTranslations } from '@/hooks/use-translations';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import type { ChallengeState } from '@/lib/flag-quest/world';
@@ -169,9 +173,13 @@ export default function ChallengeDialog({
                             <span className="grid size-7 shrink-0 place-items-center rounded-lg border-2 border-[#151b2e] bg-[#ffd93d] text-sm">
                                 {String.fromCharCode(65 + index)}
                             </span>
-                            <span className="min-w-0 break-words">
-                                {option}
-                            </span>
+                            <OptionContent
+                                text={option}
+                                image={optionImage(
+                                    challenge.question?.option_media,
+                                    index,
+                                )}
+                            />
                         </button>
                     ))}
                 </div>

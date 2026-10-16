@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class ClassroomGame extends Model
 {
     /** @var list<string> */
-    protected $fillable = ['classroom_id', 'game_key', 'sort_order', 'max_plays', 'subjects'];
+    protected $fillable = ['classroom_id', 'game_key', 'sort_order', 'max_plays', 'subjects', 'difficulty'];
 
     public const MIN_PLAYS = 1;
 
@@ -23,7 +23,7 @@ class ClassroomGame extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['classroom_id' => 'integer', 'sort_order' => 'integer', 'max_plays' => 'integer', 'subjects' => 'array'];
+        return ['classroom_id' => 'integer', 'sort_order' => 'integer', 'max_plays' => 'integer', 'subjects' => 'array', 'difficulty' => 'integer'];
     }
 
     /**

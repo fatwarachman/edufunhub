@@ -1,4 +1,7 @@
-import { type QuestionMediaData } from '@/components/question-media';
+import {
+    type OptionMediaData,
+    type QuestionMediaData,
+} from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { useCallback, useReducer } from 'react';
@@ -93,6 +96,7 @@ export interface TurboQuiz {
         worth: number;
     };
     options: string[];
+    option_media?: OptionMediaData[] | null;
     correct_index?: number;
     hint?: string;
 }
@@ -287,6 +291,8 @@ function reduce(state: TurboState, action: Action): TurboState {
                     remaining_ms: msg.remaining_ms as number,
                     question: msg.question as TurboQuiz['question'],
                     options: msg.options as string[],
+                    option_media:
+                        (msg.option_media as OptionMediaData[] | null) ?? null,
                 },
                 you: state.you
                     ? {

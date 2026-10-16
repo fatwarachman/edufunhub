@@ -1018,6 +1018,16 @@ export default function ClassroomShow({
                                 <ClassroomStatusPill
                                     status={classroom.status}
                                 />
+                                {classroom.status === 'active' && (
+                                    <Link
+                                        href={`/admin/classrooms/${classroom.id}/world`}
+                                        className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                                        data-testid="classroom-monitor-link"
+                                    >
+                                        <UsersRound className="size-3.5" aria-hidden="true" />
+                                        {tr('Monitor classroom')}
+                                    </Link>
+                                )}
                                 <ClassroomAiPill status={classroom.ai_status} />
                                 <span
                                     className="rounded-lg bg-muted px-2 py-0.5 font-mono text-sm font-semibold tracking-widest text-foreground"

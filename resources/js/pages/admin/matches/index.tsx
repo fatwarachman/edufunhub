@@ -11,11 +11,20 @@ import {
     MODE_LABELS,
     MatchCard,
     type MatchRow,
+    phaseLabel,
 } from '@/components/admin/match-history';
+import { useVisibleInterval } from '@/hooks/use-visible-interval';
 import AdminLayout from '@/layouts/admin-layout';
 import { tr } from '@/lib/admin-i18n';
-import { Head, router } from '@inertiajs/react';
-import { CalendarDays, DoorOpen, Search, Swords, Users } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import {
+    CalendarDays,
+    DoorOpen,
+    Eye,
+    Search,
+    Swords,
+    Users,
+} from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 
 interface Props {
@@ -23,6 +32,7 @@ interface Props {
     filters: { game?: string; mode?: string; search?: string };
     games: string[];
     modes: string[];
+    liveRooms: LiveRoom[];
     summary: {
         matches: number;
         multiplayer: number;
@@ -31,14 +41,31 @@ interface Props {
     };
 }
 
+interface LiveRoom {
+    game: string;
+    pin: string;
+    phase: string;
+    players: number;
+}
+
 export default function MatchesIndex({
     matches,
     filters,
     games,
     modes,
+    liveRooms: initialLiveRooms,
     summary,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
+
+    useVisibleInterval(() => {
+        router.reload({ only: ['liveRooms'] });
+    }, 5000);
+
+    const watchUrl = (room: LiveRoom): string =>
+        `/admin/matches/live/${room.game}/${room.pin}`;
+
+    const liveRooms = initialLiveRooms;
 
     const apply = (next: Record<string, string | undefined>) =>
         router.get(
@@ -97,6 +124,45 @@ export default function MatchesIndex({
                         color="bg-amber-500"
                     />
                 </div>
+
+                <Panel title={tr('Live matches')} icon={Swords}>
+                    {liveRooms.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            {tr('No ongoing rooms')}
+                        </p>
+                    ) : (
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {liveRooms.map((room) => (
+                                <div
+                                    key={`${room.game}-${room.pin}`}
+                                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 p-4"
+                                >
+                                    <div className="min-w-0">
+                                        <p className="truncate font-semibold text-foreground">
+                                            {gameLabel(room.game)}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            PIN {room.pin} ·{' '}
+                                            {phaseLabel(room.phase)} ·{' '}
+                                            {room.players} {tr('players')}
+                                        </p>
+                                    </div>
+                                    <Link
+                                        href={watchUrl(room)}
+                                        data-testid={`live-watch-${room.game}-${room.pin}`}
+                                        className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                                    >
+                                        <Eye
+                                            className="size-4"
+                                            aria-hidden="true"
+                                        />
+                                        {tr('Watch')}
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </Panel>
 
                 <Panel
                     title={tr('Matches')}

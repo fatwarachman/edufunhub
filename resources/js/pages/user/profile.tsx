@@ -23,12 +23,26 @@ import {
     Gamepad2,
     KeyRound,
     Mail,
+    School,
     ShieldCheck,
     Star,
     Trophy,
     UserRound,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
+
+interface ClassroomSummary {
+    member_id: number;
+    classroom: {
+        id: number;
+        name: string;
+        teacher_name: string;
+        status: string;
+    };
+    joined_at: string | null;
+    left: boolean;
+    totals: { plays: number; points: number; accuracy: number | null };
+}
 
 interface ProfileProps {
     account: {
@@ -60,6 +74,7 @@ interface ProfileProps {
         games: number;
     };
     needsCurrentPassword: boolean;
+    classrooms: ClassroomSummary[];
 }
 
 const CARD = 'auth-card flex min-w-0 flex-col gap-4 !p-4 sm:!p-5';
@@ -72,6 +87,7 @@ export default function Profile({
     player,
     stats,
     needsCurrentPassword,
+    classrooms,
 }: ProfileProps) {
     const { t, i18n } = useTranslations();
     const number = new Intl.NumberFormat(i18n.language);
@@ -159,6 +175,8 @@ export default function Profile({
                     </div>
                 </div>
             </section>
+
+            <ClassroomHistory classrooms={classrooms} date={date} />
 
             <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-start">
                 <div className="flex min-w-0 flex-col gap-6">
@@ -297,6 +315,61 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
             <dt className="font-semibold text-[#151b2e]/80">{label}</dt>
             <dd className="min-w-0 font-semibold break-words">{children}</dd>
         </>
+    );
+}
+
+function ClassroomHistory({
+    classrooms,
+    date,
+}: {
+    classrooms: ClassroomSummary[];
+    date: (value: string | null) => string;
+}) {
+    const { t } = useTranslations();
+
+    return (
+        <section className={CARD} data-testid="profile-classroom-history">
+            <h2 className="flex items-center gap-2 text-xl font-bold">
+                <School className="size-5" aria-hidden />
+                {t('profile.classrooms.title')}
+            </h2>
+            <p className="text-sm font-semibold text-muted-foreground">
+                {t('profile.classrooms.subtitle')}
+            </p>
+            {classrooms.length === 0 ? (
+                <p className="rounded-xl border-2 border-dashed border-[#151b2e]/30 p-4 text-sm font-semibold text-muted-foreground">
+                    {t('profile.classrooms.empty')}
+                </p>
+            ) : (
+                <ul className="grid gap-3 md:grid-cols-2">
+                    {classrooms.map((item) => (
+                        <li
+                            key={item.member_id}
+                            className="rounded-xl border-2 border-[#151b2e]/20 bg-white p-3"
+                        >
+                            <Link
+                                href={`/my-classrooms/${item.member_id}`}
+                                className="font-bold hover:underline"
+                            >
+                                {item.classroom.name}
+                            </Link>
+                            <p className="text-sm font-semibold text-muted-foreground">
+                                {item.classroom.teacher_name}
+                            </p>
+                            <p className="text-xs font-semibold text-muted-foreground">
+                                {t('profile.classrooms.joined', {
+                                    date: date(item.joined_at),
+                                })}{' '}
+                                ·{' '}
+                                {item.left
+                                    ? t('profile.classrooms.left')
+                                    : t('profile.classrooms.active')}
+                            </p>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
     );
 }
 
