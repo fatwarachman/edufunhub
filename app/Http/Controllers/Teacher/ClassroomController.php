@@ -13,6 +13,7 @@ use App\Models\ClassroomMember;
 use App\Models\Question;
 use App\Models\Subject;
 use App\Models\SubjectTopic;
+use App\Models\User;
 use App\Services\Ai\AiSettings;
 use App\Services\Ai\ClassroomAiText;
 use App\Services\Classrooms\ClassroomAnnouncer;
@@ -100,6 +101,7 @@ class ClassroomController extends Controller
                 'game_key' => $game['game_key'],
                 'sort_order' => $game['sort_order'],
                 'max_plays' => $game['max_plays'],
+                'subjects' => $game['subjects'],
             ]);
 
             if ($game['question_ids'] !== []) {
@@ -136,6 +138,7 @@ class ClassroomController extends Controller
                 'games' => $classroom->games->map(fn (ClassroomGame $g): array => [
                     'game_key' => $g->game_key,
                     'max_plays' => $g->max_plays,
+                    'subjects' => $g->playSubjects(),
                     'questions' => $g->questions->map(fn (Question $q): array => [
                         'id' => $q->id,
                         'prompt_id' => $q->prompt_id,
@@ -201,11 +204,12 @@ class ClassroomController extends Controller
         return response()->json($this->live->forClassroom($classroom));
     }
 
-    public function edit(Classroom $classroom): Response
+    public function edit(Classroom $classroom, Request $request): Response
     {
         Gate::authorize('update', $classroom);
 
-        $classroom->loadMissing('games.questions');
+        $classroom->loadMissing('games.questions.topic:id,name_id,name_en');
+        $teacher = $request->user();
 
         return Inertia::render('teacher/classrooms/form', [
             'classroom' => [
@@ -217,10 +221,12 @@ class ClassroomController extends Controller
                     ? $classroom->starts_at->diffInMinutes($classroom->ends_at)
                     : 60,
                 'max_members' => $classroom->max_members,
+                'status' => $classroom->status(),
                 'games' => $classroom->games->map(fn (ClassroomGame $g): array => [
                     'game_key' => $g->game_key,
                     'max_plays' => $g->max_plays,
-                    'question_ids' => $g->questions->pluck('id')->all(),
+                    'subjects' => $g->subjects ?? [],
+                    'questions' => $g->questions->map(fn (Question $q): array => $this->questionPick($q, $teacher))->values()->all(),
                 ])->all(),
             ],
             ...$this->options(),
@@ -231,11 +237,12 @@ class ClassroomController extends Controller
     {
         Gate::authorize('update', $classroom);
 
-        $endsAt = now()->parse($request->validated('starts_at'))->addMinutes((int) $request->validated('duration_minutes'));
+        $startsAt = $request->startsAt();
+        $endsAt = $startsAt->copy()->addMinutes((int) $request->validated('duration_minutes'));
         $classroom->update([
             'name' => $request->validated('name'),
             'description' => $request->validated('description'),
-            'starts_at' => $request->validated('starts_at'),
+            'starts_at' => $startsAt,
             'ends_at' => $endsAt,
             'max_members' => $request->validated('max_members', $classroom->max_members),
             // A new end time in the future re-arms the automatic close.
@@ -248,6 +255,7 @@ class ClassroomController extends Controller
                 'game_key' => $game['game_key'],
                 'sort_order' => $game['sort_order'],
                 'max_plays' => $game['max_plays'],
+                'subjects' => $game['subjects'],
             ]);
 
             if ($game['question_ids'] !== []) {
@@ -349,19 +357,7 @@ class ClassroomController extends Controller
 
         $questions = $query->paginate(20)->withQueryString();
 
-        $picks = $questions->through(fn (Question $q): array => [
-            'id' => $q->id,
-            'prompt_id' => $q->prompt_id,
-            'prompt_en' => $q->prompt_en,
-            'type' => $q->type,
-            'subject' => $q->subject,
-            'topic_id' => $q->topic_id,
-            'topic' => $q->topic?->only(['id', 'name_id', 'name_en']),
-            'level' => Question::normalizeLevel($q->level),
-            'grades' => $q->grades ?? [],
-            'source' => $q->source,
-            'is_mine' => $q->created_by === $teacher->id,
-        ]);
+        $picks = $questions->through(fn (Question $q): array => $this->questionPick($q, $teacher));
 
         return response()->json($picks);
     }
@@ -426,6 +422,28 @@ class ClassroomController extends Controller
         $note = $note === null ? null : trim(strip_tags($note));
 
         return [...$this->report->forStudent($member), 'teacher_note' => $note === '' ? null : $note];
+    }
+
+    /**
+     * A question as the classroom question picker shows it.
+     *
+     * @return array<string, mixed>
+     */
+    private function questionPick(Question $q, User $teacher): array
+    {
+        return [
+            'id' => $q->id,
+            'prompt_id' => $q->prompt_id,
+            'prompt_en' => $q->prompt_en,
+            'type' => $q->type,
+            'subject' => $q->subject,
+            'topic_id' => $q->topic_id,
+            'topic' => $q->topic?->only(['id', 'name_id', 'name_en']),
+            'level' => Question::normalizeLevel($q->level),
+            'grades' => $q->grades ?? [],
+            'source' => $q->source,
+            'is_mine' => $q->created_by === $teacher->id,
+        ];
     }
 
     /** @return array<string, mixed> */

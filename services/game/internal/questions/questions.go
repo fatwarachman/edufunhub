@@ -244,6 +244,8 @@ type Generator struct {
 	Rand      *rand.Rand
 	used      map[string]bool
 	fellBack  bool
+	// locked is set when a classroom fixed the subjects (InClassroom).
+	locked bool
 	// shown remembers, per question key, every option arrangement already
 	// displayed in this game so a repeated question changes its order.
 	shown map[string][]arrangement
@@ -317,6 +319,19 @@ func (g *Generator) bankItems(kind string) []Item {
 	for _, pool := range pools {
 		if out := bySubject(pool, g.Subject); len(out) > 0 {
 			return g.byLevel(out)
+		}
+	}
+	// A classroom locked to subjects keeps them even without questions for
+	// the player's grade: the nearest grades of those subjects come first.
+	if g.locked {
+		for _, pool := range [][]Item{
+			Current().filter(kind, anyGrade, g.Game),
+			Current().filter(kind, anyGrade, ""),
+			builtin.filter(kind, anyGrade, ""),
+		} {
+			if out := bySubject(pool, g.Subject); len(out) > 0 {
+				return g.byLevel(g.nearestGrade(out))
+			}
 		}
 	}
 	if g.mathAllowed() {
@@ -421,7 +436,8 @@ func (g *Generator) pick(items []Item, pooled bool) (Item, bool) {
 // their own content mix in admin questions only when they exist.
 //
 // A classroom pool replaces it entirely (no subject or level filter) and
-// starts again once every picked question was asked.
+// starts again once every picked question was asked. Subjects locked by
+// the classroom narrow the given subjects.
 func (g *Generator) BankChoice(subjects ...string) (Question, bool) {
 	if pool := g.classroomItems(TypeChoice); len(pool) > 0 {
 		it, ok := g.pick(pool, true)
@@ -431,6 +447,12 @@ func (g *Generator) BankChoice(subjects ...string) (Question, bool) {
 		q := Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Hint: it.Hint, Options: append([]Text(nil), it.Options...), Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level), Visual: it.Visual}
 		g.shuffle(&q)
 		return q, true
+	}
+	if g.locked {
+		subjects = lockedSubjects(subjects, SplitSubjects(g.Subject))
+		if len(subjects) == 0 {
+			return Question{}, false
+		}
 	}
 	all := Current().filter(TypeChoice, g.Grade, g.Game)
 	items := make([]Item, 0, len(all))

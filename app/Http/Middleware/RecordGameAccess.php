@@ -113,7 +113,10 @@ class RecordGameAccess
      * actively in when the teacher picked this game, else null (portal).
      * Built server-side from the membership, never from a query value.
      *
-     * @return array{href: string, name: string}|null
+     * `subjects` are the subjects the classroom set for this game (empty =
+     * mixed); game pages show them instead of the subject picker.
+     *
+     * @return array{href: string, name: string, subjects: list<string>}|null
      */
     private function returnTarget(Request $request, string $game): ?array
     {
@@ -123,10 +126,17 @@ class RecordGameAccess
         }
 
         $classroom = $this->classrooms->currentFor($user, $game);
+        if ($classroom === null) {
+            return null;
+        }
 
-        return $classroom === null ? null : [
+        $classroomGame = $classroom->games->firstWhere('game_key', ClassroomPlayLimit::baseGameKey($game));
+        $classroomGame?->loadMissing('questions');
+
+        return [
             'href' => route('classrooms.show', ['pin' => $classroom->pin], absolute: false),
             'name' => $classroom->name,
+            'subjects' => $classroomGame?->playSubjects() ?? [],
         ];
     }
 }

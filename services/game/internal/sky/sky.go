@@ -171,6 +171,8 @@ func (s *Session) Start(now time.Time) Message {
 	s.LastSeen = now
 	s.seed++
 	s.gen = questions.NewFor(GameKey, s.Claims.Grade, s.seed).For(s.subject, s.Claims.Subject).AtLevel(s.Claims.Level).InClassroom(s.Claims.Classroom)
+	// A classroom may replace the chosen subject; report the one in use.
+	s.subject = s.gen.Subject
 	s.phase = PhaseQuestion
 	s.round, s.shields, s.score, s.earned, s.correct, s.wrong = 0, Shields, 0, 0, 0, 0
 	s.started = now

@@ -9,13 +9,12 @@ use App\Models\Question;
 use App\Models\Subject;
 use App\Services\GameServiceSigner;
 use App\Services\PointRules;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
  * Signed internal endpoint the Go game service polls to load the active bank
- * and classrooms that have picked their own questions.
+ * and the setup (subjects, picked questions) of every open classroom game.
  */
 class QuestionBankController extends Controller
 {
@@ -33,7 +32,7 @@ class QuestionBankController extends Controller
 
         $classrooms = Classroom::query()
             ->where('ends_at', '>', now())
-            ->whereHas('games.questions')
+            ->whereHas('games')
             ->with(['games' => fn ($q) => $q->with('questions'), 'members' => fn ($q) => $q->whereNull('left_at')])
             ->get();
 
@@ -48,18 +47,24 @@ class QuestionBankController extends Controller
             'members' => $c->members->map(fn ($m): array => ['user_id' => $m->user_id])->values(),
             'games' => $c->games->map(fn (ClassroomGame $cg): array => [
                 'game_key' => $cg->game_key,
+                'subjects' => $cg->playSubjects(),
                 'questions' => $cg->questions->map(fn (Question $q): array => $q->toGamePayload())->values(),
             ])->values(),
         ])->values()->all();
 
         $classroomsUpdatedAt = $classrooms->isNotEmpty()
-            ? $classrooms->max(fn (Classroom $c) => max($c->updated_at->timestamp, ...$c->games->flatMap->questions->pluck('updated_at')->map->timestamp->all()))
+            ? $classrooms->max(fn (Classroom $c) => max(
+                $c->updated_at->timestamp,
+                ...$c->games->pluck('updated_at')->map->timestamp->all(),
+                ...$c->games->flatMap->questions->pluck('updated_at')->map->timestamp->all(),
+            ))
             : 0;
 
         $version = sha1(
             $questions->max('updated_at').'|'.$questions->count().'|'.$questions->pluck('id')->implode(',')
             .'|'.implode(',', $rules).'|'.implode(',', $subjects)
             .'|'.$classrooms->count().'|'.$classroomsUpdatedAt
+            .'|'.sha1((string) json_encode($classroomsPayload))
         );
 
         return response()->json([

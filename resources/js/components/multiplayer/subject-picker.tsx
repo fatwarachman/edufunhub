@@ -1,7 +1,10 @@
 import { useTranslations } from '@/hooks/use-translations';
 import { SubjectIcon, useSubjectName, useSubjects } from '@/lib/subjects';
 import { cn } from '@/lib/utils';
-import { Shuffle } from 'lucide-react';
+import { type SharedData } from '@/types';
+import { usePage } from '@inertiajs/react';
+import { Lock, Shuffle } from 'lucide-react';
+import { useEffect } from 'react';
 
 /** The "all subjects" choice; every other value is a subject key. */
 export const MIX_SUBJECT = 'mix';
@@ -70,13 +73,126 @@ export function rememberSubject(subject: GameSubject): void {
 }
 
 /**
+ * Subjects the classroom set for the current game, or null outside a
+ * classroom. Comes from the shared `gameReturn` prop (built server-side
+ * from the membership), so a student cannot change it.
+ */
+export function useClassroomSubject(): GameSubject | null {
+    const { props } = usePage<SharedData>();
+    const classroom = props.gameReturn;
+    if (!classroom?.href.startsWith('/portal/classrooms/')) {
+        return null;
+    }
+    return joinSubjects(classroom.subjects ?? []);
+}
+
+/**
  * Subject choice shown before every game starts: the mix, or one or more
  * subjects (each button toggles its subject; clearing them all returns to
  * the mix). In rooms only the host changes it; everyone else sees the
  * host's choice. Subjects come from the admin catalog, so new subjects
  * appear without a code change.
+ *
+ * Inside a classroom the teacher already chose the subjects: the picker
+ * turns into a read-only summary and sends that choice once, so rooms and
+ * solo games all use the classroom subjects (the game service enforces
+ * them too).
  */
-export function SubjectPicker({
+export function SubjectPicker(props: {
+    value: GameSubject;
+    onChange: (subject: GameSubject) => void;
+    disabled?: boolean;
+    compact?: boolean;
+    className?: string;
+}) {
+    const classroomSubject = useClassroomSubject();
+    if (classroomSubject !== null) {
+        return <ClassroomSubjects {...props} subject={classroomSubject} />;
+    }
+    return <SubjectChoice {...props} />;
+}
+
+/** Read-only classroom subjects that replace the picker in a classroom. */
+function ClassroomSubjects({
+    subject,
+    value,
+    onChange,
+    disabled,
+    className,
+}: {
+    subject: GameSubject;
+    value: GameSubject;
+    onChange: (subject: GameSubject) => void;
+    disabled?: boolean;
+    className?: string;
+}) {
+    const { t } = useTranslations();
+    const subjects = useSubjects();
+    const subjectName = useSubjectName();
+    const keys = splitSubjects(subject);
+    const current = joinSubjects(splitSubjects(value));
+
+    useEffect(() => {
+        if (!disabled && current !== subject) {
+            onChange(subject);
+        }
+        // Sync once per change of the classroom or room value; onChange is
+        // a new function on every render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [subject, current, disabled]);
+
+    return (
+        <section
+            className={cn('text-left', className)}
+            data-testid="subject-picker"
+            data-subject={subject}
+            data-locked="true"
+            aria-label={t('subjects.label')}
+        >
+            <p className="mb-1 text-xs font-black text-slate-500 uppercase">
+                {t('subjects.label')}
+            </p>
+            <ul
+                className="flex flex-wrap gap-2"
+                data-testid="classroom-subjects"
+            >
+                {keys.length === 0 ? (
+                    <li className="flex min-h-10 items-center gap-2 rounded-2xl border-2 border-[#1f2a44] bg-[#1f2a44] px-3 py-2 font-display text-sm leading-tight font-black text-white">
+                        <Shuffle
+                            className="size-4 shrink-0"
+                            aria-hidden="true"
+                        />
+                        <span className="min-w-0 break-words">
+                            {t('subjects.mix')}
+                        </span>
+                    </li>
+                ) : (
+                    keys.map((key) => (
+                        <li
+                            key={key}
+                            data-testid={`classroom-subject-${key}`}
+                            className="flex min-h-10 items-center gap-2 rounded-2xl border-2 border-[#1f2a44] bg-[#1f2a44] px-3 py-2 font-display text-sm leading-tight font-black text-white"
+                        >
+                            <SubjectIcon
+                                icon={subjects.find((s) => s.key === key)?.icon}
+                                className="size-4 shrink-0"
+                            />
+                            <span className="min-w-0 break-words">
+                                {subjectName(key)}
+                            </span>
+                        </li>
+                    ))
+                )}
+            </ul>
+            <p className="mt-2 flex items-start gap-1.5 text-xs font-bold text-slate-500">
+                <Lock className="mt-px size-3.5 shrink-0" aria-hidden="true" />
+                {t('subjects.classroomLocked')}
+            </p>
+        </section>
+    );
+}
+
+function SubjectChoice({
     value,
     onChange,
     disabled,

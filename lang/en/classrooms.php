@@ -31,6 +31,7 @@ return [
         'note_max' => 'The teacher note may be at most 500 characters.',
         'true_false_not_allowed' => 'Game :game does not support true/false questions.',
         'question_inaccessible' => 'Some questions are not accessible.',
+        'subject_invalid' => 'The selected subject is not available.',
     ],
     'insights' => [
         'hardest_question' => 'Hardest question: :prompt (:accuracy% accuracy).',

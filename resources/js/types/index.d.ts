@@ -145,7 +145,12 @@ export interface SharedData {
     show_experience_survey?: boolean;
     profileWizard?: ProfileWizardPrefill | null;
     /** Game pages only: the classroom this game was opened from (else portal). */
-    gameReturn?: { href: string; name: string } | null;
+    gameReturn?: {
+        href: string;
+        name: string;
+        /** Subjects the classroom set for this game (empty = mixed). */
+        subjects?: string[];
+    } | null;
     /** Admin pages, superadmin only: pending counts keyed by menu href. */
     adminBadges?: Record<string, number>;
     [key: string]: unknown;
