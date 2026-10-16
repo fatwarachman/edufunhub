@@ -66,6 +66,7 @@ class TeacherQuestionController extends Controller
                 'level' => Question::normalizeLevel($question->level),
                 'topic' => $question->topic?->only(['id', 'name_id', 'name_en']),
                 'grades' => $question->grades ?? [],
+                'has_picture' => $question->visual !== null || collect($question->options ?? [])->contains(fn (mixed $option): bool => is_array($option) && isset($option['media']['src'])),
                 'created_at' => $question->created_at?->toIso8601String(),
                 'stats' => $perQuestion->get($question->id) ?? ['answered' => 0, 'correct' => 0, 'wrong' => 0, 'success_rate' => null, 'players' => 0, 'compensation' => 0, 'games' => [], 'grades' => []],
             ]),
@@ -105,7 +106,7 @@ class TeacherQuestionController extends Controller
 
         return Inertia::render('teacher/show', [
             'question' => [
-                ...$question->only(['id', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'source', 'topic_id']),
+                ...$question->only(['id', 'type', 'band', 'subject', 'prompt_id', 'prompt_en', 'options', 'visual', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'source', 'topic_id']),
                 'level' => Question::normalizeLevel($question->level),
                 'topic' => $question->topic?->only(['id', 'name_id', 'name_en']),
                 'grades' => $question->grades ?? [],
@@ -124,7 +125,7 @@ class TeacherQuestionController extends Controller
 
         return Inertia::render('teacher/form', [
             'question' => [
-                ...$question->only(['id', 'type', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'topic_id']),
+                ...$question->only(['id', 'type', 'subject', 'prompt_id', 'prompt_en', 'options', 'visual', 'answer', 'hint_id', 'hint_en', 'games', 'is_active', 'topic_id']),
                 'level' => Question::normalizeLevel($question->level),
                 'topic' => $question->topic?->only(['id', 'name_id', 'name_en']),
                 'grades' => $question->grades ?? [],

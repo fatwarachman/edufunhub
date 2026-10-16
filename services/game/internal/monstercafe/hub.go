@@ -6,6 +6,9 @@ import (
 	"math/rand/v2"
 	"sync"
 	"time"
+
+	"edufunhub/game/internal/auth"
+	"edufunhub/game/internal/lobby"
 )
 
 // Hub owns the room registry. It never touches room state: rooms run in
@@ -317,7 +320,30 @@ func (h *Hub) Inspect(pin string, fn func(r *Room) any) (any, error) {
 	return res.v, res.err
 }
 
-// RoomPhase reports the phase of the room with the given PIN (PIN lookup).
+// RoomsSummary returns live public rooms for trusted diagnostics.
+func (h *Hub) RoomsSummary() []lobby.RoomSummary {
+	h.mu.Lock()
+	rooms := make([]*Room, 0, len(h.rooms))
+	for _, r := range rooms {
+		_ = r
+	}
+	for _, r := range h.rooms {
+		rooms = append(rooms, r)
+	}
+	h.mu.Unlock()
+	out := make([]lobby.RoomSummary, 0, len(rooms))
+	for _, r := range rooms {
+		v, err := h.Inspect(r.Pin, func(room *Room) any {
+			return lobby.RoomSummary{Pin: room.Pin, Phase: room.phase, Players: len(room.players)}
+		})
+		if err == nil {
+			out = append(out, v.(lobby.RoomSummary))
+		}
+	}
+	return out
+}
+
+// RoomPhase reports the phase of the room with the given PIN.
 // Solo kitchens and classroom rooms are private and never found by PIN.
 func (h *Hub) RoomPhase(pin string) (string, bool) {
 	v, err := h.Inspect(pin, func(r *Room) any {
@@ -460,4 +486,29 @@ func (h *Hub) dropRoom(r *Room) {
 			delete(h.players, uid)
 		}
 	}
+}
+
+// Spectate returns the read-only host view (what the arena screen shows) of
+// the room with pin, for admin monitoring. It runs on the room goroutine and
+// uses a detached client that is never attached, seated or counted, so
+// watching cannot send input or change scores. Classroom rooms are hidden.
+func (h *Hub) Spectate(pin, locale string, now time.Time) (Message, bool) {
+	v, err := h.Inspect(pin, func(r *Room) any {
+		if r.classroomID > 0 {
+			return nil
+		}
+		c := NewClient(auth.Claims{Name: "spectator"}, true, locale, 1)
+		r.sendState(c, now)
+		select {
+		case m := <-c.out:
+			m["spectator"] = true
+			return m
+		default:
+			return nil
+		}
+	})
+	if err != nil || v == nil {
+		return nil, false
+	}
+	return v.(Message), true
 }

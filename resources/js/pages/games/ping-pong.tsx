@@ -276,6 +276,9 @@ export default function PingPong({ player, serviceReady, wsUrl, pin }: Props) {
                                         <OptionPads
                                             key={state.question.id}
                                             options={state.question.options}
+                                            optionMedia={
+                                                state.question.option_media
+                                            }
                                             disabled={!canAnswer}
                                             selected={game.choice ?? undefined}
                                             onChoose={game.answer}

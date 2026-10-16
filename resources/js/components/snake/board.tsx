@@ -1,4 +1,7 @@
 import {
+    OptionContent,
+    optionImage,
+    type OptionMediaData,
     QuestionMedia,
     type QuestionMediaData,
 } from '@/components/question-media';
@@ -520,12 +523,14 @@ export function QuestionBar({
     options,
     labels,
     media,
+    optionMedia,
 }: {
     text: string;
     subject?: string;
     options: string[];
     labels: string[];
     media?: QuestionMediaData | null;
+    optionMedia?: OptionMediaData[] | null;
 }) {
     const { t } = useTranslations();
     return (
@@ -548,7 +553,13 @@ export function QuestionBar({
                         >
                             {labels[index]}
                         </span>
-                        <strong>{option}</strong>
+                        <strong>
+                            <OptionContent
+                                text={option}
+                                image={optionImage(optionMedia, index)}
+                                size="sm"
+                            />
+                        </strong>
                     </li>
                 ))}
             </ul>

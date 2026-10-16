@@ -458,13 +458,14 @@ func (s *Session) stateLocked(feedback Message, now time.Time) Message {
 			removed = append(removed, i)
 		}
 		msg["question"] = Message{
-			"id":      fmt.Sprintf("%d-%d", s.started.UnixNano(), s.round),
-			"subject": s.question.Subject,
-			"text":    s.question.Prompt.Get(s.Locale),
-			"media":   s.question.Media(),
-			"options": opts,
-			"removed": removed,
-			"delay":   max(0, -s.elapsed(now).Milliseconds()),
+			"id":           fmt.Sprintf("%d-%d", s.started.UnixNano(), s.round),
+			"subject":      s.question.Subject,
+			"text":         s.question.Prompt.Get(s.Locale),
+			"media":        s.question.Media(),
+			"options":      opts,
+			"option_media": s.question.OptionMedia(),
+			"removed":      removed,
+			"delay":        max(0, -s.elapsed(now).Milliseconds()),
 		}
 	}
 	if feedback != nil {

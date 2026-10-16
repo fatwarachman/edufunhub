@@ -20,6 +20,52 @@ type Activity struct {
 	Host  bool   `json:"host"`
 }
 
+// LiveRoom is a read-only room summary for trusted admin monitoring.
+type LiveRoom struct {
+	Game    string `json:"game"`
+	Pin     string `json:"pin,omitempty"`
+	Phase   string `json:"phase"`
+	Players int    `json:"players"`
+}
+
+func (s *Server) LiveRooms() []LiveRoom {
+	rooms := []LiveRoom{}
+	addLobby := func(game string, summaries []lobby.RoomSummary) {
+		for _, room := range summaries {
+			rooms = append(rooms, LiveRoom{Game: game, Pin: room.Pin, Phase: room.Phase, Players: room.Players})
+		}
+	}
+	addLobby("snakes-and-ladders", s.snakes.RoomsSummary())
+	addLobby("snake", s.snake.RoomsSummary())
+	addLobby("ping-pong", s.pingpong.RoomsSummary())
+	addLobby("crossword", s.crosswords.RoomsSummary())
+	addLobby("floor-drop", s.floor.RoomsSummary())
+	addLobby("economy-heist", s.heist.RoomsSummary())
+	addLobby("order-rush", s.rush.RoomsSummary())
+	addLobby("turbo-trivia", s.turbo.RoomsSummary())
+	addLobby("block-battle", s.block.RoomsSummary())
+	addLobby("monster-cafe", s.cafe.RoomsSummary())
+	addLobby("flag-quest", nil)
+	for _, key := range minigames.Keys {
+		addLobby(key, s.minis[key].RoomsSummary())
+	}
+	return rooms
+}
+
+// serveLiveRooms answers signed admin polling requests.
+func (s *Server) serveLiveRooms(w http.ResponseWriter, r *http.Request) {
+	ts := r.Header.Get("X-Game-Timestamp")
+	unix, err := strconv.ParseInt(ts, 10, 64)
+	if err != nil || s.cfg.Now().Sub(time.Unix(unix, 0)).Abs() > statsTolerance ||
+		!hmac.Equal([]byte(Sign(s.cfg.Secret, ts, nil)), []byte(r.Header.Get("X-Game-Signature"))) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	_ = json.NewEncoder(w).Encode(map[string]any{"rooms": s.LiveRooms()})
+}
+
 // Presence lists every room or match uid is seated in right now.
 func (s *Server) Presence(uid int64) []Activity {
 	out := []Activity{}

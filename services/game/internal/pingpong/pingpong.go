@@ -102,6 +102,7 @@ func (h *Hub) Offline(uid int64)                         { h.rooms.Offline(uid) 
 func (h *Hub) SetLocale(uid int64, locale string)        { h.rooms.SetLocale(uid, locale) }
 func (h *Hub) Peers(uid int64) []int64                   { return h.rooms.Peers(uid) }
 func (h *Hub) Counts() (int, int)                        { return h.rooms.Counts() }
+func (h *Hub) RoomsSummary() []lobby.RoomSummary         { return h.rooms.RoomsSummary() }
 func (h *Hub) RoomPhase(pin string) (string, bool)       { return h.rooms.PhaseOf(pin) }
 func (h *Hub) Presence(uid int64) (lobby.Presence, bool) { return h.rooms.PresenceOf(uid) }
 func (h *Hub) HandOver(now time.Time) []int64            { return h.rooms.HandOver(now, lobby.HostGrace) }
@@ -375,7 +376,7 @@ func (h *Hub) Prune(now time.Time) {
 }
 func (h *Hub) State(c auth.Claims, now time.Time) Message {
 	msg := Message{"t": "pingpong_state", "phase": "lobby", "pin": "", "you": -1, "host": -1, "seq": 0, "players": []Message{}, "min_players": 1, "max_players": 2, "local_seats": false, "answer_seconds": 0, "answer_times": append([]int{}, lobby.AnswerTimes...), "round": 0, "turn_number": 0, "turn": 0, "subject": "mix", "subject_fallback": false, "question": nil, "remaining_ms": int64(0), "goals": [2]int{}, "target": Target, "max_rounds": MaxRounds, "rally": 0, "feedback": nil, "winner": nil, "stopped": false, "result": nil}
-	h.rooms.View(c.Subject, func(r *room) {
+	h.rooms.ViewFor(c, func(r *room) {
 		if r == nil {
 			return
 		}
@@ -409,7 +410,7 @@ func (h *Hub) State(c auth.Claims, now time.Time) Message {
 				opts[i] = o.Get(locale)
 			}
 			msg["subject_fallback"] = g.gen.Fallback()
-			msg["question"] = Message{"id": fmt.Sprintf("%s-%d", r.Pin, g.round), "text": q.Prompt.Get(locale), "media": q.Media(), "options": opts, "subject": q.Subject, "worth": q.Worth()}
+			msg["question"] = Message{"id": fmt.Sprintf("%s-%d", r.Pin, g.round), "text": q.Prompt.Get(locale), "media": q.Media(), "options": opts, "option_media": q.OptionMedia(), "subject": q.Subject, "worth": q.Worth()}
 		}
 		if r.Phase == lobby.PhasePlaying {
 			msg["remaining_ms"] = max(int64(0), g.deadline.Sub(now).Milliseconds())

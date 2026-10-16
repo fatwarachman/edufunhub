@@ -71,3 +71,37 @@ it('shares null on the dashboard when no apk is published', function (): void {
     $this->actingAs($user)->get('/dashboard')
         ->assertInertia(fn (Assert $page) => $page->where('androidApk', null));
 });
+
+it('serves the latest apk from the stable /download/apk url', function (): void {
+    file_put_contents($this->apkPath, 'PK-fake-apk');
+
+    $this->get('/download/apk')
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/vnd.android.package-archive')
+        ->assertDownload('edufunhub.apk');
+});
+
+it('describes the latest apk as public json for the landing page', function (): void {
+    file_put_contents($this->apkPath, 'PK-fake-apk');
+    config()->set('android.apk_version', '1.2.3');
+
+    $this->getJson('/download/apk.json')
+        ->assertOk()
+        ->assertJsonPath('version', '1.2.3')
+        ->assertJsonPath('size', 11)
+        ->assertJsonPath('sha256', hash('sha256', 'PK-fake-apk'))
+        ->assertJsonPath('url', fn (string $url): bool => str_contains($url, '/download/edufunhub.apk?v='.substr(hash('sha256', 'PK-fake-apk'), 0, 12)));
+});
+
+it('returns not found for apk json when no apk is published', function (): void {
+    $this->getJson('/download/apk.json')->assertNotFound();
+    $this->get('/download/apk')->assertNotFound();
+});
+
+it('links the apk download section on the landing page', function (): void {
+    $html = (string) file_get_contents(public_path('new-landing/index.html'));
+
+    expect($html)->toContain('id="download-apk"')
+        ->and($html)->toContain('href="/download/apk"')
+        ->and($html)->toContain('/download/apk.json');
+});

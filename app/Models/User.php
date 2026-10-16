@@ -65,6 +65,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'experience_feedback_at',
         'password_updated_at',
         'last_seen_at',
+        'current_page_path',
+        'current_page_label',
     ];
 
     /**
@@ -111,6 +113,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'experience_feedback_at' => 'datetime',
             'password_updated_at' => 'datetime',
             'last_seen_at' => 'datetime',
+            'current_page_path' => 'string',
+            'current_page_label' => 'string',
             'whatsapp_notifications' => 'boolean',
             'whatsapp_welcomed_at' => 'datetime',
         ];
@@ -393,6 +397,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function loginActivities(): HasMany
     {
         return $this->hasMany(LoginActivity::class);
+    }
+
+    /** @return HasMany<GameAccess, $this> */
+    public function gameAccesses(): HasMany
+    {
+        return $this->hasMany(GameAccess::class);
     }
 
     /**

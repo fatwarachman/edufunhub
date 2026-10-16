@@ -48,6 +48,7 @@ class QuestionBankController extends Controller
             'games' => $c->games->map(fn (ClassroomGame $cg): array => [
                 'game_key' => $cg->game_key,
                 'subjects' => $cg->playSubjects(),
+                'difficulty' => $cg->difficulty,
                 'questions' => $cg->questions->map(fn (Question $q): array => $q->toGamePayload())->values(),
             ])->values(),
         ])->values()->all();

@@ -1,5 +1,8 @@
 import { PlayerAvatar } from '@/components/player-avatar';
 import {
+    OptionContent,
+    optionImage,
+    type OptionMediaData,
     QuestionMedia,
     type QuestionMediaData,
 } from '@/components/question-media';
@@ -92,6 +95,7 @@ export interface QuestionView {
     text: string;
     media?: QuestionMediaData | null;
     options: string[];
+    option_media?: OptionMediaData[] | null;
 }
 
 /**
@@ -223,7 +227,14 @@ export function QuestionDialog({
                                         'cursor-default opacity-80',
                                 )}
                             >
-                                <span>{option}</span>
+                                <OptionContent
+                                    text={option}
+                                    image={optionImage(
+                                        question.option_media,
+                                        index,
+                                    )}
+                                    size="sm"
+                                />
                                 {isAnswer && (
                                     <CheckCircle2 className="h-5 w-5 shrink-0" />
                                 )}

@@ -178,7 +178,11 @@ class Question extends Model
             'subject' => $this->subject,
             'prompt' => ['id' => $this->prompt_id, 'en' => $this->prompt_en ?? ''],
             'options' => $this->type === self::TYPE_CHOICE
-                ? collect($this->options ?? [])->map(fn (array $option): array => ['id' => $option['id'] ?? '', 'en' => $option['en'] ?? ''])->values()->all()
+                ? collect($this->options ?? [])->map(fn (array $option): array => array_filter([
+                    'id' => $option['id'] ?? '',
+                    'en' => $option['en'] ?? '',
+                    'media' => $option['media'] ?? null,
+                ], fn (mixed $value): bool => $value !== null))->values()->all()
                 : [],
             'answer' => $this->answer,
             'hint' => ['id' => $this->hint_id ?? '', 'en' => $this->hint_en ?? ''],

@@ -83,6 +83,7 @@ export interface ClassroomFormData {
     games: {
         game_key: string;
         max_plays: number | null;
+        difficulty: number | null;
         /** Subjects of an auto-question game (empty = mixed). */
         subjects?: string[];
         questions: QuestionPick[];
@@ -283,6 +284,7 @@ export interface MyClassroomCard {
     status: ClassroomStatus;
     starts_at: string | null;
     ends_at: string | null;
+    teacher_id?: number | null;
     teacher_name: string;
     games: string[];
 }
@@ -361,4 +363,19 @@ export interface ClassroomPlayUsage {
     plays: number;
     max: number | null;
     remaining: number | null;
+}
+
+/** One teacher on "Guru & kelasku" with the classes the student joined. */
+export interface MyTeacherGroup {
+    teacher: { id: number | null; name: string; school: string | null };
+    classes: MyClassroomItem[];
+    totals: {
+        classes: number;
+        plays: number;
+        points: number;
+        answered: number;
+        correct: number;
+        accuracy: number | null;
+    };
+    last_joined_at: string | null;
 }

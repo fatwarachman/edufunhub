@@ -17,7 +17,11 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { QuestionMedia } from '@/components/question-media';
+import {
+    OptionContent,
+    optionImage,
+    QuestionMedia,
+} from '@/components/question-media';
 import {
     BackButton,
     NavButton,
@@ -606,9 +610,13 @@ export default function QuizDuel({
                                                     LETTERS[index]
                                                 )}
                                             </span>
-                                            <span className="min-w-0 break-words">
-                                                {text}
-                                            </span>
+                                            <OptionContent
+                                                text={text}
+                                                image={optionImage(
+                                                    question.option_media,
+                                                    index,
+                                                )}
+                                            />
                                         </button>
                                     );
                                 })}

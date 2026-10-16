@@ -8,6 +8,7 @@ import {
     type TopologyShape,
 } from '@/components/question-media';
 import { tr } from '@/lib/admin-i18n';
+import { prepareQuestionImage } from '@/lib/image-resize';
 import { cn } from '@/lib/utils';
 import {
     Cable,
@@ -16,6 +17,7 @@ import {
     Loader2,
     Network,
     Plus,
+    Smile,
     TerminalSquare,
     Upload,
     X,
@@ -26,13 +28,14 @@ type Bilingual = { id: string; en: string };
 
 /** Editable shape of a question visual (all kinds' fields kept while editing). */
 export interface VisualDraft {
-    kind: '' | 'image' | 'cable' | 'topology' | 'terminal';
+    kind: '' | 'image' | 'cable' | 'topology' | 'terminal' | 'emoji';
     src: string;
     alt: Bilingual;
     style: 'utp' | 'fiber';
     wires: { color: string; stripe: string }[];
     shape: TopologyShape;
     lines: string;
+    emoji: string[];
     caption: Bilingual;
 }
 
@@ -110,6 +113,7 @@ const KINDS: {
     { value: 'cable', label: 'Cable', icon: Cable },
     { value: 'topology', label: 'Topology', icon: Network },
     { value: 'terminal', label: 'Terminal', icon: TerminalSquare },
+    { value: 'emoji', label: 'Emoji picture', icon: Smile },
 ];
 
 const TOPOLOGY_LABELS: Record<TopologyShape, string> = {
@@ -122,6 +126,51 @@ const TOPOLOGY_LABELS: Record<TopologyShape, string> = {
 };
 
 const MAX_WIRES = 12;
+const MAX_EMOJI = 20;
+
+/** Emoji palette for TK/SD picture questions (counting, animals, fruit, shapes, objects). */
+const EMOJI_PALETTE = [
+    '🍎',
+    '🍌',
+    '🍊',
+    '🍇',
+    '🍓',
+    '🥕',
+    '🌽',
+    '🐈',
+    '🐕',
+    '🐟',
+    '🐔',
+    '🐄',
+    '🐘',
+    '🦒',
+    '🐸',
+    '🦋',
+    '🐝',
+    '🌸',
+    '🌳',
+    '☀️',
+    '🌙',
+    '⭐',
+    '☁️',
+    '🌧️',
+    '🚗',
+    '🚲',
+    '✈️',
+    '🏠',
+    '⚽',
+    '🎈',
+    '✏️',
+    '📚',
+    '🔴',
+    '🟦',
+    '🔺',
+    '🟢',
+    '❤️',
+    '👋',
+    '🦷',
+    '🧼',
+];
 const MIN_WIRES = 2;
 
 const blankText = (): Bilingual => ({ id: '', en: '' });
@@ -136,6 +185,7 @@ export function visualDraft(visual: QuestionMediaData | null): VisualDraft {
         wires: CABLE_PRESETS[0].wires.map((wire) => ({ ...wire })),
         shape: 'star',
         lines: '',
+        emoji: [],
         caption: { ...blankText(), ...(visual?.caption ?? {}) },
     };
     if (!visual) {
@@ -167,6 +217,8 @@ export function visualDraft(visual: QuestionMediaData | null): VisualDraft {
                 kind: 'terminal',
                 lines: visual.lines.join('\n'),
             };
+        case 'emoji':
+            return { ...draft, kind: 'emoji', emoji: [...visual.items] };
         default:
             return draft;
     }
@@ -204,6 +256,12 @@ export function visualPayload(draft: VisualDraft): QuestionMediaData | null {
                 lines: draft.lines.replace(/\r/g, '').split('\n').slice(0, 12),
                 caption,
             };
+        case 'emoji':
+            return {
+                kind: 'emoji',
+                items: draft.emoji.slice(0, MAX_EMOJI),
+                caption,
+            };
         default:
             return null;
     }
@@ -223,10 +281,12 @@ export function QuestionVisualEditor({
     value,
     onChange,
     errors,
+    endpoint = '/admin/questions/media',
 }: {
     value: VisualDraft;
     onChange: (next: VisualDraft) => void;
     errors: Record<string, string>;
+    endpoint?: string;
 }) {
     const fileInput = useRef<HTMLInputElement | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -250,8 +310,9 @@ export function QuestionVisualEditor({
         setUploadError(null);
         try {
             const body = new FormData();
-            body.append('image', file);
-            const response = await fetch('/admin/questions/media', {
+            body.append('image', await prepareQuestionImage(file, 'question'));
+            body.append('purpose', 'question');
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 body,
                 credentials: 'same-origin',
@@ -354,7 +415,7 @@ export function QuestionVisualEditor({
                                     </button>
                                     <span className="text-xs text-muted-foreground">
                                         {tr(
-                                            'JPG, PNG or WEBP, max 2 MB. Diagrams and photos of devices work best.',
+                                            'JPG, PNG or WEBP, max 1 MB, 64–2000 px, not wider than 3:1. Big photos are resized automatically.',
                                         )}
                                     </span>
                                 </div>
@@ -625,6 +686,83 @@ export function QuestionVisualEditor({
                                         errorFor('lines') ??
                                         Object.entries(errors).find(([key]) =>
                                             key.startsWith('visual.lines.'),
+                                        )?.[1]
+                                    }
+                                />
+                            </div>
+                        )}
+
+                        {value.kind === 'emoji' && (
+                            <div
+                                className="flex flex-col gap-2"
+                                data-testid="question-visual-emoji"
+                            >
+                                <p className="text-sm font-medium text-foreground">
+                                    {tr('Tap emoji to add them ({0}/{1})', [
+                                        value.emoji.length,
+                                        MAX_EMOJI,
+                                    ])}
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {EMOJI_PALETTE.map((emoji) => (
+                                        <button
+                                            key={emoji}
+                                            type="button"
+                                            onClick={() =>
+                                                value.emoji.length <
+                                                    MAX_EMOJI &&
+                                                set({
+                                                    emoji: [
+                                                        ...value.emoji,
+                                                        emoji,
+                                                    ],
+                                                })
+                                            }
+                                            disabled={
+                                                value.emoji.length >= MAX_EMOJI
+                                            }
+                                            aria-label={tr('Add {0}', [emoji])}
+                                            className="grid size-10 place-items-center rounded-lg border border-input text-xl hover:bg-muted disabled:opacity-40"
+                                        >
+                                            {emoji}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="flex min-h-11 flex-wrap items-center gap-1 rounded-lg border border-dashed border-border p-2">
+                                    {value.emoji.length === 0 ? (
+                                        <span className="text-xs text-muted-foreground">
+                                            {tr(
+                                                'No emoji yet. Example: 3 apples for a counting question.',
+                                            )}
+                                        </span>
+                                    ) : (
+                                        value.emoji.map((emoji, index) => (
+                                            <button
+                                                key={`${emoji}-${index}`}
+                                                type="button"
+                                                onClick={() =>
+                                                    set({
+                                                        emoji: value.emoji.filter(
+                                                            (_, i) =>
+                                                                i !== index,
+                                                        ),
+                                                    })
+                                                }
+                                                aria-label={tr('Remove {0}', [
+                                                    emoji,
+                                                ])}
+                                                className="grid size-9 place-items-center rounded-md text-xl hover:bg-destructive/10"
+                                            >
+                                                {emoji}
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                                <InputError
+                                    message={
+                                        errorFor('items') ??
+                                        Object.entries(errors).find(([key]) =>
+                                            key.startsWith('visual.items.'),
                                         )?.[1]
                                     }
                                 />

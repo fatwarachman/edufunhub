@@ -78,7 +78,7 @@ class ClassroomWorldController extends Controller
      * Props of the 3D world shared by the student and teacher pages.
      *
      * @param  array{me: array{points: int, plays: int, rank: int|null}, leaderboard: list<array<string, mixed>>, members_count: int, ends_at: string|null}  $hud
-     * @return array{ws_url: string, token_url: string, hud_url: string, hud: array<string, mixed>, me: array{id: int, name: string, character: array<string, mixed>}, teacher: array{id: int, name: string, character: array<string, mixed>}|null, role: 'student'|'teacher', people: list<int>, chat_url: string}
+     * @return array{ws_url: string, token_url: string, hud_url: string, hud: array<string, mixed>, me: array{id: int, name: string, character: array<string, mixed>}, teacher: array{id: int, name: string, character: array<string, mixed>}|null, role: 'student'|'teacher'|'observer', people: list<int>, chat_url: string|null}
      */
     public static function worldProps(Classroom $classroom, User $viewer, string $role, string $tokenUrl, string $hudUrl, array $hud): array
     {
@@ -101,7 +101,7 @@ class ClassroomWorldController extends Controller
                 'name' => $teacherPlayer['name'],
                 'character' => $teacherPlayer['character'],
             ] : null,
-            'role' => $role === 'teacher' ? 'teacher' : 'student',
+            'role' => in_array($role, ['teacher', 'observer'], true) ? $role : 'student',
             'people' => $classroom->members()
                 ->whereNull('left_at')
                 ->pluck('user_id')
@@ -111,9 +111,11 @@ class ClassroomWorldController extends Controller
                 ->unique()
                 ->values()
                 ->all(),
-            'chat_url' => $role === 'teacher'
-                ? route('teacher.classrooms.world-chat', $classroom)
-                : route('classrooms.world-chat', $classroom->pin),
+            'chat_url' => $role === 'observer'
+                ? null
+                : ($role === 'teacher'
+                    ? route('teacher.classrooms.world-chat', $classroom)
+                    : route('classrooms.world-chat', $classroom->pin)),
         ];
     }
 

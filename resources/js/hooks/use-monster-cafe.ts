@@ -1,4 +1,7 @@
-import { type QuestionMediaData } from '@/components/question-media';
+import {
+    type OptionMediaData,
+    type QuestionMediaData,
+} from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { useCallback, useReducer } from 'react';
@@ -132,6 +135,7 @@ export interface MonsterCafeQuestion {
     media?: QuestionMediaData | null;
     subject: string;
     options: string[];
+    option_media?: OptionMediaData[] | null;
     /** Client time the question arrived. */
     receivedAt: number;
 }
@@ -251,8 +255,12 @@ export function toKitchen(
               ingredient: questionRaw.ingredient as Ingredient,
               number: num(questionRaw.number),
               text: String(questionRaw.text ?? ''),
+              media: (questionRaw.media as QuestionMediaData | null) ?? null,
               subject: String(questionRaw.subject ?? ''),
               options: list<string>(questionRaw.options),
+              option_media:
+                  (questionRaw.option_media as OptionMediaData[] | null) ??
+                  null,
               receivedAt:
                   previous?.question &&
                   previous.question.question_id === questionRaw.question_id

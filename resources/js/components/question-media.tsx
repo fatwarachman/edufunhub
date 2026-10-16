@@ -26,7 +26,8 @@ export type QuestionMediaData =
           shape: TopologyShape;
           caption?: Bilingual;
       }
-    | { kind: 'terminal'; lines: string[]; caption?: Bilingual };
+    | { kind: 'terminal'; lines: string[]; caption?: Bilingual }
+    | { kind: 'emoji'; items: string[]; caption?: Bilingual };
 
 export const TOPOLOGY_SHAPES = [
     'star',
@@ -178,6 +179,8 @@ export function hasQuestionMedia(
             return media.shape in TOPOLOGIES;
         case 'terminal':
             return Array.isArray(media.lines) && media.lines.length > 0;
+        case 'emoji':
+            return Array.isArray(media.items) && media.items.length > 0;
         default:
             return false;
     }
@@ -248,6 +251,9 @@ export function QuestionMedia({
             )}
             {media.kind === 'terminal' && (
                 <TerminalVisual lines={media.lines} size={size} />
+            )}
+            {media.kind === 'emoji' && (
+                <EmojiVisual items={media.items} size={size} label={caption || t('questionMedia.emojiLabel', { count: media.items.length })} />
             )}
             {caption && (
                 <figcaption
@@ -443,5 +449,86 @@ function TerminalVisual({
                 {lines.join('\n')}
             </pre>
         </div>
+    );
+}
+
+/** Row of emoji pictures (TK/SD counting and "what is this" questions). */
+function EmojiVisual({ items, size, label }: { items: string[]; size: 'sm' | 'md' | 'lg'; label: string }) {
+    const big = items.length <= 3;
+    return (
+        <div
+            role="img"
+            aria-label={label}
+            className={cn(
+                'flex max-w-full flex-wrap items-center justify-center gap-1 rounded-2xl border-3 border-[#1f2a44] bg-white px-3 py-2 shadow-[3px_3px_0px_#1f2a44]',
+                size === 'sm' ? 'text-3xl' : size === 'lg' ? 'text-6xl' : 'text-4xl sm:text-5xl',
+                big && size !== 'sm' && 'text-6xl sm:text-7xl',
+            )}
+            data-testid="question-emoji"
+        >
+            {items.map((item, index) => (
+                <span key={index} aria-hidden="true" className="leading-none">
+                    {item}
+                </span>
+            ))}
+        </div>
+    );
+}
+
+/** Picture attached to one answer option (sent by Go as `option_media[i]`, null for text-only options). */
+export type OptionMediaData = { kind: 'image'; src: string } | null;
+
+/**
+ * Picture of answer option `index`, or null. Accepts the `option_media`
+ * array the Go service sends next to `options` (missing = text-only question).
+ */
+export function optionImage(
+    media: readonly OptionMediaData[] | null | undefined,
+    index: number,
+): string | null {
+    const item = media?.[index];
+    return item && item.kind === 'image' && item.src.startsWith('/games/question-media/')
+        ? item.src
+        : null;
+}
+
+/**
+ * Shared content of an answer button in every game: the option picture (when
+ * the teacher attached one) in a fixed box above the text. Text stays the
+ * accessible name; the picture is decorative alt="" when text exists.
+ * Sizes: `sm` for dense grids (block battle, snakes), `md` default.
+ */
+export function OptionContent({
+    text,
+    image,
+    size = 'md',
+    className,
+    textClassName,
+}: {
+    text: string;
+    image?: string | null;
+    size?: 'sm' | 'md';
+    className?: string;
+    textClassName?: string;
+}) {
+    const { t } = useTranslations();
+    if (!image) {
+        return <span className={cn('min-w-0 break-words', textClassName)}>{text}</span>;
+    }
+
+    return (
+        <span className={cn('flex min-w-0 flex-1 flex-col items-center gap-1.5', className)} data-testid="option-image">
+            <img
+                src={image}
+                alt={text ? '' : t('questionMedia.optionImageAlt')}
+                loading="lazy"
+                draggable={false}
+                className={cn(
+                    'w-full rounded-lg bg-white object-contain',
+                    size === 'sm' ? 'h-12 sm:h-16' : 'h-16 sm:h-24',
+                )}
+            />
+            {text && <span className={cn('min-w-0 text-center break-words', textClassName)}>{text}</span>}
+        </span>
     );
 }

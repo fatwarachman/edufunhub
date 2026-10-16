@@ -17,7 +17,11 @@ import {
     useRoomPin,
 } from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { QuestionMedia } from '@/components/question-media';
+import {
+    OptionContent,
+    optionImage,
+    QuestionMedia,
+} from '@/components/question-media';
 import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import { useGameAudio } from '@/hooks/use-game-audio';
@@ -697,9 +701,13 @@ export default function MiniGame({
                                                     LETTERS[index]
                                                 )}
                                             </span>
-                                            <span className="min-w-0 break-words">
-                                                {text}
-                                            </span>
+                                            <OptionContent
+                                                text={text}
+                                                image={optionImage(
+                                                    question.option_media,
+                                                    index,
+                                                )}
+                                            />
                                         </button>
                                     );
                                 })}

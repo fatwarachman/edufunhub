@@ -10,7 +10,11 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { QuestionMedia } from '@/components/question-media';
+import {
+    OptionContent,
+    optionImage,
+    QuestionMedia,
+} from '@/components/question-media';
 import {
     BackButton,
     NavButton,
@@ -99,6 +103,8 @@ interface Arena {
     targetY: number;
     questionId: string | null;
     options: string[];
+    /** Loaded option pictures (null = text only), drawn inside the targets. */
+    optionImages: (HTMLImageElement | null)[];
     targets: Target[];
     spawnAt: number;
     shots: Shot[];
@@ -164,6 +170,7 @@ function newArena(): Arena {
         targetY: 510,
         questionId: null,
         options: [],
+        optionImages: [],
         targets: [],
         spawnAt: 0,
         shots: [],
@@ -453,6 +460,13 @@ export default function SkyQuiz({
                 );
                 a.questionId = q.id;
                 a.options = q.options;
+                a.optionImages = q.options.map((_, index) => {
+                    const src = optionImage(q.option_media, index);
+                    if (!src) return null;
+                    const image = new Image();
+                    image.src = src;
+                    return image;
+                });
                 a.targets = [];
                 a.missSent = false;
                 a.spawnAt = a.time + q.delay / 1000;
@@ -901,14 +915,34 @@ export default function SkyQuiz({
                         ctx.roundRect(tg.x - 105, tg.y - 26, 210, 52, 14);
                         ctx.fill();
                         ctx.stroke();
+                        const picture = a.optionImages[tg.option];
+                        const pictureReady =
+                            picture &&
+                            picture.complete &&
+                            picture.naturalWidth > 0;
+                        if (pictureReady) {
+                            const scale = Math.min(
+                                44 / picture.naturalWidth,
+                                44 / picture.naturalHeight,
+                            );
+                            const w = picture.naturalWidth * scale;
+                            const h = picture.naturalHeight * scale;
+                            ctx.drawImage(
+                                picture,
+                                tg.x - 98 + (44 - w) / 2,
+                                tg.y - h / 2,
+                                w,
+                                h,
+                            );
+                        }
                         ctx.fillStyle = '#20364a';
                         ctx.font = 'bold 18px system-ui';
                         ctx.textAlign = 'center';
                         ctx.fillText(
                             a.options[tg.option] ?? '',
-                            tg.x,
+                            pictureReady ? tg.x + 24 : tg.x,
                             tg.y + 6,
-                            195,
+                            pictureReady ? 147 : 195,
                         );
                     }
                 for (const e of a.enemies) {
@@ -1313,6 +1347,30 @@ export default function SkyQuiz({
                             ? t(passed ? 'sky.finishedPassed' : 'sky.finished')
                             : (question?.text ?? t('sky.intro'))}
                     </p>
+                    {screen !== 'ended' &&
+                        question?.option_media?.some(Boolean) && (
+                            <ul
+                                className="my-1 grid grid-cols-2 gap-2 sm:grid-cols-3"
+                                aria-label={t('sky.optionPictures')}
+                                data-testid="sky-option-pictures"
+                            >
+                                {question.options.map((option, index) => (
+                                    <li
+                                        key={`${question.id}-${index}`}
+                                        className="flex min-w-0 rounded-lg border-2 border-[#20364a] bg-white p-1.5 text-sm font-bold"
+                                    >
+                                        <OptionContent
+                                            text={option}
+                                            image={optionImage(
+                                                question.option_media,
+                                                index,
+                                            )}
+                                            size="sm"
+                                        />
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     <p
                         className="min-h-5 text-xs font-bold"
                         role="status"

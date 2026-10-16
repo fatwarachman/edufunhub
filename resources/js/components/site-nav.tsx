@@ -38,6 +38,7 @@ import {
     Trophy,
     UserPlus,
     UserRound,
+    UserRoundCheck,
     Users,
     X,
 } from 'lucide-react';
@@ -227,6 +228,14 @@ const MY_CLASSROOMS_ITEM: NavItem = {
     testId: 'nav-my-classrooms',
 };
 
+/** Signed-in players: teachers they learned with and those classes. */
+const MY_TEACHERS_ITEM: NavItem = {
+    href: '/my-classrooms/teachers',
+    labelKey: 'nav.myTeachers',
+    icon: UserRoundCheck,
+    testId: 'nav-my-teachers',
+};
+
 /** Signed-in players: own ability analysis. */
 const ABILITY_ITEM: NavItem = {
     href: '/ability',
@@ -306,6 +315,7 @@ function playerGroups({
                 PROFILE_ITEM,
                 CHARACTER_ITEM,
                 MY_CLASSROOMS_ITEM,
+                MY_TEACHERS_ITEM,
                 ABILITY_ITEM,
                 FEEDBACK_ITEM,
                 ...(isTeacher

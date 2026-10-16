@@ -288,6 +288,7 @@ func (h *Hub) Offline(uid int64)                         { h.rooms.Offline(uid) 
 func (h *Hub) SetLocale(uid int64, locale string)        { h.rooms.SetLocale(uid, locale) }
 func (h *Hub) Peers(uid int64) []int64                   { return h.rooms.Peers(uid) }
 func (h *Hub) Counts() (int, int)                        { return h.rooms.Counts() }
+func (h *Hub) RoomsSummary() []lobby.RoomSummary         { return h.rooms.RoomsSummary() }
 func (h *Hub) RoomPhase(pin string) (string, bool)       { return h.rooms.PhaseOf(pin) }
 func (h *Hub) Presence(uid int64) (lobby.Presence, bool) { return h.rooms.PresenceOf(uid) }
 func (h *Hub) HandOver(now time.Time) []int64            { return h.rooms.HandOver(now, lobby.HostGrace) }
@@ -1216,7 +1217,7 @@ func boardView(r *room, b *board, locale string, now time.Time) Message {
 	var question any
 	if b.q.Prompt.ID != "" {
 		question = Message{
-			"id": fmt.Sprintf("%s-%p-%d", r.Pin, b, b.round), "text": b.q.Prompt.Get(locale), "media": b.q.Media(), "options": opts,
+			"id": fmt.Sprintf("%s-%p-%d", r.Pin, b, b.round), "text": b.q.Prompt.Get(locale), "media": b.q.Media(), "options": opts, "option_media": b.q.OptionMedia(),
 			"labels": Labels[:len(opts)], "subject": b.q.Subject, "worth": b.q.Worth(),
 			"remaining_ms": max(int64(0), b.deadline.Sub(now).Milliseconds()),
 			"phase":        b.phase(now), "read_ms": max(int64(0), b.readUntil.Sub(now).Milliseconds()),
@@ -1237,7 +1238,7 @@ func (h *Hub) State(c auth.Claims, now time.Time) Message {
 		"board": nil, "boards": []Message{},
 		"remaining_ms": int64(0), "feedback": nil, "winner": nil, "reason": "", "stopped": false, "result": nil,
 	}
-	h.rooms.View(c.Subject, func(r *room) {
+	h.rooms.ViewFor(c, func(r *room) {
 		if r == nil {
 			return
 		}

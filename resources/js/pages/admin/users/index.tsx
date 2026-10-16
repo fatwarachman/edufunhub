@@ -1,4 +1,3 @@
-import { gameLabel } from '@/components/admin/game-stats';
 import { BadgeChips } from '@/components/badges';
 import { OnlineDot } from '@/components/online-dot';
 import { ResponsiveTable } from '@/components/responsive-table';
@@ -19,7 +18,6 @@ import {
     ChevronRight,
     Edit,
     Eye,
-    Gamepad2,
     Globe,
     Loader2,
     LogIn,
@@ -782,15 +780,22 @@ export default function UsersIndex({
                                           summary: true,
                                           cellClassName: 'whitespace-nowrap',
                                           cell: (user: AdminUser) =>
-                                              user.current_game ? (
+                                              user.current_page_label ? (
                                                   <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                                      <Gamepad2
+                                                      <Globe
                                                           className="size-3"
                                                           aria-hidden="true"
                                                       />
-                                                      {gameLabel(
-                                                          user.current_game,
-                                                      )}
+                                                      <span className="max-w-64 min-w-0 truncate">
+                                                          {
+                                                              user.current_page_label
+                                                          }
+                                                      </span>
+                                                      <span className="max-w-64 truncate text-xs text-muted-foreground">
+                                                          {
+                                                              user.current_page_path
+                                                          }
+                                                      </span>
                                                   </span>
                                               ) : (
                                                   <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">

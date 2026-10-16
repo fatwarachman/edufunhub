@@ -83,6 +83,51 @@ class StudentClassroomProgress
     }
 
     /**
+     * Teachers whose classes the student joined, each with those classes
+     * (newest first) and the student's combined score with that teacher.
+     *
+     * @return list<array{teacher: array{id: int|null, name: string, school: string|null}, classes: list<array<string, mixed>>, totals: array{classes: int, plays: int, points: int, answered: int, correct: int, accuracy: float|null}, last_joined_at: string|null}>
+     */
+    public function teachers(User $user): array
+    {
+        $items = $this->list($user);
+        $schools = User::query()
+            ->with('playerProfile:id,user_id,school_name')
+            ->whereIn('id', array_values(array_filter(array_column(array_column($items, 'classroom'), 'teacher_id'))))
+            ->get(['id'])
+            ->mapWithKeys(fn (User $teacher): array => [$teacher->id => $teacher->playerProfile?->school_name]);
+
+        return collect($items)
+            ->groupBy(fn (array $item): string => (string) ($item['classroom']['teacher_id'] ?? 'none'))
+            ->map(function ($classes) use ($schools): array {
+                $first = $classes->first()['classroom'];
+                $answered = (int) $classes->sum('totals.answered');
+                $correct = (int) $classes->sum('totals.correct');
+
+                return [
+                    'teacher' => [
+                        'id' => $first['teacher_id'],
+                        'name' => $first['teacher_name'],
+                        'school' => $first['teacher_id'] ? $schools->get($first['teacher_id']) : null,
+                    ],
+                    'classes' => $classes->values()->all(),
+                    'totals' => [
+                        'classes' => $classes->count(),
+                        'plays' => (int) $classes->sum('totals.plays'),
+                        'points' => (int) $classes->sum('totals.points'),
+                        'answered' => $answered,
+                        'correct' => $correct,
+                        'accuracy' => $answered > 0 ? round($correct / $answered * 100, 1) : null,
+                    ],
+                    'last_joined_at' => $classes->max('joined_at'),
+                ];
+            })
+            ->sortByDesc('last_joined_at')
+            ->values()
+            ->all();
+    }
+
+    /**
      * Detail for one membership: summary, games, recent plays, questions and
      * analysis. The caller must have checked ownership.
      *
@@ -158,6 +203,7 @@ class StudentClassroomProgress
             'status' => $classroom->status(),
             'starts_at' => $classroom->starts_at?->toIso8601String(),
             'ends_at' => $classroom->ends_at?->toIso8601String(),
+            'teacher_id' => $classroom->teacher_id,
             'teacher_name' => (string) ($classroom->teacher?->playerProfile?->nickname ?: ($classroom->teacher?->name ?? '')),
             'games' => $classroom->gameKeys(),
         ];

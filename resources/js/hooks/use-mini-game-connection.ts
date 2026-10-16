@@ -1,5 +1,8 @@
 import { type RoomPayload, type RoomSeat } from '@/components/multiplayer/room';
-import { type QuestionMediaData } from '@/components/question-media';
+import {
+    type OptionMediaData,
+    type QuestionMediaData,
+} from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 
 export type MiniGameKey =
@@ -41,6 +44,7 @@ export interface MiniQuestion {
     text: string;
     media?: QuestionMediaData | null;
     options: string[];
+    option_media?: OptionMediaData[] | null;
     choice: number;
     visual: MiniVisual;
     round_ms: number;

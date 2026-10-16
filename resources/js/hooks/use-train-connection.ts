@@ -1,4 +1,7 @@
-import { type QuestionMediaData } from '@/components/question-media';
+import {
+    type OptionMediaData,
+    type QuestionMediaData,
+} from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 
 export interface TrainState {
@@ -23,6 +26,7 @@ export interface TrainState {
         text: string;
         media?: QuestionMediaData | null;
         options: string[];
+        option_media?: OptionMediaData[] | null;
         delay: number;
         approach_ms: number;
         elapsed_ms: number;

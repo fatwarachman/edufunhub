@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateProfilePhotoRequest;
 use App\Models\PasswordHistory;
 use App\Models\Question;
 use App\Models\User;
+use App\Services\Classrooms\StudentClassroomProgress;
 use App\Services\PlayerPortal;
 use App\Services\ProfilePhoto;
 use Illuminate\Http\RedirectResponse;
@@ -68,6 +69,7 @@ class ProfileController extends Controller
                 'games' => $user->gameHistories()->count(),
             ],
             'needsCurrentPassword' => $this->needsCurrentPassword($user),
+            'classrooms' => app(StudentClassroomProgress::class)->list($user),
         ]);
     }
 

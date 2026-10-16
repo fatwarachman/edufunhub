@@ -242,21 +242,39 @@ export default function SubjectAnalysisDetail({
                         ) : (
                             <>
                                 <div className="flex items-center justify-center">
-                                    <ResponsiveContainer width="100%" height={220}>
-                                        <PieChart>
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height={280}
+                                    >
+                                        <PieChart
+                                            margin={{
+                                                top: 16,
+                                                right: 16,
+                                                bottom: 16,
+                                                left: 16,
+                                            }}
+                                        >
                                             <Pie
                                                 data={analysis.byLevelCounts}
                                                 dataKey="questions"
                                                 nameKey="label"
                                                 cx="50%"
                                                 cy="50%"
-                                                innerRadius={44}
-                                                outerRadius={90}
+                                                innerRadius="32%"
+                                                outerRadius="55%"
                                                 paddingAngle={2}
-                                                activeShape={{ outerRadius: 102, stroke: "var(--ring)", strokeWidth: 2 }}
+                                                activeShape={{
+                                                    stroke: 'var(--ring)',
+                                                    strokeWidth: 2,
+                                                }}
                                                 label={(entry) => {
-                                                    const pct = ((entry.percent ?? 0) * 100).toFixed(1);
-                                                    return Number(pct) >= 4 ? `${pct}%` : '';
+                                                    const pct = (
+                                                        (entry.percent ?? 0) *
+                                                        100
+                                                    ).toFixed(1);
+                                                    return Number(pct) >= 4
+                                                        ? `${pct}%`
+                                                        : '';
                                                 }}
                                                 labelLine={false}
                                             >
@@ -264,10 +282,17 @@ export default function SubjectAnalysisDetail({
                                                     (entry, i) => (
                                                         <Cell
                                                             key={i}
-                                                            fill={PIE[i % PIE.length]}
+                                                            fill={
+                                                                PIE[
+                                                                    i %
+                                                                        PIE.length
+                                                                ]
+                                                            }
                                                             aria-label={tr(
                                                                 QUESTION_LEVEL_LABELS[
-                                                                    Number(entry.label)
+                                                                    Number(
+                                                                        entry.label,
+                                                                    )
                                                                 ] ?? 'Unknown',
                                                             )}
                                                         />
@@ -276,7 +301,8 @@ export default function SubjectAnalysisDetail({
                                             </Pie>
                                             <RechartsTooltip
                                                 contentStyle={{
-                                                    background: 'var(--popover)',
+                                                    background:
+                                                        'var(--popover)',
                                                     border: '1px solid var(--border)',
                                                     borderRadius: 8,
                                                     fontSize: 13,
@@ -295,17 +321,52 @@ export default function SubjectAnalysisDetail({
                                 </div>
                                 <div className="flex flex-col gap-1.5 text-sm">
                                     {(() => {
-                                        const total = analysis.byLevelCounts.reduce((s, r) => s + r.questions, 0);
-                                        return analysis.byLevelCounts.map((entry, i) => {
-                                            const pct = total > 0 ? ((entry.questions / total) * 100).toFixed(1) : '0.0';
-                                            return (
-                                                <div key={i} className="flex min-w-0 items-center gap-2">
-                                                    <span className="inline-block size-3 shrink-0 rounded-sm" style={{ background: PIE[i % PIE.length] }} />
-                                                    <span className="text-muted-foreground">{tr(QUESTION_LEVEL_LABELS[Number(entry.label)] ?? 'Unknown')}</span>
-                                                    <span className="font-medium tabular-nums text-foreground">{pct}%</span>
-                                                </div>
+                                        const total =
+                                            analysis.byLevelCounts.reduce(
+                                                (s, r) => s + r.questions,
+                                                0,
                                             );
-                                        });
+                                        return analysis.byLevelCounts.map(
+                                            (entry, i) => {
+                                                const pct =
+                                                    total > 0
+                                                        ? (
+                                                              (entry.questions /
+                                                                  total) *
+                                                              100
+                                                          ).toFixed(1)
+                                                        : '0.0';
+                                                return (
+                                                    <div
+                                                        key={i}
+                                                        className="flex min-w-0 items-center gap-2"
+                                                    >
+                                                        <span
+                                                            className="inline-block size-3 shrink-0 rounded-sm"
+                                                            style={{
+                                                                background:
+                                                                    PIE[
+                                                                        i %
+                                                                            PIE.length
+                                                                    ],
+                                                            }}
+                                                        />
+                                                        <span className="text-muted-foreground">
+                                                            {tr(
+                                                                QUESTION_LEVEL_LABELS[
+                                                                    Number(
+                                                                        entry.label,
+                                                                    )
+                                                                ] ?? 'Unknown',
+                                                            )}
+                                                        </span>
+                                                        <span className="font-medium text-foreground tabular-nums">
+                                                            {pct}%
+                                                        </span>
+                                                    </div>
+                                                );
+                                            },
+                                        );
                                     })()}
                                 </div>
                             </>

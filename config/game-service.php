@@ -24,6 +24,9 @@ return [
     'presence_url' => env('GAME_SERVICE_PRESENCE_URL', 'http://edufunhub-game:8090/internal/presence'),
     /* Signed endpoint listing the open rooms that own a PIN (join with only the code). */
     'room_url' => env('GAME_SERVICE_ROOM_URL', 'http://edufunhub-game:8090/internal/room'),
+    /* Signed endpoints for admin monitoring: open rooms and a read-only spectator snapshot of one room. */
+    'live_rooms_url' => env('GAME_SERVICE_LIVE_ROOMS_URL', 'http://edufunhub-game:8090/internal/live-rooms'),
+    'spectate_url' => env('GAME_SERVICE_SPECTATE_URL', 'http://edufunhub-game:8090/internal/spectate'),
     /* Signed endpoint that disconnects a student (or everyone with user 0) from the classroom world. */
     'classroom_kick_url' => env('GAME_SERVICE_CLASSROOM_KICK_URL', 'http://edufunhub-classroom:8092/internal/classroom/kick'),
     /* Signed endpoint that closes every game room of an ended classroom. */

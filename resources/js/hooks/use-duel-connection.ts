@@ -1,5 +1,8 @@
 import { type RoomPayload } from '@/components/multiplayer/room';
-import { type QuestionMediaData } from '@/components/question-media';
+import {
+    type OptionMediaData,
+    type QuestionMediaData,
+} from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 import { type CharacterLook } from '@/lib/character/draw-character';
 
@@ -47,6 +50,7 @@ export interface DuelState {
         text: string;
         media?: QuestionMediaData | null;
         options: string[];
+        option_media?: OptionMediaData[] | null;
         choice: number;
         remaining_ms?: number;
     };

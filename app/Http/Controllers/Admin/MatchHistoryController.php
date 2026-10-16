@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\GameMatch;
+use App\Services\LiveMatchMonitor;
 use App\Services\MatchHistory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ use Inertia\Response;
  */
 class MatchHistoryController extends Controller
 {
-    public function index(Request $request, MatchHistory $history): Response
+    public function index(Request $request, MatchHistory $history, LiveMatchMonitor $monitor): Response
     {
         $filters = $request->only(['game', 'mode', 'search']);
         $games = GameMatch::query()->distinct()->orderBy('game_key')->pluck('game_key');
@@ -38,6 +39,7 @@ class MatchHistoryController extends Controller
             'filters' => (object) $filters,
             'games' => $games,
             'modes' => GameMatch::MODES,
+            'liveRooms' => $monitor->rooms(),
             'summary' => [
                 'matches' => GameMatch::query()->count(),
                 'multiplayer' => GameMatch::query()->where('players_count', '>', 1)->count(),

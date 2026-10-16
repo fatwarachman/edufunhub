@@ -12,6 +12,7 @@ import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
 import { type PlayerDetails } from '@/components/player-details-card';
+import { ShareMenu } from '@/components/share-menu';
 import { NavButton } from '@/components/site-nav';
 import { Vault, type VaultItem } from '@/components/vault';
 import { useFreshOnHistory } from '@/hooks/use-fresh-on-history';
@@ -430,6 +431,7 @@ export default function Dashboard({
             >
                 <KpiStrip
                     stats={stats}
+                    rank={rank}
                     streak={badges.stats.streak ?? 0}
                     activeDays={badges.stats.active_days ?? 0}
                     number={number}
@@ -635,16 +637,20 @@ function OnlineNowCard({
 
 function KpiStrip({
     stats,
+    rank,
     streak,
     activeDays,
     number,
 }: {
     stats?: DashboardStats;
+    rank: number | null;
     streak: number;
     activeDays: number;
     number: Intl.NumberFormat;
 }) {
     const { t } = useTranslations();
+    const { auth } = usePage<SharedData>().props;
+    const userId = auth.user.id;
     const duration = useDuration();
     if (!stats) {
         return null;
@@ -710,32 +716,59 @@ function KpiStrip({
         },
     ];
 
+    const summary = t('playerDash.share.statsText', {
+        plays: number.format(stats.totals.plays),
+        accuracy:
+            stats.totals.accuracy === null
+                ? t('playerDash.kpi.noData')
+                : `${number.format(stats.totals.accuracy)}%`,
+        points: number.format(stats.totals.points),
+        rank: rank === null ? t('playerDash.noRank') : number.format(rank),
+    });
+
     return (
-        <ul
-            className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6"
-            aria-label={t('playerDash.kpi.label')}
-            data-testid="dash-kpis"
+        <section
+            className="flex min-w-0 flex-col gap-3"
+            data-testid="dash-share-stats"
         >
-            {tiles.map(({ key, icon: Icon, label, value, tone }) => (
-                <li
-                    key={key}
-                    className={`flex min-w-0 flex-col gap-2 rounded-2xl border-[3px] ${INK} bg-white p-3 shadow-[4px_4px_0_#151b2e] sm:p-4`}
-                    data-testid={`dash-kpi-${key}`}
-                >
-                    <span
-                        className={`grid size-8 place-items-center rounded-lg border-2 ${INK} ${tone}`}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-bold">
+                    {t('playerDash.share.title')}
+                </p>
+                <ShareMenu
+                    title={t('playerDash.share.title')}
+                    text={summary}
+                    url={`/players/${userId}`}
+                    label={t('playerDash.share.button')}
+                    testId="dash-share-stats-button"
+                />
+            </div>
+            <ul
+                className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6"
+                aria-label={t('playerDash.kpi.label')}
+                data-testid="dash-kpis"
+            >
+                {tiles.map(({ key, icon: Icon, label, value, tone }) => (
+                    <li
+                        key={key}
+                        className={`flex min-w-0 flex-col gap-2 rounded-2xl border-[3px] ${INK} bg-white p-3 shadow-[4px_4px_0_#151b2e] sm:p-4`}
+                        data-testid={`dash-kpi-${key}`}
                     >
-                        <Icon className="size-4" aria-hidden />
-                    </span>
-                    <span className="text-[11px] leading-tight font-bold tracking-wide text-[#151b2e]/70 uppercase sm:text-xs">
-                        {label}
-                    </span>
-                    <span className="line-clamp-2 text-lg leading-tight font-bold break-words tabular-nums sm:text-xl">
-                        {value}
-                    </span>
-                </li>
-            ))}
-        </ul>
+                        <span
+                            className={`grid size-8 place-items-center rounded-lg border-2 ${INK} ${tone}`}
+                        >
+                            <Icon className="size-4" aria-hidden />
+                        </span>
+                        <span className="text-[11px] leading-tight font-bold tracking-wide text-[#151b2e]/70 uppercase sm:text-xs">
+                            {label}
+                        </span>
+                        <span className="line-clamp-2 text-lg leading-tight font-bold break-words tabular-nums sm:text-xl">
+                            {value}
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </section>
     );
 }
 
@@ -1137,6 +1170,14 @@ function LeaderboardCard({
     const meListed = board.entries.some((row) => row.isMe);
     const podium = board.entries.slice(0, 3);
     const order = [podium[1], podium[0], podium[2]];
+    const periodLabel = t(`portal.leaderboardPeriod.${period}`);
+    const rankingText = board.me
+        ? t('playerDash.board.shareText', {
+              rank: number.format(board.me.rank),
+              points: number.format(board.me.points),
+              period: periodLabel,
+          })
+        : t('playerDash.board.shareTextUnranked', { period: periodLabel });
 
     return (
         <section
@@ -1148,15 +1189,25 @@ function LeaderboardCard({
                 icon={Crown}
                 id="dash-board-title"
                 aside={
-                    <Link
-                        href="/leaderboard"
-                        prefetch
-                        className="text-xs font-bold text-[#151b2e]/80 hover:text-[#151b2e] hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7]"
-                        data-testid="dash-board-all"
-                        aria-label={t('playerDash.board.seeAllLabel')}
-                    >
-                        {t('playerDash.board.seeAll')}
-                    </Link>
+                    <span className="flex flex-wrap items-center gap-2">
+                        <ShareMenu
+                            title={t('playerDash.board.shareTitle')}
+                            text={rankingText}
+                            url="/leaderboard"
+                            label={t('playerDash.board.share')}
+                            testId="dash-share-ranking-button"
+                            className="min-h-9 px-2.5 text-xs"
+                        />
+                        <Link
+                            href="/leaderboard"
+                            prefetch
+                            className="text-xs font-bold text-[#151b2e]/80 hover:text-[#151b2e] hover:underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#6c5ce7]"
+                            data-testid="dash-board-all"
+                            aria-label={t('playerDash.board.seeAllLabel')}
+                        >
+                            {t('playerDash.board.seeAll')}
+                        </Link>
+                    </span>
                 }
             >
                 <Link

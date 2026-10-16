@@ -1,4 +1,7 @@
-import { type QuestionMediaData } from '@/components/question-media';
+import {
+    type OptionMediaData,
+    type QuestionMediaData,
+} from '@/components/question-media';
 
 export interface SkyQuestion {
     grade: number;
@@ -306,6 +309,7 @@ export interface SkyRoundState {
         text: string;
         media?: QuestionMediaData | null;
         options: string[];
+        option_media?: OptionMediaData[] | null;
         removed: number[];
         delay: number;
     };

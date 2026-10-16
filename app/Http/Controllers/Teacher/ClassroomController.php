@@ -21,6 +21,7 @@ use App\Services\Classrooms\ClassroomCloser;
 use App\Services\Classrooms\ClassroomLive;
 use App\Services\Classrooms\ClassroomReport;
 use App\Services\Classrooms\ClassroomWorldKicker;
+use App\Services\Classrooms\TeacherClassroomHistory;
 use App\Services\PlayerNotifications;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -37,6 +38,7 @@ class ClassroomController extends Controller
         private ClassroomReport $report,
         private AiSettings $ai,
         private ClassroomWorldKicker $kicker,
+        private TeacherClassroomHistory $history,
     ) {}
 
     public function index(Request $request): Response
@@ -76,6 +78,14 @@ class ClassroomController extends Controller
         ]);
     }
 
+    public function history(Request $request): Response
+    {
+        return Inertia::render('teacher/classrooms/history', [
+            'students' => $this->history->forTeacher($request->user()),
+            'classrooms' => $this->history->classroomsFor($request->user()),
+        ]);
+    }
+
     public function create(): Response
     {
         return Inertia::render('teacher/classrooms/form', [
@@ -102,6 +112,7 @@ class ClassroomController extends Controller
                 'sort_order' => $game['sort_order'],
                 'max_plays' => $game['max_plays'],
                 'subjects' => $game['subjects'],
+                'difficulty' => $game['difficulty'],
             ]);
 
             if ($game['question_ids'] !== []) {
@@ -138,6 +149,7 @@ class ClassroomController extends Controller
                 'games' => $classroom->games->map(fn (ClassroomGame $g): array => [
                     'game_key' => $g->game_key,
                     'max_plays' => $g->max_plays,
+                    'difficulty' => $g->difficulty,
                     'subjects' => $g->playSubjects(),
                     'questions' => $g->questions->map(fn (Question $q): array => [
                         'id' => $q->id,
@@ -225,6 +237,7 @@ class ClassroomController extends Controller
                 'games' => $classroom->games->map(fn (ClassroomGame $g): array => [
                     'game_key' => $g->game_key,
                     'max_plays' => $g->max_plays,
+                    'difficulty' => $g->difficulty,
                     'subjects' => $g->subjects ?? [],
                     'questions' => $g->questions->map(fn (Question $q): array => $this->questionPick($q, $teacher))->values()->all(),
                 ])->all(),
@@ -256,6 +269,7 @@ class ClassroomController extends Controller
                 'sort_order' => $game['sort_order'],
                 'max_plays' => $game['max_plays'],
                 'subjects' => $game['subjects'],
+                'difficulty' => $game['difficulty'],
             ]);
 
             if ($game['question_ids'] !== []) {

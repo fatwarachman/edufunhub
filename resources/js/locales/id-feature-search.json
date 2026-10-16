@@ -245,6 +245,18 @@
             "title": "Log chat pengguna",
             "superadminOnly": true,
             "teacherOnly": false
+        },
+        "teacherClassroomHistory": {
+            "href": "/teacher/classrooms/history",
+            "title": "Riwayat siswa kelas guru",
+            "superadminOnly": false,
+            "teacherOnly": true
+        },
+        "myTeachers": {
+            "href": "/my-classrooms/teachers",
+            "title": "Guru & kelasku",
+            "superadminOnly": false,
+            "teacherOnly": false
         }
     }
 }

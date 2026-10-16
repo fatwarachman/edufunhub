@@ -50,11 +50,21 @@
             "demoInvite": "Solo dengan robot · Duel dengan teman",
             "demoWinner": "5 : 3 — Menang!",
             "demoQuestion": "Berapa hasil 7 × 8?",
-            "demoOptions": ["54", "56", "63", "48"],
+            "demoOptions": [
+                "54",
+                "56",
+                "63",
+                "48"
+            ],
             "demoAnswer": "Jawaban: 56",
             "demoRally": "Reli 6 · giliran bergantian",
             "demoRallyQuestion": "Planet terdekat dengan Matahari adalah…",
-            "demoRallyOptions": ["Venus", "Merkurius", "Mars", "Bumi"],
+            "demoRallyOptions": [
+                "Venus",
+                "Merkurius",
+                "Mars",
+                "Bumi"
+            ],
             "demo": {
                 "subject": "PILIH MAPEL",
                 "read": "BACA SOAL",
@@ -516,7 +526,8 @@
         "withCount": "{{label}} ({{count}} baru)",
         "myClassrooms": "Kelasku",
         "search": "Cari game & fitur",
-        "tabBar": "Navigasi bawah"
+        "tabBar": "Navigasi bawah",
+        "myTeachers": "Guru & kelasku"
     },
     "sky": {
         "title": "Sukhoi Sky Quiz",
@@ -594,7 +605,8 @@
         "finished": "Penerbangan selesai. Lihat hasilmu di bawah.",
         "finishedPassed": "Hebat! Kamu menjawab lebih dari 70% soal dengan benar.",
         "joystick": "Joystick: geser untuk mengemudikan pesawat",
-        "joystickHint": "Geser joystick untuk terbang, tekan Tembak untuk menembak."
+        "joystickHint": "Geser joystick untuk terbang, tekan Tembak untuk menembak.",
+        "optionPictures": "Gambar pilihan jawaban"
     },
     "teacher": {
         "title": "Ruang Guru",
@@ -646,7 +658,8 @@
             "playedBy": "Dijawab kelas",
             "prev": "Sebelumnya",
             "next": "Berikutnya",
-            "page": "Halaman {{current}} dari {{last}}"
+            "page": "Halaman {{current}} dari {{last}}",
+            "picture": "Bergambar"
         },
         "form": {
             "createTitle": "Buat soal baru",
@@ -682,7 +695,13 @@
             "cancel": "Batal",
             "save": "Simpan perubahan",
             "create": "Simpan soal",
-            "saving": "Menyimpan…"
+            "saving": "Menyimpan…",
+            "visual": "Ilustrasi",
+            "visualDescription": "Gambar pertanyaan opsional.",
+            "optionImage": "Gambar",
+            "uploadFailed": "Unggah gagal. Coba lagi.",
+            "removeOptionImage": "Hapus gambar pilihan",
+            "optionImageHint": "Tiap pilihan boleh berupa teks, gambar, atau keduanya. Gambar pilihan maksimal 512 KB, sisi 64–2000 px, foto besar otomatis diperkecil."
         },
         "importPage": {
             "title": "Impor soal dari CSV",
@@ -742,7 +761,8 @@
             "label": "Menu guru",
             "questions": "Bank Soal",
             "topics": "Materi",
-            "classrooms": "Ruang Kelas"
+            "classrooms": "Ruang Kelas",
+            "assistant": "Tanya Aku AI"
         },
         "topics": {
             "pageTitle": "Materi Pelajaran",
@@ -2612,7 +2632,11 @@
             "loading": "Memuat papan peringkat…",
             "points": "{{formatted}} poin",
             "seeAll": "Lihat semua",
-            "seeAllLabel": "Lihat semua papan peringkat"
+            "seeAllLabel": "Lihat semua papan peringkat",
+            "share": "Bagikan",
+            "shareTitle": "Bagikan peringkat",
+            "shareText": "Aku peringkat #{{rank}} di papan peringkat EduFunHub ({{period}}) dengan {{points}} poin! Ayo kalahkan aku!",
+            "shareTextUnranked": "Ayo bermain dan naik ke papan peringkat EduFunHub ({{period}})!"
         },
         "history": {
             "title": "Hasil terbaru",
@@ -2622,6 +2646,12 @@
             "page": "Halaman {{page}} dari {{last}}"
         },
         "loadingStats": "Memuat statistik…",
+        "share": {
+            "title": "Bagikan dashboard",
+            "button": "Bagikan statistik",
+            "shared": "Disalin!",
+            "statsText": "Dashboard EduFunHub saya: {{plays}} kali bermain, akurasi {{accuracy}}, {{points}} poin, peringkat {{rank}}."
+        },
         "settings": "Profil & pengaturan",
         "settingsReadOnly": "Data di atas hanya bisa diubah dari halaman profil.",
         "settingsEdit": "Ubah di halaman profil",
@@ -2902,6 +2932,14 @@
             "alt": "Foto profil {{name}}",
             "errorType": "Foto harus berformat JPG, PNG, atau WEBP.",
             "errorSize": "Ukuran foto maksimal 2 MB."
+        },
+        "classrooms": {
+            "title": "Riwayat kelas",
+            "subtitle": "Daftar kelas yang pernah kamu ikuti, beserta guru dan detailnya.",
+            "empty": "Belum ada kelas yang kamu ikuti.",
+            "joined": "Masuk {{date}}",
+            "left": "Sudah keluar",
+            "active": "Masih bergabung"
         }
     },
     "questionLevel": {
@@ -3357,7 +3395,12 @@
             "demoPin": "PIN contoh",
             "demoWinner": "Ekor habis — Juara!",
             "demoQuestion": "Berapa hasil 7 × 8?",
-            "demoOptions": ["54", "56", "63", "48"],
+            "demoOptions": [
+                "54",
+                "56",
+                "63",
+                "48"
+            ],
             "demo": {
                 "room": "BUAT RUANG & PILIH MODE",
                 "read": "BACA SOAL",
@@ -3405,7 +3448,9 @@
         "cableLabel": "Susunan {{count}} kabel, nomor 1 di kiri",
         "fiberLabel": "Susunan {{count}} core fiber, nomor 1 di kiri",
         "topologyLabel": "Diagram topologi jaringan",
-        "terminal": "Terminal"
+        "terminal": "Terminal",
+        "optionImageAlt": "Gambar pilihan jawaban",
+        "emojiLabel": "Gambar berisi {{count}} emoji"
     },
     "classroom": {
         "show": {
@@ -3900,6 +3945,47 @@
             "activeLeft": "Aktif · sisa {{count}} dtk",
             "finished": "Selesai",
             "stop": "Hentikan"
+        },
+        "history": {
+            "title": "Riwayat kelas",
+            "subtitle": "Semua kelasmu beserta setiap siswa yang pernah ikut, termasuk yang sudah keluar, lengkap dengan poin dan akurasinya.",
+            "emptyTitle": "Belum ada riwayat siswa",
+            "emptyHint": "Siswa akan muncul setelah bergabung ke kelas.",
+            "classCount": "{{count}} kelas",
+            "joined": "Masuk {{date}}",
+            "left": "Keluar {{date}}",
+            "active": "Masih bergabung",
+            "search": "Cari kelas atau siswa",
+            "view": "Tampilan",
+            "by": {
+                "classes": "Per kelas",
+                "students": "Per siswa"
+            },
+            "members": "{{count}} siswa · {{active}} aktif",
+            "noStudents": "Belum ada siswa yang ikut kelas ini.",
+            "score": "{{plays}}x main · akurasi {{accuracy}}"
+        },
+        "teachers": {
+            "title": "Guru & kelasku",
+            "subtitle": "Guru yang pernah mengajarmu dan semua kelas yang kamu ikuti bersama mereka, lengkap dengan nilaimu.",
+            "kpiTeachers": "Guru",
+            "emptyTitle": "Belum ada guru",
+            "search": "Cari guru atau kelas",
+            "unknown": "Guru",
+            "classes_one": "{{count}} kelas",
+            "classes_other": "{{count}} kelas",
+            "lastJoined": "Terakhir ikut {{date}}",
+            "open": "Lihat guru & kelas"
         }
+    },
+    "shareMenu": {
+        "label": "Pilihan berbagi",
+        "native": "Bagikan…",
+        "whatsapp": "WhatsApp",
+        "facebook": "Facebook",
+        "x": "X (Twitter)",
+        "telegram": "Telegram",
+        "copyLink": "Salin tautan",
+        "copied": "Tautan disalin!"
     }
 }

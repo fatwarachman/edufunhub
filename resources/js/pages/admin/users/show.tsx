@@ -43,6 +43,7 @@ import {
 import { BadgeMedal, type BadgeProgress } from '@/components/badges';
 import PlayerCharacter from '@/components/player-character';
 import { ResponsiveTable } from '@/components/responsive-table';
+import { deviceTypeLabel, UserDeviceProfile, type UserDeviceSummary } from '@/components/admin/user-device-profile';
 import AdminLayout from '@/layouts/admin-layout';
 import { adminLocale, tr } from '@/lib/admin-i18n';
 import { type CharacterLook } from '@/lib/character/draw-character';
@@ -109,6 +110,8 @@ interface UserDetail {
     is_superadmin: boolean;
     created_at: string;
     last_seen_at: string | null;
+    current_page_path: string | null;
+    current_page_label: string | null;
     email_verified_at: string | null;
     disabled_at: string | null;
     deleted_at?: string | null;
@@ -205,6 +208,15 @@ interface Props {
         is_successful: boolean;
         login_at: string;
     }[];
+    deviceSummary: UserDeviceSummary;
+    deviceHistory: {
+        id: number;
+        game_key: string;
+        device_type: string;
+        os: string;
+        browser: string;
+        accessed_at: string;
+    }[];
     activityLog: {
         id: number;
         description: string;
@@ -285,7 +297,7 @@ interface Props {
     };
 }
 
-type Tab = 'games' | 'perGame' | 'ability' | 'matches' | 'activity' | 'logins';
+type Tab = 'games' | 'perGame' | 'ability' | 'matches' | 'activity' | 'logins' | 'devices';
 
 const TABS: Tab[] = [
     'games',
@@ -294,6 +306,7 @@ const TABS: Tab[] = [
     'matches',
     'activity',
     'logins',
+    'devices',
 ];
 
 const PER_GAME_PREVIEW = 5;
@@ -889,6 +902,15 @@ export default function ShowUser(props: Props) {
                                     }
                                 />
                                 <Fact
+                                    icon={Activity}
+                                    label={tr('Current page')}
+                                    value={
+                                        user.current_page_label
+                                            ? `${user.current_page_label} (${user.current_page_path})`
+                                            : tr('Not available')
+                                    }
+                                />
+                                <Fact
                                     icon={Mail}
                                     label={tr('Email verified')}
                                     value={
@@ -1310,6 +1332,13 @@ export default function ShowUser(props: Props) {
                                         ]),
                                         icon: LogIn,
                                     },
+                                    {
+                                        key: 'devices',
+                                        label: tr('Devices ({0})', [
+                                            props.deviceHistory.length,
+                                        ]),
+                                        icon: Smartphone,
+                                    },
                                 ] as {
                                     key: Tab;
                                     label: string;
@@ -1338,7 +1367,10 @@ export default function ShowUser(props: Props) {
                     </header>
                     <div className="p-5">
                         {tab === 'games' && (
-                            <GameHistory plays={props.plays} userId={user.id} />
+                            <div className="flex flex-col gap-5">
+                                <UserDeviceProfile summary={props.deviceSummary} />
+                                <GameHistory plays={props.plays} userId={user.id} />
+                            </div>
                         )}
                         {tab === 'perGame' && (
                             <PerGameTable rows={props.perGame} />
@@ -1383,6 +1415,19 @@ export default function ShowUser(props: Props) {
                             />
                         )}
                         {tab === 'logins' && <LoginTable rows={props.logins} />}
+                        {tab === 'devices' && (
+                            <div className="flex flex-col gap-5">
+                            <UserDeviceProfile summary={props.deviceSummary} detailed />
+                            <p className="text-sm font-semibold text-foreground">{tr('Recent game opens')}</p>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm">
+                                    <thead><tr className="border-b border-border text-muted-foreground"><th className="px-3 py-3">{tr('Date')}</th><th className="px-3 py-3">{tr('Game')}</th><th className="px-3 py-3">{tr('Operating system')}</th><th className="px-3 py-3">{tr('Device type')}</th><th className="px-3 py-3">{tr('Browser')}</th></tr></thead>
+                                    <tbody>{props.deviceHistory.map((row) => <tr key={row.id} className="border-b border-border/60"><td className="px-3 py-3 text-muted-foreground">{formatDateTime(row.accessed_at)}</td><td className="px-3 py-3">{gameLabel(row.game_key)}</td><td className="px-3 py-3">{row.os}</td><td className="px-3 py-3">{deviceTypeLabel(row.device_type)}</td><td className="px-3 py-3 text-muted-foreground">{row.browser}</td></tr>)}</tbody>
+                                </table>
+                                {props.deviceHistory.length === 0 && <EmptyState icon={Smartphone} title={tr('No device history yet')} />}
+                            </div>
+                            </div>
+                        )}
                     </div>
                 </section>
             </div>

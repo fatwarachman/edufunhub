@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ChangelogController;
 use App\Http\Controllers\Admin\CharacterItemController;
 use App\Http\Controllers\Admin\ChatLogController;
 use App\Http\Controllers\Admin\ClassroomAdminController;
+use App\Http\Controllers\Admin\ClassroomWorldController;
 use App\Http\Controllers\Admin\CompensationController;
 use App\Http\Controllers\Admin\CrosswordWordController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Admin\GameStatisticsController;
 use App\Http\Controllers\Admin\HotGamesController;
 use App\Http\Controllers\Admin\ImpersonationController;
 use App\Http\Controllers\Admin\LeaderboardController;
+use App\Http\Controllers\Admin\LiveMatchController;
 use App\Http\Controllers\Admin\MatchHistoryController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PlayerNotificationController;
@@ -68,6 +70,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
 
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/device-usage', [DeviceUsageController::class, 'index'])->name('device-usage.index');
         Route::get('/device-usage/games', [DeviceUsageController::class, 'games'])->name('device-usage.games');
 
         // Users CRUD + toggle status
@@ -111,6 +114,9 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::get('/chat-logs/{conversation}', [ChatLogController::class, 'show'])->whereNumber('conversation')->name('chat-logs.show');
             Route::get('/classrooms', [ClassroomAdminController::class, 'index'])->name('classrooms.index');
             Route::get('/classrooms/{classroom}', [ClassroomAdminController::class, 'show'])->whereNumber('classroom')->name('classrooms.show');
+            Route::get('/classrooms/{classroom}/world', [ClassroomWorldController::class, 'show'])->whereNumber('classroom')->name('classrooms.world');
+            Route::post('/classrooms/{classroom}/world-token', [ClassroomWorldController::class, 'token'])->whereNumber('classroom')->middleware('throttle:30,1,admin.classrooms.world-token')->name('classrooms.world-token');
+            Route::get('/classrooms/{classroom}/world-hud', [ClassroomWorldController::class, 'hud'])->whereNumber('classroom')->middleware('throttle:60,1,admin.classrooms.world-hud')->name('classrooms.world-hud');
             Route::get('/teachers', [TeacherAdminController::class, 'index'])->name('teachers.index');
             Route::get('/teachers/{user}', [TeacherAdminController::class, 'show'])->whereNumber('user')->name('teachers.show');
             Route::get('/screen-time', [ScreenTimeController::class, 'index'])->name('screen-time.index');
@@ -162,6 +168,8 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::get('/backups/{backup}/download', [DatabaseBackupController::class, 'download'])->whereNumber('backup')->middleware('throttle:20,1,backups.download')->name('backups.download');
             Route::delete('/backups/{backup}', [DatabaseBackupController::class, 'destroy'])->whereNumber('backup')->middleware('throttle:30,1,backups.destroy')->name('backups.destroy');
             Route::get('/matches', [MatchHistoryController::class, 'index'])->name('matches.index');
+            Route::get('/matches/live/{game}/{pin}', [LiveMatchController::class, 'show'])->where(['game' => '[a-z0-9-]{1,40}', 'pin' => '[0-9]{6}'])->middleware('throttle:30,1,admin.matches.live')->name('matches.live');
+            Route::get('/matches/live/{game}/{pin}/state', [LiveMatchController::class, 'state'])->where(['game' => '[a-z0-9-]{1,40}', 'pin' => '[0-9]{6}'])->middleware('throttle:90,1,admin.matches.live-state')->name('matches.live.state');
             // Crossword word bank lives under the crossword game page (sub tab "Word bank").
             Route::patch('/games/crossword/words/{crossword_word}/toggle', [CrosswordWordController::class, 'toggle'])->name('crossword-words.toggle');
             Route::resource('games/crossword/words', CrosswordWordController::class)

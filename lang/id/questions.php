@@ -20,11 +20,16 @@ return [
     'visual' => [
         'image_required' => 'Unggah gambar untuk visual bergambar.',
         'image_missing' => 'Gambar soal tidak ditemukan. Unggah ulang gambarnya.',
-        'image_file' => 'Gambar harus JPG, PNG, atau WEBP, maksimal 2 MB, sisi 64–4096 px.',
+        'image_file' => 'Gambar harus JPG, PNG, atau WEBP.',
         'wires_required' => 'Kabel membutuhkan 2–12 warna inti.',
         'color_invalid' => 'Warna harus berformat hex, contoh #2563eb.',
         'shape_required' => 'Pilih bentuk topologi.',
         'lines_required' => 'Tulis minimal satu baris terminal.',
+        'image_size' => 'Ukuran gambar soal maksimal 1 MB.',
+        'option_image_size' => 'Ukuran gambar pilihan jawaban maksimal 512 KB.',
+        'image_dimensions' => 'Sisi gambar harus 64–2000 px.',
+        'image_ratio' => 'Gambar terlalu memanjang. Sisi terpanjang maksimal 3 kali sisi terpendek.',
+        'option_text_or_image' => 'Setiap pilihan jawaban butuh teks atau gambar.',
     ],
     'bulk' => [
         'activate' => ':count soal diaktifkan.',

@@ -575,7 +575,7 @@ func (r *Room) ask(now time.Time) {
 		return Message{
 			"t": "question_start", "qid": r.q.ID, "number": r.q.Number, "total": r.total,
 			"time_limit": limit.Milliseconds(), "remaining_ms": limit.Milliseconds(),
-			"question": r.questionView(locale), "options": r.optionsView(locale),
+			"question": r.questionView(locale), "options": r.optionsView(locale), "option_media": r.q.Question.OptionMedia(),
 		}
 	})
 }
@@ -1388,7 +1388,7 @@ func (r *Room) sendState(c *Client, now time.Time) {
 	if r.phase == PhaseRace && r.q.ID != 0 {
 		quiz := Message{
 			"qid": r.q.ID, "number": r.q.Number, "stage": r.q.Stage, "time_limit": r.q.Limit.Milliseconds(),
-			"remaining_ms": r.remaining(now), "question": r.questionView(locale), "options": r.optionsView(locale),
+			"remaining_ms": r.remaining(now), "question": r.questionView(locale), "options": r.optionsView(locale), "option_media": r.q.Question.OptionMedia(),
 		}
 		if r.q.Stage != StageQuestion {
 			quiz["correct_index"] = r.q.Question.Answer

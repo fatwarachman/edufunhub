@@ -24,7 +24,11 @@ import {
     RoomPinBadge,
 } from '@/components/multiplayer/room';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { QuestionMedia } from '@/components/question-media';
+import {
+    OptionContent,
+    optionImage,
+    QuestionMedia,
+} from '@/components/question-media';
 import { useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
@@ -648,9 +652,11 @@ function QuestionCard({
                         <span className="grid size-9 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] bg-white font-display text-lg font-black text-[#1f2a44]">
                             {LETTERS[index]}
                         </span>
-                        <span className="min-w-0 flex-1 font-display text-lg leading-tight font-black break-words sm:text-xl">
-                            {text}
-                        </span>
+                        <OptionContent
+                            text={text}
+                            image={optionImage(question.option_media, index)}
+                            textClassName="flex-1 font-display text-lg leading-tight font-black sm:text-xl"
+                        />
                     </button>
                 ))}
             </div>

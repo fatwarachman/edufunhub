@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\GameAccess;
 use App\Models\GameHistory;
 use App\Models\LoginActivity;
 use App\Models\PlayerProfile;
@@ -238,6 +239,16 @@ class UserAnalytics
                     'device' => $login->parsedDevice(),
                     'is_successful' => $login->is_successful,
                     'login_at' => $login->login_at->toIso8601String(),
+                ])->all(),
+            'deviceSummary' => $this->deviceSummary($user),
+            'deviceHistory' => GameAccess::query()->where('user_id', $user->id)->latest('accessed_at')->limit(20)->get(['id', 'game_key', 'device_type', 'os', 'browser', 'accessed_at'])
+                ->map(fn (GameAccess $access): array => [
+                    'id' => $access->id,
+                    'game_key' => $access->game_key,
+                    'device_type' => $access->device_type,
+                    'os' => $access->os,
+                    'browser' => $access->browser,
+                    'accessed_at' => $access->accessed_at->toIso8601String(),
                 ])->all(),
         ];
     }
@@ -595,5 +606,39 @@ class UserAnalytics
     private function percent(int $part, int $whole): ?float
     {
         return $whole > 0 ? round($part / $whole * 100, 1) : null;
+    }
+
+    /**
+     * Devices, operating systems and browsers a user opened games with.
+     *
+     * @return array{total: int, os: list<array{name: string, accesses: int}>, devices: list<array{name: string, accesses: int}>, combos: list<array{os: string, device_type: string, browser: string, accesses: int, first_at: string|null, last_at: string|null}>}
+     */
+    private function deviceSummary(User $user): array
+    {
+        $rows = GameAccess::query()
+            ->where('user_id', $user->id)
+            ->selectRaw('os, device_type, browser, COUNT(*) as accesses, MIN(accessed_at) as first_at, MAX(accessed_at) as last_at')
+            ->groupBy('os', 'device_type', 'browser')
+            ->orderByDesc('accesses')
+            ->limit(50)
+            ->get();
+
+        $group = fn (string $column): array => $rows->groupBy($column)
+            ->map(fn ($items, $name): array => ['name' => (string) $name, 'accesses' => (int) $items->sum('accesses')])
+            ->sortByDesc('accesses')->values()->all();
+
+        return [
+            'total' => (int) $rows->sum('accesses'),
+            'os' => $group('os'),
+            'devices' => $group('device_type'),
+            'combos' => $rows->map(fn ($row): array => [
+                'os' => (string) $row->os,
+                'device_type' => (string) $row->device_type,
+                'browser' => (string) $row->browser,
+                'accesses' => (int) $row->accesses,
+                'first_at' => $row->first_at ? Carbon::parse($row->first_at)->toIso8601String() : null,
+                'last_at' => $row->last_at ? Carbon::parse($row->last_at)->toIso8601String() : null,
+            ])->values()->all(),
+        ];
     }
 }

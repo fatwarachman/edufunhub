@@ -32,7 +32,7 @@ import {
     Shuffle,
     Trash2,
 } from 'lucide-react';
-import { type FormEvent, type ReactNode, useState } from 'react';
+import { createElement, type FormEvent, type ReactNode, useState } from 'react';
 
 interface ClassroomFormProps {
     classroom: ClassroomFormData | null;
@@ -48,6 +48,7 @@ interface GameDraft {
     game_key: string;
     /** Empty string = unlimited plays. */
     max_plays: number | '';
+    difficulty: number | '';
     /** Subjects students play when no question is picked (empty = mixed). */
     subjects: string[];
     questions: QuestionPick[];
@@ -59,6 +60,11 @@ const MAX_PLAYS = 50;
 const DURATION_PRESETS = [15, 30, 45, 60, 90, 120, 1440];
 
 /** `YYYY-MM-DDTHH:mm` in the browser's time zone (datetime-local value). */
+/** Default start for a new classroom: one hour from now (read once, outside render purity checks). */
+function oneHourFromNow(): Date {
+    return new Date(Date.now() + 60 * 60 * 1000);
+}
+
 function toLocalInput(value: string | Date): string {
     const date = typeof value === 'string' ? new Date(value) : value;
     if (Number.isNaN(date.getTime())) {
@@ -89,12 +95,13 @@ export default function ClassroomForm({
         start_now: !editing,
         starts_at: classroom
             ? toLocalInput(classroom.starts_at)
-            : toLocalInput(new Date(Date.now() + 60 * 60 * 1000)),
+            : toLocalInput(oneHourFromNow()),
         duration_minutes: initialDuration,
         max_members: classroom?.max_members ?? Math.min(100, limits.maxMembers),
         games: (classroom?.games ?? []).map((game) => ({
             game_key: game.game_key,
             max_plays: game.max_plays ?? '',
+            difficulty: game.difficulty ?? '',
             subjects: game.subjects ?? [],
             questions: game.questions,
         })) as GameDraft[],
@@ -122,7 +129,9 @@ export default function ClassroomForm({
                 games: values.games.map((game) => ({
                     game_key: game.game_key,
                     max_plays:
-                        game.max_plays === '' ? null : Number(game.max_plays),
+                    game.max_plays === '' ? null : Number(game.max_plays),
+                    difficulty:
+                    game.difficulty === '' ? null : Number(game.difficulty),
                     subjects: game.questions.length > 0 ? [] : game.subjects,
                     question_ids: game.questions.map((question) => question.id),
                 })),
@@ -152,6 +161,7 @@ export default function ClassroomForm({
                         {
                             game_key: key,
                             max_plays: '',
+                            difficulty: '',
                             subjects: [],
                             questions: [],
                         },
@@ -172,6 +182,16 @@ export default function ClassroomForm({
                           ),
                       }
                     : game,
+            ),
+        }));
+    };
+
+    const setDifficulty = (key: string, value: string) => {
+        const parsed = value === '' ? '' : Math.trunc(Number(value));
+        setData((current) => ({
+            ...current,
+            games: current.games.map((game) =>
+                game.game_key === key ? { ...game, difficulty: parsed } : game,
             ),
         }));
     };
@@ -537,6 +557,10 @@ export default function ClassroomForm({
                         onMaxPlays={(value) =>
                             setMaxPlays(game.game_key, value)
                         }
+                        difficulty={game.difficulty}
+                        onDifficulty={(value: string) =>
+                            setDifficulty(game.game_key, value)
+                        }
                         subjects={subjects}
                         onSubjects={(keys) => setSubjects(game.game_key, keys)}
                     />
@@ -607,6 +631,8 @@ function GameQuestions({
     onRemove,
     onCopyFrom,
     onMaxPlays,
+    difficulty,
+    onDifficulty,
     subjects,
     onSubjects,
 }: {
@@ -622,15 +648,18 @@ function GameQuestions({
     onRemove: (index: number) => void;
     onCopyFrom: (source: string) => void;
     onMaxPlays: (value: string) => void;
+    difficulty: number | '';
+    onDifficulty: (value: string) => void;
     subjects: string[];
     onSubjects: (keys: string[]) => void;
 }) {
     const { t } = useTranslations();
     const catalog = useGameCatalog();
-    const Icon = catalog.icon(game.game_key);
     const auto = game.questions.length === 0;
     const maxPlaysError = errorFor(`games.${gameIndex}.max_plays`);
+    const difficultyError = errorFor(`games.${gameIndex}.difficulty`);
     const maxPlaysId = `classroom-max-plays-${game.game_key}`;
+    const difficultyId = `classroom-difficulty-${game.game_key}`;
     const questionErrors = Object.entries({} as Record<string, string>).concat(
         [
             `games.${gameIndex}.question_ids`,
@@ -654,10 +683,10 @@ function GameQuestions({
                         className="grid size-9 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44]"
                         style={{ background: catalog.accent(game.game_key) }}
                     >
-                        <Icon
-                            className="size-4 text-white"
-                            aria-hidden="true"
-                        />
+                        {createElement(catalog.icon(game.game_key), {
+                            className: 'size-4 text-white',
+                            'aria-hidden': true,
+                        })}
                     </span>
                     <span className="min-w-0 truncate">
                         {t('classroom.form.questionsFor', {
@@ -765,6 +794,26 @@ function GameQuestions({
                     })}
                 </p>
                 <InputError message={maxPlaysError} />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+                <label htmlFor={difficultyId} className="text-sm font-bold text-slate-800">
+                    {t('classroom.form.difficulty')}
+                </label>
+                <select
+                    id={difficultyId}
+                    value={difficulty}
+                    onChange={(event) => onDifficulty(event.target.value)}
+                    className={`${teacherFieldClass} max-w-48`}
+                    data-testid={difficultyId}
+                    aria-invalid={difficultyError ? true : undefined}
+                >
+                    <option value="">{t('classroom.form.difficultyDefault')}</option>
+                    <option value="1">{t('classroom.difficulty.easy')}</option>
+                    <option value="2">{t('classroom.difficulty.medium')}</option>
+                    <option value="3">{t('classroom.difficulty.hard')}</option>
+                </select>
+                <InputError message={difficultyError} />
             </div>
 
             {choiceOnly && (

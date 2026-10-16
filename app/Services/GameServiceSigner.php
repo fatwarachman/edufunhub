@@ -27,7 +27,7 @@ class GameServiceSigner
 
     /**
      * @param  array{name: string, grade: int, level?: int, color: string, accessory: string, character?: array<string, mixed>}  $player
-     * @param  array{classroom?: int, booths?: list<string>, seats?: int, teacher_id?: int}  $extra  Extra claims; only `classroom`, `booths`, `seats` (clamped 1..200) and `teacher_id` (kept only when > 0) are accepted.
+     * @param  array{classroom?: int, booths?: list<string>, seats?: int, teacher_id?: int, observer?: bool}  $extra  Extra claims; only `classroom`, `booths`, `seats` (clamped 1..200), `teacher_id` (kept only when > 0) and `observer` are accepted.
      */
     public function issueToken(User $user, string $game, array $player, array $extra = []): string
     {
@@ -55,6 +55,10 @@ class GameServiceSigner
 
         if (array_key_exists('teacher_id', $extra) && (int) $extra['teacher_id'] > 0) {
             $claims['teacher_id'] = (int) $extra['teacher_id'];
+        }
+
+        if (! empty($extra['observer'])) {
+            $claims['observer'] = true;
         }
 
         $payload = $this->base64UrlEncode((string) json_encode($claims, JSON_UNESCAPED_UNICODE));

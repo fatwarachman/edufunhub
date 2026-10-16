@@ -39,6 +39,7 @@ class ClassroomRequest extends FormRequest
             'games.*.question_ids.*' => ['distinct', 'integer', 'exists:questions,id'],
             'games.*.subjects' => ['nullable', 'array', 'max:'.self::MAX_SUBJECTS_PER_GAME],
             'games.*.subjects.*' => ['distinct', 'string', Rule::in(Subject::activeKeys())],
+            'games.*.difficulty' => ['nullable', 'integer', 'in:1,2,3'],
         ];
     }
 
@@ -131,7 +132,7 @@ class ClassroomRequest extends FormRequest
         return $this->only(['name', 'description', 'starts_at', 'max_members']);
     }
 
-    /** @return list<array{game_key: string, sort_order: int, max_plays: int|null, subjects: list<string>|null, question_ids: list<int>}> */
+    /** @return list<array{game_key: string, sort_order: int, max_plays: int|null, subjects: list<string>|null, difficulty: int|null, question_ids: list<int>}> */
     public function games(): array
     {
         $games = (array) $this->validated('games');
@@ -145,6 +146,7 @@ class ClassroomRequest extends FormRequest
                 'sort_order' => $i,
                 'max_plays' => isset($game['max_plays']) && $game['max_plays'] !== '' ? (int) $game['max_plays'] : null,
                 'subjects' => $subjects === [] ? null : $subjects,
+                'difficulty' => isset($game['difficulty']) && $game['difficulty'] !== '' ? (int) $game['difficulty'] : null,
                 'question_ids' => array_map('intval', $game['question_ids'] ?? []),
             ];
         }, array_keys($games), $games);

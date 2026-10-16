@@ -4,7 +4,11 @@ import { GameFinale, podiumStandings } from '@/components/game-finale';
 import { ConnectionBadge, RoomError } from '@/components/multiplayer/room';
 import { SubjectPicker } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { QuestionMedia } from '@/components/question-media';
+import {
+    OptionContent,
+    optionImage,
+    QuestionMedia,
+} from '@/components/question-media';
 import { HowToPlay } from '@/components/turbo-trivia/how-to-play';
 import {
     ACCENT,
@@ -680,9 +684,10 @@ function QuestionBanner({
                             <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-white font-display text-sm font-black text-[#1f2a44]">
                                 {LETTERS[i]}
                             </span>
-                            <span className="min-w-0 break-words">
-                                {option}
-                            </span>
+                            <OptionContent
+                                text={option}
+                                image={optionImage(quiz.option_media, i)}
+                            />
                         </li>
                     );
                 })}

@@ -19,6 +19,9 @@ import {
     useSubjectLabel,
 } from '@/components/admin/game-stats';
 import {
+    OptionContent,
+    optionImage,
+    type OptionMediaData,
     QuestionMedia,
     type QuestionMediaData,
 } from '@/components/question-media';
@@ -122,7 +125,9 @@ interface Props {
         subject: string;
         prompt_id: string;
         prompt_en: string | null;
-        options: { id: string; en?: string }[] | null;
+        options:
+            | { id: string; en?: string; media?: OptionMediaData | null }[]
+            | null;
         visual: QuestionMediaData | null;
         answer: number;
         hint_id: string | null;
@@ -342,10 +347,21 @@ export default function QuestionShow({ question, stats }: Props) {
                                                 String.fromCharCode(65 + index)
                                             )}
                                         </span>
-                                        <span className="flex min-w-0 flex-col">
-                                            <span className="font-medium text-foreground">
-                                                {option.id}
-                                            </span>
+                                        <span className="flex min-w-0 flex-col gap-1">
+                                            <OptionContent
+                                                text={option.id}
+                                                image={optionImage(
+                                                    options.map(
+                                                        (item) =>
+                                                            ('media' in item
+                                                                ? item.media
+                                                                : null) ?? null,
+                                                    ),
+                                                    index,
+                                                )}
+                                                size="sm"
+                                                textClassName="font-medium text-foreground"
+                                            />
                                             {option.en &&
                                                 option.en !== option.id && (
                                                     <span className="text-xs text-muted-foreground">

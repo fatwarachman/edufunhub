@@ -24,6 +24,7 @@ import {
     FileUp,
     Gamepad2,
     GraduationCap,
+    Image as ImageIcon,
     Pencil,
     Plus,
     School,
@@ -49,6 +50,7 @@ interface QuestionRow {
     prompt_en: string | null;
     games: string[];
     grades: number[];
+    has_picture?: boolean;
     is_active: boolean;
     source: string;
     created_at: string | null;
@@ -519,6 +521,18 @@ function QuestionList({
                                                 ? t('teacher.form.choice')
                                                 : t('teacher.form.trueFalse')}
                                         </span>
+                                        {question.has_picture && (
+                                            <span
+                                                className="inline-flex items-center gap-1 rounded-full border-2 border-[#151b2e] bg-[#dbeafe] px-2 py-0.5"
+                                                data-testid="teacher-question-picture"
+                                            >
+                                                <ImageIcon
+                                                    className="size-3"
+                                                    aria-hidden="true"
+                                                />
+                                                {t('teacher.list.picture')}
+                                            </span>
+                                        )}
                                         {!question.is_active && (
                                             <span className="rounded-full border-2 border-[#151b2e] bg-[#ffe1e6] px-2 py-0.5">
                                                 {t('teacher.list.inactive')}

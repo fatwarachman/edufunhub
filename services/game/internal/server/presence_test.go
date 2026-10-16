@@ -24,6 +24,54 @@ func presenceRequest(t *testing.T, url string, user string, key []byte) *http.Re
 	return res
 }
 
+func TestLiveRoomsRequiresSignature(t *testing.T) {
+	srv := New(Config{Secret: secret})
+	ts := httptest.NewServer(srv.Handler())
+	defer ts.Close()
+
+	res, err := http.Get(ts.URL + "/internal/live-rooms")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.StatusCode != http.StatusForbidden {
+		t.Fatalf("unsigned request: %d", res.StatusCode)
+	}
+}
+
+func TestLiveRoomsListsPublicRunningRoomsWithoutGameState(t *testing.T) {
+	srv := New(Config{Secret: secret})
+	ts := httptest.NewServer(srv.Handler())
+	defer ts.Close()
+
+	now := time.Now()
+	host := auth.Claims{Subject: 7, Name: "A", Grade: 4, Game: "snakes-and-ladders"}
+	srv.snakes.Join(host, "id")
+	pin, _ := srv.snakes.Create(host, now)
+	_, _ = srv.snakes.Start(7, now)
+
+	stamp := strconv.FormatInt(time.Now().Unix(), 10)
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/internal/live-rooms", nil)
+	req.Header.Set("X-Game-Timestamp", stamp)
+	req.Header.Set("X-Game-Signature", Sign(secret, stamp, nil))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("signed request: %d", res.StatusCode)
+	}
+	var body struct {
+		Rooms []LiveRoom `json:"rooms"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
+		t.Fatal(err)
+	}
+	if len(body.Rooms) != 1 || body.Rooms[0].Game != "snakes-and-ladders" || body.Rooms[0].Pin != pin || body.Rooms[0].Players != 1 {
+		t.Fatalf("live rooms: %+v", body.Rooms)
+	}
+}
+
 func TestPresenceListsRunningRooms(t *testing.T) {
 	srv := New(Config{Secret: secret})
 	ts := httptest.NewServer(srv.Handler())

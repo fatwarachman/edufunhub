@@ -27,17 +27,19 @@ type classroomPayload struct {
 
 // classroomGamePayload is one game of a classroom in the list form.
 type classroomGamePayload struct {
-	GameKey   string          `json:"game_key"`
-	Subjects  []string        `json:"subjects"`
-	Questions json.RawMessage `json:"questions"`
+	GameKey    string          `json:"game_key"`
+	Subjects   []string        `json:"subjects"`
+	Difficulty int             `json:"difficulty"`
+	Questions  json.RawMessage `json:"questions"`
 }
 
 // classroomGame is the parsed setup of one classroom game: the subjects the
 // teacher locked it to (canonical subject value, "" = every subject) and
 // the picked questions.
 type classroomGame struct {
-	subject string
-	items   []Item
+	subject    string
+	difficulty int
+	items      []Item
 }
 
 // decodeClassroomGames reads both payload forms of a classroom's games.
@@ -85,7 +87,7 @@ func parseClassrooms(list []classroomPayload) map[int64]map[string]classroomGame
 			if _, dup := games[g.GameKey]; dup {
 				continue
 			}
-			setup := classroomGame{subject: NormSubject(strings.Join(g.Subjects, SubjectSeparator))}
+			setup := classroomGame{subject: NormSubject(strings.Join(g.Subjects, SubjectSeparator)), difficulty: g.Difficulty}
 			if len(g.Questions) > 0 && string(g.Questions) != "null" {
 				setup.items = parsePool(c.ID, g.GameKey, g.Questions)
 			}
@@ -155,6 +157,14 @@ func (b *Bank) Classrooms() int { return len(b.classrooms) }
 // ClassroomSubject returns the subjects the teacher set for game in
 // classroom id (canonical subject value, "" = mix) and whether the bank
 // knows that classroom game at all.
+func (b *Bank) ClassroomDifficulty(id int64, game string) (int, bool) {
+	if b == nil || id <= 0 || game == "" {
+		return 0, false
+	}
+	setup, ok := b.classrooms[id][game]
+	return setup.difficulty, ok
+}
+
 func (b *Bank) ClassroomSubject(id int64, game string) (string, bool) {
 	if b == nil || id <= 0 || game == "" {
 		return "", false
@@ -174,6 +184,9 @@ func (g *Generator) InClassroom(id int64) *Generator {
 	if subject, ok := Current().ClassroomSubject(g.Classroom, g.Game); ok {
 		g.Subject = subject
 		g.locked = subject != ""
+	}
+	if difficulty, ok := Current().ClassroomDifficulty(g.Classroom, g.Game); ok && difficulty > 0 {
+		g.AtLevel(difficulty)
 	}
 	return g
 }

@@ -39,7 +39,11 @@ import {
     SubjectPicker,
 } from '@/components/multiplayer/subject-picker';
 import { PlayerAvatar } from '@/components/player-avatar';
-import { QuestionMedia } from '@/components/question-media';
+import {
+    OptionContent,
+    optionImage,
+    QuestionMedia,
+} from '@/components/question-media';
 import { useGameBack } from '@/components/site-nav';
 import { Button } from '@/components/ui/button';
 import {
@@ -1349,9 +1353,12 @@ function QuizPanel({
                             <span className="grid size-6 shrink-0 place-items-center rounded-md bg-white font-display text-xs font-black text-[#1f2a44]">
                                 {LETTERS[i]}
                             </span>
-                            <span className="min-w-0 [overflow-wrap:anywhere]">
-                                {option}
-                            </span>
+                            <OptionContent
+                                text={option}
+                                image={optionImage(question.option_media, i)}
+                                size="sm"
+                                textClassName="[overflow-wrap:anywhere]"
+                            />
                         </button>
                     );
                 })}

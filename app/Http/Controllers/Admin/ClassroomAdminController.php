@@ -75,6 +75,8 @@ class ClassroomAdminController extends Controller
                 'id' => $game->id,
                 'game_key' => $game->game_key,
                 'max_plays' => $game->max_plays,
+                'difficulty' => $game->difficulty,
+                'difficulty_options' => [1, 2, 3],
                 'subjects' => $game->playSubjects(),
                 'questions_count' => $game->questions->count(),
             ])->values()->all(),

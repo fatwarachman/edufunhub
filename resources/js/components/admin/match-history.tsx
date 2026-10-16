@@ -164,3 +164,22 @@ export function MatchCard({ match }: { match: MatchRow }) {
         </article>
     );
 }
+
+const LIVE_PHASES: Record<string, string> = {
+    lobby: 'Waiting in lobby',
+    countdown: 'Starting',
+    playing: 'Playing',
+    race: 'Playing',
+    question: 'Question',
+    question_active: 'Question',
+    reveal: 'Showing answer',
+    over: 'Finished',
+    game_over: 'Finished',
+    done: 'Finished',
+};
+
+/** Human label for the many phase names the games use. */
+export function phaseLabel(phase: unknown): string {
+    const key = String(phase ?? '').toLowerCase();
+    return tr(LIVE_PHASES[key] ?? (key ? key : 'Unknown'));
+}

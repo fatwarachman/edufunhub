@@ -20,12 +20,99 @@
 | fix (Perbaikan). Each change needs a unique `key` within its release and
 | Indonesian (`id`) plus English (`en`) copy.
 |
+| `time` (optional, HH:MM, 24h) is the local release time in Asia/Jakarta
+| (WIB, UTC+7). `changelog:sync` stores `date` + `time` converted to UTC as
+| `published_at` (the app runs in UTC); without `time` it defaults to 12:00
+| WIB. Existing releases were backfilled from the first git commit that
+| added the version; when that commit landed after the recorded date the
+| time is 23:59 (end of the recorded day) so the release order stays intact.
+|
 */
 
 return [
     [
+        'version' => '0.47.0',
+        'date' => '2026-10-16',
+        'time' => '23:30',
+        'changes' => [
+            [
+                'key' => 'picture-questions-tk-sd',
+                'type' => 'feature',
+                'title' => ['id' => 'Soal bergambar untuk TK dan SD', 'en' => 'Picture questions for kindergarten and primary school'],
+                'body' => ['id' => 'Guru dan admin bisa memberi gambar pada soal dan pada setiap pilihan jawaban. Pilihan jawaban boleh hanya berupa gambar. Ada juga jenis visual Gambar emoji (misalnya 3 apel untuk soal berhitung), dan pembuat soal AI kini membuat soal bergambar emoji untuk TK sampai kelas 6. Batas: gambar soal 1 MB, gambar pilihan 512 KB, sisi 64–2000 px, tidak lebih memanjang dari 3:1; foto besar otomatis diperkecil sebelum diunggah. Semua game kini menampilkan gambar pilihan jawaban, dan daftar soal guru menandai soal bergambar.', 'en' => 'Teachers and admins can add a picture to a question and to every answer option. An option may be a picture only. There is also an Emoji picture visual (for example 3 apples for a counting question), and the AI question writer now makes emoji picture questions for kindergarten to grade 6. Limits: question picture 1 MB, option picture 512 KB, 64–2000 px per side, no wider than 3:1; big photos are resized before upload. Every game now shows answer option pictures, and the teacher question list marks picture questions.'],
+            ],
+            [
+                'key' => 'admin-current-page',
+                'type' => 'feature',
+                'title' => ['id' => 'Admin melihat halaman yang sedang dibuka pengguna', 'en' => 'Admins see the page each user is viewing'],
+                'body' => ['id' => 'Daftar pengguna online di admin kini menampilkan halaman tepat yang sedang dibuka setiap pemain, guru, maupun admin (judul dan alamat halaman), juga di detail pengguna. Parameter rahasia seperti token tidak ikut tersimpan.', 'en' => 'The admin online user list now shows the exact page each player, teacher or admin is viewing (page title and address), also on the user detail. Secret parameters such as tokens are never stored.'],
+            ],
+            [
+                'key' => 'classroom-difficulty',
+                'type' => 'feature',
+                'title' => ['id' => 'Guru mengatur tingkat kesulitan soal per ruang kelas', 'en' => 'Teachers set question difficulty per classroom'],
+                'body' => ['id' => 'Di pengaturan ruang kelas, guru bisa memilih tingkat soal (Mudah, Menengah, Sulit) untuk setiap game. Pilihan ini tercatat di kelas, hanya terlihat oleh guru, dan dipakai saat game memilih soal.', 'en' => 'In classroom settings teachers can choose the question level (Easy, Medium, Expert) for each game. It is stored on the classroom, visible to the teacher only, and used when the game picks questions.'],
+            ],
+            [
+                'key' => 'admin-classroom-monitor',
+                'type' => 'feature',
+                'title' => ['id' => 'Admin memantau dan masuk ruang kelas', 'en' => 'Admins monitor and enter classrooms'],
+                'body' => ['id' => 'Admin bisa melihat status ruang kelas dan masuk ke ruang kelas 3D sebagai pemantau: melihat murid, chat, dan aktivitas tanpa dihitung sebagai murid, tanpa poin, dan tanpa bisa mengirim pesan.', 'en' => 'Admins can see classroom status and enter the 3D classroom as an observer: they see students, chat and activity without counting as a student, without points and without sending messages.'],
+            ],
+            [
+                'key' => 'classroom-history',
+                'type' => 'feature',
+                'title' => ['id' => 'Riwayat guru dan kelas', 'en' => 'Teacher and class history'],
+                'body' => ['id' => 'Menu akun punya halaman baru Guru & kelasku: setiap guru yang pernah mengajar pemain beserta kelas yang diikuti bersamanya, poin, akurasi, status, dan jadwal kelas. Guru mendapat halaman berisi semua kelasnya dan setiap pengguna yang pernah ikut, termasuk yang sudah keluar.', 'en' => 'The account menu has a new My teachers & classes page: every teacher who taught the player with the classes joined with them, points, accuracy, status and schedule. Teachers get a page with all their classes and every user who ever joined, including those who left.'],
+            ],
+            [
+                'key' => 'teacher-tanya-aku',
+                'type' => 'feature',
+                'title' => ['id' => 'Tanya Aku: asisten AI untuk guru', 'en' => 'Tanya Aku: AI assistant for teachers'],
+                'body' => ['id' => 'Guru bisa bertanya ke asisten AI tentang cara membuat soal, membuat dan mengatur kelas, serta melihat nilai murid di kelasnya sendiri. Asisten hanya menjawab seputar aplikasi dan tugas guru, dan tidak bisa melihat data guru lain.', 'en' => 'Teachers can ask an AI assistant how to create questions, create and manage classes, and see the scores of students in their own classes. It only answers about the app and teacher tasks and cannot see other teachers\' data.'],
+            ],
+            [
+                'key' => 'admin-device-analytics',
+                'type' => 'feature',
+                'title' => ['id' => 'Detail sistem operasi dan jenis perangkat', 'en' => 'Operating system and device type details'],
+                'body' => ['id' => 'Bagian Sistem operasi dan Jenis perangkat di dashboard admin kini bisa diklik dan membuka halaman detail berisi grafik (porsi OS, porsi perangkat, tren harian, browser) serta daftar pengguna yang bisa disaring per OS, perangkat, periode, dan peran. Detail pengguna juga menampilkan profil perangkat dan OS-nya.', 'en' => 'The Operating system and Device type sections on the admin dashboard are now clickable and open a detail page with charts (OS share, device share, daily trend, browsers) and a user list filtered by OS, device, period and role. The user detail also shows the user\'s device and OS profile.'],
+            ],
+            [
+                'key' => 'admin-live-matches',
+                'type' => 'feature',
+                'title' => ['id' => 'Admin menonton pertandingan langsung', 'en' => 'Admins watch live matches'],
+                'body' => ['id' => 'Halaman Pertandingan admin kini menampilkan semua pertandingan yang sedang berjalan dan tombol Tonton untuk melihatnya langsung sebagai penonton, tanpa ikut bermain dan tanpa memengaruhi skor.', 'en' => 'The admin Matches page now lists every match in progress with a Watch button to view it live as a spectator, without playing or affecting scores.'],
+            ],
+            [
+                'key' => 'landing-apk-download',
+                'type' => 'feature',
+                'title' => ['id' => 'Unduh aplikasi Android dari landing', 'en' => 'Download the Android app from the landing page'],
+                'body' => ['id' => 'Landing kini punya bagian Unduh APK berisi APK terbaru, versi, ukuran, kode SHA-256, dan langkah pemasangan.', 'en' => 'The landing page now has a Download APK section with the latest APK, version, size, SHA-256 code and install steps.'],
+            ],
+            [
+                'key' => 'dashboard-share',
+                'type' => 'feature',
+                'title' => ['id' => 'Bagikan statistik dan peringkat', 'en' => 'Share stats and ranking'],
+                'body' => ['id' => 'Bagian Statistik dan Peringkat di beranda pemain kini punya tombol bagikan ke WhatsApp, Facebook, X, Telegram, salin tautan, atau menu bagikan bawaan ponsel.', 'en' => 'The Stats and Ranking sections on the player home now have a share button for WhatsApp, Facebook, X, Telegram, copy link or the phone\'s share menu.'],
+            ],
+            [
+                'key' => 'changelog-time',
+                'type' => 'improvement',
+                'title' => ['id' => 'Changelog menampilkan jam pembaruan', 'en' => 'Changelog shows the update time'],
+                'body' => ['id' => 'Setiap pembaruan di halaman Changelog kini menampilkan tanggal dan jam (WIB), karena dalam sehari bisa ada beberapa pembaruan.', 'en' => 'Every update on the Changelog page now shows the date and time (WIB), since there can be several updates in one day.'],
+            ],
+            [
+                'key' => 'subject-analysis-pie',
+                'type' => 'fix',
+                'title' => ['id' => 'Pie chart analisis mata pelajaran tidak tertutup judul', 'en' => 'Subject analysis pie chart no longer covered by the header'],
+                'body' => ['id' => 'Pie chart Porsi soal terjawab per mata pelajaran kini berada di tengah dengan ruang cukup, sehingga angka persentase tidak tertutup judul bagian.', 'en' => 'The Share of answered questions per subject pie chart is now centred with enough room, so its percentages are no longer covered by the section header.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.46.1',
         'date' => '2026-10-16',
+        'time' => '20:42',
         'changes' => [
             [
                 'key' => 'admin-dates-locale',
@@ -50,6 +137,7 @@ return [
     [
         'version' => '0.46.0',
         'date' => '2026-10-16',
+        'time' => '20:42',
         'changes' => [
             [
                 'key' => 'admin-games-table',
@@ -80,6 +168,7 @@ return [
     [
         'version' => '0.45.0',
         'date' => '2026-10-16',
+        'time' => '20:42',
         'changes' => [
             [
                 'key' => 'admin-player-progress',
@@ -104,6 +193,7 @@ return [
     [
         'version' => '0.44.0',
         'date' => '2026-10-15',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-game-subjects',
@@ -116,6 +206,7 @@ return [
     [
         'version' => '0.43.0',
         'date' => '2026-10-14',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'mobile-tab-bar',
@@ -128,6 +219,7 @@ return [
     [
         'version' => '0.42.0',
         'date' => '2026-10-14',
+        'time' => '23:25',
         'changes' => [
             [
                 'key' => 'android-apk-download',
@@ -146,6 +238,7 @@ return [
     [
         'version' => '0.41.0',
         'date' => '2026-10-14',
+        'time' => '23:25',
         'changes' => [
             [
                 'key' => 'player-feature-search',
@@ -164,6 +257,7 @@ return [
     [
         'version' => '0.40.0',
         'date' => '2026-10-14',
+        'time' => '19:14',
         'changes' => [
             [
                 'key' => 'admin-user-chat-button',
@@ -182,6 +276,7 @@ return [
     [
         'version' => '0.39.0',
         'date' => '2026-10-14',
+        'time' => '18:48',
         'changes' => [
             [
                 'key' => 'admin-user-teacher-subjects-card',
@@ -200,6 +295,7 @@ return [
     [
         'version' => '0.38.0',
         'date' => '2026-10-14',
+        'time' => '15:47',
         'changes' => [
             [
                 'key' => 'classroom-own-container',
@@ -218,6 +314,7 @@ return [
     [
         'version' => '0.37.0',
         'date' => '2026-10-14',
+        'time' => '15:47',
         'changes' => [
             [
                 'key' => 'classroom-world-waiting-chats',
@@ -236,6 +333,7 @@ return [
     [
         'version' => '0.36.1',
         'date' => '2026-10-14',
+        'time' => '15:47',
         'changes' => [
             [
                 'key' => 'classroom-world-chat-unread',
@@ -248,6 +346,7 @@ return [
     [
         'version' => '0.36.0',
         'date' => '2026-10-14',
+        'time' => '15:47',
         'changes' => [
             [
                 'key' => 'classroom-play-limit',
@@ -278,6 +377,7 @@ return [
     [
         'version' => '0.35.0',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'my-classrooms',
@@ -296,6 +396,7 @@ return [
     [
         'version' => '0.34.0',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-world-teacher-avatar',
@@ -314,6 +415,7 @@ return [
     [
         'version' => '0.33.1',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-game-detail-only',
@@ -332,6 +434,7 @@ return [
     [
         'version' => '0.33.0',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-hostless-games',
@@ -356,6 +459,7 @@ return [
     [
         'version' => '0.32.0',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-game-rooms',
@@ -380,6 +484,7 @@ return [
     [
         'version' => '0.31.7',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-feedback-accordion',
@@ -398,6 +503,7 @@ return [
     [
         'version' => '0.31.6',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'teacher-questions-compact-stats',
@@ -410,6 +516,7 @@ return [
     [
         'version' => '0.31.5',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-compact-stats',
@@ -422,6 +529,7 @@ return [
     [
         'version' => '0.31.4',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-ai-bullets',
@@ -434,6 +542,7 @@ return [
     [
         'version' => '0.31.3',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'teacher-tabs-responsive',
@@ -446,6 +555,7 @@ return [
     [
         'version' => '0.31.2',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-analysis-fix',
@@ -464,6 +574,7 @@ return [
     [
         'version' => '0.31.1',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-game-back',
@@ -476,6 +587,7 @@ return [
     [
         'version' => '0.31.0',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-3d-world',
@@ -494,6 +606,7 @@ return [
     [
         'version' => '0.30.0',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'admin-questions-live-search',
@@ -512,6 +625,7 @@ return [
     [
         'version' => '0.29.4',
         'date' => '2026-10-13',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'admin-roles-accordion',
@@ -524,6 +638,7 @@ return [
     [
         'version' => '0.29.3',
         'date' => '2026-10-12',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'admin-generate-grade-level-panels',
@@ -536,6 +651,7 @@ return [
     [
         'version' => '0.29.2',
         'date' => '2026-10-12',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'admin-generate-game-picker-search',
@@ -548,6 +664,7 @@ return [
     [
         'version' => '0.29.1',
         'date' => '2026-10-12',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'admin-generate-subject-accordion-style',
@@ -560,6 +677,7 @@ return [
     [
         'version' => '0.29.0',
         'date' => '2026-10-12',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'admin-topic-tree-generation',
@@ -572,6 +690,7 @@ return [
     [
         'version' => '0.28.0',
         'date' => '2026-10-12',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'admin-topic-focused-ai-generation',
@@ -584,6 +703,7 @@ return [
     [
         'version' => '0.27.6',
         'date' => '2026-10-12',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-question-filter-flow',
@@ -596,6 +716,7 @@ return [
     [
         'version' => '0.27.4',
         'date' => '2026-10-12',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'classroom-question-settings-summary',
@@ -608,6 +729,7 @@ return [
     [
         'version' => '0.27.3',
         'date' => '2026-10-12',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'admin-mobile-card-layout-fix',
@@ -620,6 +742,7 @@ return [
     [
         'version' => '0.27.2',
         'date' => '2026-10-12',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'teacher-classroom-detail-render-fix',
@@ -632,6 +755,7 @@ return [
     [
         'version' => '0.27.1',
         'date' => '2026-10-12',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'teacher-classroom-header-navigation',
@@ -644,6 +768,7 @@ return [
     [
         'version' => '0.27.0',
         'date' => '2026-10-11',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'teacher-access-requests-and-subject-scopes',
@@ -656,6 +781,7 @@ return [
     [
         'version' => '0.26.1',
         'date' => '2026-10-11',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'teacher-topics-production-render-fix',
@@ -668,6 +794,7 @@ return [
     [
         'version' => '0.26.0',
         'date' => '2026-10-11',
+        'time' => '21:53',
         'changes' => [
             [
                 'key' => 'player-account-about-link',
@@ -680,6 +807,7 @@ return [
     [
         'version' => '0.25.0',
         'date' => '2026-10-11',
+        'time' => '21:53',
         'changes' => [
             [
                 'key' => 'portal-school-ranking-pin-dialog',
@@ -692,6 +820,7 @@ return [
     [
         'version' => '0.24.2',
         'date' => '2026-10-11',
+        'time' => '21:53',
         'changes' => [
             [
                 'key' => 'portal-clickable-items',
@@ -704,6 +833,7 @@ return [
     [
         'version' => '0.24.0',
         'date' => '2026-10-11',
+        'time' => '21:53',
         'changes' => [
             [
                 'key' => 'dynamic-news-portal',
@@ -716,6 +846,7 @@ return [
     [
         'version' => '0.23.4',
         'date' => '2026-10-11',
+        'time' => '21:53',
         'changes' => [
             [
                 'key' => 'teacher-stat-card-inline-value',
@@ -728,6 +859,7 @@ return [
     [
         'version' => '0.23.3',
         'date' => '2026-10-11',
+        'time' => '21:53',
         'changes' => [
             [
                 'key' => 'teacher-topics-render-data',
@@ -740,6 +872,7 @@ return [
     [
         'version' => '0.23.2',
         'date' => '2026-10-11',
+        'time' => '21:53',
         'changes' => [
             [
                 'key' => 'teacher-topics-blank-page',
@@ -752,6 +885,7 @@ return [
     [
         'version' => '0.23.1',
         'date' => '2026-10-11',
+        'time' => '21:53',
         'changes' => [
             [
                 'key' => 'teacher-classroom-menu',
@@ -764,6 +898,7 @@ return [
     [
         'version' => '0.23.0',
         'date' => '2026-10-11',
+        'time' => '08:46',
         'changes' => [
             [
                 'key' => 'solo-game-filter',
@@ -782,6 +917,7 @@ return [
     [
         'version' => '0.22.0',
         'date' => '2026-10-11',
+        'time' => '08:46',
         'changes' => [
             [
                 'key' => 'subject-topics',
@@ -806,6 +942,7 @@ return [
     [
         'version' => '0.21.0',
         'date' => '2026-10-11',
+        'time' => '08:46',
         'changes' => [
             [
                 'key' => 'classroom-pages',
@@ -818,6 +955,7 @@ return [
     [
         'version' => '0.20.0',
         'date' => '2026-10-10',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'subject-mastery-analysis',
@@ -836,6 +974,7 @@ return [
     [
         'version' => '0.19.1',
         'date' => '2026-10-10',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'nav-landing-link',
@@ -854,6 +993,7 @@ return [
     [
         'version' => '0.19.0',
         'date' => '2026-10-10',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'auto-ability-analysis',
@@ -872,6 +1012,7 @@ return [
     [
         'version' => '0.18.0',
         'date' => '2026-10-10',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'multi-subject-games',
@@ -890,6 +1031,7 @@ return [
     [
         'version' => '0.17.0',
         'date' => '2026-10-10',
+        'time' => '19:35',
         'changes' => [
             [
                 'key' => 'admin-hottest-games',
@@ -908,6 +1050,7 @@ return [
     [
         'version' => '0.16.0',
         'date' => '2026-10-10',
+        'time' => '19:35',
         'changes' => [
             [
                 'key' => 'admin-users-search-fields',
@@ -926,6 +1069,7 @@ return [
     [
         'version' => '0.15.1',
         'date' => '2026-10-10',
+        'time' => '19:35',
         'changes' => [
             [
                 'key' => 'gamelist-header-mobile-two-lines',
@@ -944,6 +1088,7 @@ return [
     [
         'version' => '0.15.0',
         'date' => '2026-10-10',
+        'time' => '19:35',
         'changes' => [
             [
                 'key' => 'tkj-game-flag',
@@ -986,6 +1131,7 @@ return [
     [
         'version' => '0.14.1',
         'date' => '2026-10-10',
+        'time' => '19:35',
         'changes' => [
             [
                 'key' => 'gamelist-remove-pin-join',
@@ -1004,6 +1150,7 @@ return [
     [
         'version' => '0.14.0',
         'date' => '2026-10-10',
+        'time' => '11:06',
         'changes' => [
             [
                 'key' => 'wizard-birth-date-mobile',
@@ -1094,6 +1241,7 @@ return [
     [
         'version' => '0.13.0',
         'date' => '2026-10-10',
+        'time' => '11:06',
         'changes' => [
             [
                 'key' => 'database-backup',
@@ -1112,6 +1260,7 @@ return [
     [
         'version' => '0.12.0',
         'date' => '2026-10-10',
+        'time' => '11:06',
         'changes' => [
             [
                 'key' => 'profile-photo-upload',
@@ -1166,6 +1315,7 @@ return [
     [
         'version' => '0.11.0',
         'date' => '2026-10-09',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'android-play-store-app',
@@ -1184,6 +1334,7 @@ return [
     [
         'version' => '0.10.1',
         'date' => '2026-10-09',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'whatsapp-skipped-log',
@@ -1202,6 +1353,7 @@ return [
     [
         'version' => '0.10.0',
         'date' => '2026-10-09',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'whatsapp-log-page',
@@ -1232,6 +1384,7 @@ return [
     [
         'version' => '0.9.0',
         'date' => '2026-10-09',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'whatsapp-number-unique',
@@ -1250,6 +1403,7 @@ return [
     [
         'version' => '0.8.0',
         'date' => '2026-10-09',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'first-login-profile-wizard',
@@ -1268,6 +1422,7 @@ return [
     [
         'version' => '0.7.0',
         'date' => '2026-10-09',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'snake-read-then-hunt',
@@ -1298,6 +1453,7 @@ return [
     [
         'version' => '0.6.0',
         'date' => '2026-10-09',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'ability-analysis-whatsapp-report',
@@ -1328,6 +1484,7 @@ return [
     [
         'version' => '0.5.0',
         'date' => '2026-10-09',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'whatsapp-notifications',
@@ -1358,6 +1515,7 @@ return [
     [
         'version' => '0.4.0',
         'date' => '2026-10-09',
+        'time' => '23:59',
         'changes' => [
             [
                 'key' => 'universal-game-pin',
@@ -1388,6 +1546,7 @@ return [
     [
         'version' => '0.3.1',
         'date' => '2026-10-09',
+        'time' => '19:42',
         'changes' => [
             [
                 'key' => 'development-guidelines',
@@ -1406,6 +1565,7 @@ return [
     [
         'version' => '0.3.0',
         'date' => '2026-10-09',
+        'time' => '19:42',
         'changes' => [
             [
                 'key' => 'main-ular-game',
@@ -1424,6 +1584,7 @@ return [
     [
         'version' => '0.2.2',
         'date' => '2026-10-09',
+        'time' => '19:42',
         'changes' => [
             [
                 'key' => 'repeated-question-reshuffle',
@@ -1442,6 +1603,7 @@ return [
     [
         'version' => '0.2.1',
         'date' => '2026-10-09',
+        'time' => '19:42',
         'changes' => [
             [
                 'key' => 'changelog-summary-cards',
@@ -1460,6 +1622,7 @@ return [
     [
         'version' => '0.2.0',
         'date' => '2026-10-09',
+        'time' => '19:42',
         'changes' => [
             [
                 'key' => 'admin-changelog-page',
@@ -1478,6 +1641,7 @@ return [
     [
         'version' => '0.1.0',
         'date' => '2026-10-09',
+        'time' => '19:42',
         'changes' => [
             [
                 'key' => 'monster-cafe-long-durations',
@@ -1496,6 +1660,7 @@ return [
     [
         'version' => '0.0.2',
         'date' => '2026-10-09',
+        'time' => '19:42',
         'changes' => [
             [
                 'key' => 'header-clock-left-aligned',
@@ -1514,6 +1679,7 @@ return [
     [
         'version' => '0.0.1',
         'date' => '2026-10-09',
+        'time' => '19:42',
         'changes' => [
             [
                 'key' => 'crossword-dashboard-stats',
@@ -1544,6 +1710,7 @@ return [
     [
         'version' => '0.0.0',
         'date' => '2026-10-09',
+        'time' => '19:42',
         'changes' => [
             [
                 'key' => 'baseline',

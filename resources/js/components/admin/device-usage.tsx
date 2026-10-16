@@ -73,6 +73,7 @@ export function share(part: number, whole: number): string {
 export const DASHBOARD_GAME_LIMIT = 5;
 
 export const DEVICE_GAMES_URL = '/admin/device-usage/games';
+export const DEVICE_DETAIL_URL = '/admin/device-usage';
 
 function deviceTotal(row: Record<DeviceType, number>): number {
     return row.mobile + row.tablet + row.desktop;
@@ -116,6 +117,16 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
                     devices.days,
                 ])}
                 icon={MonitorSmartphone}
+                actions={
+                    <Link
+                        href={`${DEVICE_DETAIL_URL}?days=${devices.days}`}
+                        className="inline-flex items-center gap-1 link text-xs"
+                        data-testid="device-type-details"
+                    >
+                        {tr('Details')}
+                        <ArrowRight className="size-3" aria-hidden="true" />
+                    </Link>
+                }
             >
                 <div className="flex flex-col gap-4">
                     <div className="grid grid-cols-3 gap-2">
@@ -123,10 +134,14 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
                             const meta = DEVICE_META[type.key];
                             const Icon = meta.icon;
                             return (
-                                <div
+                                <Link
                                     key={type.key}
+                                    href={`${DEVICE_DETAIL_URL}?device=${type.key}&days=${devices.days}`}
                                     data-testid={`device-${type.key}`}
-                                    className="flex min-w-0 flex-col gap-1 rounded-xl bg-muted/50 px-3 py-2.5"
+                                    aria-label={tr('Show users on {0}', [
+                                        tr(meta.label),
+                                    ])}
+                                    className="flex min-w-0 flex-col gap-1 rounded-xl bg-muted/50 px-3 py-2.5 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                                 >
                                     <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                         <Icon
@@ -143,7 +158,7 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
                                     <span className="truncate text-xs text-muted-foreground tabular-nums">
                                         {formatNumber(type.users)} {tr('users')}
                                     </span>
-                                </div>
+                                </Link>
                             );
                         })}
                     </div>
@@ -167,29 +182,47 @@ export function DeviceUsagePanels({ devices }: { devices: DeviceSummary }) {
                 title={tr('Operating system')}
                 description={tr('Opens per OS, split by device type')}
                 icon={AppWindow}
+                actions={
+                    <Link
+                        href={`${DEVICE_DETAIL_URL}?days=${devices.days}`}
+                        className="inline-flex items-center gap-1 link text-xs"
+                        data-testid="device-os-details"
+                    >
+                        {tr('Details')}
+                        <ArrowRight className="size-3" aria-hidden="true" />
+                    </Link>
+                }
             >
                 <ul className="flex flex-col gap-3" data-testid="device-os">
                     {devices.os.slice(0, 7).map((os, index) => (
                         <li key={os.name} className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-2 text-sm">
-                                <span
-                                    className="size-2.5 shrink-0 rounded-full"
-                                    style={{
-                                        background:
-                                            OS_COLORS[index % OS_COLORS.length],
-                                    }}
-                                />
-                                <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-                                    {os.name}
-                                </span>
-                                <span className="text-xs text-muted-foreground tabular-nums">
-                                    {formatNumber(os.users)} {tr('users')}
-                                </span>
-                                <span className="w-12 text-right font-semibold text-foreground tabular-nums">
-                                    {formatNumber(os.accesses)}
-                                </span>
-                            </div>
-                            <SplitBar row={os} total={os.accesses} />
+                            <Link
+                                href={`${DEVICE_DETAIL_URL}?os=${encodeURIComponent(os.name)}&days=${devices.days}`}
+                                aria-label={tr('Show users on {0}', [os.name])}
+                                className="-m-1 flex flex-col gap-1.5 rounded-lg p-1 transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                            >
+                                <div className="flex items-center gap-2 text-sm">
+                                    <span
+                                        className="size-2.5 shrink-0 rounded-full"
+                                        style={{
+                                            background:
+                                                OS_COLORS[
+                                                    index % OS_COLORS.length
+                                                ],
+                                        }}
+                                    />
+                                    <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                                        {os.name}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground tabular-nums">
+                                        {formatNumber(os.users)} {tr('users')}
+                                    </span>
+                                    <span className="w-12 text-right font-semibold text-foreground tabular-nums">
+                                        {formatNumber(os.accesses)}
+                                    </span>
+                                </div>
+                                <SplitBar row={os} total={os.accesses} />
+                            </Link>
                         </li>
                     ))}
                 </ul>

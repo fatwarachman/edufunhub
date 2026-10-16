@@ -131,8 +131,8 @@ it('sends every open classroom game with its subjects to the game service', func
 
     expect($classroom)->not->toBeNull()
         ->and($classroom['games'])->toBe([
-            ['game_key' => 'sky-quiz', 'subjects' => ['math'], 'questions' => []],
-            ['game_key' => 'flag-quest', 'subjects' => [], 'questions' => []],
+            ['game_key' => 'sky-quiz', 'subjects' => ['math'], 'difficulty' => null, 'questions' => []],
+            ['game_key' => 'flag-quest', 'subjects' => [], 'difficulty' => null, 'questions' => []],
         ]);
 });
 

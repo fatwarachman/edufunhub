@@ -1,4 +1,7 @@
-import { type QuestionMediaData } from '@/components/question-media';
+import {
+    type OptionMediaData,
+    type QuestionMediaData,
+} from '@/components/question-media';
 import { useGameSocket } from '@/hooks/use-game-socket';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { useCallback, useReducer } from 'react';
@@ -99,6 +102,7 @@ export interface FloorState {
         worth: number;
     };
     options?: string[];
+    option_media?: OptionMediaData[] | null;
     tiles?: number[];
     correct_index?: number;
     eliminated_user_ids?: number[];
@@ -217,6 +221,8 @@ function reduceMessage(state: FloorState, action: Action): FloorState {
                 receivedAt: now,
                 question: msg.question as FloorState['question'],
                 options: msg.options as string[],
+                option_media:
+                    (msg.option_media as OptionMediaData[] | null) ?? null,
                 alive: msg.alive as number,
                 ends_ms: msg.ends_ms as number | undefined,
                 answered: 0,

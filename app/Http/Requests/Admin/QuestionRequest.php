@@ -19,8 +19,18 @@ class QuestionRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $options = collect($this->input('options', []))
-            ->map(fn ($option): array => ['id' => trim((string) ($option['id'] ?? '')), 'en' => trim((string) ($option['en'] ?? ''))])
-            ->filter(fn (array $option): bool => $option['id'] !== '')
+            ->map(function ($option): array {
+                $media = is_array($option['media'] ?? null) && ($option['media']['kind'] ?? null) === 'image'
+                    ? ['kind' => 'image', 'src' => (string) ($option['media']['src'] ?? '')]
+                    : null;
+
+                return array_filter([
+                    'id' => trim((string) ($option['id'] ?? '')),
+                    'en' => trim((string) ($option['en'] ?? '')),
+                    'media' => $media,
+                ], fn (mixed $value): bool => $value !== null);
+            })
+            ->filter(fn (array $option): bool => $option['id'] !== '' || isset($option['media']))
             ->values()
             ->all();
 
@@ -46,8 +56,11 @@ class QuestionRequest extends FormRequest
             'prompt_id' => ['required', 'string', 'min:3', 'max:500'],
             'prompt_en' => ['nullable', 'string', 'max:500'],
             'options' => $isChoice ? ['required', 'array', 'min:3', 'max:6'] : ['nullable'],
-            'options.*.id' => ['required', 'string', 'max:150'],
+            'options.*.id' => ['required_without:options.*.media.src', 'nullable', 'string', 'max:150'],
             'options.*.en' => ['nullable', 'string', 'max:150'],
+            'options.*.media' => ['nullable', 'array'],
+            'options.*.media.kind' => ['nullable', 'in:image'],
+            'options.*.media.src' => ['required_if:options.*.media.kind,image', 'nullable', 'string', 'max:120', 'regex:#^'.preg_quote(QuestionVisual::URL_PREFIX, '#').QuestionVisual::FILE_PATTERN.'$#'],
             'answer' => ['required', 'integer', 'min:0', $isChoice ? 'max:'.max(0, count($this->input('options') ?? []) - 1) : 'max:1'],
             'hint_id' => ['nullable', 'string', 'max:300'],
             'hint_en' => ['nullable', 'string', 'max:300'],
@@ -67,9 +80,18 @@ class QuestionRequest extends FormRequest
                     $validator->errors()->add('games', __('questions.choice_only_games'));
                 }
 
-                $options = collect($this->input('options') ?? [])->pluck('id')->map(fn (string $id): string => mb_strtolower($id));
+                $options = collect($this->input('options') ?? [])
+                    ->map(fn (mixed $option): string => is_array($option) ? mb_strtolower(trim((string) ($option['id'] ?? ''))) : '')
+                    ->filter(fn (string $id): bool => $id !== '');
                 if ($options->count() !== $options->unique()->count()) {
                     $validator->errors()->add('options', __('Answer options must be unique.'));
+                }
+
+                foreach ((array) ($this->input('options') ?? []) as $index => $option) {
+                    $optionSrc = is_array($option['media'] ?? null) ? ($option['media']['src'] ?? null) : null;
+                    if (is_string($optionSrc) && $optionSrc !== '' && ! QuestionVisual::imageExists($optionSrc)) {
+                        $validator->errors()->add("options.{$index}.media.src", __('questions.visual.image_missing'));
+                    }
                 }
 
                 $src = $this->input('visual.src');
@@ -104,6 +126,7 @@ class QuestionRequest extends FormRequest
             'answer.max' => __('Choose a correct answer from the options.'),
             'games.required' => __('Distribute the question to at least one game.'),
             'visual.src.required_if' => __('questions.visual.image_required'),
+            'options.*.id.required_without' => __('questions.visual.option_text_or_image'),
             'visual.src.regex' => __('questions.visual.image_missing'),
             'visual.wires.required_if' => __('questions.visual.wires_required'),
             'visual.wires.min' => __('questions.visual.wires_required'),
@@ -111,6 +134,9 @@ class QuestionRequest extends FormRequest
             'visual.wires.*.stripe.regex' => __('questions.visual.color_invalid'),
             'visual.shape.required_if' => __('questions.visual.shape_required'),
             'visual.lines.required_if' => __('questions.visual.lines_required'),
+            'options.*.media.kind.in' => __('questions.visual.image_file'),
+            'options.*.media.src.required_if' => __('questions.visual.image_required'),
+            'options.*.media.src.regex' => __('questions.visual.image_missing'),
         ];
     }
 
