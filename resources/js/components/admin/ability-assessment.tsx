@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { WhatsAppIcon } from '@/components/whatsapp-share-button';
 import { useTranslations } from '@/hooks/use-translations';
 import { buildAbilityShareText } from '@/lib/ability-share';
-import { tr } from '@/lib/admin-i18n';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { absoluteUrl, shareWhatsApp } from '@/lib/share';
 import { useSubjectName } from '@/lib/subjects';
 import { cn } from '@/lib/utils';
@@ -445,11 +445,11 @@ function ShareBar({
 }: {
     share: PlayerAbility & { owner_name: string };
 }) {
-    const { t, i18n } = useTranslations();
+    const { t } = useTranslations();
     const subjectName = useSubjectName();
     const [copied, setCopied] = useState(false);
     const date = share.analyzed_at
-        ? new Intl.DateTimeFormat(i18n.language, {
+        ? new Intl.DateTimeFormat(adminLocale(), {
               day: 'numeric',
               month: 'long',
               year: 'numeric',

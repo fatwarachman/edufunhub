@@ -57,7 +57,7 @@ export default function MatchesIndex({
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Match History">
             <Head title={tr('Match History')} />
             <div className="flex flex-col gap-6">
                 <div>

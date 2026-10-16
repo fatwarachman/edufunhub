@@ -83,6 +83,8 @@ export interface ClassroomFormData {
     games: {
         game_key: string;
         max_plays: number | null;
+        /** Subjects of an auto-question game (empty = mixed). */
+        subjects?: string[];
         questions: QuestionPick[];
     }[];
 }

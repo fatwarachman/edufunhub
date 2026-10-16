@@ -170,7 +170,7 @@ export default function ChangelogIndex({
         .filter((release) => release.entries.length > 0);
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Changelog">
             <Head title={tr('Changelog')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-4">

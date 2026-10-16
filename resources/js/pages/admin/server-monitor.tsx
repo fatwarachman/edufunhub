@@ -1,7 +1,7 @@
 import { EmptyState, formatNumber, Panel } from '@/components/admin/game-stats';
 import { ResponsiveTable } from '@/components/responsive-table';
 import AdminLayout from '@/layouts/admin-layout';
-import { tr } from '@/lib/admin-i18n';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { Head, router, usePoll } from '@inertiajs/react';
 import {
@@ -247,7 +247,9 @@ export default function ServerMonitor({ monitor, refreshSeconds }: Props) {
                         </h2>
                         <p className="text-sm text-muted-foreground">
                             {tr('Sampled')}{' '}
-                            {new Date(monitor.sampled_at).toLocaleTimeString()}
+                            {new Date(monitor.sampled_at).toLocaleTimeString(
+                                adminLocale(),
+                            )}
                             {' · '}
                             {live
                                 ? tr('refreshing every {0}s', [refreshSeconds])

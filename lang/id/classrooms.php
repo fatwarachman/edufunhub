@@ -31,6 +31,7 @@ return [
         'note_max' => 'Catatan guru maksimal 500 karakter.',
         'true_false_not_allowed' => 'Game :game tidak mendukung soal benar/salah.',
         'question_inaccessible' => 'Beberapa soal tidak dapat diakses.',
+        'subject_invalid' => 'Mata pelajaran yang dipilih tidak tersedia.',
     ],
     'insights' => [
         'hardest_question' => 'Soal tersulit: :prompt (akurasi :accuracy%).',

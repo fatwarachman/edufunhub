@@ -8,12 +8,12 @@
     "settings": "AI settings",
     "conversation": "Conversation with AI assistant",
     "welcome": "Application data, in conversation.",
-    "description": "Ask for statistics, find players, or explore game performance. Include player names and date ranges for more precise answers.",
+    "description": "Ask anything about the app: players, scores, most-missed questions, subjects, games, classrooms, teachers and AI analyses. Answers always come from the latest data.",
     "suggestions": [
-        "Summarize player activity over the last 7 days.",
-        "Which players have the most points?",
-        "Which games were played most this month?",
-        "Explain the difference between account points and game scores."
+        "How is the app doing over the last 7 days?",
+        "Who is the player with the highest score right now?",
+        "Which question is answered wrong the most?",
+        "Which players have played but have no AI analysis yet?"
     ],
     "you": "You",
     "sources": "Data sources",

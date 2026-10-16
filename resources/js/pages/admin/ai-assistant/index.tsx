@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslations } from '@/hooks/use-translations';
 import AdminLayout from '@/layouts/admin-layout';
+import { adminLocale } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import english from '@/locales/en-ai-assistant.json';
 import indonesian from '@/locales/id-ai-assistant.json';
@@ -91,6 +92,7 @@ export default function AiAssistant({
 
     useEffect(() => () => request.current?.abort(), []);
     useEffect(() => {
+        if (messages.length === 0 && pendingMessage === null) return;
         bottom.current?.scrollIntoView({ block: 'nearest' });
     }, [messages, pendingMessage]);
 
@@ -297,7 +299,7 @@ export default function AiAssistant({
                                     <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
                                         {new Date(
                                             conversation.updated_at,
-                                        ).toLocaleString(i18n.language, {
+                                        ).toLocaleString(adminLocale(), {
                                             dateStyle: 'medium',
                                             timeStyle: 'short',
                                         })}
@@ -323,25 +325,28 @@ export default function AiAssistant({
     return (
         <AdminLayout title={copy.title}>
             <Head title={copy.title} />
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-                <header className="flex flex-wrap items-start justify-between gap-3">
+            <div
+                className="mx-auto flex h-[calc(100dvh-var(--assistant-offset))] w-full max-w-6xl flex-col gap-3 [--assistant-offset:7.5rem] md:[--assistant-offset:8.75rem] lg:h-auto lg:gap-4"
+                data-testid="assistant-shell"
+            >
+                <header className="flex shrink-0 items-center justify-between gap-3 lg:items-start">
                     <div className="flex min-w-0 items-start gap-3">
-                        <div className="rounded-xl border border-border bg-card p-3">
+                        <div className="hidden rounded-xl border border-border bg-card p-3 sm:block">
                             <Bot
                                 className="size-5 text-primary"
                                 aria-hidden="true"
                             />
                         </div>
                         <div className="min-w-0">
-                            <h1 className="text-xl font-semibold tracking-tight">
+                            <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
                                 {copy.title}
                             </h1>
-                            <p className="mt-1 text-sm text-muted-foreground">
+                            <p className="mt-1 hidden text-sm text-muted-foreground sm:block">
                                 {copy.subtitle}
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                         <Button
                             variant="outline"
                             size="sm"
@@ -349,22 +354,30 @@ export default function AiAssistant({
                             onClick={() => setHistoryOpen(true)}
                             aria-expanded={historyOpen}
                             aria-label={copy.openHistory}
+                            title={copy.openHistory}
+                            data-testid="assistant-history-open"
                         >
                             <History className="size-4" />
-                            {copy.history}
+                            <span className="sr-only sm:not-sr-only">
+                                {copy.history}
+                            </span>
                         </Button>
                         <Button
                             variant="outline"
                             size="sm"
                             disabled={busy || (!messages.length && !activeId)}
                             onClick={startNewChat}
+                            aria-label={copy.newChat}
+                            title={copy.newChat}
                         >
                             <Plus className="size-4" />
-                            {copy.newChat}
+                            <span className="sr-only sm:not-sr-only">
+                                {copy.newChat}
+                            </span>
                         </Button>
                     </div>
                 </header>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                <div className="hidden flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground lg:flex">
                     <span className="inline-flex items-center gap-1.5">
                         <ShieldCheck className="size-3.5" />
                         {copy.readOnly}
@@ -379,7 +392,7 @@ export default function AiAssistant({
                 {!configured && (
                     <div
                         role="alert"
-                        className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4 text-sm"
+                        className="flex shrink-0 flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm sm:p-4"
                     >
                         <CircleAlert className="size-5 shrink-0" />
                         <p className="flex-1">{copy.notConfigured}</p>
@@ -391,7 +404,7 @@ export default function AiAssistant({
                         </Link>
                     </div>
                 )}
-                <div className="flex min-w-0 gap-4">
+                <div className="flex min-h-0 min-w-0 flex-1 gap-4">
                     <aside className="hidden w-72 shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:flex lg:h-[min(72dvh,46rem)]">
                         {historyList}
                     </aside>
@@ -416,23 +429,28 @@ export default function AiAssistant({
                     )}
                     <section
                         aria-label={copy.conversation}
-                        className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:h-[min(72dvh,46rem)]"
+                        className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:h-[min(72dvh,46rem)]"
+                        data-testid="assistant-chat"
                     >
                         <div
-                            className="max-h-[62dvh] min-h-80 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-5 lg:max-h-none"
+                            className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-5"
+                            data-testid="assistant-log"
                             role="log"
                             aria-live="polite"
                             aria-relevant="additions"
                             aria-busy={busy}
                         >
                             {!messages.length && !pending && (
-                                <div className="mx-auto flex max-w-2xl flex-col gap-5 py-6">
+                                <div className="mx-auto flex max-w-2xl flex-col gap-4 py-2 sm:gap-5 sm:py-6">
                                     <div>
                                         <h2 className="text-lg font-semibold">
                                             {copy.welcome}
                                         </h2>
                                         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                                             {copy.description}
+                                        </p>
+                                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground lg:hidden">
+                                            {copy.privacy}
                                         </p>
                                     </div>
                                     <div className="grid gap-2 sm:grid-cols-2">
@@ -488,7 +506,8 @@ export default function AiAssistant({
                         </div>
                         <form
                             onSubmit={submit}
-                            className="flex flex-col gap-2 border-t border-border p-3 sm:p-4"
+                            className="flex shrink-0 flex-col gap-2 border-t border-border bg-card p-2.5 sm:p-4"
+                            data-testid="assistant-form"
                         >
                             {error && (
                                 <p
@@ -518,7 +537,7 @@ export default function AiAssistant({
                                     disabled={!configured || busy}
                                     placeholder={copy.placeholder}
                                     rows={1}
-                                    className="max-h-40 min-h-11 resize-none rounded-2xl shadow-none"
+                                    className="max-h-32 min-h-11 resize-none rounded-2xl shadow-none sm:max-h-40"
                                 />
                                 <Button
                                     type="submit"
@@ -536,13 +555,13 @@ export default function AiAssistant({
                                     )}
                                 </Button>
                             </div>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-[11px] text-muted-foreground sm:text-xs">
                                 {copy.disclaimer}
                             </p>
                         </form>
                     </section>
                 </div>
-                <p className="text-xs leading-relaxed text-muted-foreground">
+                <p className="hidden text-xs leading-relaxed text-muted-foreground lg:block">
                     {copy.privacy}
                 </p>
             </div>

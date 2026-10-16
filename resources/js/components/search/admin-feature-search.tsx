@@ -111,7 +111,7 @@ export function AdminFeatureSearch() {
                     type="button"
                     data-testid="admin-feature-search"
                     aria-label={copy.title}
-                    className="flex h-9 items-center gap-2 rounded-lg border border-border bg-muted/40 px-2.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    className="flex h-8 items-center gap-2 rounded-lg border border-border bg-muted/40 px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:h-9 sm:px-2.5"
                 >
                     <Search className="size-4 shrink-0" aria-hidden="true" />
                     <span className="hidden lg:inline">{copy.title}</span>

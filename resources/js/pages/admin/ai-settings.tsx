@@ -123,7 +123,7 @@ export default function AiSettings({
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout title="AI Settings">
             <Head title={tr('AI Settings')} />
             <div className="flex w-full flex-col gap-6">
                 <div className="flex flex-wrap items-end justify-between gap-3">

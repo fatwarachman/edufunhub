@@ -104,7 +104,7 @@ export default function GenerateQuestions({
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Generate questions">
             <Head title={tr('Generate questions')} />
             <div className="flex w-full flex-col gap-6">
                 <div>

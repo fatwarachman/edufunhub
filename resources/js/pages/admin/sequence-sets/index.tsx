@@ -153,7 +153,7 @@ export default function SequenceSetsIndex({
     const hardest = analytics.find((row) => row.attempts > 0) ?? null;
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Sequence Bank">
             <Head title={tr('Sequence Bank')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4">

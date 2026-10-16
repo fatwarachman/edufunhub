@@ -1,5 +1,5 @@
 import { ResponsiveTable } from '@/components/responsive-table';
-import { tr } from '@/lib/admin-i18n';
+import { adminLocale, tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
 import { usePage } from '@inertiajs/react';
 import { type ReactNode } from 'react';
@@ -65,7 +65,7 @@ export function gameLabel(key: string): string {
 }
 
 export function formatNumber(value: number | null | undefined): string {
-    return (value ?? 0).toLocaleString();
+    return (value ?? 0).toLocaleString(adminLocale());
 }
 
 export function formatPercent(value: number | null | undefined): string {
@@ -81,7 +81,7 @@ export function formatDuration(seconds: number | null | undefined): string {
 
 export function formatDateTime(value: string | null | undefined): string {
     if (!value) return '—';
-    return new Date(value).toLocaleString(undefined, {
+    return new Date(value).toLocaleString(adminLocale(), {
         day: 'numeric',
         month: 'short',
         year: 'numeric',

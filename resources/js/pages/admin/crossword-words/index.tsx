@@ -86,7 +86,7 @@ export default function CrosswordWordsIndex({ words, levels, filters }: Props) {
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Crossword · Word bank">
             <Head title={tr('Crossword · Word bank')} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4">

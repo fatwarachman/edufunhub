@@ -67,18 +67,21 @@ func (it Item) ForGrade(grade int) bool {
 type Bank struct {
 	Version string
 	items   []Item
-	// classrooms holds the teacher-picked pools: classroom id -> game key
-	// -> items (see classroom.go).
-	classrooms map[int64]map[string][]Item
+	// classrooms holds the teacher's classroom setups: classroom id -> game
+	// key -> locked subjects and picked items (see classroom.go).
+	classrooms map[int64]map[string]classroomGame
 }
 
 // Len returns the number of items.
 func (b *Bank) Len() int { return len(b.items) }
 
+// anyGrade makes filter keep items of every grade.
+const anyGrade = -1
+
 func (b *Bank) filter(kind string, grade int, game string) []Item {
 	out := make([]Item, 0, 16)
 	for _, it := range b.items {
-		if it.Type == kind && it.ForGrade(grade) && it.ForGame(game) {
+		if it.Type == kind && (grade == anyGrade || it.ForGrade(grade)) && it.ForGame(game) {
 			out = append(out, it)
 		}
 	}

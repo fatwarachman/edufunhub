@@ -1425,6 +1425,7 @@
         "multiHint": "Pick one or more subjects.",
         "selectedCount": "{{count}} subjects selected.",
         "hostPicks": "The host picks the subject.",
+        "classroomLocked": "Your teacher set the subjects for this classroom.",
         "playing": "Questions: {{subject}}",
         "fallback": "There are no {{subject}} questions for your grade yet, so mixed questions are used."
     },
@@ -3636,6 +3637,8 @@
             "pick": "Pick manually",
             "pickMore": "Pick more",
             "autoHint": "Questions are auto-selected by subject and grade.",
+            "subjects": "Subjects",
+            "subjectsHint": "Students play these subjects right away and cannot change them. Pick Mixed for every subject.",
             "copyFrom": "Copy from other game",
             "copyFromGame": "From {{game}} ({{count}})",
             "choiceOnly": "This game only uses multiple choice questions.",

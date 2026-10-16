@@ -1424,6 +1424,7 @@
         "multiHint": "Pilih satu atau beberapa mata pelajaran.",
         "selectedCount": "{{count}} mata pelajaran dipilih.",
         "hostPicks": "Host yang memilih mata pelajaran.",
+        "classroomLocked": "Mata pelajaran sudah ditentukan guru untuk ruang kelas ini.",
         "playing": "Soal: {{subject}}",
         "fallback": "Soal {{subject}} untuk kelasmu belum tersedia, jadi dipakai soal campuran."
     },
@@ -3635,6 +3636,8 @@
             "pick": "Pilih manual",
             "pickMore": "Pilih lagi",
             "autoHint": "Soal dipilih otomatis sesuai mapel dan kelas.",
+            "subjects": "Mata pelajaran",
+            "subjectsHint": "Siswa langsung bermain dengan mata pelajaran ini dan tidak bisa menggantinya. Pilih Campuran untuk semua mata pelajaran.",
             "copyFrom": "Salin dari game lain",
             "copyFromGame": "Dari {{game}} ({{count}})",
             "choiceOnly": "Game ini hanya memakai soal pilihan ganda.",

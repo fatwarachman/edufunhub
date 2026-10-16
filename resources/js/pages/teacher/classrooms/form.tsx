@@ -19,6 +19,7 @@ import { TeacherTabs } from '@/components/teacher/teacher-tabs';
 import { teacherFieldClass, Toggle } from '@/components/teacher/teacher-ui';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
+import { useSubjectName } from '@/lib/subjects';
 import { cn } from '@/lib/utils';
 import { Link, useForm } from '@inertiajs/react';
 import {
@@ -47,6 +48,8 @@ interface GameDraft {
     game_key: string;
     /** Empty string = unlimited plays. */
     max_plays: number | '';
+    /** Subjects students play when no question is picked (empty = mixed). */
+    subjects: string[];
     questions: QuestionPick[];
 }
 
@@ -92,6 +95,7 @@ export default function ClassroomForm({
         games: (classroom?.games ?? []).map((game) => ({
             game_key: game.game_key,
             max_plays: game.max_plays ?? '',
+            subjects: game.subjects ?? [],
             questions: game.questions,
         })) as GameDraft[],
     });
@@ -119,6 +123,7 @@ export default function ClassroomForm({
                     game_key: game.game_key,
                     max_plays:
                         game.max_plays === '' ? null : Number(game.max_plays),
+                    subjects: game.questions.length > 0 ? [] : game.subjects,
                     question_ids: game.questions.map((question) => question.id),
                 })),
             };
@@ -144,7 +149,12 @@ export default function ClassroomForm({
                   ? current.games
                   : [
                         ...current.games,
-                        { game_key: key, max_plays: '', questions: [] },
+                        {
+                            game_key: key,
+                            max_plays: '',
+                            subjects: [],
+                            questions: [],
+                        },
                     ],
         }));
     };
@@ -179,6 +189,17 @@ export default function ClassroomForm({
                                   ? ''
                                   : parsed,
                       }
+                    : game,
+            ),
+        }));
+    };
+
+    const setSubjects = (key: string, subjectKeys: string[]) => {
+        setData((current) => ({
+            ...current,
+            games: current.games.map((game) =>
+                game.game_key === key
+                    ? { ...game, subjects: subjectKeys }
                     : game,
             ),
         }));
@@ -516,6 +537,8 @@ export default function ClassroomForm({
                         onMaxPlays={(value) =>
                             setMaxPlays(game.game_key, value)
                         }
+                        subjects={subjects}
+                        onSubjects={(keys) => setSubjects(game.game_key, keys)}
                     />
                 ))}
 
@@ -584,6 +607,8 @@ function GameQuestions({
     onRemove,
     onCopyFrom,
     onMaxPlays,
+    subjects,
+    onSubjects,
 }: {
     game: GameDraft;
     gameIndex: number;
@@ -597,6 +622,8 @@ function GameQuestions({
     onRemove: (index: number) => void;
     onCopyFrom: (source: string) => void;
     onMaxPlays: (value: string) => void;
+    subjects: string[];
+    onSubjects: (keys: string[]) => void;
 }) {
     const { t } = useTranslations();
     const catalog = useGameCatalog();
@@ -747,9 +774,18 @@ function GameQuestions({
             )}
 
             {auto ? (
-                <p className="rounded-xl border-2 border-dashed border-[#151b2e]/30 px-4 py-4 text-sm font-semibold text-slate-700">
-                    {t('classroom.form.autoHint')}
-                </p>
+                <div className="flex flex-col gap-3">
+                    <GameSubjects
+                        gameKey={game.game_key}
+                        subjects={subjects}
+                        value={game.subjects}
+                        onChange={onSubjects}
+                        error={errorFor(`games.${gameIndex}.subjects`)}
+                    />
+                    <p className="rounded-xl border-2 border-dashed border-[#151b2e]/30 px-4 py-4 text-sm font-semibold text-slate-700">
+                        {t('classroom.form.autoHint')}
+                    </p>
+                </div>
             ) : (
                 <ol
                     className="flex flex-col gap-2"
@@ -815,6 +851,71 @@ function GameQuestions({
                 <InputError key={key} message={message} />
             ))}
         </section>
+    );
+}
+
+/**
+ * Subjects of an auto-question classroom game. None = mixed subjects. The
+ * students see this choice in the game instead of a subject picker.
+ */
+function GameSubjects({
+    gameKey,
+    subjects,
+    value,
+    onChange,
+    error,
+}: {
+    gameKey: string;
+    subjects: string[];
+    value: string[];
+    onChange: (keys: string[]) => void;
+    error?: string;
+}) {
+    const { t } = useTranslations();
+    const subjectName = useSubjectName();
+    const toggle = (key: string) =>
+        onChange(
+            value.includes(key)
+                ? value.filter((item) => item !== key)
+                : [...value, key].sort(),
+        );
+
+    return (
+        <fieldset
+            className="flex min-w-0 flex-col gap-2"
+            data-testid={`classroom-subjects-${gameKey}`}
+        >
+            <legend className="text-sm font-bold text-slate-800">
+                {t('classroom.form.subjects')}
+            </legend>
+            <p className="text-xs font-semibold text-slate-600">
+                {t('classroom.form.subjectsHint')}
+            </p>
+            <div className="flex flex-wrap gap-2">
+                <Toggle
+                    pressed={value.length === 0}
+                    onClick={() => onChange([])}
+                    testId={`classroom-subject-${gameKey}-mix`}
+                >
+                    <Shuffle className="size-4" aria-hidden="true" />
+                    {t('subjects.mix')}
+                </Toggle>
+                {subjects.map((key) => (
+                    <Toggle
+                        key={key}
+                        pressed={value.includes(key)}
+                        onClick={() => toggle(key)}
+                        testId={`classroom-subject-${gameKey}-${key}`}
+                    >
+                        {value.includes(key) && (
+                            <Check className="size-4" aria-hidden="true" />
+                        )}
+                        {subjectName(key)}
+                    </Toggle>
+                ))}
+            </div>
+            <InputError message={error} />
+        </fieldset>
     );
 }
 

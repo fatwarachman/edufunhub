@@ -221,6 +221,30 @@
             "superadminOnly": false,
             "teacherOnly": true,
             "keywords": "new class pin students"
+        },
+        "playerProgress": {
+            "href": "/admin/player-progress",
+            "title": "Player progress",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "adminTeachers": {
+            "href": "/admin/teachers",
+            "title": "Teacher list",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "adminClassrooms": {
+            "href": "/admin/classrooms",
+            "title": "Classroom list",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "adminChatLogs": {
+            "href": "/admin/chat-logs",
+            "title": "User chat logs",
+            "superadminOnly": true,
+            "teacherOnly": false
         }
     }
 }

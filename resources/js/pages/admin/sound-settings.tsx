@@ -75,7 +75,7 @@ export default function SoundSettings({ settings, defaults, options }: Props) {
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout title="Sound Settings">
             <Head title={tr('Sound Settings')} />
             <div className="flex w-full flex-col gap-6">
                 <div>

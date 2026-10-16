@@ -221,6 +221,30 @@
             "superadminOnly": false,
             "teacherOnly": true,
             "keywords": "kelas baru pin siswa"
+        },
+        "playerProgress": {
+            "href": "/admin/player-progress",
+            "title": "Progres pemain",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "adminTeachers": {
+            "href": "/admin/teachers",
+            "title": "Daftar guru",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "adminClassrooms": {
+            "href": "/admin/classrooms",
+            "title": "Daftar ruang kelas",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
+        "adminChatLogs": {
+            "href": "/admin/chat-logs",
+            "title": "Log chat pengguna",
+            "superadminOnly": true,
+            "teacherOnly": false
         }
     }
 }
