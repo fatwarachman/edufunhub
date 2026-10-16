@@ -9,7 +9,8 @@ it('offers a share menu on the dashboard stats and ranking sections', function (
         ->and($dashboard)->toContain('testId="dash-share-stats-button"')
         ->toContain('testId="dash-share-ranking-button"')
         ->toContain("t('playerDash.board.shareText'")
-        ->toContain("t('playerDash.share.statsText'");
+        ->toContain("t('playerDash.share.statsText'")
+        ->toContain('name={displayName}');
 });
 
 it('shares to WhatsApp, Facebook, X, Telegram, copy link and the native sheet', function (): void {
@@ -33,8 +34,9 @@ it('has Indonesian and English copy for the share menu and ranking text', functi
         foreach (['label', 'native', 'whatsapp', 'facebook', 'x', 'telegram', 'copyLink', 'copied'] as $key) {
             expect($catalog['shareMenu'][$key] ?? '')->not->toBe('');
         }
-        expect($catalog['playerDash']['board']['shareText'])->toContain('{{rank}}')->toContain('{{points}}')
-            ->and($catalog['playerDash']['board']['shareTextUnranked'] ?? '')->not->toBe('');
+        expect($catalog['playerDash']['board']['shareText'])->toContain('{{name}}')->toContain('{{rank}}')->toContain('{{points}}')
+            ->and($catalog['playerDash']['board']['shareTextUnranked'] ?? '')->toContain('{{name}}')
+            ->and($catalog['playerDash']['share']['statsText'] ?? '')->toContain('{{name}}');
     }
 });
 

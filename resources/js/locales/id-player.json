@@ -2636,8 +2636,8 @@
             "seeAllLabel": "Lihat semua papan peringkat",
             "share": "Bagikan",
             "shareTitle": "Bagikan peringkat",
-            "shareText": "Aku peringkat #{{rank}} di papan peringkat EduFunHub ({{period}}) dengan {{points}} poin! Ayo kalahkan aku!",
-            "shareTextUnranked": "Ayo bermain dan naik ke papan peringkat EduFunHub ({{period}})!"
+            "shareText": "{{name}} peringkat #{{rank}} di papan peringkat EduFunHub ({{period}}) dengan {{points}} poin! Ayo kalahkan {{name}}!",
+            "shareTextUnranked": "{{name}} mengajakmu bermain dan naik ke papan peringkat EduFunHub ({{period}})!"
         },
         "history": {
             "title": "Hasil terbaru",
@@ -2651,7 +2651,7 @@
             "title": "Bagikan dashboard",
             "button": "Bagikan statistik",
             "shared": "Disalin!",
-            "statsText": "Dashboard EduFunHub saya: {{plays}} kali bermain, akurasi {{accuracy}}, {{points}} poin, peringkat {{rank}}."
+            "statsText": "Dashboard EduFunHub {{name}}: {{plays}} kali bermain, akurasi {{accuracy}}, {{points}} poin, peringkat {{rank}}."
         },
         "settings": "Profil & pengaturan",
         "settingsReadOnly": "Data di atas hanya bisa diubah dari halaman profil.",

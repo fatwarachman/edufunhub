@@ -31,6 +31,19 @@
 
 return [
     [
+        'version' => '0.48.1',
+        'date' => '2026-10-17',
+        'time' => '01:10',
+        'changes' => [
+            [
+                'key' => 'share-text-player-name',
+                'type' => 'fix',
+                'title' => ['id' => 'Pesan bagikan menyebut nama pemain', 'en' => 'Share messages name the player'],
+                'body' => ['id' => 'Pesan bagikan peringkat dan statistik dari beranda (WhatsApp, media sosial, salin tautan) kini menyebut nama pemain, misalnya "Rani peringkat #2 di papan peringkat EduFunHub".', 'en' => 'Ranking and stats share messages from the home page (WhatsApp, social media, copy link) now name the player, for example "Rani is ranked #2 on the EduFunHub leaderboard".'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.48.0',
         'date' => '2026-10-17',
         'time' => '00:45',

@@ -431,6 +431,7 @@ export default function Dashboard({
             >
                 <KpiStrip
                     stats={stats}
+                    name={displayName}
                     rank={rank}
                     streak={badges.stats.streak ?? 0}
                     activeDays={badges.stats.active_days ?? 0}
@@ -493,6 +494,7 @@ export default function Dashboard({
                         >
                             <LeaderboardCard
                                 boards={leaderboards}
+                                name={displayName}
                                 number={number}
                             />
                         </Deferred>
@@ -644,12 +646,15 @@ function OnlineNowCard({
 
 function KpiStrip({
     stats,
+    name,
     rank,
     streak,
     activeDays,
     number,
 }: {
     stats?: DashboardStats;
+    /** Player name shown in the share message. */
+    name: string;
     rank: number | null;
     streak: number;
     activeDays: number;
@@ -724,6 +729,7 @@ function KpiStrip({
     ];
 
     const summary = t('playerDash.share.statsText', {
+        name,
         plays: number.format(stats.totals.plays),
         accuracy:
             stats.totals.accuracy === null
@@ -1163,9 +1169,12 @@ function GamesCard({
 
 function LeaderboardCard({
     boards,
+    name,
     number,
 }: {
     boards?: Record<LeaderboardPeriod, LeaderboardData>;
+    /** Player name shown in the share message. */
+    name: string;
     number: Intl.NumberFormat;
 }) {
     const { t } = useTranslations();
@@ -1180,11 +1189,15 @@ function LeaderboardCard({
     const periodLabel = t(`portal.leaderboardPeriod.${period}`);
     const rankingText = board.me
         ? t('playerDash.board.shareText', {
+              name,
               rank: number.format(board.me.rank),
               points: number.format(board.me.points),
               period: periodLabel,
           })
-        : t('playerDash.board.shareTextUnranked', { period: periodLabel });
+        : t('playerDash.board.shareTextUnranked', {
+              name,
+              period: periodLabel,
+          });
 
     return (
         <section

@@ -2637,8 +2637,8 @@
             "seeAllLabel": "See the full leaderboard",
             "share": "Share",
             "shareTitle": "Share ranking",
-            "shareText": "I'm ranked #{{rank}} on the EduFunHub leaderboard ({{period}}) with {{points}} points! Come beat me!",
-            "shareTextUnranked": "Come play and climb the EduFunHub leaderboard ({{period}})!"
+            "shareText": "{{name}} is ranked #{{rank}} on the EduFunHub leaderboard ({{period}}) with {{points}} points! Come beat {{name}}!",
+            "shareTextUnranked": "{{name}} invites you to play and climb the EduFunHub leaderboard ({{period}})!"
         },
         "history": {
             "title": "Latest results",
@@ -2652,7 +2652,7 @@
             "title": "Share your dashboard",
             "button": "Share stats",
             "shared": "Copied!",
-            "statsText": "My EduFunHub dashboard: {{plays}} games played, {{accuracy}} accuracy, {{points}} points, rank {{rank}}."
+            "statsText": "{{name}}'s EduFunHub dashboard: {{plays}} games played, {{accuracy}} accuracy, {{points}} points, rank {{rank}}."
         },
         "settings": "Profile & settings",
         "settingsReadOnly": "These details can only be changed on the profile page.",
