@@ -24,6 +24,96 @@
 
 return [
     [
+        'version' => '0.46.1',
+        'date' => '2026-10-16',
+        'changes' => [
+            [
+                'key' => 'admin-dates-locale',
+                'type' => 'fix',
+                'title' => ['id' => 'Tanggal di panel admin mengikuti bahasa akun', 'en' => 'Admin panel dates follow the account language'],
+                'body' => ['id' => 'Tanggal, jam, dan angka di semua halaman admin kini memakai format Indonesia (misalnya 14 Okt 2026, 13.05) saat bahasa Indonesia aktif, bukan format bahasa browser.', 'en' => 'Dates, times and numbers on every admin page now use the Indonesian format (for example 14 Okt 2026, 13.05) when Indonesian is active, instead of the browser language.'],
+            ],
+            [
+                'key' => 'admin-mobile-header',
+                'type' => 'fix',
+                'title' => ['id' => 'Judul header admin tidak terpotong di ponsel dan tablet', 'en' => 'Admin header title no longer cut off on phones and tablets'],
+                'body' => ['id' => 'Judul halaman di header admin kini boleh dua baris di ponsel dan tablet, tombol header diperkecil, dan pilihan bahasa pindah ke menu akun pada layar sangat sempit. Halaman admin yang sebelumnya tanpa judul header kini menampilkannya.', 'en' => 'The admin header page title may now wrap to two lines on phones and tablets, header buttons are smaller, and the language switch moves into the account menu on very narrow screens. Admin pages that had no header title now show one.'],
+            ],
+            [
+                'key' => 'teacher-subject-chip',
+                'type' => 'fix',
+                'title' => ['id' => 'Chip mata pelajaran guru tidak lagi melebar penuh', 'en' => 'Teacher subject chip no longer stretches full width'],
+                'body' => ['id' => 'Label "Semua mata pelajaran" di daftar dan detail guru kini tampil sebagai chip kecil.', 'en' => 'The "All subjects" label on the teacher list and detail now shows as a compact chip.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.46.0',
+        'date' => '2026-10-16',
+        'changes' => [
+            [
+                'key' => 'admin-games-table',
+                'type' => 'improvement',
+                'title' => ['id' => 'Statistik Game: jumlah dimainkan langsung terlihat', 'en' => 'Game Statistics: play counts visible at a glance'],
+                'body' => ['id' => 'Halaman Statistik Game kini tampil sebagai tabel di desktop dengan jumlah dimainkan yang menonjol beserta bar perbandingan. Di ponsel setiap game tampil sebagai kartu yang langsung menunjukkan jumlah dimainkan dan pemain; akordion hanya membuka detail lainnya.', 'en' => 'The Game Statistics page now shows a table on desktop with prominent play counts and a comparison bar. On phones every game is a card that shows plays and players right away; the accordion only opens the other details.'],
+            ],
+            [
+                'key' => 'admin-chat-logs',
+                'type' => 'feature',
+                'title' => ['id' => 'Log chat pengguna di admin', 'en' => 'User chat logs in admin'],
+                'body' => ['id' => 'Menu baru Log chat menampilkan semua percakapan pengguna (pribadi dan grup): peserta, jumlah pesan, pesan terakhir, dan isi lengkap percakapan beserta pengirimnya. Bisa difilter per pengguna untuk melihat dengan siapa saja ia chat. Setiap pembukaan percakapan dicatat di log aktivitas.', 'en' => 'The new Chat logs menu shows every user conversation (direct and group): participants, message count, last message and the full conversation with each sender. It can be filtered by user to see who they chatted with. Every opened conversation is recorded in the activity log.'],
+            ],
+            [
+                'key' => 'admin-classrooms',
+                'type' => 'feature',
+                'title' => ['id' => 'Daftar ruang kelas di admin', 'en' => 'Classroom list in admin'],
+                'body' => ['id' => 'Menu baru Ruang kelas menampilkan kelas yang terjadwal, sedang berlangsung, dan selesai, lengkap dengan guru, PIN, jadwal, game beserta pengaturannya, anggota yang sedang online, hasil bermain, analisa kelas, dan analisa AI.', 'en' => 'The new Classrooms menu lists scheduled, active and ended classrooms with teacher, PIN, schedule, games and their settings, members online now, play results, the class analysis and the AI analysis.'],
+            ],
+            [
+                'key' => 'admin-teachers',
+                'type' => 'feature',
+                'title' => ['id' => 'Daftar guru di admin', 'en' => 'Teacher list in admin'],
+                'body' => ['id' => 'Menu baru Guru menampilkan setiap guru dengan mata pelajaran, jumlah soal yang dibuat, pemakaian soal, poin akun, kompensasi, jumlah kelas yang dibuka, dan total peserta. Halaman detail guru memuat statistik soal, daftar kelas, poin, dan riwayat permintaan guru.', 'en' => 'The new Teachers menu lists every teacher with subjects, authored questions, question usage, account points, compensation, classrooms opened and total participants. The teacher detail page shows question stats, classrooms, points and teacher request history.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.45.0',
+        'date' => '2026-10-16',
+        'changes' => [
+            [
+                'key' => 'admin-player-progress',
+                'type' => 'feature',
+                'title' => ['id' => 'Halaman Progres Pemain di admin', 'en' => 'Player Progress page in admin'],
+                'body' => ['id' => 'Menu Analitik kini punya halaman Progres Pemain: setiap akun menampilkan jumlah permainan, jumlah game berbeda, soal yang dijawab (benar/salah) dan akurasinya, poin, waktu bermain, ruang kelas, lencana, serta status analisa AI (belum, berjalan, sudah, gagal) beserta ringkasannya. Bisa dicari, difilter (status AI, aktivitas) dan diurutkan. Tampil sebagai tabel di desktop dan kartu dengan akordion di ponsel.', 'en' => 'The Analytics menu now has a Player Progress page: every account shows its plays, distinct games, answered questions (right/wrong) with accuracy, points, playing time, classrooms, badges and AI analysis status (none, running, done, failed) with its summary. It can be searched, filtered (AI status, activity) and sorted. It shows as a table on desktop and as accordion cards on phones.'],
+            ],
+            [
+                'key' => 'assistant-live-app-knowledge',
+                'type' => 'improvement',
+                'title' => ['id' => 'Asisten AI memahami semua fitur dan data aplikasi', 'en' => 'AI assistant understands every app feature and data'],
+                'body' => ['id' => 'Asisten AI admin kini bisa menjawab dari data terbaru tentang: ringkasan aplikasi, pemain dengan nilai (skor game) tertinggi maupun poin tertinggi, soal yang paling banyak dijawab salah lengkap dengan teks soal, jawaban benar dan pilihan salah terbanyak, akurasi per mata pelajaran dan topik, peringkat game, progres dan analisa AI per pemain, ruang kelas, guru, serta changelog fitur.', 'en' => 'The admin AI assistant now answers from live data about: an app overview, players with the highest game score as well as the highest points, the questions answered wrong most with the prompt, correct answer and most chosen wrong option, accuracy per subject and topic, game ranking, per-player progress and AI analyses, classrooms, teachers and the feature changelog.'],
+            ],
+            [
+                'key' => 'assistant-mobile-chat',
+                'type' => 'fix',
+                'title' => ['id' => 'Kotak chat Asisten AI tampil dan bisa digulir di ponsel', 'en' => 'AI assistant chat box shows and scrolls on phones'],
+                'body' => ['id' => 'Di ponsel, halaman Asisten AI kini memenuhi layar: riwayat pesan bisa digulir di dalam kotak percakapan dan kolom ketik selalu terlihat di bagian bawah, tanpa harus menggulir seluruh halaman.', 'en' => 'On phones the AI assistant page now fills the screen: the message history scrolls inside the conversation box and the input stays visible at the bottom without scrolling the whole page.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.44.0',
+        'date' => '2026-10-15',
+        'changes' => [
+            [
+                'key' => 'classroom-game-subjects',
+                'type' => 'improvement',
+                'title' => ['id' => 'Game di ruang kelas hanya memakai mata pelajaran pilihan guru', 'en' => 'Classroom games only use the subjects the teacher picked'],
+                'body' => ['id' => 'Saat membuat atau mengubah ruang kelas, guru kini memilih mata pelajaran untuk setiap game dengan soal otomatis (atau Campuran). Siswa yang membuka game dari ruang kelas tidak lagi bisa memilih mata pelajaran: pilihan mata pelajaran diganti ringkasan mata pelajaran dari guru, dan server game memaksa soal hanya dari mata pelajaran itu. Game dengan soal pilihan guru memakai mata pelajaran dari soal-soal tersebut. Sinkronisasi soal ruang kelas ke server game juga diperbaiki.', 'en' => 'When creating or editing a classroom, teachers now pick the subjects of every auto-question game (or Mixed). Students opening a game from a classroom can no longer choose a subject: the subject picker is replaced by a summary of the teacher\'s subjects, and the game server only asks questions from those subjects. Games with teacher-picked questions use the subjects of those questions. The classroom question sync to the game server is fixed too.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.43.0',
         'date' => '2026-10-14',
         'changes' => [
