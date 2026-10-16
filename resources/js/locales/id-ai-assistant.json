@@ -54,5 +54,22 @@
         "Bagaimana mengatur tingkat kesulitan soal di ruang kelas?",
         "Siapa saja siswa yang pernah ikut kelasku?"
     ],
-    "teacherPlaceholder": "Contoh: bagaimana cara mengimpor soal dari template?"
+    "teacherPlaceholder": "Contoh: bagaimana cara mengimpor soal dari template?",
+    "teacherPageLinks": {
+        "/teacher/questions": "Bank soal",
+        "/teacher/questions/create": "Buat soal",
+        "/teacher/questions/import": "Impor soal",
+        "/teacher/questions/template": "Template Excel",
+        "/teacher/topics": "Materi",
+        "/teacher/classrooms": "Ruang kelas",
+        "/teacher/classrooms/create": "Buat ruang kelas",
+        "/teacher/classrooms/history": "Riwayat kelas",
+        "/teacher/ai-assistant": "Tanya Aku AI",
+        "/my-classrooms": "Kelasku",
+        "/my-classrooms/teachers": "Guru & kelasku",
+        "/profile": "Profil",
+        "/dashboard": "Beranda"
+    },
+    "teacherOpenClassroom": "Detail kelas",
+    "teacherOpenQuestion": "Detail soal"
 }

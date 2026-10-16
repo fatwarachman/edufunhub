@@ -54,5 +54,22 @@
         "How do I set the question difficulty in a classroom?",
         "Which students have joined my classes?"
     ],
-    "teacherPlaceholder": "Example: how do I import questions from the template?"
+    "teacherPlaceholder": "Example: how do I import questions from the template?",
+    "teacherPageLinks": {
+        "/teacher/questions": "Question bank",
+        "/teacher/questions/create": "Create question",
+        "/teacher/questions/import": "Import questions",
+        "/teacher/questions/template": "Excel template",
+        "/teacher/topics": "Topics",
+        "/teacher/classrooms": "Classrooms",
+        "/teacher/classrooms/create": "Create classroom",
+        "/teacher/classrooms/history": "Class history",
+        "/teacher/ai-assistant": "Tanya Aku AI",
+        "/my-classrooms": "My classes",
+        "/my-classrooms/teachers": "My teachers & classes",
+        "/profile": "Profile",
+        "/dashboard": "Home"
+    },
+    "teacherOpenClassroom": "Classroom detail",
+    "teacherOpenQuestion": "Question detail"
 }

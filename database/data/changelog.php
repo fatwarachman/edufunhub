@@ -31,6 +31,19 @@
 
 return [
     [
+        'version' => '0.48.2',
+        'date' => '2026-10-17',
+        'time' => '01:40',
+        'changes' => [
+            [
+                'key' => 'teacher-ai-page-buttons',
+                'type' => 'improvement',
+                'title' => ['id' => 'Alamat halaman di jawaban Tanya Aku jadi tombol', 'en' => 'Page paths in Tanya Aku answers become buttons'],
+                'body' => ['id' => 'Alamat halaman di jawaban Tanya Aku guru (misalnya /teacher/questions/create) kini tampil sebagai tombol dengan nama halaman, seperti Buat soal atau Bank soal, yang langsung membuka halamannya. Hanya halaman guru dan akun yang bisa ditautkan; titik akhir kalimat tidak ikut masuk ke tautan.', 'en' => 'Page paths in teacher Tanya Aku answers (for example /teacher/questions/create) now show as buttons with the page name, such as Create question or Question bank, that open the page. Only teacher and account pages can be linked, and a sentence full stop is never part of the link.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.48.1',
         'date' => '2026-10-17',
         'time' => '01:10',

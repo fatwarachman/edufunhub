@@ -1,5 +1,8 @@
 import { ConfirmDialog } from '@/components/admin/admin-kit';
-import { AssistantAnswer } from '@/components/admin/assistant-answer';
+import {
+    AssistantAnswer,
+    safeAssistantLink,
+} from '@/components/admin/assistant-answer';
 import { TeacherTabs } from '@/components/teacher/teacher-tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -61,6 +64,14 @@ interface ConversationReply {
         queried_at: string | null;
     }[];
 }
+
+/** App areas a teacher answer may link to; everything else stays plain text. */
+const TEACHER_LINK_PREFIXES = [
+    '/teacher',
+    '/my-classrooms',
+    '/profile',
+    '/dashboard',
+];
 
 export default function AiAssistant({
     configured,
@@ -610,8 +621,18 @@ function ChatBubble({
     const assistant = message.role === 'assistant';
     const sources = (message.sources ?? []).filter(
         (source) =>
-            source.url.startsWith('/admin/') && !source.url.includes('\\'),
+            safeAssistantLink(source.url, TEACHER_LINK_PREFIXES) !== null &&
+            source.url.startsWith('/'),
     );
+    const pageLabel = (path: string): string | null => {
+        const labels = copy.teacherPageLinks as Record<string, string>;
+        if (labels[path]) return labels[path];
+        if (/^\/teacher\/classrooms\/\d+/.test(path))
+            return copy.teacherOpenClassroom;
+        if (/^\/teacher\/questions\/\d+/.test(path))
+            return copy.teacherOpenQuestion;
+        return null;
+    };
 
     return (
         <article
@@ -639,7 +660,11 @@ function ChatBubble({
             >
                 <h2 className="sr-only">{assistant ? copy.title : copy.you}</h2>
                 {assistant ? (
-                    <AssistantAnswer content={message.content} />
+                    <AssistantAnswer
+                        content={message.content}
+                        linkPrefixes={TEACHER_LINK_PREFIXES}
+                        linkLabel={pageLabel}
+                    />
                 ) : (
                     <p className="text-sm leading-6 [overflow-wrap:anywhere] whitespace-pre-wrap">
                         {message.content}
