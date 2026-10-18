@@ -2,7 +2,6 @@ import { AbilityCard, type PlayerAbility } from '@/components/ability-card';
 import { BadgeCollection } from '@/components/badge-collection';
 import { type BadgeProgress } from '@/components/badges';
 import { InstallAppCard, type AndroidApk } from '@/components/install-app-card';
-import { LanguageToggle } from '@/components/language-toggle';
 import {
     LeaderboardPlayerMenu,
     type FriendRelation,
@@ -13,7 +12,6 @@ import PlayerCharacter, {
 } from '@/components/player-character';
 import { type PlayerDetails } from '@/components/player-details-card';
 import { ShareMenu } from '@/components/share-menu';
-import { NavButton } from '@/components/site-nav';
 import { Vault, type VaultItem } from '@/components/vault';
 import { useFreshOnHistory } from '@/hooks/use-fresh-on-history';
 import { useTranslations } from '@/hooks/use-translations';
@@ -49,7 +47,6 @@ import {
     Star,
     Target,
     Trophy,
-    UserRound,
     Users,
 } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
@@ -295,9 +292,6 @@ export default function Dashboard({
                     />
                 </div>
                 <div className="flex min-w-0 flex-col gap-3">
-                    <span className="auth-badge self-start">
-                        {t('playerDash.badge')}
-                    </span>
                     <h1
                         id="dash-hero-title"
                         className="text-2xl font-bold tracking-tight text-balance break-words sm:text-3xl md:text-4xl"
@@ -379,20 +373,6 @@ export default function Dashboard({
                                 level: progress.level + 1,
                             })}
                         </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <NavButton
-                            href="/portal"
-                            icon={Trophy}
-                            label={t('playerDash.actions.portal')}
-                            variant="primary"
-                        />
-                        <NavButton
-                            href="/character"
-                            icon={UserRound}
-                            label={t('playerDash.actions.character')}
-                        />
-                        <LanguageToggle />
                     </div>
                 </div>
                 <div className="flex min-w-0 flex-col gap-3 md:col-span-2 lg:col-span-1">

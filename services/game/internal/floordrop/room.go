@@ -127,6 +127,10 @@ type Room struct {
 	// classroomID is set on classroom rooms (no host screen): hostClaims is
 	// then the captain, a seated player who may run the host commands.
 	classroomID int64
+	// solo rooms are private: the owner (hostClaims) is the only player and
+	// runs the host commands from the pad. Set before the goroutine starts.
+	solo  bool
+	owner int64
 
 	players []*Player
 	byID    map[int64]*Player
@@ -331,6 +335,9 @@ func (r *Room) join(c *Client, now time.Time) error {
 	if r.phase != PhaseLobby && (r.classroomID == 0 || r.phase != PhaseOver) {
 		return ErrStarted
 	}
+	if r.solo && c.ID() != r.owner {
+		return ErrFull
+	}
 	if r.active() >= r.limit {
 		return ErrFull
 	}
@@ -347,18 +354,36 @@ func (r *Room) join(c *Client, now time.Time) error {
 	return nil
 }
 
-// canHost reports whether c may run host commands: the host screen, or the
-// captain of a classroom room (a seated player).
+// canHost reports whether c may run host commands: the host screen, the
+// captain of a classroom room or the owner of a solo room (seated players).
 func (r *Room) canHost(c *Client) bool {
-	return c.Host || (r.classroomID > 0 && c.ID() == r.hostClaims.Subject)
+	return c.Host || ((r.classroomID > 0 || r.solo) && c.ID() == r.hostClaims.Subject)
 }
 
-// captain is the user id of the classroom room captain (0 elsewhere).
+// captain is the user id of the classroom room captain or the solo owner
+// (0 elsewhere).
 func (r *Room) captain() int64 {
-	if r.classroomID <= 0 {
+	if r.classroomID <= 0 && !r.solo {
 		return 0
 	}
 	return r.hostClaims.Subject
+}
+
+// minPlayers is the seats needed to start: one in a solo room.
+func (r *Room) minPlayers() int {
+	if r.solo {
+		return 1
+	}
+	return MinPlayers
+}
+
+// lastStanding reports whether the game is over by eliminations: one
+// player left in a shared room, nobody left in a solo room.
+func (r *Room) lastStanding() bool {
+	if r.solo {
+		return r.aliveCount() == 0
+	}
+	return r.aliveCount() <= 1
 }
 
 // joinable reports whether a classroom player may still take a seat.
@@ -419,6 +444,13 @@ func (r *Room) leave(c *Client, now time.Time) error {
 	p := r.byID[c.ID()]
 	if p == nil || p.left {
 		return ErrNoRoom
+	}
+	if r.solo {
+		// Leaving a solo room closes it; an unfinished game pays what was
+		// achieved (points.Abandoned), like leaving any room early.
+		r.close(now, "left")
+		c.push(Message{"t": "state_sync", "phase": "NONE", "role": "player"})
+		return nil
 	}
 	r.hub.dropPlayer(p.ID(), r)
 	if r.phase == PhaseLobby {
@@ -520,7 +552,7 @@ func (r *Room) start(c *Client, now time.Time) error {
 		kept = append(kept, p)
 	}
 	r.players = kept
-	if len(r.players) < MinPlayers {
+	if len(r.players) < r.minPlayers() {
 		return ErrPlayers
 	}
 	grade, level := r.players[0].Claims.Grade, points.Level(r.players[0].Claims.Level)
@@ -769,7 +801,7 @@ func (r *Room) eliminate(fallen []*Player, reason string, now time.Time) {
 	msg := Message{"t": "player_eliminated", "user_ids": ids, "reason": reason, "survivors": r.aliveCount()}
 	r.broadcast(func(string) Message { return msg })
 	switch alive := r.aliveCount(); {
-	case alive <= 1 && (r.phase == PhaseQuestion || r.phase == PhaseSummary):
+	case r.lastStanding() && (r.phase == PhaseQuestion || r.phase == PhaseSummary):
 		r.gate.close()
 		r.finish(now)
 	case r.phase == PhaseQuestion && alive > 0 && r.answeredAlive() >= alive:
@@ -873,7 +905,20 @@ func (r *Room) points(p *Player, finished bool) int {
 	if !finished || p.left {
 		return points.Abandoned(p.earned, p.rounds, MaxPoints)
 	}
-	return Award(p.earned, p.rank == 1)
+	return Award(p.earned, r.won(p))
+}
+
+// won reports the win bonus: rank 1 of a shared room (never in solo).
+func (r *Room) won(p *Player) bool {
+	return p.rank == 1 && !r.solo
+}
+
+// mode is the history mode of the room.
+func (r *Room) mode() string {
+	if r.solo {
+		return record.ModeSolo
+	}
+	return record.ModeRoom
 }
 
 func (r *Room) podium(now time.Time) []Message {
@@ -890,7 +935,7 @@ func (r *Room) podium(now time.Time) []Message {
 
 func (r *Room) youResult(p *Player, now time.Time) Message {
 	return Message{
-		"user_id": p.ID(), "rank": p.rank, "won": p.rank == 1, "points": r.points(p, true),
+		"user_id": p.ID(), "rank": p.rank, "won": r.won(p), "points": r.points(p, true),
 		"survival_ms": r.survival(p, now).Milliseconds(), "accuracy": accuracy(p),
 		"correct": p.correct, "rounds": p.rounds,
 	}
@@ -942,7 +987,7 @@ func (r *Room) match(finished bool, now time.Time) *record.Match {
 		}
 	}
 	return &record.Match{
-		Key: fmt.Sprintf("%s-%s-%d", Prefix, r.Pin, r.started.UnixNano()), Mode: record.ModeRoom, Pin: r.Pin,
+		Key: fmt.Sprintf("%s-%s-%d", Prefix, r.Pin, r.started.UnixNano()), Mode: r.mode(), Pin: r.Pin,
 		Level: r.round.Number, Grade: r.grade, StartedAt: record.Stamp(r.started), EndedAt: record.Stamp(now),
 		Finished: finished, Players: players,
 	}
@@ -988,7 +1033,7 @@ func (r *Room) tick(now time.Time) {
 		case PhaseLock:
 			r.drop(now)
 		case PhaseReveal:
-			if r.aliveCount() <= 1 || r.round.Number >= MaxRounds || r.timeUp(now) {
+			if r.lastStanding() || r.round.Number >= MaxRounds || r.timeUp(now) {
 				r.finish(now)
 			} else {
 				r.summary(now)
@@ -1144,9 +1189,9 @@ func (r *Room) sendState(c *Client, now time.Time) {
 	msg := Message{
 		"t": "state_sync", "pin": r.Pin, "phase": r.phase, "role": role, "subject": subjectOrMix(r.subject),
 		"host":      Message{"user_id": r.hostClaims.Subject, "name": r.hostClaims.Name, "online": r.hostOnline},
-		"classroom": r.classroomID, "captain": r.captain(),
+		"classroom": r.classroomID, "captain": r.captain(), "solo": r.solo,
 		"players": players, "alive": r.aliveCount(), "answered": answered,
-		"min_players": MinPlayers, "max_players": r.limit, "max_rounds": MaxRounds,
+		"min_players": r.minPlayers(), "max_players": r.limit, "max_rounds": MaxRounds,
 		"round": r.round.Number, "lives_max": Lives,
 		"minutes": r.minutes, "durations": Durations, "player_limits": PlayerLimits,
 	}

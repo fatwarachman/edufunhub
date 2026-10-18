@@ -32,6 +32,9 @@ import {
     RoomEntry,
     RoomError,
     RoomPinBadge,
+    SoloEntry,
+    SoloLobbyNote,
+    useSoloRoom,
 } from '@/components/multiplayer/room';
 import {
     type GameSubject,
@@ -75,6 +78,7 @@ import {
     Swords,
     Timer,
     TriangleAlert,
+    User,
     WifiOff,
 } from 'lucide-react';
 import {
@@ -98,6 +102,8 @@ interface ControllerProps {
     serviceReady: boolean;
     wsUrl: string | null;
     pin: string | null;
+    /** `?role=solo`: a private room without arena screen and PIN. */
+    solo?: boolean;
 }
 
 type Toast = { id: number; tone: 'good' | 'bad' | 'info'; text: string };
@@ -110,6 +116,7 @@ export default function BlockBattleController({
     serviceReady,
     wsUrl,
     pin,
+    solo = false,
 }: ControllerProps) {
     const { t, i18n } = useTranslations();
     const back = useGameBack();
@@ -251,7 +258,21 @@ export default function BlockBattleController({
     );
 
     const classroom = classroomOf(state);
-    const isCaptain = classroom > 0 && captainOf(state) === player.id;
+    const soloRoom = (state as { solo?: boolean }).solo === true;
+    const isCaptain =
+        (classroom > 0 || soloRoom) && captainOf(state) === player.id;
+    const createSolo = useCallback(() => {
+        setError(null);
+        send({ t: 'create_solo', avatar: player.character ?? null });
+    }, [send, setError, player.character]);
+    useSoloRoom({
+        enabled: solo,
+        online,
+        synced: state.receivedAt > 0,
+        phase: state.phase,
+        closed: state.closed,
+        create: createSolo,
+    });
     if (state.pin && classroom > 0) {
         markClassroomRoom('block-battle');
     }
@@ -268,26 +289,26 @@ export default function BlockBattleController({
     // Invite link / QR: join once connected (classrooms join by token).
     const joined = useRef(false);
     useEffect(() => {
-        if (!online || joined.current || !pin || back.inClassroom) {
+        if (!online || joined.current || !pin || back.inClassroom || solo) {
             return;
         }
         joined.current = true;
         if (state.pin !== pin) {
             join(pin);
         }
-    }, [online, pin, state.pin, join, back.inClassroom]);
+    }, [online, pin, state.pin, join, back.inClassroom, solo]);
 
     // Keep the room PIN in the address bar so a reload rejoins; classroom
     // rooms are never shared by PIN.
     useEffect(() => {
         const path =
-            state.pin && !back.inClassroom
+            state.pin && !back.inClassroom && !soloRoom && !solo
                 ? `/play/block-battle/${state.pin}`
                 : '/play/block-battle';
         if (window.location.pathname !== path) {
             window.history.replaceState(window.history.state, '', path);
         }
-    }, [state.pin, back.inClassroom]);
+    }, [state.pin, back.inClassroom, soloRoom, solo]);
 
     // Board sounds: cleared lines and incoming garbage.
     const lines = state.board?.lines ?? 0;
@@ -337,6 +358,16 @@ export default function BlockBattleController({
                 onClassroom={enterClassroom}
             />
         );
+    } else if (solo && (state.phase === 'NONE' || !state.pin)) {
+        body = (
+            <SoloEntry
+                status={status}
+                error={error}
+                name={player.name}
+                closed={state.closed}
+                onCreate={createSolo}
+            />
+        );
     } else if (state.phase === 'NONE' || !state.pin) {
         body = (
             <JoinPanel
@@ -353,7 +384,7 @@ export default function BlockBattleController({
                 }}
             />
         );
-    } else if (state.phase === 'LOBBY' && classroom > 0) {
+    } else if (state.phase === 'LOBBY' && (classroom > 0 || soloRoom)) {
         body = (
             <ClassroomLobby
                 state={state}
@@ -361,6 +392,7 @@ export default function BlockBattleController({
                 error={error}
                 online={online}
                 classroom={classroom}
+                solo={soloRoom}
                 isCaptain={isCaptain}
                 act={act}
                 onLeave={leave}
@@ -415,11 +447,12 @@ export default function BlockBattleController({
         body = (
             <>
                 <ResultPanel state={state} />
-                {classroom > 0 && (
+                {(classroom > 0 || soloRoom) && (
                     <Panel className="flex flex-col items-center gap-3 text-center">
                         <RoomPinBadge
                             pin={state.pin ?? ''}
                             classroom={classroom}
+                            solo={soloRoom}
                         />
                         {isCaptain ? (
                             <Button
@@ -514,10 +547,11 @@ export default function BlockBattleController({
                     {toast.text}
                 </div>
             )}
-            {playing && classroom > 0 && (
+            {playing && (classroom > 0 || soloRoom) && (
                 <CaptainBar
                     pin={state.pin ?? ''}
                     classroom={classroom}
+                    solo={soloRoom}
                     isCaptain={isCaptain}
                     onLeave={leave}
                     onStop={() => act({ t: 'end_game' })}
@@ -575,12 +609,14 @@ function captainOf(state: BBState): number {
 function CaptainBar({
     pin,
     classroom,
+    solo = false,
     isCaptain,
     onLeave,
     onStop,
 }: {
     pin: string;
     classroom: number;
+    solo?: boolean;
     isCaptain: boolean;
     onLeave: () => void;
     onStop: () => void;
@@ -589,7 +625,7 @@ function CaptainBar({
     const [confirm, setConfirm] = useState(false);
     return (
         <div className="flex flex-wrap items-center justify-between gap-2">
-            <RoomPinBadge pin={pin} classroom={classroom} />
+            <RoomPinBadge pin={pin} classroom={classroom} solo={solo} />
             {isCaptain && (
                 <Button
                     variant="outline"
@@ -629,6 +665,7 @@ function ClassroomLobby({
     error,
     online,
     classroom,
+    solo = false,
     isCaptain,
     act,
     onLeave,
@@ -638,6 +675,8 @@ function ClassroomLobby({
     error: string | null;
     online: boolean;
     classroom: number;
+    /** Private solo room: no classmates, no PIN. */
+    solo?: boolean;
     isCaptain: boolean;
     act: Act;
     onLeave: () => void;
@@ -666,11 +705,16 @@ function ClassroomLobby({
         <Panel
             className="flex flex-col gap-4"
             data-testid="bb-classroom-lobby"
+            data-solo={solo ? 'true' : 'false'}
             data-captain={isCaptain ? 'true' : 'false'}
         >
             <div className="flex flex-wrap items-center gap-2">
                 <ConnectionBadge status={status} />
-                <RoomPinBadge pin={state.pin ?? ''} classroom={classroom} />
+                <RoomPinBadge
+                    pin={state.pin ?? ''}
+                    classroom={classroom}
+                    solo={solo}
+                />
                 <span
                     className="inline-flex items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3 py-1.5 text-sm font-black text-white"
                     style={{ background: MODE_STYLE[state.mode].tone }}
@@ -680,63 +724,69 @@ function ClassroomLobby({
                     {t(`blockBattle.modes.${state.mode}.title`)}
                 </span>
             </div>
-            <div className="flex flex-col gap-1">
-                <h2 className="font-display text-xl font-black">
-                    {t('room.classroom.title', {
-                        name: back.classroomName ?? '',
-                    })}
-                </h2>
-                <p className="text-sm font-bold text-slate-600">
-                    {isCaptain
-                        ? t('room.classroom.hostHint', { min })
-                        : t('room.classroom.playerHint')}
-                </p>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-                <h3 className="font-display text-lg font-black">
-                    {t('blockBattle.arena.joined')}
-                </h3>
-                <span
-                    className="text-sm font-black tabular-nums"
-                    data-testid="bb-player-count"
-                >
-                    {t('blockBattle.arena.playersCount', {
-                        count: players.length,
-                        max: state.max_players,
-                    })}
-                </span>
-            </div>
-            <ul
-                className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3"
-                data-testid="bb-roster"
-            >
-                {players.map((p) => (
-                    <li
-                        key={p.user_id}
-                        className={cn(
-                            'flex min-w-0 items-center gap-2 rounded-2xl border-2 border-[#1f2a44] bg-white p-2',
-                            !p.online && 'opacity-50',
-                        )}
+            {solo ? (
+                <SoloLobbyNote />
+            ) : (
+                <>
+                    <div className="flex flex-col gap-1">
+                        <h2 className="font-display text-xl font-black">
+                            {t('room.classroom.title', {
+                                name: back.classroomName ?? '',
+                            })}
+                        </h2>
+                        <p className="text-sm font-bold text-slate-600">
+                            {isCaptain
+                                ? t('room.classroom.hostHint', { min })
+                                : t('room.classroom.playerHint')}
+                        </p>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-display text-lg font-black">
+                            {t('blockBattle.arena.joined')}
+                        </h3>
+                        <span
+                            className="text-sm font-black tabular-nums"
+                            data-testid="bb-player-count"
+                        >
+                            {t('blockBattle.arena.playersCount', {
+                                count: players.length,
+                                max: state.max_players,
+                            })}
+                        </span>
+                    </div>
+                    <ul
+                        className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3"
+                        data-testid="bb-roster"
                     >
-                        <span className="size-9 shrink-0">
-                            <PlayerAvatar
-                                character={p.character}
-                                seat={p.user_id}
-                                userId={p.user_id}
-                            />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate text-sm font-black">
-                            {p.name}
-                        </span>
-                        {p.user_id === captain && (
-                            <Crown
-                                className="size-4 shrink-0 fill-[#ffd93d] text-[#b45309]"
-                                aria-label={t('room.host')}
-                            />
-                        )}
-                    </li>
-                ))}
-            </ul>
+                        {players.map((p) => (
+                            <li
+                                key={p.user_id}
+                                className={cn(
+                                    'flex min-w-0 items-center gap-2 rounded-2xl border-2 border-[#1f2a44] bg-white p-2',
+                                    !p.online && 'opacity-50',
+                                )}
+                            >
+                                <span className="size-9 shrink-0">
+                                    <PlayerAvatar
+                                        character={p.character}
+                                        seat={p.user_id}
+                                        userId={p.user_id}
+                                    />
+                                </span>
+                                <span className="min-w-0 flex-1 truncate text-sm font-black">
+                                    {p.name}
+                                </span>
+                                {p.user_id === captain && (
+                                    <Crown
+                                        className="size-4 shrink-0 fill-[#ffd93d] text-[#b45309]"
+                                        aria-label={t('room.host')}
+                                    />
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
             {isCaptain ? (
                 <>
                     <fieldset className="flex flex-col gap-2">
@@ -744,39 +794,41 @@ function ClassroomLobby({
                             {t('blockBattle.arena.mode')}
                         </legend>
                         <div className="grid grid-cols-3 gap-2">
-                            {state.modes.map((mode) => {
-                                const { icon: Icon } = MODE_STYLE[mode];
-                                const selected = state.mode === mode;
-                                return (
-                                    <button
-                                        key={mode}
-                                        type="button"
-                                        aria-pressed={selected}
-                                        disabled={!online}
-                                        onClick={() =>
-                                            act({ t: 'configure', mode })
-                                        }
-                                        data-testid={`bb-mode-${mode}`}
-                                        className={choice(selected)}
-                                    >
-                                        <Icon
-                                            className="size-5"
-                                            aria-hidden="true"
-                                        />
-                                        <span className="flex items-center gap-1">
-                                            {t(
-                                                `blockBattle.modes.${mode}.title`,
-                                            )}
-                                            {selected && (
-                                                <Check
-                                                    className="size-3.5 shrink-0"
-                                                    aria-hidden="true"
-                                                />
-                                            )}
-                                        </span>
-                                    </button>
-                                );
-                            })}
+                            {state.modes
+                                .filter((mode) => !solo || mode !== 'BATTLE')
+                                .map((mode) => {
+                                    const { icon: Icon } = MODE_STYLE[mode];
+                                    const selected = state.mode === mode;
+                                    return (
+                                        <button
+                                            key={mode}
+                                            type="button"
+                                            aria-pressed={selected}
+                                            disabled={!online}
+                                            onClick={() =>
+                                                act({ t: 'configure', mode })
+                                            }
+                                            data-testid={`bb-mode-${mode}`}
+                                            className={choice(selected)}
+                                        >
+                                            <Icon
+                                                className="size-5"
+                                                aria-hidden="true"
+                                            />
+                                            <span className="flex items-center gap-1">
+                                                {t(
+                                                    `blockBattle.modes.${mode}.title`,
+                                                )}
+                                                {selected && (
+                                                    <Check
+                                                        className="size-3.5 shrink-0"
+                                                        aria-hidden="true"
+                                                    />
+                                                )}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
                         </div>
                         <p className="text-xs font-bold text-slate-600">
                             {t(`blockBattle.modes.${state.mode}.desc`)}
@@ -924,6 +976,19 @@ function JoinPanel({
                 </p>
             )}
             <RoomError code={error} />
+            <Button
+                onClick={() =>
+                    router.visit('/play/block-battle?role=solo', {
+                        preserveScroll: true,
+                    })
+                }
+                disabled={!online}
+                data-testid="room-solo"
+                className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#bbf7d0] px-6 font-display text-lg font-black text-[#1f2a44] shadow-[4px_4px_0px_#1f2a44] hover:bg-[#86efac] disabled:opacity-50"
+            >
+                <User className="size-5" aria-hidden="true" />
+                {t('room.solo.start')}
+            </Button>
             <button
                 type="button"
                 onClick={() => router.visit('/games/block-battle')}

@@ -62,6 +62,13 @@ it('rejects guest current page updates', function () {
     ])->assertUnauthorized();
 });
 
+it('shows page name instead of the full URL in user list activity', function () {
+    $source = file_get_contents(resource_path('js/pages/admin/users/index.tsx'));
+
+    expect($source)->toContain('user.current_page_label')
+        ->and($source)->not->toContain('user.current_page_path');
+});
+
 it('shows exact current page in online user list and detail', function () {
     $admin = User::factory()->create([
         'is_superadmin' => true,

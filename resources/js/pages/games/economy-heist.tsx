@@ -14,7 +14,11 @@ import {
     Panel,
 } from '@/components/economy-heist/shared';
 import { GameFinale, podiumStandings } from '@/components/game-finale';
-import { markClassroomRoom, useRoomPin } from '@/components/multiplayer/room';
+import {
+    markClassroomRoom,
+    useRoomPin,
+    useSoloRoom,
+} from '@/components/multiplayer/room';
 import { BackButton, SiteNav, useGameBack } from '@/components/site-nav';
 import {
     type HeistAction,
@@ -31,6 +35,7 @@ import {
     MonitorPlay,
     Play,
     Smartphone,
+    User,
     Vault,
     Volume2,
     VolumeX,
@@ -57,7 +62,7 @@ interface EconomyHeistProps {
     wsUrl: string | null;
     pin: string | null;
     /** Chosen role from `?role=`; invite links open as a player. */
-    role: HeistRole | null;
+    role: PageRole | null;
 }
 
 export default function EconomyHeist({
@@ -174,11 +179,12 @@ export default function EconomyHeist({
     );
     const onError = useCallback((code: string) => setError(code), []);
     // A game opened from a classroom skips the role picker: always a player.
-    const chosenRole: HeistRole | null =
+    const chosenRole: PageRole | null =
         role ?? (pin || back.inClassroom ? 'player' : null);
+    const solo = chosenRole === 'solo';
     const { state, status, send } = useEconomyHeist(
         serviceReady && chosenRole ? wsUrl : null,
-        chosenRole ?? 'player',
+        chosenRole === 'host' ? 'host' : 'player',
         i18n.language,
         onError,
         onEvent,
@@ -203,21 +209,39 @@ export default function EconomyHeist({
             }),
         [send, player.id, player.name, player.character],
     );
-    const { classroom = 0, captain = 0 } = state as {
+    const {
+        classroom = 0,
+        captain = 0,
+        solo: soloRoom = false,
+    } = state as {
         classroom?: number;
         captain?: number;
+        solo?: boolean;
     };
-    const isCaptain = classroom > 0 && captain === player.id;
+    const isCaptain = (classroom > 0 || soloRoom) && captain === player.id;
     if (state.pin && classroom > 0) {
         markClassroomRoom('economy-heist');
     }
-    // Classroom rooms are never shared by PIN: keep it out of the address bar.
+    // Classroom and solo rooms are never shared by PIN: keep it out of the
+    // address bar.
     useRoomPin(
         online && chosenRole === 'player',
-        classroom > 0 ? undefined : state.pin,
+        classroom > 0 || soloRoom ? undefined : state.pin,
         chosenRole === 'player' && !back.inClassroom ? pin : null,
         join,
     );
+    const createSolo = useCallback(() => {
+        setError(null);
+        send({ t: 'create_solo', avatar: player.character ?? null });
+    }, [send, player.character]);
+    useSoloRoom({
+        enabled: solo,
+        online,
+        synced: state.receivedAt > 0,
+        phase: state.phase,
+        closed: state.closed,
+        create: createSolo,
+    });
 
     useAdMoments(
         state.phase === 'PLAYING'
@@ -267,6 +291,9 @@ export default function EconomyHeist({
                     }
                 }}
                 onHost={() => chooseRole('host')}
+                onSolo={() => chooseRole('solo')}
+                solo={solo}
+                onCreateSolo={createSolo}
                 userId={player.id}
             />
         );
@@ -310,7 +337,7 @@ export default function EconomyHeist({
                         <DigitalClock className="edu-clock--game" />
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
-                        {chosenRole === 'player' && (
+                        {chosenRole !== null && chosenRole !== 'host' && (
                             <span
                                 className="hidden min-h-11 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#ffd93d] px-3 text-sm font-black sm:inline-flex"
                                 data-testid="eh-total-points"
@@ -379,13 +406,24 @@ export default function EconomyHeist({
     );
 }
 
-function chooseRole(role: HeistRole) {
+/** Page role from `?role=`; `solo` plays alone with a player token. */
+type PageRole = HeistRole | 'solo';
+
+function chooseRole(role: PageRole) {
     router.visit(`/games/economy-heist?role=${role}`, { preserveScroll: true });
 }
 
 function RolePicker() {
     const { t } = useTranslations();
     const roles = [
+        {
+            role: 'solo' as const,
+            icon: User,
+            title: t('room.solo.soloTitle'),
+            body: t('room.solo.soloBody'),
+            cta: t('room.solo.openSolo'),
+            tone: '#bbf7d0',
+        },
         {
             role: 'host' as const,
             icon: MonitorPlay,
@@ -405,13 +443,13 @@ function RolePicker() {
     ];
     return (
         <div
-            className="mx-auto flex w-full max-w-3xl flex-col gap-4"
+            className="mx-auto flex w-full max-w-4xl flex-col gap-4"
             data-testid="eh-role-picker"
         >
             <h2 className="text-center font-display text-2xl font-black">
                 {t('economyHeist.chooseRole')}
             </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {roles.map(({ role, icon: Icon, title, body, cta, tone }) => (
                     <button
                         key={role}

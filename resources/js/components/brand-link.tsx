@@ -20,10 +20,12 @@ export function useBrandHomeHref(): string {
 export function BrandLink({
     variant = 'full',
     hideWordmarkOnPhone,
+    hideMarkOnPhone,
     className,
 }: {
     variant?: 'full' | 'mark';
     hideWordmarkOnPhone?: boolean;
+    hideMarkOnPhone?: boolean;
     className?: string;
 }) {
     const { t } = useTranslations();
@@ -41,7 +43,14 @@ export function BrandLink({
     };
     const content = (
         <>
-            <span className="auth-brand-mark">
+            <span
+                className={[
+                    'auth-brand-mark',
+                    hideMarkOnPhone && 'max-[767px]:!hidden',
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
+            >
                 <Gamepad2 className="size-6" />
             </span>
             {variant === 'full' && (

@@ -2,6 +2,7 @@ import { Google } from '@/components/brand-icons';
 import { EditableCardHeader, ReadOnlyFields } from '@/components/editable-card';
 import { GradeCard } from '@/components/grade-card';
 import InputError from '@/components/input-error';
+import { LanguageToggle } from '@/components/language-toggle';
 import PlayerCharacter, {
     type CharacterData,
 } from '@/components/player-character';
@@ -157,7 +158,7 @@ export default function Profile({
                             value={number.format(stats.games)}
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Link
                             href="/character"
                             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-[#151b2e] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#151b2e] hover:bg-[#fff9e6]"
@@ -172,6 +173,7 @@ export default function Profile({
                             <Trophy className="size-4" aria-hidden />
                             {t('profile.openDashboard')}
                         </Link>
+                        <LanguageToggle />
                     </div>
                 </div>
             </section>

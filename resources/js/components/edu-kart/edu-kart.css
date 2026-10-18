@@ -1,0 +1,610 @@
+/* EduKart (Balap Kuis 3D). Prefix: .ek- */
+.ek-page {
+    background: #fff4e6;
+}
+.ek-main {
+    max-width: 1180px;
+    margin: auto;
+    padding: 16px 14px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.ek-main[data-playing='true'] {
+    padding: 8px 8px 24px;
+    max-width: 1400px;
+}
+.ek-notice {
+    padding: 24px;
+    background: white;
+    border: 3px solid #1f2a44;
+    border-radius: 24px;
+    box-shadow: 5px 5px 0 #1f2a44;
+    font-weight: 700;
+}
+.ek-race {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.ek-race-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+/* Arena: fills the viewport height below the header, no page scroll needed. */
+.ek-arena {
+    position: relative;
+    width: 100%;
+    height: calc(100dvh - 140px);
+    min-height: 320px;
+    max-height: 860px;
+    overflow: hidden;
+    border: 3px solid #1f2a44;
+    border-radius: 22px;
+    box-shadow: 5px 5px 0 #1f2a44;
+    background: linear-gradient(#7dd3fc, #fde68a);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+.ek-canvas,
+.ek-canvas canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.ek-loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    text-align: center;
+    font-weight: 900;
+    font-size: 18px;
+    color: #1f2a44;
+    background: rgb(255 244 230 / 0.85);
+}
+
+/* HUD */
+.ek-hud-top {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    pointer-events: none;
+    flex-wrap: wrap;
+}
+.ek-chip {
+    display: flex;
+    flex-direction: column;
+    min-width: 58px;
+    padding: 3px 10px 4px;
+    border: 2px solid #1f2a44;
+    border-radius: 14px;
+    background: rgb(255 255 255 / 0.92);
+    box-shadow: 2px 2px 0 #1f2a44;
+    line-height: 1.1;
+}
+.ek-chip-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #475569;
+}
+.ek-chip-value {
+    font-family: var(--font-display, inherit);
+    font-size: 20px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+.ek-chip-value small {
+    font-size: 12px;
+}
+.ek-item {
+    margin-left: auto;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: 3px solid #1f2a44;
+    border-radius: 14px;
+    background: #fef3c7;
+    box-shadow: 2px 2px 0 #1f2a44;
+    font-weight: 900;
+    font-size: 24px;
+}
+.ek-item[data-item='none'] {
+    color: #94a3b8;
+    background: rgb(255 255 255 / 0.85);
+}
+.ek-item.is-juiced,
+.ek-fruit.is-juiced {
+    background: #fde047;
+    box-shadow:
+        2px 2px 0 #1f2a44,
+        0 0 14px 3px #facc15;
+}
+.ek-fruit {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 34px;
+    padding: 0 10px;
+    border: 2px solid #1f2a44;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.92);
+    box-shadow: 2px 2px 0 #1f2a44;
+    font-weight: 900;
+    color: #b45309;
+}
+
+/* Question panel: under the HUD, never covers the road centre. */
+.ek-question {
+    position: absolute;
+    top: 72px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(640px, calc(100% - 16px));
+    padding: 8px 12px 10px;
+    border: 3px solid #1f2a44;
+    border-radius: 18px;
+    background: rgb(255 255 255 / 0.95);
+    box-shadow: 4px 4px 0 #1f2a44;
+    pointer-events: none;
+}
+.ek-question-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #be123c;
+}
+.ek-question-text {
+    margin-top: 2px;
+    font-weight: 900;
+    font-size: clamp(14px, 2.4vw, 19px);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+.ek-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    margin-top: 6px;
+}
+.ek-options[data-count='4'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.ek-options li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    padding: 4px 6px;
+    border: 2px solid #1f2a44;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.15;
+    background: #f8fafc;
+}
+.ek-options li span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.ek-options li b {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    color: white;
+    font-size: 11px;
+}
+.ek-options li[data-lane='0'] b {
+    background: #16a34a;
+}
+.ek-options li[data-lane='1'] b {
+    background: #dc2626;
+}
+.ek-options[data-count='4'] li[data-lane='0'] b {
+    background: #2563eb;
+}
+.ek-options[data-count='4'] li[data-lane='1'] b {
+    background: #e11d48;
+}
+.ek-options[data-count='4'] li[data-lane='2'] b {
+    background: #ca8a04;
+}
+.ek-options[data-count='4'] li[data-lane='3'] b {
+    background: #16a34a;
+}
+.ek-options li[data-aim='true'] {
+    background: #fef08a;
+    box-shadow: 2px 2px 0 #1f2a44;
+}
+.ek-question-help {
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+}
+.ek-feedback {
+    position: absolute;
+    left: 50%;
+    bottom: 168px;
+    transform: translateX(-50%);
+    width: min(460px, calc(100% - 16px));
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 14px;
+    border: 3px solid #1f2a44;
+    border-radius: 16px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 14px;
+    pointer-events: none;
+    animation: ek-pop 0.25s ease-out;
+}
+.ek-feedback[data-correct='true'] {
+    background: #bbf7d0;
+}
+.ek-feedback[data-correct='false'] {
+    background: #fecaca;
+}
+.ek-feedback strong {
+    font-size: 18px;
+}
+.ek-lights {
+    position: absolute;
+    top: 38%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-display, inherit);
+    font-size: clamp(56px, 14vw, 120px);
+    font-weight: 900;
+    color: white;
+    -webkit-text-stroke: 4px #1f2a44;
+    paint-order: stroke fill;
+    text-shadow: 5px 5px 0 #1f2a44;
+    pointer-events: none;
+    animation: ek-pop 0.3s ease-out;
+}
+.ek-alert,
+.ek-finish {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    transform: translateX(-50%);
+    padding: 8px 18px;
+    border: 3px solid #1f2a44;
+    border-radius: 16px;
+    font-weight: 900;
+    font-size: 18px;
+    text-align: center;
+    pointer-events: none;
+}
+.ek-alert {
+    background: #fecaca;
+    animation: ek-blink 0.5s steps(2) infinite;
+}
+.ek-finish {
+    background: #fde68a;
+    box-shadow: 4px 4px 0 #1f2a44;
+}
+.ek-speed {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    pointer-events: none;
+}
+.ek-speed-value {
+    font-family: var(--font-display, inherit);
+    font-size: 30px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    color: white;
+    -webkit-text-stroke: 2px #1f2a44;
+    paint-order: stroke fill;
+    text-shadow: 3px 3px 0 #1f2a44;
+    line-height: 1;
+}
+.ek-speed-value small {
+    margin-left: 3px;
+    font-size: 13px;
+}
+.ek-turbo-meter {
+    position: relative;
+    width: 150px;
+    height: 14px;
+    border: 2px solid #1f2a44;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.85);
+    overflow: hidden;
+}
+.ek-turbo-meter span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #facc15 50%, #ef4444);
+}
+.ek-turbo-meter i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #1f2a44;
+}
+.ek-turbo-meter[data-ready='true'] {
+    box-shadow: 0 0 10px 2px #ef4444;
+}
+.ek-stage {
+    display: flex;
+    gap: 4px;
+}
+.ek-stage b {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #1f2a44;
+    border-radius: 4px;
+    background: white;
+}
+.ek-stage b[data-on='true'] {
+    background: #f97316;
+}
+.ek-keys {
+    position: absolute;
+    left: 10px;
+    bottom: 8px;
+    max-width: 55%;
+    padding: 3px 8px;
+    border-radius: 10px;
+    background: rgb(255 255 255 / 0.8);
+    font-size: 11px;
+    font-weight: 700;
+    color: #334155;
+    pointer-events: none;
+}
+
+/* Touch controls: shown on touch screens only. */
+.ek-touch {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 10px max(10px, env(safe-area-inset-right))
+        max(10px, env(safe-area-inset-bottom))
+        max(10px, env(safe-area-inset-left));
+    pointer-events: none;
+}
+.ek-touch > * {
+    pointer-events: auto;
+}
+.ek-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 64px);
+    grid-template-rows: repeat(2, 64px);
+    gap: 10px;
+}
+.ek-btn {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border: 3px solid #1f2a44;
+    border-radius: 999px;
+    box-shadow: 3px 3px 0 #1f2a44;
+    color: #1f2a44;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.ek-btn svg {
+    width: 28px;
+    height: 28px;
+}
+.ek-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 #1f2a44;
+}
+.ek-btn:disabled {
+    opacity: 0.45;
+}
+.ek-btn[data-tone='gas'] {
+    background: #4ade80;
+}
+.ek-btn[data-tone='brake'] {
+    background: #f87171;
+}
+.ek-btn[data-tone='drift'] {
+    background: #fdba74;
+}
+.ek-btn[data-tone='ready'] {
+    background: #ef4444;
+    color: white;
+    box-shadow:
+        3px 3px 0 #1f2a44,
+        0 0 16px 4px #f97316;
+}
+.ek-btn[data-tone='item'] {
+    background: #fde047;
+}
+@media (pointer: coarse) {
+    .ek-touch {
+        display: flex;
+    }
+    .ek-keys {
+        display: none;
+    }
+    .ek-speed {
+        bottom: 160px;
+    }
+    .ek-feedback {
+        bottom: 190px;
+    }
+}
+
+/* Phones: compact HUD and question. */
+@media (max-width: 640px) {
+    .ek-arena {
+        height: calc(100dvh - 118px);
+        border-radius: 16px;
+    }
+    .ek-chip {
+        min-width: 48px;
+        padding: 2px 7px 3px;
+    }
+    .ek-chip-value {
+        font-size: 16px;
+    }
+    .ek-item {
+        width: 44px;
+        height: 44px;
+    }
+    .ek-question {
+        top: 60px;
+        padding: 6px 8px 8px;
+    }
+    .ek-options[data-count='4'] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .ek-options li {
+        font-size: 11px;
+    }
+    .ek-question-help {
+        display: none;
+    }
+    .ek-buttons {
+        grid-template-columns: repeat(2, 58px);
+        grid-template-rows: repeat(2, 58px);
+        gap: 8px;
+    }
+    .ek-btn {
+        width: 58px;
+        height: 58px;
+    }
+}
+/* Landscape phones: question to the top-left, buttons stay reachable. */
+@media (max-height: 520px) and (orientation: landscape) {
+    .ek-arena {
+        height: calc(100dvh - 76px);
+        min-height: 260px;
+    }
+    .ek-question {
+        left: 8px;
+        transform: none;
+        top: 56px;
+        width: min(420px, 48%);
+    }
+    .ek-options[data-count='4'] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .ek-speed {
+        bottom: 10px;
+        right: 170px;
+    }
+    .ek-feedback {
+        bottom: 12px;
+    }
+}
+
+/* Result */
+.ek-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 16px;
+    border: 3px solid #1f2a44;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 5px 5px 0 #1f2a44;
+    text-align: center;
+}
+.ek-standings {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: min(480px, 100%);
+}
+.ek-standings li {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 2px solid #1f2a44;
+    border-radius: 12px;
+    font-weight: 800;
+    text-align: left;
+}
+.ek-standings li[data-you='true'] {
+    background: #fde68a;
+}
+.ek-standings li b {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: #1f2a44;
+    color: white;
+}
+.ek-action {
+    min-height: 48px;
+    padding: 0 22px;
+    border: 3px solid #1f2a44;
+    border-radius: 16px;
+    background: #e11d48;
+    color: white;
+    font-weight: 900;
+    box-shadow: 3px 3px 0 #1f2a44;
+}
+.ek-action:disabled {
+    opacity: 0.5;
+}
+
+@keyframes ek-pop {
+    from {
+        opacity: 0;
+        scale: 0.85;
+    }
+    to {
+        opacity: 1;
+        scale: 1;
+    }
+}
+@keyframes ek-blink {
+    50% {
+        opacity: 0.55;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ek-feedback,
+    .ek-lights,
+    .ek-alert {
+        animation: none;
+    }
+}

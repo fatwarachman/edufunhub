@@ -236,6 +236,10 @@ class GameResultController extends Controller
             return __('snake.history_name', [], $locale);
         }
 
+        if ($gameKey === 'edu-kart') {
+            return __('edu_kart.history_name', [], $locale);
+        }
+
         if ($gameKey === 'crossword') {
             return __('crossword.history_name', ['level' => substr($mission, strlen('level-'))], $locale);
         }

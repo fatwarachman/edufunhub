@@ -14,6 +14,7 @@ beforeEach(function (): void {
     config([
         'game-service.secret' => CLASSROOM_CLOSE_SECRET,
         'game-service.classroom_close_url' => 'http://game.test/internal/classroom/close',
+        'game-service.edu_kart_classroom_close_url' => 'http://edukart.test/internal/classroom/close',
         'game-service.classroom_kick_url' => 'http://classroom.test/internal/classroom/kick',
         'chat-service.secret' => str_repeat('c', 40),
         'chat-service.publish_url' => 'http://chat.test/internal/publish',
@@ -47,6 +48,9 @@ it('closes game rooms, the world and student pages when the teacher ends the cla
     Http::assertSent(fn (Request $r): bool => $r->url() === 'http://game.test/internal/classroom/close'
         && $r->data() === ['classroom' => $this->classroom->id]
         && signedFor($r, CLASSROOM_CLOSE_SECRET));
+    Http::assertSent(fn (Request $r): bool => $r->url() === 'http://edukart.test/internal/classroom/close'
+        && $r->data() === ['classroom' => $this->classroom->id]
+        && signedFor($r, CLASSROOM_CLOSE_SECRET));
     Http::assertSent(fn (Request $r): bool => $r->url() === 'http://classroom.test/internal/classroom/kick'
         && $r->data() === ['classroom' => $this->classroom->id, 'user' => 0]
         && signedFor($r, CLASSROOM_CLOSE_SECRET));
@@ -64,7 +68,7 @@ it('closes classrooms whose time ran out exactly once', function (): void {
 
     expect($this->classroom->fresh()->closed_at)->not->toBeNull()
         ->and($running->fresh()->closed_at)->toBeNull();
-    Http::assertSentCount(3);
+    Http::assertSentCount(4);
 });
 
 it('re-arms the close when the teacher extends an ended classroom', function (): void {

@@ -469,6 +469,7 @@ function MobileMenu({
 }) {
     const { t } = useTranslations();
     const [open, setOpen] = useState(false);
+    const [tipDismissed, setTipDismissed] = useState(false);
     const root = useRef<HTMLDivElement | null>(null);
     const trigger = useRef<HTMLButtonElement | null>(null);
     const panelId = useId();
@@ -517,8 +518,15 @@ function MobileMenu({
                 aria-expanded={open}
                 aria-controls={panelId}
                 aria-label={t('nav.menu')}
-                data-tip={open ? undefined : t('nav.menu')}
-                onClick={() => setOpen((value) => !value)}
+                data-tip={open || tipDismissed ? undefined : t('nav.menu')}
+                onClick={() => {
+                    setTipDismissed(true);
+                    setOpen((value) => !value);
+                }}
+                onPointerEnter={() => setTipDismissed(false)}
+                onPointerLeave={() => setTipDismissed(false)}
+                onFocus={() => setTipDismissed(false)}
+                onBlur={() => setTipDismissed(false)}
                 data-testid="nav-more"
             >
                 <span

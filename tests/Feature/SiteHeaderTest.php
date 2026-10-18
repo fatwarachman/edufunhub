@@ -47,6 +47,31 @@ it('links the signed-in header to the ability analysis page', function (): void 
         ->and($english['nav']['ability'])->toBe('Ability analysis');
 });
 
+it('hides the player header clock badge on phones', function (): void {
+    $css = file_get_contents(resource_path('css/edu-nav.css'));
+
+    expect($css)->toMatch('/@media \\(max-width: 767px\\) \\{\\s*\\.edu-clock \\{\\s*display: none;/')
+        ->and($css)->toContain('min-height: 60px;');
+});
+
+it('dismisses the phone menu tooltip when hamburger is clicked', function (): void {
+    $source = file_get_contents(resource_path('js/components/site-nav.tsx'));
+
+    expect($source)->toContain('const [tipDismissed, setTipDismissed] = useState(false)')
+        ->and($source)->toContain("data-tip={open || tipDismissed ? undefined : t('nav.menu')}")
+        ->and($source)->toContain('setTipDismissed(true);')
+        ->and($source)->toContain('onPointerLeave={() => setTipDismissed(false)}');
+});
+
+it('dismisses the notification tooltip while toggling its panel', function (): void {
+    $source = file_get_contents(resource_path('js/components/notification-bell.tsx'));
+
+    expect($source)->toContain('const [tipDismissed, setTipDismissed] = useState(false)')
+        ->and($source)->toContain('data-tip={open || tipDismissed ? undefined : label}')
+        ->and($source)->toContain('setTipDismissed(true);')
+        ->and($source)->toContain('onPointerLeave={() => setTipDismissed(false)}');
+});
+
 it('puts sign in and sign up at the top of the guest phone menu', function (): void {
     $source = file_get_contents(resource_path('js/components/site-nav.tsx'));
 
@@ -246,6 +271,15 @@ it('links the brand to Beranda: dashboard when signed in, landing page for guest
         ->and($english['nav']['brandHome'])->toBe('edufunhub.com, open Home');
 });
 
+it('hides only the brand icon on phones in the player layout', function (): void {
+    $source = file_get_contents(resource_path('js/layouts/player-layout.tsx'));
+    $brand = file_get_contents(resource_path('js/components/brand-link.tsx'));
+
+    expect($source)->toContain('<BrandLink hideMarkOnPhone />')
+        ->and($brand)->toContain("hideMarkOnPhone && 'max-[767px]:!hidden'")
+        ->and($brand)->toContain('<BrandWordmark hideOnPhone={hideWordmarkOnPhone} />');
+});
+
 it('renders the Beranda brand link on every player header', function (string $file, string $tag): void {
     $source = file_get_contents(resource_path($file));
     $header = substr($source, strpos($source, '<header'), 1500);
@@ -253,7 +287,7 @@ it('renders the Beranda brand link on every player header', function (string $fi
     expect($header)->toContain($tag)
         ->and($source)->not->toContain('href="/portal"\n                        className="auth-brand"');
 })->with([
-    'player layout' => ['js/layouts/player-layout.tsx', '<BrandLink hideWordmarkOnPhone />'],
+    'player layout' => ['js/layouts/player-layout.tsx', '<BrandLink hideMarkOnPhone />'],
     'legal document' => ['js/components/legal-document.tsx', '<BrandLink hideWordmarkOnPhone />'],
     'game list' => ['js/pages/games/index.tsx', '<BrandLink variant="mark" />'],
     'crossword' => ['js/pages/games/crossword.tsx', '<BrandLink variant="mark" />'],

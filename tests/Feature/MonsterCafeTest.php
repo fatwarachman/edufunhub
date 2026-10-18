@@ -154,9 +154,9 @@ it('throttles the token route under its own limiter name', function (): void {
         ->toContain('App\Http\Middleware\RecordGameAccess:monster-cafe');
 });
 
-it('lists monster cafe last in the quiz category as a multiplayer point game', function (): void {
+it('lists monster cafe in the quiz category as a multiplayer point game', function (): void {
     $quiz = collect(config('game-catalog.categories'))->firstWhere('key', 'quiz');
-    $game = collect($quiz['games'])->last();
+    $game = collect($quiz['games'])->firstWhere('key', 'monster-cafe');
 
     expect($game['key'])->toBe('monster-cafe')
         ->and($game)->toMatchArray([

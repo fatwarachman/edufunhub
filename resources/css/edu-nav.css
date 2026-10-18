@@ -1049,11 +1049,26 @@ html:has(.edu-nav-bar) {
 .edu-clock[data-tier='hidden'] {
     display: none;
 }
-/* Phones: time only (also before the fold hook has measured). */
+/* Phones: hide every clock badge and align primary app header heights. */
 @media (max-width: 767px) {
-    .edu-clock .edu-clock-day,
-    .edu-clock .edu-clock-seconds {
+    .edu-clock {
         display: none;
+    }
+    .auth-header,
+    header.sticky.top-0,
+    .kt-header,
+    .pp-header {
+        box-sizing: border-box;
+        height: 64px;
+        min-height: 64px;
+        padding-block: 8px;
+    }
+    header.sticky.top-0 > div:first-child {
+        min-height: 48px;
+        padding-block: 4px;
+    }
+    .edu-has-tabbar .auth-header {
+        height: calc(64px + env(safe-area-inset-top));
     }
 }
 /* Phones: smaller frame so the nav still fits on one row. */

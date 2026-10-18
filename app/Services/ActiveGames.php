@@ -25,26 +25,16 @@ class ActiveGames
             return [];
         }
 
-        $timestamp = (string) now()->getTimestamp();
-
-        try {
-            $rooms = Http::timeout((float) config('game-service.presence_timeout'))
-                ->withHeaders([
-                    'X-Game-Timestamp' => $timestamp,
-                    'X-Game-Signature' => $this->signer->sign($timestamp, ''),
-                ])
-                ->get((string) config('game-service.presence_url'), ['user' => $user->id])
-                ->throw()
-                ->json('rooms');
-        } catch (Throwable) {
-            return [];
-        }
+        $rooms = [
+            ...$this->fetchRooms((string) config('game-service.presence_url'), $user),
+            ...$this->fetchRooms((string) config('game-service.edu_kart_presence_url'), $user),
+        ];
 
         $catalog = collect(config('game-catalog.categories'))
             ->flatMap(fn (array $category): array => $category['games'])
             ->keyBy('key');
 
-        return collect(is_array($rooms) ? $rooms : [])
+        return collect($rooms)
             ->filter(fn (mixed $room): bool => is_array($room) && $catalog->has($room['game'] ?? null))
             ->map(function (array $room) use ($catalog): array {
                 $game = $catalog[$room['game']];
@@ -64,6 +54,35 @@ class ActiveGames
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * Rooms the player is seated in on one Go container; an unreachable container yields none.
+     *
+     * @return list<mixed>
+     */
+    private function fetchRooms(string $url, User $user): array
+    {
+        if ($url === '') {
+            return [];
+        }
+
+        $timestamp = (string) now()->getTimestamp();
+
+        try {
+            $rooms = Http::timeout((float) config('game-service.presence_timeout'))
+                ->withHeaders([
+                    'X-Game-Timestamp' => $timestamp,
+                    'X-Game-Signature' => $this->signer->sign($timestamp, ''),
+                ])
+                ->get($url, ['user' => $user->id])
+                ->throw()
+                ->json('rooms');
+        } catch (Throwable) {
+            return [];
+        }
+
+        return is_array($rooms) ? array_values($rooms) : [];
     }
 
     /**

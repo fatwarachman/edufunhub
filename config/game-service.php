@@ -16,6 +16,7 @@ return [
     'public_order_rush_ws_url' => env('GAME_SERVICE_PUBLIC_ORDER_RUSH_WS_URL', '/game-ws/order-rush'),
     'public_turbo_trivia_ws_url' => env('GAME_SERVICE_PUBLIC_TURBO_TRIVIA_WS_URL', '/game-ws/turbo-trivia'),
     'public_ping_pong_ws_url' => env('GAME_SERVICE_PUBLIC_PING_PONG_WS_URL', '/game-ws/ping-pong'),
+    'public_edu_kart_ws_url' => env('GAME_SERVICE_PUBLIC_EDU_KART_WS_URL', '/game-ws/edu-kart'),
     'public_block_battle_ws_url' => env('GAME_SERVICE_PUBLIC_BLOCK_BATTLE_WS_URL', '/game-ws/block-battle'),
     'public_monster_cafe_ws_url' => env('GAME_SERVICE_PUBLIC_MONSTER_CAFE_WS_URL', '/game-ws/monster-cafe'),
     'public_classroom_ws_url' => env('GAME_SERVICE_PUBLIC_CLASSROOM_WS_URL', '/game-ws/classroom'),
@@ -31,6 +32,10 @@ return [
     'classroom_kick_url' => env('GAME_SERVICE_CLASSROOM_KICK_URL', 'http://edufunhub-classroom:8092/internal/classroom/kick'),
     /* Signed endpoint that closes every game room of an ended classroom. */
     'classroom_close_url' => env('GAME_SERVICE_CLASSROOM_CLOSE_URL', 'http://edufunhub-game:8090/internal/classroom/close'),
+    /* EduKart runs in its own container (edufunhub-edukart): presence, PIN lookup and classroom close. */
+    'edu_kart_presence_url' => env('GAME_SERVICE_EDU_KART_PRESENCE_URL', 'http://edufunhub-edukart:8093/internal/presence'),
+    'edu_kart_room_url' => env('GAME_SERVICE_EDU_KART_ROOM_URL', 'http://edufunhub-edukart:8093/internal/room'),
+    'edu_kart_classroom_close_url' => env('GAME_SERVICE_EDU_KART_CLASSROOM_CLOSE_URL', 'http://edufunhub-edukart:8093/internal/classroom/close'),
     'presence_timeout' => (float) env('GAME_SERVICE_PRESENCE_TIMEOUT', 1.5),
     'token_ttl' => (int) env('GAME_SERVICE_TOKEN_TTL', 900),
     'signature_tolerance' => (int) env('GAME_SERVICE_SIGNATURE_TOLERANCE', 300),

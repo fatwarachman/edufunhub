@@ -9,7 +9,7 @@ import {
 } from '@/components/turbo-trivia/shared';
 import { useTranslations } from '@/hooks/use-translations';
 import { Link, router } from '@inertiajs/react';
-import { Loader2, MonitorPlay, Play, Smartphone } from 'lucide-react';
+import { Loader2, MonitorPlay, Play, Smartphone, User } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import '../../../../css/turbo-trivia.css';
 
@@ -33,6 +33,15 @@ export default function TurboTriviaIndex() {
     }, [back.inClassroom]);
     const { muted, toggleMuted } = useTurboAudio();
     const roles = [
+        {
+            key: 'solo',
+            href: '/play/turbo-trivia?role=solo',
+            icon: User,
+            title: t('room.solo.soloTitle'),
+            body: t('room.solo.soloBody'),
+            cta: t('room.solo.openSolo'),
+            tone: '#bbf7d0',
+        },
         {
             key: 'arena',
             href: '/arena/turbo-trivia',
@@ -76,13 +85,13 @@ export default function TurboTriviaIndex() {
                 </Panel>
             ) : (
                 <div
-                    className="mx-auto flex w-full max-w-3xl flex-col gap-4"
+                    className="mx-auto flex w-full max-w-4xl flex-col gap-4"
                     data-testid="tt-role-picker"
                 >
                     <h2 className="text-center font-display text-2xl font-black">
                         {t('turboTrivia.chooseRole')}
                     </h2>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         {roles.map(
                             ({
                                 key,

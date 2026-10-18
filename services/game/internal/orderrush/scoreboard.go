@@ -97,8 +97,9 @@ func (s *Scoreboard) Frozen(id int64, now time.Time) bool {
 
 // Correct adds a solved module: score, streak and, every ComboEvery in a
 // row, a random power-up (when the inventory has room). It returns the
-// updated account and the granted power-up ("" when none).
-func (s *Scoreboard) Correct(id int64, earned int64, rng *rand.Rand) (Account, string) {
+// updated account and the granted power-up ("" when none). shieldOnly
+// limits the grant to SHIELD (solo rooms have no rival to attack).
+func (s *Scoreboard) Correct(id int64, earned int64, rng *rand.Rand, shieldOnly bool) (Account, string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	a := s.accounts[id]
@@ -111,6 +112,9 @@ func (s *Scoreboard) Correct(id int64, earned int64, rng *rand.Rand) (Account, s
 	granted := ""
 	if a.Streak%ComboEvery == 0 && len(a.Inventory) < MaxInventory {
 		granted = PowerUps[rng.IntN(len(PowerUps))]
+		if shieldOnly {
+			granted = PowerShield
+		}
 		a.Inventory = append(a.Inventory, granted)
 	}
 	return clone(a), granted

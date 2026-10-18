@@ -45,27 +45,17 @@ class RoomPinLookup
             return [];
         }
 
-        $timestamp = (string) now()->getTimestamp();
-
-        try {
-            $rooms = Http::timeout((float) config('game-service.presence_timeout'))
-                ->withHeaders([
-                    'X-Game-Timestamp' => $timestamp,
-                    'X-Game-Signature' => $this->signer->sign($timestamp, ''),
-                ])
-                ->get((string) config('game-service.room_url'), ['pin' => $pin])
-                ->throw()
-                ->json('rooms');
-        } catch (Throwable) {
-            return [];
-        }
+        $rooms = [
+            ...$this->fetchRooms((string) config('game-service.room_url'), $pin),
+            ...$this->fetchRooms((string) config('game-service.edu_kart_room_url'), $pin),
+        ];
 
         $catalog = collect(config('game-catalog.categories'))
             ->flatMap(fn (array $category): array => $category['games'])
             ->filter(fn (array $game): bool => (bool) ($game['multiplayer'] ?? false))
             ->keyBy('key');
 
-        return collect(is_array($rooms) ? $rooms : [])
+        return collect($rooms)
             ->filter(fn (mixed $room): bool => is_array($room) && $catalog->has($room['game'] ?? null))
             ->map(function (array $room) use ($catalog, $pin): array {
                 $game = $catalog[$room['game']];
@@ -84,6 +74,35 @@ class RoomPinLookup
             ->sortByDesc('open')
             ->values()
             ->all();
+    }
+
+    /**
+     * Rooms owning the PIN on one Go container; an unreachable container finds none.
+     *
+     * @return list<mixed>
+     */
+    private function fetchRooms(string $url, string $pin): array
+    {
+        if ($url === '') {
+            return [];
+        }
+
+        $timestamp = (string) now()->getTimestamp();
+
+        try {
+            $rooms = Http::timeout((float) config('game-service.presence_timeout'))
+                ->withHeaders([
+                    'X-Game-Timestamp' => $timestamp,
+                    'X-Game-Signature' => $this->signer->sign($timestamp, ''),
+                ])
+                ->get($url, ['pin' => $pin])
+                ->throw()
+                ->json('rooms');
+        } catch (Throwable) {
+            return [];
+        }
+
+        return is_array($rooms) ? array_values($rooms) : [];
     }
 
     /**

@@ -72,6 +72,17 @@ Pemain tidak perlu membuka game dulu: kartu **Masuk ke permainan dengan PIN** (p
 4. Kolom PIN di halaman game (`RoomEntry`, panel gabung Turbo Trivia/Block Battle) memakai komponen yang sama (`PinForm` lewat `GamePinForm`, wajib prop `game`). PIN ruang game ini bergabung lewat socket yang sudah terbuka; PIN milik game lain membuka game itu. Bila lookup gagal, PIN dicoba di game ini.
 5. Rate limit sendiri `join-pin` (20/menit per akun) supaya PIN tidak bisa ditebak cepat.
 
+### Main sendiri (game layar host)
+
+Game yang biasanya butuh layar host/proyektor (Lantai Runtuh, Peti Emas Misteri, Order Rush, Turbo Trivia, Block Battle, Monster Café) bisa dimainkan sendirian tanpa host dan tanpa PIN.
+
+- Halaman: `?role=solo` (`/games/<key>?role=solo`; Turbo Trivia/Block Battle `/play/<key>?role=solo`). Pilihan **Main sendiri** ada di pemilih peran dan di `RoomEntry` (`onSolo`).
+- Klien mengirim `{t:"create_solo", avatar?}` dengan token **pemain** sekali setelah snapshot pertama berfase `NONE` (`useSoloRoom`). Token host → `player_only`.
+- Go membuka ruang privat (`solo: true`): pemain tunggal = kapten (`captain` = id akun) sehingga bisa atur mapel/durasi, mulai, akhiri, dan main lagi. `min_players` = 1.
+- Ruang solo tidak bisa dimasuki orang lain: gabung PIN → `room_not_found`, tidak muncul di lookup PIN, spektator admin, atau ruang kelas. Presence tetap ada sehingga reload melanjutkan permainan.
+- Keluar menutup ruang (permainan belum selesai tetap dibayar seperti keluar di tengah). Tidak ada bonus juara; `match.mode` = `solo`. Block Battle solo tidak menyediakan mode BATTLE.
+- UI memakai komponen bersama `SoloEntry`, `SoloLobbyNote`, `RoomPinBadge solo` (`components/multiplayer/room.tsx`), teks `room.solo.*`.
+
 ### Akhir permainan: selebrasi + papan peringkat
 
 `<GameFinale game done matchKey standings won points onPlayAgain />` dipasang sekali per halaman game. Saat `done` menjadi true: confetti (dimatikan bila `prefers-reduced-motion`), lalu modal dengan tab **Permainan ini** (peringkat match, dari state Go) dan **Peringkat game** (`GET /leaderboard/games/{game}`, top 10 + posisi pemain, tanpa cache sehingga poin barusan langsung terlihat). Modal bisa ditutup (tombol, Esc, ketuk luar) dan dibuka lagi lewat tombol **Peringkat**. `done` kembali false (lobi / main lagi) menyiapkan selebrasi berikutnya.
@@ -492,6 +503,68 @@ Kontrak WebSocket `GET /game-ws/monster-cafe?token=…&locale=id|en`:
 | server → klien | `leaderboard_sync` | `{leaderboard[], remaining_ms}` (maks. 4×/detik) |
 | server → klien | `podium_result` | `{podium[3], ranking[], you}` |
 | server → klien | `error` | `{code, for}` → `room.errors.*` |
+
+### EduKart / Balap Kuis 3D (`internal/edukart`, container `edufunhub-edukart`)
+
+Balap kart 3D bergaya Crash Team Racing (PS1). Game key `edu-kart`, arketipe A
+(`lobby.Hub`, PIN + link, 1–8 pemain manusia, sisa kursi diisi bot bila host
+mengaktifkan bot). Berjalan di **container Go terpisah** `edufunhub-edukart`
+(`cmd/edukart`, `Dockerfile.edukart`, port 8093, WS `/ws/edu-kart`, gateway
+`/game-ws/edu-kart`); modul Go sama dengan game service.
+
+**Sirkuit** (`internal/edukart/tracks/*.json`, centreline tiap 2 m `[x,z,y]`):
+`forest` (Hutan, 1,30 km, tanjakan + lompatan), `beach` (Pantai, 1,36 km,
+lompatan dermaga), `mandalika` (Sirkuit Mandalika, 1,59 km — geometri asli
+OpenStreetMap way 942267289 (4,30 km, 17 tikungan) diskala 0,38 dan dihaluskan).
+Lebar jalan 14–15 m, rumput 2,5 m, lalu pagar. Host memilih sirkuit dan jumlah
+lap (2/3/5, bawaan 3).
+
+**Fisika** (`physics.go` = `resources/js/lib/edu-kart/physics.ts`, 60 Hz, dites
+paritas dengan golden trace): kecepatan/akselerasi/belok per kelas kendaraan
+(balanced/speed/accel/turn, 8 kendaraan), power slide (tahan drift + belok,
+lompat kecil), meter turbo 0,9 s: tekan turbo saat meter ≥ 0,7 → turbo 1/2/3
+(+6/+7/+9 m/s), terlalu cepat/terlambat (≥ 1,35) = backfire, drift > 5 s = spin
+out. Lompatan memberi turbo mendarat (≥ 0,45 s di udara), speed pad hijau,
+rumput maks 13 m/s, tiap Bintang (= Wumpa) +0,12 m/s (maks 10 = **juiced**).
+
+**Gerbang soal** (3 per lap, `Track.Gates`): 120 m sebelum gerbang soal tampil di
+HUD (zona baca, kecepatan dibatasi 18 m/s), lalu deretan kotak jawaban selebar
+jalan: Benar/Salah = 2 kotak, pilihan ganda = 4 kotak (kiri→kanan = opsi
+0..n-1). Kotak yang **ditabrak** = jawaban (`LaneAt(d)`), dinilai Go saat kart
+melewati `at`. Melewati di luar jalan = tidak menjawab (salah, tanpa hukuman
+tambahan). Tiap pemain mendapat soal sendiri per gerbang (kelas/level sendiri,
+`gen.Present`). Ganjil = Benar/Salah, genap = pilihan ganda.
+- Benar → +Bintang 2, turbo 1 s, dan **senjata** (bila slot kosong): `rocket`
+  (roket pelacak ke kart di depan), `tnt` (peti TNT dijatuhkan di belakang;
+  yang menabrak membawa TNT di kepala 3 s, lompat 4× untuk melepas), `nos`
+  (turbo 2,5 s), `shield` (5 s, menahan 1 serangan). Undian berbobot posisi:
+  makin belakang makin besar peluang roket/NOS.
+- Salah → kehilangan 3 Bintang dan kart melambat (stun 0,8 s).
+- Juiced: roket lebih cepat, TNT jadi **Nitro** (meledak langsung), NOS 3,5 s.
+- Kena roket/TNT: stun 1,6 s, -3 Bintang. Perisai menahan satu serangan.
+
+**Balapan:** hitung mundur 3 s (gas tepat saat "1→GO" = start boost), lap
+dihitung lewat garis start, finish setelah N lap. Selesai saat semua manusia
+finish, atau 30 s setelah pemain manusia pertama finish, atau host `stop`, atau
+batas 10 menit. Bot memakai autopilot + rubber-band ringan dan menjawab acak
+(peluang benar 55–75 %). Peringkat = urutan finish, sisanya menurut progres.
+
+**Poin:** per jawaban benar `points.Worth(q.Points, level)`, menang = posisi 1
+dari > 1 pembalap (manusia/bot), `points.Finished`/`Abandoned`. Cap
+`points.Cap(MaxLaps*3)` = `Cap(15)` = 4650. `event_id` `ek-{user}-room-{nanos}`.
+
+| Arah | Pesan | Isi |
+|---|---|---|
+| klien → server | standar | `create`, `join{pin}`, `classroom`, `leave`, `start`, `stop`, `subject{subject}`, `sync`, `locale{locale}`, `ping` |
+| klien → server | `settings` | `{track?, laps?, bots?}` (host, lobi) |
+| klien → server | `vehicle` | `{vehicle}` (siapa saja, lobi) |
+| klien → server | `input` | `{seq, steer, throttle, drift, hop, turbo, fire}` — `hop/turbo/fire` adalah penghitung yang hanya naik |
+| server → klien | `edukart_state` | payload ruang standar (+ `players[].vehicle`) + `track, laps, bots, subject_fallback, race` (lihat `lib/edu-kart/protocol.ts`) |
+| server → klien | `edukart_track` | `{track}` data sirkuit, sekali per koneksi / saat sirkuit diganti |
+| server → klien | `race` | 20 Hz: `{ms, you, ack, racers[], projectiles[], hazards[], question, taken[], events[]}` |
+| server → klien | `left` / `error` / `pong` | standar |
+
+Kode error baru: `invalid_track`, `invalid_vehicle`, `invalid_laps`.
 
 ## 3. Poin vs saldo toko
 

@@ -128,6 +128,8 @@ func (s *Server) serveTurboTrivia(w http.ResponseWriter, r *http.Request) {
 		switch in.T {
 		case "create_room":
 			_, err = s.turbo.Create(client, at)
+		case "create_solo":
+			_, err = s.turbo.CreateSolo(client, in.Avatar, at)
 		case "join_room":
 			pin := in.RoomCode
 			if pin == "" {

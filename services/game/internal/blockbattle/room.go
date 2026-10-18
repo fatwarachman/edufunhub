@@ -135,6 +135,10 @@ type Room struct {
 	// classroomID is set on classroom rooms (no host screen): hostClaims is
 	// then the captain, a seated player who may run the host commands.
 	classroomID int64
+	// solo rooms are private games: hostClaims is the owner, the only
+	// player, who also runs the host commands from the pad. BATTLE (needs
+	// rivals) is refused there.
+	solo bool
 
 	players []*Player
 	byID    map[int64]*Player
@@ -301,6 +305,9 @@ func (r *Room) join(c *Client, avatar []byte, now time.Time) error {
 	if p := r.byID[c.ID()]; p != nil && !p.left {
 		return r.attach(c, now)
 	}
+	if r.solo && c.ID() != r.hostClaims.Subject {
+		return ErrNotFound
+	}
 	if r.phase != PhaseLobby && r.phase != PhaseOver {
 		return ErrStarted
 	}
@@ -320,18 +327,38 @@ func (r *Room) join(c *Client, avatar []byte, now time.Time) error {
 	return nil
 }
 
-// canHost reports whether c may run host commands: the host screen, or the
-// captain of a classroom room (a seated player).
+// canHost reports whether c may run host commands: the host screen, the
+// captain of a classroom room or the owner of a solo room (seated players).
 func (r *Room) canHost(c *Client) bool {
-	return c.Host || (r.classroomID > 0 && c.ID() == r.hostClaims.Subject)
+	return c.Host || ((r.classroomID > 0 || r.solo) && c.ID() == r.hostClaims.Subject)
 }
 
-// captain is the user id of the classroom room captain (0 elsewhere).
+// captain is the user id of the classroom room captain or the solo owner
+// (0 elsewhere).
 func (r *Room) captain() int64 {
-	if r.classroomID <= 0 {
+	if r.classroomID <= 0 && !r.solo {
 		return 0
 	}
 	return r.hostClaims.Subject
+}
+
+// SoloModes are the modes a solo room may play (BATTLE needs rivals).
+var SoloModes = []string{ModeWords, ModeFortress}
+
+// modes lists the modes the room may play.
+func (r *Room) modes() []string {
+	if r.solo {
+		return SoloModes
+	}
+	return Modes
+}
+
+// minPlayers is the seat count the current mode needs: one in a solo room.
+func (r *Room) minPlayers() int {
+	if r.solo {
+		return 1
+	}
+	return MinPlayersFor(r.mode)
 }
 
 // joinable reports whether a classroom player may still take a seat.
@@ -394,6 +421,13 @@ func (r *Room) leave(c *Client, now time.Time) error {
 	p := r.byID[c.ID()]
 	if p == nil || p.left {
 		return ErrNoRoom
+	}
+	if r.solo {
+		// Leaving a solo game closes it; an unfinished game pays what was
+		// achieved (points.Abandoned), like leaving any room early.
+		r.close(now, "left")
+		c.push(Message{"t": "state_sync", "phase": "NONE", "role": "player"})
+		return nil
 	}
 	r.hub.dropPlayer(p.ID(), r)
 	if !r.playing() {
@@ -475,7 +509,7 @@ func (r *Room) configure(c *Client, mode string, minutes int, content string, no
 	if mode == "" && minutes == 0 && content == "" {
 		return ErrConfig
 	}
-	if (mode != "" && !oneOf(mode, Modes)) || (content != "" && !oneOf(content, Contents)) {
+	if (mode != "" && !oneOf(mode, r.modes())) || (content != "" && !oneOf(content, Contents)) {
 		return ErrConfig
 	}
 	if minutes != 0 {
@@ -528,7 +562,7 @@ func (r *Room) start(c *Client, now time.Time) error {
 		kept = append(kept, p)
 	}
 	r.players = kept
-	if len(r.players) < MinPlayersFor(r.mode) {
+	if len(r.players) < MinPlayersFor(r.mode) || !oneOf(r.mode, r.modes()) {
 		return ErrPlayers
 	}
 	grade, level := r.players[0].Claims.Grade, points.Level(r.players[0].Claims.Level)
@@ -1186,8 +1220,9 @@ func (r *Room) teamView() Message {
 	return Message{"won": r.teamWon, "reason": r.reason}
 }
 
+// won reports the win bonus (never in solo).
 func (r *Room) won(p *Player) bool {
-	if p.left {
+	if p.left || r.solo {
 		return false
 	}
 	if r.mode == ModeFortress {
@@ -1218,6 +1253,14 @@ func (r *Room) aliveMs(p *Player, now time.Time) int64 {
 		end = now
 	}
 	return max(0, end.Sub(r.playStart).Milliseconds())
+}
+
+// historyMode is the record mode of the room.
+func (r *Room) historyMode() string {
+	if r.solo {
+		return record.ModeSolo
+	}
+	return record.ModeRoom
 }
 
 func (r *Room) points(p *Player, finished bool) int {
@@ -1288,7 +1331,7 @@ func (r *Room) match(finished bool, now time.Time) *record.Match {
 		}
 	}
 	return &record.Match{
-		Key: fmt.Sprintf("%s-%s-%d", Prefix, r.Pin, r.started.UnixNano()), Mode: record.ModeRoom, Pin: r.Pin,
+		Key: fmt.Sprintf("%s-%s-%d", Prefix, r.Pin, r.started.UnixNano()), Mode: r.historyMode(), Pin: r.Pin,
 		Level: r.minutes, Grade: r.grade, StartedAt: record.Stamp(r.started), EndedAt: record.Stamp(now),
 		Finished: finished, Players: players,
 	}
@@ -1572,10 +1615,10 @@ func (r *Room) sendState(c *Client, now time.Time) {
 	msg := Message{
 		"t": "state_sync", "pin": r.Pin, "phase": r.phase, "role": role,
 		"mode": r.mode, "minutes": r.minutes, "content": r.content,
-		"modes": Modes, "durations": Durations, "contents": Contents, "subject": subjectOrMix(r.subject),
+		"modes": r.modes(), "durations": Durations, "contents": Contents, "subject": subjectOrMix(r.subject),
 		"host":      Message{"user_id": r.hostClaims.Subject, "name": r.hostClaims.Name, "online": r.hostOnline},
-		"classroom": r.classroomID, "captain": r.captain(),
-		"players": roster, "min_players": MinPlayersFor(r.mode), "max_players": MaxPlayers,
+		"classroom": r.classroomID, "captain": r.captain(), "solo": r.solo,
+		"players": roster, "min_players": r.minPlayers(), "max_players": MaxPlayers,
 	}
 	if r.phase == PhaseCountdown {
 		msg["countdown_ms"] = max(0, r.countUntil.Sub(now).Milliseconds())

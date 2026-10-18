@@ -123,6 +123,8 @@ func (s *Server) serveFloorDrop(w http.ResponseWriter, r *http.Request) {
 		switch in.T {
 		case "create_room":
 			_, err = s.floor.Create(client, at)
+		case "create_solo":
+			_, err = s.floor.CreateSolo(client, at)
 		case "join_room":
 			err = s.floor.Join(client, in.Pin)
 		case "classroom":

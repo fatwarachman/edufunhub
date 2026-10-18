@@ -118,6 +118,7 @@ export function NotificationBell() {
     const { props, url } = usePage<SharedData>();
     const initialUnread = Number(props.unreadNotifications ?? 0);
     const [open, setOpen] = useState(false);
+    const [tipDismissed, setTipDismissed] = useState(false);
     const [feed, setFeed] = useState<Feed>({
         unread: initialUnread,
         items: [],
@@ -306,13 +307,18 @@ export function NotificationBell() {
                 aria-expanded={open}
                 aria-controls={panelId}
                 aria-label={label}
-                data-tip={open ? undefined : label}
+                data-tip={open || tipDismissed ? undefined : label}
                 onClick={() => {
+                    setTipDismissed(true);
                     setOpen((value) => !value);
                     if (!open) {
                         load();
                     }
                 }}
+                onPointerEnter={() => setTipDismissed(false)}
+                onPointerLeave={() => setTipDismissed(false)}
+                onFocus={() => setTipDismissed(false)}
+                onBlur={() => setTipDismissed(false)}
                 data-testid="notification-trigger"
             >
                 <Bell aria-hidden="true" />

@@ -79,6 +79,17 @@ class ClassroomCloser
             return;
         }
 
+        foreach (['game-service.classroom_close_url', 'game-service.edu_kart_classroom_close_url'] as $urlKey) {
+            $this->postClose((string) config($urlKey), $classroomId);
+        }
+    }
+
+    private function postClose(string $url, int $classroomId): void
+    {
+        if ($url === '') {
+            return;
+        }
+
         try {
             $body = (string) json_encode(['classroom' => $classroomId]);
             $timestamp = (string) now()->getTimestamp();
@@ -90,10 +101,11 @@ class ClassroomCloser
                     'X-Game-Signature' => $this->signer->sign($timestamp, $body),
                 ])
                 ->withBody($body, 'application/json')
-                ->post((string) config('game-service.classroom_close_url'));
+                ->post($url);
         } catch (Throwable $exception) {
             Log::warning('Classroom game rooms close failed.', [
                 'classroom' => $classroomId,
+                'url' => $url,
                 'error' => $exception->getMessage(),
             ]);
         }

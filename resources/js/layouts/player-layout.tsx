@@ -48,7 +48,7 @@ export default function PlayerLayout({
             </Head>
             <header className="auth-header">
                 <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                    <BrandLink hideWordmarkOnPhone />
+                    <BrandLink hideMarkOnPhone />
                     <DigitalClock />
                 </div>
                 <SiteNav compact />

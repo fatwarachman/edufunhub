@@ -146,6 +146,15 @@ describe('dashboard settings', function (): void {
             ->and($profile)->toContain('<PlayerDetailsCard')->toContain('<GradeCard');
     });
 
+    it('keeps dashboard shortcuts in the navigation and leaderboard sections', function (): void {
+        $source = file_get_contents(resource_path('js/pages/user/dashboard.tsx'));
+
+        expect($source)->not->toContain('playerDash.badge')
+            ->not->toContain('playerDash.actions.portal')
+            ->not->toContain('playerDash.actions.character')
+            ->toContain('leaderboard');
+    });
+
     it('has no links left to the old dashboard edit anchors', function (): void {
         $hits = collect(['pages/portal/index.tsx', 'pages/user/profile.tsx', 'pages/games/sky-quiz.tsx', 'pages/games/flag-quest.tsx'])
             ->filter(fn (string $file): bool => preg_match('~/dashboard#(grade|player-details)~', file_get_contents(resource_path('js/'.$file))) === 1);

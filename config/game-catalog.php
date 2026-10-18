@@ -12,7 +12,8 @@ return [
     | /games/{key}/join/{pin}, see GameInviteController and docs/multiplayer.md).
     | min_players / max_players: people who can play one round, mirroring the Go
     | service limits (services/game/internal/*). Host/projector screens do not count;
-    | quiz-duel starts with one player because a bot joins when nobody else waits.
+    | quiz-duel starts with one player because a bot joins when nobody else waits;
+    | host-screen games count 1 because a player can open a private solo room.
     | released_at: date (Y-m-d, app timezone) the game became playable. /gamelist
     | shows it under "Game terbaru" for PlayerPortal::NEW_GAME_DAYS days.
     | tags: optional programme flags shown as badges and filters on /gamelist
@@ -111,7 +112,7 @@ return [
                     'accent' => '#2563eb',
                     'min_grade' => 0,
                     'max_grade' => 12,
-                    'min_players' => 2,
+                    'min_players' => 1,
                     'max_players' => 100,
                     'awards_points' => true,
                     'requires_grade' => false,
@@ -128,7 +129,7 @@ return [
                     'accent' => '#b45309',
                     'min_grade' => 0,
                     'max_grade' => 12,
-                    'min_players' => 2,
+                    'min_players' => 1,
                     'max_players' => 60,
                     'awards_points' => true,
                     'requires_grade' => false,
@@ -145,7 +146,7 @@ return [
                     'accent' => '#0f766e',
                     'min_grade' => 10,
                     'max_grade' => 12,
-                    'min_players' => 2,
+                    'min_players' => 1,
                     'max_players' => 60,
                     'awards_points' => true,
                     'requires_grade' => false,
@@ -163,7 +164,7 @@ return [
                     'accent' => '#e11d48',
                     'min_grade' => 1,
                     'max_grade' => 12,
-                    'min_players' => 2,
+                    'min_players' => 1,
                     'max_players' => 40,
                     'awards_points' => true,
                     'requires_grade' => false,
@@ -221,6 +222,23 @@ return [
                     'guest_playable' => false,
                     'multiplayer' => true,
                     'released_at' => '2026-10-08',
+                ],
+                [
+                    'key' => 'edu-kart',
+                    'titleKey' => 'player.eduKart',
+                    'descriptionKey' => 'portal.games.eduKart',
+                    'route' => 'games.edu-kart',
+                    'icon' => 'kart',
+                    'accent' => '#e11d48',
+                    'min_grade' => 1,
+                    'max_grade' => 12,
+                    'min_players' => 1,
+                    'max_players' => 8,
+                    'awards_points' => true,
+                    'requires_grade' => false,
+                    'guest_playable' => false,
+                    'multiplayer' => true,
+                    'released_at' => '2026-10-17',
                 ],
             ],
         ],
