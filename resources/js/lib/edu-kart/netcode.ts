@@ -182,8 +182,28 @@ export class Predictor {
             };
             return;
         }
+        // Keep the last step's motion (prev -> kart) on the new state: with
+        // prev == kart the render blend loses up to one step of travel and
+        // the kart (and, through the camera, every rival) visibly hitches.
+        // Rival bumps push sideways past the soft window, so this path runs
+        // whenever a bot rubs the player.
+        const motion = {
+            p: before.p - this.prev.p,
+            d: before.d - this.prev.d,
+            psi: before.psi - this.prev.psi,
+            y: before.y - this.prev.y,
+        };
         this.kart = next;
-        this.prev = nextPrev;
+        this.prev =
+            this.history.length > 0 && !frozen
+                ? nextPrev
+                : {
+                      ...next,
+                      p: next.p - motion.p,
+                      d: next.d - motion.d,
+                      psi: next.psi - motion.psi,
+                      y: next.y - motion.y,
+                  };
         // Keep the drawn kart exactly where it was; the gap fades out.
         this.offset = { p: 0, d: 0, psi: 0 };
         const fresh = this.view();
