@@ -150,7 +150,9 @@
     color: #b45309;
 }
 
-/* Question panel: under the HUD, never covers the road centre. */
+/* Question panel: under the HUD, never covers the road centre. Half
+   transparent so the track stays visible behind it; a white halo on the
+   text keeps it readable over the 3D scene. */
 .ek-question {
     position: absolute;
     top: 72px;
@@ -160,9 +162,12 @@
     padding: 8px 12px 10px;
     border: 3px solid #1f2a44;
     border-radius: 18px;
-    background: rgb(255 255 255 / 0.95);
-    box-shadow: 4px 4px 0 #1f2a44;
+    background: rgb(255 255 255 / 0.5);
+    box-shadow: 4px 4px 0 rgb(31 42 68 / 0.5);
     pointer-events: none;
+    text-shadow:
+        0 0 3px rgb(255 255 255 / 0.95),
+        0 0 6px rgb(255 255 255 / 0.8);
 }
 .ek-question-head {
     display: flex;
@@ -172,7 +177,7 @@
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #be123c;
+    color: #9f1239;
 }
 .ek-question-text {
     margin-top: 2px;
@@ -202,7 +207,7 @@
     font-size: 12px;
     font-weight: 800;
     line-height: 1.15;
-    background: #f8fafc;
+    background: rgb(248 250 252 / 0.5);
 }
 .ek-options li span {
     min-width: 0;
@@ -217,6 +222,7 @@
     border-radius: 6px;
     color: white;
     font-size: 11px;
+    text-shadow: none;
 }
 .ek-options li[data-lane='0'] b {
     background: #16a34a;
@@ -237,14 +243,14 @@
     background: #16a34a;
 }
 .ek-options li[data-aim='true'] {
-    background: #fef08a;
+    background: rgb(254 240 138 / 0.5);
     box-shadow: 2px 2px 0 #1f2a44;
 }
 .ek-question-help {
     margin-top: 4px;
     font-size: 11px;
     font-weight: 700;
-    color: #475569;
+    color: #1f2a44;
 }
 .ek-feedback {
     position: absolute;
