@@ -67,6 +67,26 @@ services:
     networks:
       - edufunhub-net
 
+  # Go EduKart service (separate container): Balap Kuis 3D race referee.
+  # Same module as the game service; WS /ws/edu-kart (gateway /game-ws/edu-kart).
+  edukart:
+    build:
+      context: ./services/game
+      dockerfile: Dockerfile.edukart
+    image: edufunhub-edukart:latest
+    container_name: edufunhub-edukart
+    restart: unless-stopped
+    environment:
+      EDUKART_ADDR: ":8093"
+      GAME_SERVICE_SECRET: ${GAME_SERVICE_SECRET:?GAME_SERVICE_SECRET is required}
+      GAME_RESULT_URL: ${GAME_RESULT_URL:-http://edufunhub-app:8000/api/internal/game-results}
+      GAME_QUESTION_BANK_URL: ${GAME_QUESTION_BANK_URL:-http://edufunhub-app:8000/api/internal/question-bank}
+      EDUKART_ALLOWED_ORIGINS: ${EDUKART_ALLOWED_ORIGINS:-edufunhub.com,*.edufunhub.com,172.16.200.23:*,localhost:*,127.0.0.1:*}
+    expose:
+      - "8093"
+    networks:
+      - edufunhub-net
+
   # Go chat service (separate container): live delivery of player chat.
   # Laravel stores messages and posts each one to /internal/publish.
   chat:
@@ -129,6 +149,8 @@ services:
       game:
         condition: service_healthy
       classroom:
+        condition: service_healthy
+      edukart:
         condition: service_healthy
       chat:
         condition: service_healthy

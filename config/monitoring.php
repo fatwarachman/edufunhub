@@ -11,7 +11,7 @@ return [
     'compose_project' => env('MONITOR_COMPOSE_PROJECT', 'edufunhub'),
 
     /* Containers whose name contains one of these markers are tagged as game runtimes. */
-    'game_containers' => array_filter(explode(',', (string) env('MONITOR_GAME_CONTAINERS', 'game'))),
+    'game_containers' => array_filter(explode(',', (string) env('MONITOR_GAME_CONTAINERS', 'game,edukart'))),
 
     /* Signed runtime stats endpoint of the Go game service. */
     'game_stats_url' => env('MONITOR_GAME_STATS_URL', 'http://edufunhub-game:8090/internal/stats'),

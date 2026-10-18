@@ -72,10 +72,17 @@ it('keeps catalog order for games released on the same day', function (): void {
         'block-battle' => '2026-10-08',
         'ping-pong' => '2026-10-08',
         'monster-cafe' => '2026-10-08',
+        'edu-kart' => '2026-10-08',
     ]);
 
     expect(collect(app(PlayerPortal::class)->newGames())->pluck('key')->all())
-        ->toBe(['block-battle', 'ping-pong', 'monster-cafe']);
+        ->toBe(['block-battle', 'ping-pong', 'monster-cafe', 'edu-kart']);
+});
+
+it('lists edukart as released on 2026-10-17', function (): void {
+    travelTo('2026-10-18 12:00:00');
+
+    expect(collect(app(PlayerPortal::class)->newGames())->pluck('key')->all())->toContain('edu-kart');
 });
 
 it('drops a game once its three day window has passed', function (): void {

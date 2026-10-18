@@ -38,6 +38,7 @@ export const GAME_COLORS: Record<string, string> = {
     'turbo-trivia': '#e11d48',
     'block-battle': '#ca8a04',
     'monster-cafe': '#ea580c',
+    'edu-kart': '#e11d48',
     'knowledge-train': 'var(--color-bubble-purple)',
 };
 
