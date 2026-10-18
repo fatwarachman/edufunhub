@@ -7,7 +7,15 @@ import http from '@/lib/http';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Coins, Crown, Medal, PartyPopper, Trophy, X } from 'lucide-react';
+import {
+    Coins,
+    Crown,
+    ListChecks,
+    Medal,
+    PartyPopper,
+    Trophy,
+    X,
+} from 'lucide-react';
 import {
     createElement,
     type CSSProperties,
@@ -194,6 +202,7 @@ export function GameFinale({
     title,
     onPlayAgain,
     playAgainLabel,
+    reviewHref,
 }: {
     /** Catalog key, e.g. `crossword` (all-time board of that game). */
     game: string;
@@ -211,6 +220,8 @@ export function GameFinale({
     title?: string;
     onPlayAgain?: () => void;
     playAgainLabel?: string;
+    /** Page reviewing every question and answer of this game (optional). */
+    reviewHref?: string | null;
 }) {
     const { t } = useTranslations();
     const [celebrating, setCelebrating] = useState(false);
@@ -285,6 +296,7 @@ export function GameFinale({
                             : undefined
                     }
                     playAgainLabel={playAgainLabel}
+                    reviewHref={reviewHref}
                 />
             )}
         </>
@@ -300,6 +312,7 @@ function FinaleModal({
     onClose,
     onPlayAgain,
     playAgainLabel,
+    reviewHref,
 }: {
     game: string;
     headline: string;
@@ -309,6 +322,7 @@ function FinaleModal({
     onClose: () => void;
     onPlayAgain?: () => void;
     playAgainLabel?: string;
+    reviewHref?: string | null;
 }) {
     const { t } = useTranslations();
     const signedIn = Boolean(usePage<SharedData>().props.auth?.user);
@@ -444,7 +458,17 @@ function FinaleModal({
                     )}
                 </div>
 
-                <footer className="flex flex-col gap-3 border-t-2 border-[#1f2a44]/15 px-4 py-3 sm:flex-row sm:justify-end">
+                <footer className="flex flex-col gap-3 border-t-2 border-[#1f2a44]/15 px-4 py-3 sm:flex-row sm:flex-wrap sm:justify-end">
+                    {signedIn && reviewHref && (
+                        <Link
+                            href={reviewHref}
+                            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5] px-4 text-sm font-black hover:bg-[#FFF176] focus-visible:ring-2 focus-visible:ring-[#1f2a44] focus-visible:outline-none"
+                            data-testid="finale-review"
+                        >
+                            <ListChecks className="size-4" aria-hidden />
+                            {t('finale.review')}
+                        </Link>
+                    )}
                     {signedIn && (
                         <Link
                             href={`/leaderboard?tab=games&game=${game}`}

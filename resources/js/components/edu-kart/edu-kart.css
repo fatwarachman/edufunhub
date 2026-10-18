@@ -151,8 +151,10 @@
 }
 
 /* Question panel: under the HUD, never covers the road centre. Half
-   transparent so the track stays visible behind it; a white halo on the
-   text keeps it readable over the 3D scene. */
+   transparent so the track stays visible behind it; a crisp white outline
+   (no blur: blurred text shadows re-raster on every HUD update and stole
+   GPU time from the 3D scene on phones) keeps it readable. Own layer +
+   paint containment so text updates never repaint the canvas area. */
 .ek-question {
     position: absolute;
     top: 72px;
@@ -165,9 +167,13 @@
     background: rgb(255 255 255 / 0.5);
     box-shadow: 4px 4px 0 rgb(31 42 68 / 0.5);
     pointer-events: none;
+    contain: layout paint;
+    will-change: transform;
     text-shadow:
-        0 0 3px rgb(255 255 255 / 0.95),
-        0 0 6px rgb(255 255 255 / 0.8);
+        1px 0 0 #fff,
+        -1px 0 0 #fff,
+        0 1px 0 #fff,
+        0 -1px 0 #fff;
 }
 .ek-question-head {
     display: flex;
@@ -269,12 +275,22 @@
     font-size: 14px;
     pointer-events: none;
     animation: ek-pop 0.25s ease-out;
+    /* Half transparent like the question panel so the road stays visible;
+       crisp outline (no blur) keeps the text readable and cheap to paint. */
+    border-color: rgb(31 42 68 / 0.6);
+    contain: layout paint;
+    will-change: transform;
+    text-shadow:
+        1px 0 0 #fff,
+        -1px 0 0 #fff,
+        0 1px 0 #fff,
+        0 -1px 0 #fff;
 }
 .ek-feedback[data-correct='true'] {
-    background: #bbf7d0;
+    background: rgb(187 247 208 / 0.5);
 }
 .ek-feedback[data-correct='false'] {
-    background: #fecaca;
+    background: rgb(254 202 202 / 0.5);
 }
 .ek-feedback strong {
     font-size: 18px;
@@ -309,7 +325,13 @@
     pointer-events: none;
 }
 .ek-alert {
-    background: #fecaca;
+    background: rgb(254 202 202 / 0.5);
+    border-color: rgb(31 42 68 / 0.6);
+    text-shadow:
+        1px 0 0 #fff,
+        -1px 0 0 #fff,
+        0 1px 0 #fff,
+        0 -1px 0 #fff;
     animation: ek-blink 0.5s steps(2) infinite;
 }
 .ek-finish {
@@ -591,6 +613,10 @@
 }
 .ek-action:disabled {
     opacity: 0.5;
+}
+.ek-action[data-variant='secondary'] {
+    background: #c9f5e5;
+    color: #1f2a44;
 }
 
 @keyframes ek-pop {

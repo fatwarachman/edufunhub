@@ -27,6 +27,7 @@ use App\Http\Controllers\FloorDropController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\GameInviteController;
 use App\Http\Controllers\GameListController;
+use App\Http\Controllers\GameReviewController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\JoinByPinController;
 use App\Http\Controllers\KnowledgeTrainController;
@@ -102,6 +103,8 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
     Route::get('/portal', PortalController::class)->name('portal');
     Route::get('/subjects/{subject:key}', SubjectDetailController::class)->name('subjects.show');
     Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard');
+    Route::get('/games/review/{play}', [GameReviewController::class, 'show'])->whereNumber('play')->name('games.review');
+    Route::get('/games/review/match/{matchKey}', [GameReviewController::class, 'byMatch'])->where('matchKey', '[A-Za-z0-9-]{1,80}')->middleware('throttle:60,1,games.review.match')->name('games.review.match');
     Route::get('/leaderboard/games/{game}', [LeaderboardController::class, 'game'])->where('game', '[a-z-]+')->middleware('throttle:game-leaderboard')->name('leaderboard.game');
     Route::get('/join/{pin}', JoinByPinController::class)->where('pin', '[0-9]{6}')->middleware('throttle:join-pin')->name('join.pin');
     Route::get('/join/{pin}/rooms', [JoinByPinController::class, 'lookup'])->where('pin', '[0-9]{6}')->middleware('throttle:join-pin')->name('join.pin.rooms');

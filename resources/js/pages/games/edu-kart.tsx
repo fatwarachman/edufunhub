@@ -30,8 +30,8 @@ import { useGameAudio } from '@/hooks/use-game-audio';
 import { useTranslations } from '@/hooks/use-translations';
 import { useAdMoments } from '@/lib/ads';
 import { type RaceEvent } from '@/lib/edu-kart/protocol';
-import { Head } from '@inertiajs/react';
-import { CarFront, Trophy, Volume2, VolumeX } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { CarFront, ListChecks, Trophy, Volume2, VolumeX } from 'lucide-react';
 import { useCallback } from 'react';
 
 interface Props {
@@ -66,6 +66,12 @@ export default function EduKart({ player, serviceReady, wsUrl, pin }: Props) {
     );
     const isHost = Boolean(state && state.host === state.you);
     const online = status === 'online';
+    // Question & answer review of this race (the page waits until the
+    // referee's result is recorded, then shows the player's own answers).
+    const reviewHref =
+        done && race?.match?.key && me && race.result
+            ? `/games/review/match/${encodeURIComponent(race.match.key)}`
+            : null;
     useAdMoments(playing ? 'playing' : done ? 'done' : 'idle', {
         muted: audio.muted,
         won,
@@ -289,6 +295,20 @@ export default function EduKart({ player, serviceReady, wsUrl, pin }: Props) {
                             ))}
                         </ol>
                         <div className="flex flex-wrap items-center justify-center gap-3">
+                            {reviewHref && (
+                                <Link
+                                    href={reviewHref}
+                                    className="ek-action inline-flex items-center gap-1.5"
+                                    data-variant="secondary"
+                                    data-testid="ek-review"
+                                >
+                                    <ListChecks
+                                        className="size-4"
+                                        aria-hidden="true"
+                                    />
+                                    {t('finale.review')}
+                                </Link>
+                            )}
                             {isHost ? (
                                 <button
                                     type="button"
@@ -326,6 +346,7 @@ export default function EduKart({ player, serviceReady, wsUrl, pin }: Props) {
                     won={won}
                     points={race?.result?.points}
                     onPlayAgain={isHost ? playAgain : undefined}
+                    reviewHref={reviewHref}
                 />
             </main>
         </div>

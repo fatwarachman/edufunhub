@@ -183,9 +183,7 @@ func (c *Challenge) Answer(value string, locale string, now time.Time) (Feedback
 			return Feedback{}, ErrBadAnswer
 		}
 		ok = (value == "true") == (c.current.Answer == 1)
-		if c.current.FromBank {
-			choice = questions.TruthChoice(value == "true")
-		}
+		choice = c.current.TruthPick(value == "true")
 	case MathSprint:
 		value = strings.ReplaceAll(value, "−", "-")
 		n, err := strconv.Atoi(value)

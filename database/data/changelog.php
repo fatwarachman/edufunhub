@@ -31,6 +31,44 @@
 
 return [
     [
+        'version' => '0.54.0',
+        'date' => '2026-10-18',
+        'time' => '15:30',
+        'changes' => [
+            [
+                'key' => 'game-review-page',
+                'type' => 'feature',
+                'title' => ['id' => 'Analisa soal & jawaban setelah bermain', 'en' => 'Question & answer review after a game'],
+                'body' => ['id' => 'Panel hasil juara kini punya tombol "Analisa soal & jawaban". Tombol ini membuka halaman berisi setiap soal yang dijawab selama permainan, jawaban yang dipilih, jawaban yang benar, dan pembahasan untuk soal yang salah. Halaman hanya bisa dibuka oleh pemain itu sendiri. Tersedia dulu di EduKart.', 'en' => 'The winner result panel now has a "Review questions & answers" button. It opens a page with every question answered during the game, the answer picked, the right answer, and an explanation for wrong ones. Only the player can open it. Available in EduKart first.'],
+            ],
+            [
+                'key' => 'edu-kart-see-through-feedback',
+                'type' => 'improvement',
+                'title' => ['id' => 'EduKart: pesan benar/salah tembus pandang', 'en' => 'EduKart: see-through right/wrong message'],
+                'body' => ['id' => 'Pesan yang muncul setelah menjawab soal (Benar/Salah, senjata yang didapat, jawaban yang benar) dan peringatan TNT kini transparan 50% agar tidak menghalangi jalur kart.', 'en' => 'The message shown after answering (Right/Wrong, item gained, right answer) and the TNT warning are now 50% transparent so they no longer block the kart track.'],
+            ],
+            [
+                'key' => 'true-false-from-choice-picks',
+                'type' => 'fix',
+                'title' => ['id' => 'Pilihan soal Benar/Salah turunan tercatat tepat', 'en' => 'Picks on derived true/false questions recorded correctly'],
+                'body' => ['id' => 'Soal Benar/Salah yang dibuat dari soal pilihan ganda kini mencatat pilihan pemain ke opsi yang ditampilkan, bukan angka 0/1. Statistik pilihan jawaban di admin dan halaman analisa jadi akurat.', 'en' => 'True/false questions made from multiple choice questions now record the player pick against the option shown, not 0/1. Answer-choice statistics in admin and the review page are accurate.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.53.4',
+        'date' => '2026-10-18',
+        'time' => '14:00',
+        'changes' => [
+            [
+                'key' => 'edu-kart-smooth-bots-again',
+                'type' => 'fix',
+                'title' => ['id' => 'EduKart: pembalap bot kembali mulus', 'en' => 'EduKart: bot racers smooth again'],
+                'body' => ['id' => 'Bot dan lawan tidak lagi tampak patah-patah. Panel soal tembus pandang kini memakai garis tepi teks yang ringan sehingga tidak lagi membebani kartu grafis HP saat soal tampil, dan kart sendiri tidak lagi tersendat sesaat ketika bersenggolan dengan bot (kamera ikut mulus, jadi bot terlihat mulus).', 'en' => 'Bots and rivals no longer look choppy. The see-through question panel now uses a light text outline so it no longer loads the phone GPU while a question is shown, and your own kart no longer hitches for a moment when it rubs a bot (the camera stays smooth, so bots look smooth).'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.53.3',
         'date' => '2026-10-18',
         'time' => '12:50',

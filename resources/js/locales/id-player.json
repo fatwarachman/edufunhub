@@ -2883,7 +2883,8 @@
         "winner": "{{name}} juara!",
         "draw": "Seri!",
         "guest": "Daftar gratis untuk masuk papan peringkat dan mengumpulkan poin.",
-        "correctWrong": "{{correct}} benar • {{wrong}} salah"
+        "correctWrong": "{{correct}} benar • {{wrong}} salah",
+        "review": "Analisa soal & jawaban"
     },
     "joinPin": {
         "button": "Masuk pakai PIN",
@@ -4160,5 +4161,29 @@
             },
             "videoLabel": "Video cara bermain Balap Kuis EduKart"
         }
+    },
+    "gameReview": {
+        "title": "Analisa soal & jawaban",
+        "heading": "Analisa: {{game}}",
+        "listTitle": "Soal yang dijawab ({{count}})",
+        "empty": "Belum ada soal yang tercatat untuk permainan ini. Soal latihan buatan (misalnya hitungan acak) tidak disimpan.",
+        "pending": "Hasil permainan sedang disimpan…",
+        "refresh": "Muat ulang",
+        "correct": "Benar",
+        "wrong": "Salah",
+        "accuracy": "Ketepatan",
+        "points": "Poin",
+        "rank": "Peringkat",
+        "time": "Waktu",
+        "playAgain": "Main lagi",
+        "history": "Riwayat permainan",
+        "true": "Benar",
+        "false": "Salah",
+        "yourAnswer": "Jawabanmu",
+        "rightAnswer": "Jawaban benar",
+        "noAnswer": "Tidak menjawab (tidak menabrak kotak jawaban).",
+        "hint": "Pembahasan",
+        "statusRight": "Kamu benar",
+        "statusWrong": "Kamu salah"
     }
 }
