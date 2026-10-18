@@ -5,6 +5,7 @@ import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale } from '@/components/game-finale';
 import { AnswerTimePicker } from '@/components/multiplayer/host-controls';
 import {
+    ReplacedOverlay,
     RoomEntry,
     RoomLobby,
     useRoomPin,
@@ -312,6 +313,7 @@ export default function QuizDuel({
                             </span>
                         </span>
                     )}
+                    <ReplacedOverlay status={connection.status} />
                     <button
                         type="button"
                         onClick={toggleMuted}

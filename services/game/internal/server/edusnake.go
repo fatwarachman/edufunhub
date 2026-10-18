@@ -86,7 +86,7 @@ func (s *Server) serveEduSnake(w http.ResponseWriter, r *http.Request) {
 		defer c()
 		_ = wsjson.Write(wctx, conn, msg)
 	}
-	sub := &snakeSub{claims: claims, send: send, cancel: cancel}
+	sub := &snakeSub{claims: claims, send: send, cancel: replacer(conn, cancel)}
 
 	s.mu.Lock()
 	if prev, ok := s.snakeSubs[claims.Subject]; ok {

@@ -107,7 +107,7 @@ export default function ChallengeDialog({
                 {subjectName(challenge.question.subject)}
             </p>
             <QuestionMedia media={challenge.question.media} size="sm" />
-            <p className="text-lg leading-snug font-bold break-words sm:text-xl">
+            <p className="text-lg leading-snug font-bold break-words whitespace-pre-line sm:text-xl">
                 {challenge.question.prompt}
             </p>
             {challenge.kind === 'true_false' ? (

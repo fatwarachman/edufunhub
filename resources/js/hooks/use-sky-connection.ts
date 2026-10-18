@@ -1,9 +1,15 @@
+import { SOCKET_REPLACED } from '@/hooks/use-game-socket';
 import type { SkyRoundState } from '@/lib/sky-quiz';
 import { watchSocket } from '@/lib/socket-watchdog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type SkyConnectionStatus =
-    'connecting' | 'online' | 'reconnecting' | 'offline' | 'grade_required';
+    | 'connecting'
+    | 'online'
+    | 'reconnecting'
+    | 'offline'
+    | 'grade_required'
+    | 'replaced';
 
 export type SkyServerState = SkyRoundState & {
     player: { name: string; grade: number };
@@ -72,6 +78,7 @@ export function useSkyConnection(
             return;
         }
         let closed = false;
+        let replaced = false;
         let timer: ReturnType<typeof setTimeout> | undefined;
         let seen = () => {};
 
@@ -134,15 +141,25 @@ export function useSkyConnection(
                     handlersRef.current.onState(
                         msg as unknown as SkyServerState,
                     );
+                } else if (msg.t === 'replaced') {
+                    replaced = true;
+                    setStatus('replaced');
                 } else if (msg.t === 'sky_score') {
                     handlersRef.current.onScore(msg.score as number);
                 } else if (msg.t === 'error') {
                     handlersRef.current.onError(msg.code as string);
                 }
             };
-            ws.onclose = () => {
+            ws.onclose = (event: CloseEvent) => {
                 if (socket.current === ws) {
                     socket.current = null;
+                }
+                if (event.code === SOCKET_REPLACED || replaced) {
+                    // Another tab or device took over: never reconnect on
+                    // our own, or the two kick each other out forever.
+                    replaced = true;
+                    setStatus('replaced');
+                    return;
                 }
                 if (!closed) {
                     schedule();
@@ -154,6 +171,9 @@ export function useSkyConnection(
             current: () => socket.current,
             ping: () => send({ t: 'ping' }),
             reconnect: () => {
+                if (replaced) {
+                    return;
+                }
                 const ws = socket.current;
                 if (ws) {
                     ws.onclose = null;

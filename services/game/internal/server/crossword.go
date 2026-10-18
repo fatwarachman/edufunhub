@@ -83,7 +83,7 @@ func (s *Server) serveCrossword(w http.ResponseWriter, r *http.Request) {
 		defer c()
 		_ = wsjson.Write(wctx, conn, msg)
 	}
-	sub := &crosswordSub{claims: claims, send: send, cancel: cancel}
+	sub := &crosswordSub{claims: claims, send: send, cancel: replacer(conn, cancel)}
 	s.mu.Lock()
 	if prev, ok := s.crosswordSubs[claims.Subject]; ok {
 		prev.cancel()

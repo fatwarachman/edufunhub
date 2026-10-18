@@ -215,7 +215,8 @@
             "reconnecting": "Reconnecting",
             "offline": "Disconnected",
             "unavailable": "Unavailable",
-            "grade_required": "Grade needed"
+            "grade_required": "Grade needed",
+            "replaced": "Open elsewhere"
         },
         "hud": {
             "back": "Back to portal",
@@ -563,7 +564,8 @@
             "online": "Connected",
             "reconnecting": "Reconnecting",
             "offline": "Server unavailable",
-            "grade_required": "Grade needed"
+            "grade_required": "Grade needed",
+            "replaced": "Open elsewhere"
         },
         "overlay": {
             "readyTitle": "{{name}}, ready to fly?",
@@ -843,7 +845,8 @@
             "online": "Connected",
             "reconnecting": "Reconnecting",
             "offline": "Server unavailable",
-            "grade_required": "Grade needed"
+            "grade_required": "Grade needed",
+            "replaced": "Open elsewhere"
         },
         "idle": {
             "title": "Ready to duel, {{name}}?",
@@ -921,7 +924,8 @@
             "online": "Connected",
             "reconnecting": "Reconnecting",
             "offline": "Server unavailable",
-            "grade_required": "Grade needed"
+            "grade_required": "Grade needed",
+            "replaced": "Open elsewhere"
         },
         "overlay": {
             "readyTitle": "{{name}}, ready to depart?",
@@ -1203,7 +1207,8 @@
             "online": "Connected",
             "reconnecting": "Reconnecting",
             "offline": "Server unavailable",
-            "grade_required": "Grade needed"
+            "grade_required": "Grade needed",
+            "replaced": "Open elsewhere"
         },
         "create": "New room",
         "or": "or",
@@ -1343,6 +1348,11 @@
             "soloTitle": "Play solo",
             "soloBody": "No projector and no PIN. Play straight from this device.",
             "openSolo": "Play solo"
+        },
+        "replaced": {
+            "title": "This game is open in another device or tab",
+            "body": "Your account is playing this game somewhere else, so this tab paused to avoid the two kicking each other off.",
+            "takeOver": "Play here"
         }
     },
     "crossword": {

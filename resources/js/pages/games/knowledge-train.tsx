@@ -3,6 +3,7 @@ import GameAdStrip from '@/components/ads/game-ad-strip';
 import { BrandLink } from '@/components/brand-link';
 import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale } from '@/components/game-finale';
+import { ReplacedOverlay } from '@/components/multiplayer/room';
 import {
     type GameSubject,
     rememberedSubject,
@@ -531,6 +532,7 @@ export default function KnowledgeTrain({
                                 </span>
                             </span>
                         )}
+                        <ReplacedOverlay status={connection.status} />
                         <div className="ml-auto flex gap-2">
                             {phase === 'question' && (
                                 <button

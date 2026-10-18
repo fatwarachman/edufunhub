@@ -64,6 +64,34 @@ type Config struct {
 
 type connection struct{ cancel context.CancelFunc }
 
+// StatusReplaced closes a socket that a newer tab or device of the same
+// account took over. Clients must not reconnect on it, or the two tabs kick
+// each other out forever (the endless "reconnecting" loop players saw).
+const StatusReplaced websocket.StatusCode = 4001
+
+// replacer returns the cancel used when a newer connection of the same
+// account takes over. It first sends {"t":"replaced"} (browsers may report a
+// takeover close as 1006 when the library echoes the close frame while the
+// read loop is still running, so the message is what clients rely on), then
+// closes with StatusReplaced, then cancels.
+func replacer(conn *websocket.Conn, cancel context.CancelFunc) context.CancelFunc {
+	return func() {
+		go func() {
+			NotifyReplaced(conn)
+			cancel()
+		}()
+	}
+}
+
+// NotifyReplaced tells a socket a newer connection of the same account took
+// over: a {"t":"replaced"} message, then a StatusReplaced close.
+func NotifyReplaced(conn *websocket.Conn) {
+	ctx, done := context.WithTimeout(context.Background(), 2*time.Second)
+	defer done()
+	_ = wsjson.Write(ctx, conn, map[string]string{"t": "replaced"})
+	conn.Close(StatusReplaced, "replaced")
+}
+
 // Server holds sessions keyed by user id so a reconnect resumes progress.
 type Server struct {
 	cfg           Config
@@ -89,6 +117,9 @@ type Server struct {
 	miniSubs      map[string]map[int64]*miniSub
 	floor         *floordrop.Hub
 	floorConns    map[floorKey]*floordrop.Client
+	// replacedConns holds, per host-game client, the closer used when a newer
+	// connection of the same account takes it over (StatusReplaced).
+	replacedConns map[any]context.CancelFunc
 	heist         *heist.Hub
 	heistConns    map[floorKey]*heist.Client
 	rush          *orderrush.Hub
@@ -147,21 +178,22 @@ func New(cfg Config) *Server {
 		snakes: snakes.NewHub(uint64(cfg.Now().UnixNano()) ^ 0x51ed), snakesSubs: map[int64]*snakesSub{},
 		crosswords: crossword.NewHub(uint64(cfg.Now().UnixNano()) ^ 0xc055), crosswordSubs: map[int64]*crosswordSub{},
 		minis: map[string]*minigames.Hub{}, miniSubs: map[string]map[int64]*miniSub{},
-		floor:      floordrop.NewHub(cfg.FloorDrop, uint64(cfg.Now().UnixNano())^0xf1d0),
-		floorConns: map[floorKey]*floordrop.Client{},
-		heist:      heist.NewHub(cfg.Heist, uint64(cfg.Now().UnixNano())^0x4e57),
-		heistConns: map[floorKey]*heist.Client{},
-		rush:       orderrush.NewHub(cfg.OrderRush, uint64(cfg.Now().UnixNano())^0x0d3e),
-		rushConns:  map[floorKey]*orderrush.Client{},
-		turbo:      turbotrivia.NewHub(cfg.TurboTrivia, uint64(cfg.Now().UnixNano())^0x7b70),
-		turboConns: map[floorKey]*turbotrivia.Client{},
-		block:      blockbattle.NewHub(cfg.BlockBattle, uint64(cfg.Now().UnixNano())^0xb10c),
-		blockConns: map[floorKey]*blockbattle.Client{},
-		cafe:       monstercafe.NewHub(cfg.MonsterCafe, uint64(cfg.Now().UnixNano())^0xcafe),
-		cafeConns:  map[floorKey]*monstercafe.Client{},
-		snake:      edusnake.NewHub(cfg.EduSnake, uint64(cfg.Now().UnixNano())^0x54a8),
-		snakeSubs:  map[int64]*snakeSub{},
-		started:    cfg.Now(),
+		floor:         floordrop.NewHub(cfg.FloorDrop, uint64(cfg.Now().UnixNano())^0xf1d0),
+		floorConns:    map[floorKey]*floordrop.Client{},
+		replacedConns: map[any]context.CancelFunc{},
+		heist:         heist.NewHub(cfg.Heist, uint64(cfg.Now().UnixNano())^0x4e57),
+		heistConns:    map[floorKey]*heist.Client{},
+		rush:          orderrush.NewHub(cfg.OrderRush, uint64(cfg.Now().UnixNano())^0x0d3e),
+		rushConns:     map[floorKey]*orderrush.Client{},
+		turbo:         turbotrivia.NewHub(cfg.TurboTrivia, uint64(cfg.Now().UnixNano())^0x7b70),
+		turboConns:    map[floorKey]*turbotrivia.Client{},
+		block:         blockbattle.NewHub(cfg.BlockBattle, uint64(cfg.Now().UnixNano())^0xb10c),
+		blockConns:    map[floorKey]*blockbattle.Client{},
+		cafe:          monstercafe.NewHub(cfg.MonsterCafe, uint64(cfg.Now().UnixNano())^0xcafe),
+		cafeConns:     map[floorKey]*monstercafe.Client{},
+		snake:         edusnake.NewHub(cfg.EduSnake, uint64(cfg.Now().UnixNano())^0x54a8),
+		snakeSubs:     map[int64]*snakeSub{},
+		started:       cfg.Now(),
 	}
 	for i, key := range minigames.Keys {
 		s.minis[key] = minigames.NewHub(minigames.Specs[key], uint64(cfg.Now().UnixNano())^uint64(0x3a11+i))
@@ -241,7 +273,7 @@ func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
 	if prev, ok := s.conns[claims.Subject]; ok {
 		prev.cancel()
 	}
-	current := &connection{cancel: cancel}
+	current := &connection{cancel: replacer(conn, cancel)}
 	s.conns[claims.Subject] = current
 	sess, ok := s.sessions[claims.Subject]
 	if !ok || sess.Claims.Grade != claims.Grade || sess.Claims.Name != claims.Name {
@@ -436,7 +468,7 @@ func (s *Server) serveSky(w http.ResponseWriter, r *http.Request) {
 	if prev, ok := s.skyConns[claims.Subject]; ok {
 		prev.cancel()
 	}
-	current := &connection{cancel: cancel}
+	current := &connection{cancel: replacer(conn, cancel)}
 	s.skyConns[claims.Subject] = current
 	sess, ok := s.skies[claims.Subject]
 	if !ok || sess.Claims.Grade != claims.Grade || sess.Claims.Name != claims.Name {

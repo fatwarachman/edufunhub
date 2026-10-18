@@ -977,6 +977,7 @@ export default function FlagQuest({
                 player.grade === null ||
                 conn.status === 'grade_required' ||
                 conn.status === 'offline' ||
+                conn.status === 'replaced' ||
                 !world) && (
                 <div className="absolute inset-0 z-40 grid place-items-center bg-[#4aa9dd] p-4">
                     <div className="fq-card flex w-full max-w-md flex-col items-center gap-3 p-6 text-center">
@@ -999,6 +1000,23 @@ export default function FlagQuest({
                             <p data-testid="fq-state">
                                 {t('flagQuest.state.unavailable')}
                             </p>
+                        ) : conn.status === 'replaced' ? (
+                            <>
+                                <p className="font-bold" data-testid="fq-state">
+                                    {t('room.replaced.title')}
+                                </p>
+                                <p className="text-sm">
+                                    {t('room.replaced.body')}
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={conn.retry}
+                                    className="fq-primary min-h-11 px-5"
+                                    data-testid="room-replaced-takeover"
+                                >
+                                    {t('room.replaced.takeOver')}
+                                </button>
+                            </>
                         ) : conn.status === 'offline' ? (
                             <>
                                 <p data-testid="fq-state">

@@ -87,9 +87,14 @@ func (s *Server) serveOrderRush(w http.ResponseWriter, r *http.Request) {
 	key := floorKey{id: claims.Subject, host: host}
 	s.mu.Lock()
 	if prev, ok := s.rushConns[key]; ok {
-		prev.Close()
+		if closeOld, ok := s.replacedConns[prev]; ok {
+			closeOld()
+		} else {
+			prev.Close()
+		}
 	}
 	s.rushConns[key] = client
+	s.replacedConns[client] = replacer(conn, func() { client.Close(); cancel() })
 	s.mu.Unlock()
 
 	writerDone := make(chan struct{})
@@ -199,5 +204,8 @@ func (s *Server) serveOrderRush(w http.ResponseWriter, r *http.Request) {
 	client.Close()
 	cancel()
 	<-writerDone
+	s.mu.Lock()
+	delete(s.replacedConns, client)
+	s.mu.Unlock()
 	conn.Close(websocket.StatusNormalClosure, "")
 }

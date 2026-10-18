@@ -3,6 +3,7 @@ import GameAdStrip from '@/components/ads/game-ad-strip';
 import { DigitalClock } from '@/components/digital-clock';
 import { GameFinale } from '@/components/game-finale';
 import { Joystick, type StickVector } from '@/components/games/joystick';
+import { ReplacedOverlay } from '@/components/multiplayer/room';
 import {
     type GameSubject,
     rememberedSubject,
@@ -1132,6 +1133,7 @@ export default function SkyQuiz({
             </header>
             <main className="flex w-full flex-col gap-3 p-3 sm:p-5 lg:px-8">
                 <GameAdStrip />
+                <ReplacedOverlay status={connection.status} />
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-bold">
                         {signedIn ? (

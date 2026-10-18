@@ -214,7 +214,8 @@
             "reconnecting": "Menyambung ulang",
             "offline": "Terputus",
             "unavailable": "Tidak tersedia",
-            "grade_required": "Butuh kelas"
+            "grade_required": "Butuh kelas",
+            "replaced": "Dibuka di tempat lain"
         },
         "hud": {
             "back": "Kembali ke portal",
@@ -562,7 +563,8 @@
             "online": "Terhubung",
             "reconnecting": "Menyambung ulang",
             "offline": "Server tidak tersedia",
-            "grade_required": "Perlu kelas"
+            "grade_required": "Perlu kelas",
+            "replaced": "Dibuka di tempat lain"
         },
         "overlay": {
             "readyTitle": "{{name}}, siap terbang?",
@@ -842,7 +844,8 @@
             "online": "Terhubung",
             "reconnecting": "Menyambung ulang",
             "offline": "Server tidak tersedia",
-            "grade_required": "Perlu kelas"
+            "grade_required": "Perlu kelas",
+            "replaced": "Dibuka di tempat lain"
         },
         "idle": {
             "title": "Siap berduel, {{name}}?",
@@ -920,7 +923,8 @@
             "online": "Terhubung",
             "reconnecting": "Menyambung ulang",
             "offline": "Server tidak tersedia",
-            "grade_required": "Perlu kelas"
+            "grade_required": "Perlu kelas",
+            "replaced": "Dibuka di tempat lain"
         },
         "overlay": {
             "readyTitle": "{{name}}, siap berangkat?",
@@ -1202,7 +1206,8 @@
             "online": "Terhubung",
             "reconnecting": "Menyambung ulang",
             "offline": "Server tidak tersedia",
-            "grade_required": "Perlu kelas"
+            "grade_required": "Perlu kelas",
+            "replaced": "Dibuka di tempat lain"
         },
         "create": "Buat ruang",
         "or": "atau",
@@ -1342,6 +1347,11 @@
             "soloTitle": "Main sendiri",
             "soloBody": "Tanpa proyektor dan tanpa PIN. Kamu langsung main dari perangkat ini.",
             "openSolo": "Main sendiri"
+        },
+        "replaced": {
+            "title": "Game ini dibuka di perangkat atau tab lain",
+            "body": "Akunmu sedang memainkan game ini di tempat lain, jadi tab ini berhenti supaya tidak saling memutus koneksi.",
+            "takeOver": "Main di sini"
         }
     },
     "crossword": {
