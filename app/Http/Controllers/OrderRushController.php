@@ -38,11 +38,11 @@ class OrderRushController extends Controller
             'serviceReady' => $this->signer->isConfigured(),
             'wsUrl' => config('game-service.public_order_rush_ws_url'),
             'pin' => is_string($pin) && preg_match('/^\d{6}$/', $pin) ? $pin : null,
-            'role' => in_array($role, ['host', 'player'], true) ? $role : null,
+            'role' => in_array($role, ['host', 'player', 'solo'], true) ? $role : null,
         ]);
     }
 
-    /** Signed token: `role=host` for the host screen, otherwise a player pad. */
+    /** Signed token: `role=host` for the host screen, otherwise a player pad (also private solo rooms). */
     public function token(Request $request): JsonResponse
     {
         abort_unless($this->signer->isConfigured(), 503);

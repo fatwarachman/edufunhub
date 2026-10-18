@@ -132,6 +132,8 @@ func (s *Server) serveOrderRush(w http.ResponseWriter, r *http.Request) {
 		switch in.T {
 		case "create_room":
 			_, err = s.rush.Create(client, at)
+		case "create_solo":
+			_, err = s.rush.CreateSolo(client, in.Avatar, at)
 		case "join_room":
 			pin := in.RoomCode
 			if pin == "" {

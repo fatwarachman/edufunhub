@@ -92,6 +92,10 @@ type Room struct {
 	// its first player, never changes): hostClaims is then the captain, a
 	// seated player who also runs the room.
 	classroomID int64
+	// solo rooms are private: the owner (hostClaims) is the only player and
+	// runs the host commands from the pad. Set before the goroutine starts.
+	solo  bool
+	owner int64
 
 	players []*Player
 	byID    map[int64]*Player
@@ -269,6 +273,9 @@ func (r *Room) join(c *Client, avatar []byte, now time.Time) error {
 	if p := r.byID[c.ID()]; p != nil && !p.left {
 		return r.attach(c, now)
 	}
+	if r.solo && c.ID() != r.owner {
+		return ErrFull
+	}
 	if r.phase != PhaseLobby && r.phase != PhaseOver {
 		// Self-paced: late joiners enter the running game at 0 gold.
 		if r.active() >= MaxPlayers {
@@ -323,6 +330,13 @@ func (r *Room) leave(c *Client, now time.Time) error {
 	p := r.byID[c.ID()]
 	if p == nil || p.left {
 		return ErrNoRoom
+	}
+	if r.solo {
+		// Leaving a solo room closes it; an unfinished game pays what was
+		// achieved (points.Abandoned), like leaving any room early.
+		r.close(now, "left")
+		c.push(Message{"t": "state_sync", "phase": "NONE", "role": "player"})
+		return nil
 	}
 	r.hub.dropPlayer(p.ID(), r)
 	if r.phase == PhaseLobby {
@@ -407,13 +421,36 @@ func (r *Room) setSubject(c *Client, subject string, now time.Time) error {
 // canHost reports whether c may run host-only commands (settings, subject,
 // start, end): the host screen, or the captain of a classroom room (the
 // player whose claims are hostClaims; captains still play and answer).
+// The owner of a solo room runs it the same way.
 func (r *Room) canHost(c *Client) bool {
-	return c.Host || (r.classroomID > 0 && c.ID() == r.hostClaims.Subject)
+	return c.Host || ((r.classroomID > 0 || r.solo) && c.ID() == r.hostClaims.Subject)
+}
+
+// minPlayers is the seats needed to start: one in a solo room.
+func (r *Room) minPlayers() int {
+	if r.solo {
+		return 1
+	}
+	return MinPlayers
+}
+
+// won reports the win bonus: rank 1 of a shared room (never in solo).
+func (r *Room) won(p *Player) bool {
+	return p.rank == 1 && !r.solo
+}
+
+// matchMode is the history mode of the room.
+func (r *Room) matchMode() string {
+	if r.solo {
+		return record.ModeSolo
+	}
+	return record.ModeRoom
 }
 
 // captain is the account running a classroom room (0 for normal rooms).
+// The owner of a solo room is its captain too.
 func (r *Room) captain() int64 {
-	if r.classroomID <= 0 {
+	if r.classroomID <= 0 && !r.solo {
 		return 0
 	}
 	return r.hostClaims.Subject
@@ -444,7 +481,7 @@ func (r *Room) enterClassroom(c *Client, avatar []byte, now time.Time) error {
 // room closes. It reports false
 // when the room closed.
 func (r *Room) passCaptain(now time.Time) bool {
-	if r.classroomID <= 0 || r.closed {
+	if r.classroomID <= 0 || r.solo || r.closed {
 		return !r.closed
 	}
 	if r.active() == 0 {
@@ -499,7 +536,7 @@ func (r *Room) start(c *Client, now time.Time) error {
 		kept = append(kept, p)
 	}
 	r.players = kept
-	if len(r.players) < MinPlayers {
+	if len(r.players) < r.minPlayers() {
 		return ErrPlayers
 	}
 	ids := make([]int64, len(r.players))
@@ -841,7 +878,7 @@ func (r *Room) points(p *Player, finished bool) int {
 	if !finished || p.left {
 		return points.Abandoned(p.earned, p.correct+p.wrong, MaxPoints)
 	}
-	return Award(p.earned, p.rank == 1)
+	return Award(p.earned, r.won(p))
 }
 
 func (r *Room) podium() []Message {
@@ -858,7 +895,7 @@ func (r *Room) podium() []Message {
 
 func (r *Room) youResult(p *Player) Message {
 	return Message{
-		"user_id": p.ID(), "rank": p.rank, "won": p.rank == 1, "points": r.points(p, true),
+		"user_id": p.ID(), "rank": p.rank, "won": r.won(p), "points": r.points(p, true),
 		"gold": p.gold, "correct": p.correct, "wrong": p.wrong, "steals": p.steals, "swaps": p.swaps,
 	}
 }
@@ -914,7 +951,7 @@ func (r *Room) match(finished bool, now time.Time) *record.Match {
 		}
 	}
 	return &record.Match{
-		Key: fmt.Sprintf("%s-%s-%d", Prefix, r.Pin, r.started.UnixNano()), Mode: record.ModeRoom, Pin: r.Pin,
+		Key: fmt.Sprintf("%s-%s-%d", Prefix, r.Pin, r.started.UnixNano()), Mode: r.matchMode(), Pin: r.Pin,
 		Level: 0, Grade: r.grade, StartedAt: record.Stamp(r.started), EndedAt: record.Stamp(now),
 		Finished: finished, Players: players,
 	}
@@ -1121,9 +1158,9 @@ func (r *Room) sendState(c *Client, now time.Time) {
 		})
 	}
 	msg := Message{
-		"t": "state_sync", "pin": r.Pin, "phase": r.phase, "role": role, "classroom": r.classroomID, "captain": r.captain(), "subject": subjectOrMix(r.subject),
+		"t": "state_sync", "pin": r.Pin, "phase": r.phase, "role": role, "classroom": r.classroomID, "captain": r.captain(), "solo": r.solo, "subject": subjectOrMix(r.subject),
 		"host":    Message{"user_id": r.hostClaims.Subject, "name": r.hostClaims.Name, "online": r.hostOnline},
-		"players": roster, "min_players": MinPlayers, "max_players": MaxPlayers,
+		"players": roster, "min_players": r.minPlayers(), "max_players": MaxPlayers,
 		"win": r.win, "minutes": r.minutes, "target_gold": r.target,
 		"time_limits": TimeLimits, "gold_targets": GoldTargets,
 		"cooldown_ms": r.cfg.Cooldown.Milliseconds(),

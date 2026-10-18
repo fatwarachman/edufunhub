@@ -89,6 +89,32 @@ func (h *Hub) Create(c *Client, now time.Time) (*Room, error) {
 	return r, r.do(command{kind: "attach_host", c: c}).err
 }
 
+// CreateSolo opens a private race for one player who also runs it
+// (settings, start, end) from the pad, without a host screen or PIN. A
+// previous room of that player is left first. Nobody else can join.
+func (h *Hub) CreateSolo(c *Client, avatar []byte, now time.Time) (*Room, error) {
+	if c.Host {
+		return nil, ErrPlayerOnly
+	}
+	h.mu.Lock()
+	prev := h.players[c.ID()]
+	h.mu.Unlock()
+	if prev != nil {
+		prev.do(command{kind: "leave", c: c})
+	}
+	h.mu.Lock()
+	pin := ""
+	for pin == "" || h.rooms[pin] != nil {
+		pin = fmt.Sprintf("%06d", 100000+h.rng.IntN(900000))
+	}
+	r := newRoom(h, pin, c, h.rng.Uint64(), now)
+	r.solo = true
+	h.rooms[pin] = r
+	h.mu.Unlock()
+	go r.run()
+	return r, r.do(command{kind: "join", c: c, avatar: avatar}).err
+}
+
 // Resume reattaches a returning connection to its room (host screen or
 // player kart). It reports false when the account has no room.
 func (h *Hub) Resume(c *Client) bool {
@@ -113,7 +139,7 @@ func (h *Hub) Join(c *Client, pin string, avatar []byte) error {
 	r := h.rooms[pin]
 	prev := h.players[c.ID()]
 	h.mu.Unlock()
-	if r == nil || (r.classroomID > 0 && r.classroomID != c.Claims.Classroom) {
+	if r == nil || r.solo || (r.classroomID > 0 && r.classroomID != c.Claims.Classroom) {
 		return ErrNotFound
 	}
 	if prev != nil && prev != r {
@@ -290,10 +316,10 @@ func (h *Hub) RoomsSummary() []lobby.RoomSummary {
 }
 
 // RoomPhase reports the phase of the room with the given PIN (PIN lookup).
-// Classroom rooms are never found: they are reached via EnterClassroom.
+// Classroom rooms (reached via EnterClassroom) and solo rooms are never found.
 func (h *Hub) RoomPhase(pin string) (string, bool) {
 	v, err := h.Inspect(pin, func(r *Room) any {
-		if r.classroomID > 0 {
+		if r.solo || r.classroomID > 0 {
 			return ""
 		}
 		return r.phase
@@ -435,10 +461,11 @@ func (h *Hub) dropRoom(r *Room) {
 // Spectate returns the read-only host view (what the arena screen shows) of
 // the room with pin, for admin monitoring. It runs on the room goroutine and
 // uses a detached client that is never attached, seated or counted, so
-// watching cannot send input or change scores. Classroom rooms are hidden.
+// watching cannot send input or change scores. Classroom and solo rooms are
+// hidden.
 func (h *Hub) Spectate(pin, locale string, now time.Time) (Message, bool) {
 	v, err := h.Inspect(pin, func(r *Room) any {
-		if r.classroomID > 0 {
+		if r.solo || r.classroomID > 0 {
 			return nil
 		}
 		c := NewClient(auth.Claims{Name: "spectator"}, true, locale, 1)

@@ -4,6 +4,8 @@ import {
     RoomEntry,
     RoomError,
     RoomPinBadge,
+    SoloEntry,
+    SoloLobbyNote,
 } from '@/components/multiplayer/room';
 import {
     EndGameButton,
@@ -55,7 +57,7 @@ type Act = (msg: Record<string, unknown>) => boolean;
 const AUTO_SUBMIT_KEY = 'order-rush.auto-submit';
 
 /** Classroom fields of `state_sync` (room without a host screen). */
-type ClassroomSync = { classroom?: number; captain?: number };
+type ClassroomSync = { classroom?: number; captain?: number; solo?: boolean };
 
 /** Wall clock for event handlers (never called during render). */
 function timestamp(): number {
@@ -73,6 +75,9 @@ export function PlayerScreen({
     act,
     onJoin,
     onHost,
+    onSolo,
+    solo = false,
+    onCreateSolo,
     userId,
 }: {
     state: RushState;
@@ -84,14 +89,38 @@ export function PlayerScreen({
     act: Act;
     onJoin: (pin: string) => void;
     onHost: () => void;
-    /** Signed-in user; the classroom captain gets the host controls. */
+    /** Opens the solo page (`?role=solo`). */
+    onSolo?: () => void;
+    /** Solo page: a private room without host screen and PIN. */
+    solo?: boolean;
+    /** Sends `create_solo` again after the solo room closed. */
+    onCreateSolo?: () => void;
+    /** Signed-in user; the classroom or solo captain gets the host controls. */
     userId?: number;
 }) {
     const { t } = useTranslations();
     const back = useGameBack();
-    const { classroom = 0, captain = 0 } = state as RushState & ClassroomSync;
+    const {
+        classroom = 0,
+        captain = 0,
+        solo: soloRoom = false,
+    } = state as RushState & ClassroomSync;
     const inClassroom = classroom > 0;
-    const isCaptain = inClassroom && captain > 0 && captain === userId;
+    /** Classroom and solo rooms have no host screen: a player runs them. */
+    const noHost = inClassroom || soloRoom;
+    const isCaptain = noHost && captain > 0 && captain === userId;
+
+    if (solo && (state.phase === 'NONE' || !state.pin)) {
+        return (
+            <SoloEntry
+                status={status}
+                error={error}
+                name={name}
+                closed={state.closed}
+                onCreate={() => onCreateSolo?.()}
+            />
+        );
+    }
 
     if (state.phase === 'NONE' || !state.pin) {
         return (
@@ -106,6 +135,7 @@ export function PlayerScreen({
                 onClassroom={() =>
                     act({ t: 'classroom', avatar: character ?? null })
                 }
+                onSolo={onSolo}
             >
                 {state.closed && state.closed !== 'idle' && (
                     <p className="text-xs font-bold text-slate-600">
@@ -135,7 +165,7 @@ export function PlayerScreen({
         </Button>
     );
 
-    if (state.phase === 'LOBBY' && inClassroom) {
+    if (state.phase === 'LOBBY' && noHost) {
         return (
             <ClassroomLobby
                 state={state}
@@ -145,6 +175,7 @@ export function PlayerScreen({
                 act={act}
                 isCaptain={isCaptain}
                 classroomName={back.classroomName ?? ''}
+                solo={soloRoom}
                 leave={leave}
             />
         );
@@ -236,12 +267,12 @@ export function PlayerScreen({
                     </Button>
                 ) : (
                     <p className="text-xs font-bold text-slate-600">
-                        {inClassroom
+                        {noHost
                             ? t('room.waitingHost')
                             : t('orderRush.waitingHost')}
                     </p>
                 )}
-                {error && inClassroom && <RoomError code={error} />}
+                {error && noHost && <RoomError code={error} />}
                 <AdSlot placement="arena.result" className="w-full max-w-md" />
                 {leave}
             </Panel>
@@ -293,6 +324,7 @@ function ClassroomLobby({
     act,
     isCaptain,
     classroomName,
+    solo,
     leave,
 }: {
     state: RushState & ClassroomSync;
@@ -302,6 +334,8 @@ function ClassroomLobby({
     act: Act;
     isCaptain: boolean;
     classroomName: string;
+    /** Private solo room: no classmates, no PIN. */
+    solo: boolean;
     leave: React.ReactNode;
 }) {
     const { t } = useTranslations();
@@ -311,6 +345,7 @@ function ClassroomLobby({
         <div
             className="mx-auto w-full max-w-2xl"
             data-testid="or-classroom-lobby"
+            data-solo={solo ? 'true' : 'false'}
         >
             <Panel className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -318,58 +353,67 @@ function ClassroomLobby({
                     <RoomPinBadge
                         pin={state.pin ?? ''}
                         classroom={state.classroom}
+                        solo={solo}
                     />
                 </div>
-                <div className="flex min-w-0 items-start gap-3 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#e9fbf3] p-3 text-left sm:p-4">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5]">
-                        <School className="size-5" aria-hidden="true" />
-                    </span>
-                    <div className="min-w-0">
-                        <p className="text-sm font-black break-words">
-                            {t('room.classroom.title', { name: classroomName })}
-                        </p>
-                        <p className="mt-0.5 text-xs font-bold text-slate-600">
-                            {isCaptain
-                                ? t('room.classroom.hostHint', {
-                                      min: state.min_players,
-                                  })
-                                : t('room.classroom.playerHint')}
-                        </p>
-                    </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                    <h2 className="flex items-center justify-between gap-2 font-display text-lg font-black">
-                        {t('orderRush.joined')}
-                        <span className="text-sm tabular-nums">
-                            {active.length}/{state.max_players}
+                {solo ? (
+                    <SoloLobbyNote />
+                ) : (
+                    <div className="flex min-w-0 items-start gap-3 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#e9fbf3] p-3 text-left sm:p-4">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5]">
+                            <School className="size-5" aria-hidden="true" />
                         </span>
-                    </h2>
-                    <ul
-                        className="grid grid-cols-3 gap-2 sm:grid-cols-5"
-                        data-testid="or-lobby-players"
-                    >
-                        {active.map((p) => (
-                            <li
-                                key={p.user_id}
-                                className={cn(
-                                    'flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 border-[#1f2a44] bg-white p-1.5',
-                                    !p.online && 'opacity-50',
-                                )}
-                            >
-                                <span className="size-12">
-                                    <PlayerAvatar
-                                        character={p.character}
-                                        seat={p.user_id}
-                                        userId={p.user_id}
-                                    />
-                                </span>
-                                <span className="w-full truncate text-center text-xs font-black">
-                                    {p.name}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                        <div className="min-w-0">
+                            <p className="text-sm font-black break-words">
+                                {t('room.classroom.title', {
+                                    name: classroomName,
+                                })}
+                            </p>
+                            <p className="mt-0.5 text-xs font-bold text-slate-600">
+                                {isCaptain
+                                    ? t('room.classroom.hostHint', {
+                                          min: state.min_players,
+                                      })
+                                    : t('room.classroom.playerHint')}
+                            </p>
+                        </div>
+                    </div>
+                )}
+                {!solo && (
+                    <div className="flex flex-col gap-2">
+                        <h2 className="flex items-center justify-between gap-2 font-display text-lg font-black">
+                            {t('orderRush.joined')}
+                            <span className="text-sm tabular-nums">
+                                {active.length}/{state.max_players}
+                            </span>
+                        </h2>
+                        <ul
+                            className="grid grid-cols-3 gap-2 sm:grid-cols-5"
+                            data-testid="or-lobby-players"
+                        >
+                            {active.map((p) => (
+                                <li
+                                    key={p.user_id}
+                                    className={cn(
+                                        'flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 border-[#1f2a44] bg-white p-1.5',
+                                        !p.online && 'opacity-50',
+                                    )}
+                                >
+                                    <span className="size-12">
+                                        <PlayerAvatar
+                                            character={p.character}
+                                            seat={p.user_id}
+                                            userId={p.user_id}
+                                        />
+                                    </span>
+                                    <span className="w-full truncate text-center text-xs font-black">
+                                        {p.name}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
                 {isCaptain ? (
                     <>
                         <RushSettings state={state} online={online} act={act} />

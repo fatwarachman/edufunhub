@@ -99,6 +99,7 @@ class TurboTriviaController extends Controller
             'serviceReady' => $this->signer->isConfigured(),
             'wsUrl' => config('game-service.public_turbo_trivia_ws_url'),
             'pin' => $pin,
+            'solo' => $request->query('role') === 'solo',
         ];
     }
 

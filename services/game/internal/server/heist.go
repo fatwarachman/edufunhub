@@ -130,6 +130,8 @@ func (s *Server) serveHeist(w http.ResponseWriter, r *http.Request) {
 		switch in.T {
 		case "create_room":
 			_, err = s.heist.Create(client, at)
+		case "create_solo":
+			_, err = s.heist.CreateSolo(client, in.Avatar, at)
 		case "join_room":
 			pin := in.RoomCode
 			if pin == "" {

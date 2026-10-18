@@ -7,6 +7,7 @@ import { type GameSocketStatus } from '@/hooks/use-game-socket';
 import { useTranslations } from '@/hooks/use-translations';
 import { type CharacterLook } from '@/lib/character/draw-character';
 import { cn } from '@/lib/utils';
+import { router } from '@inertiajs/react';
 import {
     Copy,
     Crown,
@@ -19,6 +20,7 @@ import {
     School,
     Share2,
     Trash2,
+    User,
     UserPlus,
     Wifi,
     WifiOff,
@@ -127,18 +129,157 @@ export function useRoomPin(
     }, [currentPin]);
 }
 
+/** Solo fields of `state_sync`: private room run by its only player. */
+export interface SoloSync {
+    solo?: boolean;
+    captain?: number;
+}
+
+/**
+ * Private solo rooms of host-screen games (Go `create_solo`): the page opens
+ * with `?role=solo`, sends `create_solo` once the first snapshot says there
+ * is no room yet, and a reload resumes the running room (phase not NONE).
+ * A room closed later is never reopened silently: the entry shows a button.
+ */
+export function useSoloRoom({
+    enabled,
+    online,
+    synced,
+    phase,
+    closed,
+    create,
+}: {
+    enabled: boolean;
+    online: boolean;
+    synced: boolean;
+    phase: string;
+    closed?: string;
+    create: () => void;
+}) {
+    const created = useRef(false);
+    const send = useRef(create);
+    useEffect(() => {
+        send.current = create;
+    }, [create]);
+    useEffect(() => {
+        if (phase !== 'NONE') {
+            created.current = true;
+            return;
+        }
+        if (enabled && online && synced && !closed && !created.current) {
+            created.current = true;
+            send.current();
+        }
+    }, [enabled, online, synced, phase, closed]);
+}
+
+/** Navigates a host-screen game to its solo page (`?role=solo`). */
+export function openSolo(path: string): void {
+    router.visit(`${path}?role=solo`, { preserveScroll: true });
+}
+
+/**
+ * Before a solo room exists (or after it closed): connection state and a
+ * button that opens a new private room.
+ */
+export function SoloEntry({
+    status,
+    error,
+    name,
+    closed,
+    onCreate,
+}: {
+    status: GameSocketStatus | null;
+    error: string | null;
+    name: string;
+    closed?: string;
+    onCreate: () => void;
+}) {
+    const { t } = useTranslations();
+    const online = status === 'online';
+    return (
+        <Panel>
+            <div
+                className="flex flex-col items-center gap-4"
+                data-testid="room-solo-entry"
+            >
+                <ConnectionBadge status={status} />
+                <span className="grid size-14 place-items-center rounded-2xl border-3 border-[#1f2a44] bg-[#bbf7d0]">
+                    <User className="size-7" aria-hidden="true" />
+                </span>
+                <p className="font-display text-xl font-black">
+                    {t('room.solo.preparing', { name })}
+                </p>
+                {closed && closed !== 'idle' && (
+                    <p className="text-xs font-bold text-slate-600">
+                        {t('room.solo.closed')}
+                    </p>
+                )}
+                <RoomError code={error} />
+                <Button
+                    onClick={onCreate}
+                    disabled={!online}
+                    data-testid="room-solo-create"
+                    className="min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#FF9E44] px-6 font-display text-lg font-black text-white shadow-[4px_4px_0px_#1f2a44] hover:bg-[#ff8f29] disabled:opacity-50"
+                >
+                    <Play className="size-5" aria-hidden="true" />
+                    {t('room.solo.create')}
+                </Button>
+            </div>
+        </Panel>
+    );
+}
+
+/** Hint shown in a solo lobby: no PIN, no host screen, start any time. */
+export function SoloLobbyNote() {
+    const { t } = useTranslations();
+    return (
+        <div
+            className="flex min-w-0 items-start gap-3 rounded-2xl border-3 border-dashed border-[#1f2a44] bg-[#ecfdf3] p-3 text-left sm:p-4"
+            data-testid="room-solo-note"
+        >
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl border-2 border-[#1f2a44] bg-[#bbf7d0]">
+                <User className="size-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+                <p className="text-sm font-black break-words">
+                    {t('room.solo.title')}
+                </p>
+                <p className="mt-0.5 text-xs font-bold text-slate-600">
+                    {t('room.solo.hint')}
+                </p>
+            </div>
+        </div>
+    );
+}
+
 /**
  * Room label during play: the PIN for invite rooms, the classroom name for
- * classroom rooms (they are never shared by PIN).
+ * classroom rooms (they are never shared by PIN), "Main sendiri" for solo
+ * rooms (private, no PIN).
  */
 export function RoomPinBadge({
     pin,
     classroom,
+    solo,
 }: {
     pin: string;
     classroom?: number | null;
+    solo?: boolean;
 }) {
     const back = useGameBack();
+    const { t } = useTranslations();
+    if (solo) {
+        return (
+            <span
+                className="inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#bbf7d0] px-3 py-1.5 text-sm font-black"
+                data-testid="room-solo-badge"
+            >
+                <User className="size-4 shrink-0" aria-hidden="true" />
+                <span className="truncate">{t('room.solo.badge')}</span>
+            </span>
+        );
+    }
     if ((classroom ?? 0) > 0) {
         return (
             <span
@@ -231,6 +372,7 @@ export function RoomEntry({
     onCreate,
     onJoin,
     onClassroom,
+    onSolo,
     children,
 }: {
     /** Catalog key of this game (config/game-catalog.php). */
@@ -246,6 +388,8 @@ export function RoomEntry({
      * player's classroom (classroom id comes from the signed token).
      */
     onClassroom?: () => void;
+    /** Opens a private solo room (no host screen, no PIN). */
+    onSolo?: () => void;
     children?: ReactNode;
 }) {
     const { t } = useTranslations();
@@ -280,6 +424,17 @@ export function RoomEntry({
                 <Plus className="size-5" />
                 {createLabel ?? t('room.create')}
             </Button>
+            {onSolo && (
+                <Button
+                    onClick={onSolo}
+                    disabled={!online}
+                    data-testid="room-solo"
+                    className="mx-auto mt-3 flex min-h-12 rounded-2xl border-3 border-[#1f2a44] bg-[#bbf7d0] px-6 font-display text-lg font-black text-[#1f2a44] shadow-[4px_4px_0px_#1f2a44] hover:bg-[#86efac] disabled:opacity-50"
+                >
+                    <User className="size-5" aria-hidden="true" />
+                    {t('room.solo.start')}
+                </Button>
+            )}
             <div className="my-4 flex items-center gap-3 text-xs font-black text-slate-500 uppercase">
                 <span className="h-0.5 flex-1 bg-[#1f2a44]/15" />
                 {t('room.or')}

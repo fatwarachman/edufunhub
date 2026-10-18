@@ -99,6 +99,7 @@ class BlockBattleController extends Controller
             'serviceReady' => $this->signer->isConfigured(),
             'wsUrl' => config('game-service.public_block_battle_ws_url'),
             'pin' => $pin,
+            'solo' => $request->query('role') === 'solo',
         ];
     }
 

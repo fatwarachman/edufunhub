@@ -11,7 +11,11 @@ import {
     RoomEntry,
     RoomError,
     RoomPinBadge,
+    SoloEntry,
+    SoloLobbyNote,
+    type SoloSync,
     useRoomPin,
+    useSoloRoom,
 } from '@/components/multiplayer/room';
 import {
     type GameSubject,
@@ -52,6 +56,7 @@ import {
     Smartphone,
     Timer,
     Trophy,
+    User,
     UsersRound,
     Volume2,
     VolumeX,
@@ -75,7 +80,7 @@ interface FloorDropProps {
     wsUrl: string | null;
     pin: string | null;
     /** Chosen role from `?role=`; invite links open as a player. */
-    role: FloorRole | null;
+    role: FloorPageRole | null;
 }
 
 const LETTERS = ['A', 'B', 'C', 'D'];
@@ -179,11 +184,12 @@ export default function FloorDrop({
     }, []);
     const onError = useCallback((code: string) => setError(code), []);
     // A classroom opens straight as a player: no role picker, no PIN.
-    const chosenRole: FloorRole | null =
+    const chosenRole: FloorPageRole | null =
         role ?? (pin || back.inClassroom ? 'player' : null);
+    const solo = chosenRole === 'solo';
     const { state, status, send } = useFloorDrop(
         serviceReady && chosenRole ? wsUrl : null,
-        chosenRole ?? 'player',
+        chosenRole === 'host' ? 'host' : 'player',
         i18n.language,
         onError,
         onEvent,
@@ -204,17 +210,30 @@ export default function FloorDrop({
         [send],
     );
     const classroom = classroomOf(state);
+    const soloRoom = (state as SoloSync).solo === true;
     const isCaptain =
-        classroom > 0 &&
+        (classroom > 0 || soloRoom) &&
         state.you !== undefined &&
         captainOf(state) === state.you.user_id;
-    // Classroom rooms are never shared by PIN: keep it out of the URL.
+    // Classroom and solo rooms are never shared by PIN: keep it out of the URL.
     useRoomPin(
         online && chosenRole === 'player',
-        classroom > 0 ? undefined : state.pin,
+        classroom > 0 || soloRoom ? undefined : state.pin,
         chosenRole === 'player' ? pin : null,
         join,
     );
+    const createSolo = useCallback(() => {
+        setError(null);
+        send({ t: 'create_solo' });
+    }, [send]);
+    useSoloRoom({
+        enabled: solo,
+        online,
+        synced: state.receivedAt > 0,
+        phase: state.phase,
+        closed: state.closed,
+        create: createSolo,
+    });
     if (state.pin && classroom > 0) {
         markClassroomRoom('floor-drop');
     }
@@ -256,6 +275,9 @@ export default function FloorDrop({
                 act={act}
                 classroom={classroom}
                 isCaptain={isCaptain}
+                solo={solo}
+                soloRoom={soloRoom}
+                onCreateSolo={createSolo}
             />
         );
     }
@@ -298,7 +320,7 @@ export default function FloorDrop({
                         <DigitalClock className="edu-clock--game" />
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
-                        {chosenRole === 'player' && (
+                        {chosenRole !== null && chosenRole !== 'host' && (
                             <span
                                 className="hidden min-h-11 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] bg-[#ffd93d] px-3 text-sm font-black sm:inline-flex"
                                 data-testid="fd-total-points"
@@ -378,7 +400,10 @@ function captainOf(state: FloorState): number {
     return (state as { captain?: number }).captain ?? 0;
 }
 
-function chooseRole(role: FloorRole) {
+/** Page role from `?role=`; `solo` plays alone with a player token. */
+type FloorPageRole = FloorRole | 'solo';
+
+function chooseRole(role: FloorPageRole) {
     router.visit(`/games/floor-drop?role=${role}`, { preserveScroll: true });
 }
 
@@ -413,13 +438,21 @@ function Notice({ icon, children }: { icon: ReactNode; children: ReactNode }) {
 function RolePicker() {
     const { t } = useTranslations();
     const roles: {
-        role: FloorRole;
+        role: FloorPageRole;
         icon: typeof MonitorPlay;
         title: string;
         body: string;
         cta: string;
         tone: string;
     }[] = [
+        {
+            role: 'solo',
+            icon: User,
+            title: t('room.solo.soloTitle'),
+            body: t('room.solo.soloBody'),
+            cta: t('room.solo.openSolo'),
+            tone: '#bbf7d0',
+        },
         {
             role: 'host',
             icon: MonitorPlay,
@@ -439,13 +472,13 @@ function RolePicker() {
     ];
     return (
         <div
-            className="mx-auto flex w-full max-w-3xl flex-col gap-4"
+            className="mx-auto flex w-full max-w-4xl flex-col gap-4"
             data-testid="fd-role-picker"
         >
             <h2 className="text-center font-display text-2xl font-black">
                 {t('floorDrop.chooseRole')}
             </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {roles.map(({ role, icon: Icon, title, body, cta, tone }) => (
                     <button
                         key={role}
@@ -890,11 +923,14 @@ function HostSettings({
     disabled,
     players,
     onChange,
+    hideLimit = false,
 }: {
     state: FloorState;
     disabled: boolean;
     players: number;
     onChange: (settings: { minutes?: number; player_limit?: number }) => void;
+    /** Solo rooms have one seat: no player limit to pick. */
+    hideLimit?: boolean;
 }) {
     const { t } = useTranslations();
     const durations = state.durations ?? [3, 5, 10, 15];
@@ -929,26 +965,30 @@ function HostSettings({
                     ))}
                 </div>
             </fieldset>
-            <fieldset className="flex flex-col gap-2">
-                <legend className="mb-1 text-xs font-black text-slate-500 uppercase">
-                    {t('floorDrop.playerLimit')}
-                </legend>
-                <div className="flex flex-wrap gap-1.5">
-                    {limits.map((limit) => (
-                        <button
-                            key={limit}
-                            type="button"
-                            disabled={disabled || limit < players}
-                            aria-pressed={state.max_players === limit}
-                            onClick={() => onChange({ player_limit: limit })}
-                            className={choice(state.max_players === limit)}
-                            data-testid={`fd-limit-${limit}`}
-                        >
-                            {limit}
-                        </button>
-                    ))}
-                </div>
-            </fieldset>
+            {!hideLimit && (
+                <fieldset className="flex flex-col gap-2">
+                    <legend className="mb-1 text-xs font-black text-slate-500 uppercase">
+                        {t('floorDrop.playerLimit')}
+                    </legend>
+                    <div className="flex flex-wrap gap-1.5">
+                        {limits.map((limit) => (
+                            <button
+                                key={limit}
+                                type="button"
+                                disabled={disabled || limit < players}
+                                aria-pressed={state.max_players === limit}
+                                onClick={() =>
+                                    onChange({ player_limit: limit })
+                                }
+                                className={choice(state.max_players === limit)}
+                                data-testid={`fd-limit-${limit}`}
+                            >
+                                {limit}
+                            </button>
+                        ))}
+                    </div>
+                </fieldset>
+            )}
         </div>
     );
 }
@@ -1268,6 +1308,9 @@ function PlayerScreen({
     act,
     classroom,
     isCaptain,
+    solo,
+    soloRoom,
+    onCreateSolo,
 }: {
     state: FloorState;
     status: ReturnType<typeof useFloorDrop>['status'];
@@ -1277,11 +1320,28 @@ function PlayerScreen({
     act: (msg: Record<string, unknown>) => void;
     /** Classroom id of the room; > 0 means a classroom room without PIN. */
     classroom: number;
-    /** This player hosts the classroom room (start, subject, settings). */
+    /** This player hosts the classroom or solo room (start, subject, settings). */
     isCaptain: boolean;
+    /** Solo page (`?role=solo`): a private room without host screen. */
+    solo: boolean;
+    /** The current room is a private solo room. */
+    soloRoom: boolean;
+    onCreateSolo: () => void;
 }) {
     const { t } = useTranslations();
     const back = useGameBack();
+
+    if (solo && (state.phase === 'NONE' || !state.pin)) {
+        return (
+            <SoloEntry
+                status={status}
+                error={error}
+                name={name}
+                closed={state.closed}
+                onCreate={onCreateSolo}
+            />
+        );
+    }
 
     if (state.phase === 'NONE' || !state.pin) {
         return (
@@ -1295,6 +1355,7 @@ function PlayerScreen({
                     onCreate={() => chooseRole('host')}
                     onJoin={(code) => act({ t: 'join_room', pin: code })}
                     onClassroom={() => act({ t: 'classroom' })}
+                    onSolo={() => chooseRole('solo')}
                 >
                     {state.closed && state.closed !== 'idle' && (
                         <p className="text-xs font-bold text-slate-600">
@@ -1332,8 +1393,12 @@ function PlayerScreen({
         <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
                 <ConnectionBadge status={status} />
-                {classroom > 0 ? (
-                    <RoomPinBadge pin={state.pin} classroom={classroom} />
+                {classroom > 0 || soloRoom ? (
+                    <RoomPinBadge
+                        pin={state.pin}
+                        classroom={classroom}
+                        solo={soloRoom}
+                    />
                 ) : (
                     <span className="rounded-xl border-2 border-[#1f2a44] bg-[#FFFDE6] px-3 py-1.5 font-display text-sm font-black tracking-widest">
                         PIN {state.pin}
@@ -1352,7 +1417,7 @@ function PlayerScreen({
         </div>
     );
 
-    if (state.phase === 'LOBBY' && classroom > 0) {
+    if (state.phase === 'LOBBY' && (classroom > 0 || soloRoom)) {
         const active = state.players.filter((p) => !p.left);
         const enough = active.length >= state.min_players;
         const subject = isGameSubject(state.subject ?? '')
@@ -1360,24 +1425,39 @@ function PlayerScreen({
             : 'mix';
         return (
             <div
-                className="grid gap-5 lg:grid-cols-12"
+                className={cn(
+                    'grid gap-5 lg:grid-cols-12',
+                    soloRoom && 'mx-auto w-full max-w-xl lg:grid-cols-1',
+                )}
                 data-testid="fd-classroom-lobby"
                 data-captain={isCaptain ? 'true' : 'false'}
+                data-solo={soloRoom ? 'true' : 'false'}
             >
-                <Panel className="flex flex-col gap-4 lg:col-span-5">
+                <Panel
+                    className={cn(
+                        'flex flex-col gap-4',
+                        !soloRoom && 'lg:col-span-5',
+                    )}
+                >
                     {top}
-                    <h2 className="font-display text-xl font-black">
-                        {t('room.classroom.title', {
-                            name: back.classroomName ?? '',
-                        })}
-                    </h2>
+                    {soloRoom ? (
+                        <SoloLobbyNote />
+                    ) : (
+                        <h2 className="font-display text-xl font-black">
+                            {t('room.classroom.title', {
+                                name: back.classroomName ?? '',
+                            })}
+                        </h2>
+                    )}
                     {isCaptain ? (
                         <>
-                            <p className="text-sm font-bold text-slate-600">
-                                {t('room.classroom.hostHint', {
-                                    min: state.min_players,
-                                })}
-                            </p>
+                            {!soloRoom && (
+                                <p className="text-sm font-bold text-slate-600">
+                                    {t('room.classroom.hostHint', {
+                                        min: state.min_players,
+                                    })}
+                                </p>
+                            )}
                             <SubjectPicker
                                 value={subject}
                                 onChange={(value) =>
@@ -1390,6 +1470,7 @@ function PlayerScreen({
                                 state={state}
                                 disabled={!online}
                                 players={active.length}
+                                hideLimit={soloRoom}
                                 onChange={(settings) =>
                                     act({ t: 'set_settings', ...settings })
                                 }
@@ -1425,15 +1506,20 @@ function PlayerScreen({
                     )}
                     {leave}
                 </Panel>
-                <Panel className="flex flex-col gap-3 lg:col-span-7">
-                    <h2 className="flex items-center justify-between gap-2 font-display text-lg font-black">
-                        {t('floorDrop.joined')}
-                        <span className="text-sm tabular-nums">
-                            {active.length}/{state.max_players}
-                        </span>
-                    </h2>
-                    <LobbyRoster players={active} captain={captainOf(state)} />
-                </Panel>
+                {!soloRoom && (
+                    <Panel className="flex flex-col gap-3 lg:col-span-7">
+                        <h2 className="flex items-center justify-between gap-2 font-display text-lg font-black">
+                            {t('floorDrop.joined')}
+                            <span className="text-sm tabular-nums">
+                                {active.length}/{state.max_players}
+                            </span>
+                        </h2>
+                        <LobbyRoster
+                            players={active}
+                            captain={captainOf(state)}
+                        />
+                    </Panel>
+                )}
             </div>
         );
     }
