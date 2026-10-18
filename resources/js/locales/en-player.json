@@ -2884,7 +2884,8 @@
         "winner": "{{name}} wins!",
         "draw": "It's a draw!",
         "guest": "Sign up for free to join the leaderboard and collect points.",
-        "correctWrong": "{{correct}} correct • {{wrong}} wrong"
+        "correctWrong": "{{correct}} correct • {{wrong}} wrong",
+        "review": "Review questions & answers"
     },
     "joinPin": {
         "button": "Join with PIN",
@@ -4161,5 +4162,29 @@
             },
             "videoLabel": "EduKart Quiz Racing how-to-play video"
         }
+    },
+    "gameReview": {
+        "title": "Question & answer review",
+        "heading": "Review: {{game}}",
+        "listTitle": "Answered questions ({{count}})",
+        "empty": "No questions were recorded for this game. Generated practice questions (such as random sums) are not saved.",
+        "pending": "Saving the game result…",
+        "refresh": "Reload",
+        "correct": "Correct",
+        "wrong": "Wrong",
+        "accuracy": "Accuracy",
+        "points": "Points",
+        "rank": "Rank",
+        "time": "Time",
+        "playAgain": "Play again",
+        "history": "Game history",
+        "true": "True",
+        "false": "False",
+        "yourAnswer": "Your answer",
+        "rightAnswer": "Right answer",
+        "noAnswer": "No answer (did not hit an answer box).",
+        "hint": "Explanation",
+        "statusRight": "You got it",
+        "statusWrong": "You missed"
     }
 }

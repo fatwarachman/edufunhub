@@ -40,6 +40,21 @@ func TestTrueFalseStaysInTheChosenSubject(t *testing.T) {
 			t.Fatalf("seed %d: answer %d does not match statement %q", seed, q.Answer, q.Prompt.ID)
 		}
 		truths[q.Answer]++
+		// A pick is recorded against the original option: "true" = the shown
+		// option, "false" names no option (never the 0/1 of real statements).
+		if q.Shown == nil || q.Options != nil {
+			t.Fatalf("seed %d: converted statement must remember the shown option: %+v", seed, q)
+		}
+		shownRight := *q.Shown == 0
+		if shownRight != right {
+			t.Fatalf("seed %d: shown option %d does not match statement %q", seed, *q.Shown, q.Prompt.ID)
+		}
+		if pick := q.TruthPick(true); pick == nil || *pick != *q.Shown {
+			t.Fatalf("seed %d: true pick %v, want shown %d", seed, pick, *q.Shown)
+		}
+		if pick := q.TruthPick(false); pick != nil {
+			t.Fatalf("seed %d: false pick on a converted statement must be nil, got %d", seed, *pick)
+		}
 	}
 	if truths[0] == 0 || truths[1] == 0 {
 		t.Fatalf("statements must be both true and false: %v", truths)
@@ -47,6 +62,8 @@ func TestTrueFalseStaysInTheChosenSubject(t *testing.T) {
 	// A subject that has its own statements keeps using them.
 	if q := NewFor("edu-kart", 5, 3).For("science", 1).TrueFalse(); !strings.HasPrefix(q.Key, "tf") {
 		t.Fatalf("science true/false used %s", q.Key)
+	} else if q.Shown != nil || *q.TruthPick(true) != 1 || *q.TruthPick(false) != 0 {
+		t.Fatalf("real statements record 1/0 picks: %+v", q)
 	}
 	// The mix is unchanged: real statements, never converted choices.
 	if q := NewFor("edu-kart", 5, 3).TrueFalse(); strings.Contains(q.Prompt.ID, "Jawaban: ") {

@@ -391,7 +391,7 @@ func (rc *race) judge(r *racer) {
 			var choice *int
 			if lane >= 0 {
 				if g.tf {
-					choice = questions.TruthChoice(lane == 0)
+					choice = g.q.TruthPick(lane == 0)
 				} else {
 					choice = g.q.Original(lane)
 				}

@@ -111,6 +111,45 @@ test('own kart drawn motion stays smooth through soft corrections', () => {
     assert.ok(worst < 3, `drawn speed off by ${worst.toFixed(2)} m/s`);
 });
 
+test('own kart keeps moving through hard corrections (bot bumps)', () => {
+    // A bot rubbing the player pushes it sideways past the soft window every
+    // few frames; the drawn kart (and through the camera every rival) must
+    // keep its forward speed instead of losing a step on each correction.
+    const p = new Predictor(track, veh);
+    p.reconcile(frameOf(newKart()), 0, false);
+    const input = {
+        seq: 1,
+        steer: 0,
+        throttle: 1,
+        drift: false,
+        hop: 0,
+        turbo: 0,
+        fire: 0,
+    };
+    const server = newKart();
+    let last = p.view().p;
+    const errors = [];
+    for (let frame = 0; frame < 300; frame++) {
+        p.advance(1 / 60, 1, input, false);
+        if (frame % 3 === 0) {
+            for (let k = 0; k < 3; k++) {
+                step(server, input, veh, track, DT);
+            }
+            if (frame % 12 === 0) {
+                server.d += frame % 24 === 0 ? 1.4 : -1.4;
+            }
+            p.reconcile(frameOf({ ...server }), 1, false);
+        }
+        const now = p.view().p;
+        if (frame > 90) {
+            errors.push(Math.abs((now - last) * 60 - p.view().v));
+        }
+        last = now;
+    }
+    const worst = Math.max(...errors);
+    assert.ok(worst < 3, `drawn speed off by ${worst.toFixed(2)} m/s`);
+});
+
 test('unacked inputs are replayed on top of the server state', () => {
     const p = new Predictor(track, veh);
     p.reconcile(frameOf(newKart()), 0, false);

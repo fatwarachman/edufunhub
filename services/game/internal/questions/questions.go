@@ -56,6 +56,10 @@ type Question struct {
 	// Visual is the bank item's illustration (nil when none); games send it
 	// to clients as the question's "media".
 	Visual json.RawMessage
+	// Shown is set on a true/false question made from a multiple choice bank
+	// item: the original option index shown as "Answer: ...". A pick is then
+	// recorded against that option (see TruthPick), never as 0/1.
+	Shown *int
 }
 
 // Media returns the illustration for a client message (nil when none).
@@ -102,6 +106,23 @@ func (q Question) Picked(answered bool, displayed int) *int {
 		return nil
 	}
 	return q.Original(displayed)
+}
+
+// TruthPick is the recorded choice of a true/false pick: 0/1 for bank
+// true/false items; for one made from a multiple choice item, "true" picks
+// the shown option and "false" cannot be attributed to an option (nil).
+func (q Question) TruthPick(value bool) *int {
+	if !q.FromBank {
+		return nil
+	}
+	if q.Shown != nil {
+		if !value {
+			return nil
+		}
+		shown := *q.Shown
+		return &shown
+	}
+	return TruthChoice(value)
 }
 
 // TruthChoice returns the original option index of a true/false pick
@@ -629,7 +650,7 @@ func (g *Generator) choiceAsTrueFalse() (Question, bool) {
 		promptEN = it.Prompt.ID
 	}
 	prompt := Text{ID: it.Prompt.ID + "\nJawaban: " + opt.ID, EN: promptEN + "\nAnswer: " + en}
-	return Question{Key: it.Key, Subject: it.Subject, Prompt: prompt, Answer: truth, FromBank: true, Points: it.Points, Level: points.Level(it.Level), Visual: it.Visual}, true
+	return Question{Key: it.Key, Subject: it.Subject, Prompt: prompt, Answer: truth, FromBank: true, Points: it.Points, Level: points.Level(it.Level), Visual: it.Visual, Shown: &shown}, true
 }
 
 // Arithmetic returns an open numeric question for the math sprint.
