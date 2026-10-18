@@ -31,6 +31,188 @@
 
 return [
     [
+        'version' => '0.53.1',
+        'date' => '2026-10-18',
+        'time' => '07:40',
+        'changes' => [
+            [
+                'key' => 'edu-kart-smooth-own-kart',
+                'type' => 'fix',
+                'title' => ['id' => 'EduKart: kart sendiri melaju mulus', 'en' => 'EduKart: smooth own kart'],
+                'body' => ['id' => 'Kart pemain sendiri tidak lagi tersendat atau tertarik maju-mundur saat balapan. Koreksi kecil dari server kini diserap perlahan, gerak kart digambar halus di layar 60/90/120 Hz, dan urutan kirim input diperbaiki agar prediksi selalu cocok dengan server.', 'en' => 'The player\'s own kart no longer stutters or gets tugged back and forth while racing. Small server corrections are now absorbed gradually, kart motion is drawn smoothly on 60/90/120 Hz screens, and input sending order was fixed so prediction always matches the server.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.53.0',
+        'date' => '2026-10-17',
+        'time' => '21:00',
+        'changes' => [
+            [
+                'key' => 'edu-kart-ctr-look-tutorial',
+                'type' => 'feature',
+                'title' => ['id' => 'EduKart: tampilan gaya CTR & video tutorial', 'en' => 'EduKart: CTR-style look & tutorial video'],
+                'body' => ['id' => 'Pembalap chibi berkepala besar dengan syal, kart lebih bulat dengan knalpot yang menyemburkan api saat turbo, kotak jawaban berbentuk peti kayu "?" yang melayang, percikan drift biru-oranye-ungu, lampu start merah 3-2-1 lalu hijau, garis start kotak-kotak penuh, dan dekorasi sirkuit yang lebih ramai. Kamera tidak lagi masuk ke pepohonan. Halaman awal game kini memutar video tutorial (Indonesia/Inggris sesuai bahasa) dan menyediakan panduan PDF.', 'en' => 'Big-headed chibi drivers with scarves, rounder karts with exhausts that shoot flames on turbo, floating wooden "?" crate answer boxes, blue-orange-purple drift sparks, red 3-2-1 then green start lights, a fully checkered start line, and busier circuit scenery. The camera no longer clips into trees. The game start page now plays a tutorial video (Indonesian/English by language) and offers a PDF guide.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.52.1',
+        'date' => '2026-10-17',
+        'time' => '19:00',
+        'changes' => [
+            [
+                'key' => 'edu-kart-smooth-rivals',
+                'type' => 'fix',
+                'title' => ['id' => 'EduKart: gerak pembalap lawan lebih mulus', 'en' => 'EduKart: smoother rival racers'],
+                'body' => ['id' => 'Kart pemain lain dan bot tidak lagi tersendat, berhenti sesaat, atau melompat saat jaringan naik turun. Posisi lawan kini diatur dengan jam server, jeda tampil menyesuaikan kualitas koneksi, dan paket yang terlambat dijembatani sehingga kart tetap melaju.', 'en' => 'Other players and bots no longer stutter, pause, or jump when the network fluctuates. Rivals now follow the server clock, the display delay adapts to the connection, and late packets are bridged so karts keep moving.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.52.0',
+        'date' => '2026-10-17',
+        'time' => '18:50',
+        'changes' => [
+            [
+                'key' => 'edu-kart-quiz-racing',
+                'type' => 'feature',
+                'title' => ['id' => 'Game baru: Balap Kuis EduKart (3D)', 'en' => 'New game: EduKart Quiz Racing (3D)'],
+                'body' => ['id' => 'Balap kart 3D bergaya CTR dengan 3 sirkuit (Hutan Rimba, Pantai Ombak, dan Sirkuit Mandalika dengan bentuk asli 17 tikungan), 8 pilihan kendaraan, dan avatar pemain sebagai pembalap. Di tengah lintasan muncul soal Benar/Salah atau pilihan ganda: tabrak kotak jawaban yang dipilih. Jawaban benar memberi Bintang, turbo, dan senjata (Roket, TNT, NOS, Perisai). Ada power slide dengan 3 turbo, lompatan, dan speed pad. Main sendiri melawan bot atau multiplayer hingga 8 pemain lewat PIN/link, dengan joystik dan tombol sentuh di ponsel. Game berjalan di container Go terpisah (edufunhub-edukart).', 'en' => 'A CTR-style 3D kart racer with 3 circuits (Jungle Forest, Surf Beach, and the Mandalika Circuit with its real 17-turn layout), 8 vehicles, and the player avatar as the driver. True/false or multiple choice questions appear mid-track: crash into the answer box you choose. Right answers give Stars, a turbo, and a weapon (Rocket, TNT, NOS, Shield). Includes power slides with 3 turbos, jumps, and speed pads. Race alone against bots or with up to 8 players via PIN/link, with a joystick and touch buttons on phones. The game runs in its own Go container (edufunhub-edukart).'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.51.0',
+        'date' => '2026-10-17',
+        'time' => '18:30',
+        'changes' => [
+            [
+                'key' => 'solo-host-screen-games',
+                'type' => 'feature',
+                'title' => ['id' => 'Main sendiri tanpa proyektor', 'en' => 'Play solo without a projector'],
+                'body' => ['id' => 'Lantai Runtuh, Peti Emas Misteri, Order Rush, Turbo Trivia, dan Block Battle kini punya pilihan "Main sendiri": ruang pribadi langsung di perangkat pemain, tanpa layar host dan tanpa PIN. Poin tetap masuk ke akun.', 'en' => 'Floor Drop, Economy Heist, Order Rush, Turbo Trivia, and Block Battle now offer "Play solo": a private room on the player\'s own device, with no host screen and no PIN. Points still go to the account.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.50.0',
+        'date' => '2026-10-17',
+        'time' => '15:00',
+        'changes' => [
+            [
+                'key' => 'all-mobile-headers-standardized',
+                'type' => 'improvement',
+                'title' => ['id' => 'Header ponsel diseragamkan', 'en' => 'Standardized phone headers'],
+                'body' => ['id' => 'Badge jam disembunyikan di semua halaman pada layar ponsel dan tinggi header utama dibuat konsisten.', 'en' => 'Clock badges are hidden across all pages on phone screens, and primary header heights are now consistent.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.49.0',
+        'date' => '2026-10-17',
+        'time' => '12:00',
+        'changes' => [
+            [
+                'key' => 'mobile-header-consistency',
+                'type' => 'improvement',
+                'title' => ['id' => 'Header ponsel lebih ringkas dan konsisten', 'en' => 'More consistent, compact phone headers'],
+                'body' => ['id' => 'Badge jam disembunyikan pada semua header di layar ponsel, dan tinggi header halaman diseragamkan.', 'en' => 'Clock badges are hidden across all headers on phone screens, and page header heights are standardized.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.48.9',
+        'date' => '2026-10-17',
+        'time' => '09:00',
+        'changes' => [
+            [
+                'key' => 'admin-user-activity-mobile-polish',
+                'type' => 'fix',
+                'title' => ['id' => 'Aktivitas pengguna ringkas di ponsel', 'en' => 'Compact user activity on phones'],
+                'body' => ['id' => 'Daftar pengguna menampilkan nama halaman tanpa URL panjang, dan badge jam header pemain disembunyikan pada layar ponsel.', 'en' => 'The user list shows page names without long URLs, and the player header clock badge is hidden on phone screens.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.48.8',
+        'date' => '2026-10-17',
+        'time' => '06:00',
+        'changes' => [
+            [
+                'key' => 'notification-tooltip-dismissal',
+                'type' => 'fix',
+                'title' => ['id' => 'Tooltip notifikasi langsung hilang', 'en' => 'Notification tooltip dismisses immediately'],
+                'body' => ['id' => 'Tooltip tombol notifikasi tidak muncul kembali saat panel dibuka atau ditutup; tooltip tampil lagi setelah tombol disentuh atau difokuskan ulang.', 'en' => 'The notification button tooltip no longer reappears while its panel opens or closes; it returns after the button is hovered or focused again.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.48.7',
+        'date' => '2026-10-17',
+        'time' => '03:30',
+        'changes' => [
+            [
+                'key' => 'mobile-menu-tooltip-dismissal',
+                'type' => 'fix',
+                'title' => ['id' => 'Tooltip menu ponsel langsung hilang', 'en' => 'Phone menu tooltip dismisses immediately'],
+                'body' => ['id' => 'Tooltip tombol hamburger tidak muncul kembali saat menu dibuka atau ditutup; tooltip tampil lagi setelah tombol disentuh atau difokuskan ulang.', 'en' => 'The hamburger button tooltip no longer reappears while opening or closing the menu; it returns after the button is hovered or focused again.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.48.6',
+        'date' => '2026-10-17',
+        'time' => '02:55',
+        'changes' => [
+            [
+                'key' => 'mobile-brand-mark-visibility-fix',
+                'type' => 'fix',
+                'title' => ['id' => 'Ikon logo tersembunyi di header ponsel', 'en' => 'Logo icon hidden in phone header'],
+                'body' => ['id' => 'Ikon gamepad di header halaman pemain kini benar-benar tersembunyi pada layar ponsel, sementara teks edufunhub.com dan slogan tetap terlihat.', 'en' => 'The gamepad icon in player page headers is now hidden on phone screens, while the edufunhub.com wordmark and tagline remain visible.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.48.5',
+        'date' => '2026-10-17',
+        'time' => '02:40',
+        'changes' => [
+            [
+                'key' => 'mobile-player-header-brand-hidden',
+                'type' => 'improvement',
+                'title' => ['id' => 'Ikon logo disembunyikan di header ponsel', 'en' => 'Logo icon hidden in mobile header'],
+                'body' => ['id' => 'Ikon gamepad disembunyikan di header halaman pemain pada layar ponsel; teks edufunhub.com tetap ditampilkan.', 'en' => 'The gamepad icon is hidden from player page headers on phone screens; the edufunhub.com wordmark remains visible.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.48.4',
+        'date' => '2026-10-17',
+        'time' => '02:20',
+        'changes' => [
+            [
+                'key' => 'dashboard-hero-shortcuts-removed',
+                'type' => 'improvement',
+                'title' => ['id' => 'Dashboard lebih ringkas di ponsel', 'en' => 'Cleaner mobile dashboard'],
+                'body' => ['id' => 'Tombol statistik dan pintasan Portal game serta Karakter & toko dihapus dari kartu utama dashboard agar sapaan dan progres pemain lebih ringkas.', 'en' => 'The statistics button and Portal and Character & Shop shortcuts are removed from the dashboard hero card, giving the player greeting and progress more room.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.48.3',
+        'date' => '2026-10-17',
+        'time' => '02:00',
+        'changes' => [
+            [
+                'key' => 'dashboard-language-switch-profile',
+                'type' => 'improvement',
+                'title' => ['id' => 'Pilihan bahasa dipindahkan ke profil', 'en' => 'Language switch moved to profile'],
+                'body' => ['id' => 'Pemilih bahasa kini tersedia di halaman Profil, bukan di beranda dashboard.', 'en' => 'The language switch is now available on the Profile page instead of the dashboard home.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.48.2',
         'date' => '2026-10-17',
         'time' => '01:40',

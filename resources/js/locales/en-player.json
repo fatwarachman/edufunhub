@@ -103,6 +103,7 @@
     },
     "player": {
         "pingPong": "Ping Pong",
+        "eduKart": "EduKart Quiz Racing",
         "navigation": "User navigation",
         "dashboard": "Dashboard",
         "character": "Character",
@@ -445,6 +446,7 @@
         },
         "games": {
             "pingPong": "Return the ball by answering quiz questions from every subject. Play solo against a bot or invite a friend by PIN.",
+            "eduKart": "3D kart racing: answer by driving through answer boxes, collect Stars and use weapons to overtake rivals.",
             "title": "Educational games",
             "flagQuest": "Explore the map, beat quizzes, snakes & ladders and math sprints at each station, then raise the flag.",
             "snakes": "100-square snakes and ladders with quizzes: play solo, 2–4 players on one device, or online with friends via PIN and link.",
@@ -1296,7 +1298,10 @@
             "invalid_order_id": "That order is gone.",
             "no_pie": "You don't have a pie yet.",
             "invalid_rat": "That rat is already gone.",
-            "no_classroom": "This room is only for active classroom members."
+            "no_classroom": "This room is only for active classroom members.",
+            "invalid_track": "Unknown circuit.",
+            "invalid_vehicle": "Unknown vehicle.",
+            "invalid_laps": "Invalid number of laps."
         },
         "copyPinLabel": "Copy PIN",
         "copyLinkLabel": "Copy link",
@@ -1326,6 +1331,18 @@
             "preparing": "Preparing the classroom room…",
             "returning": "Returning to the classroom…",
             "retry": "Try again"
+        },
+        "solo": {
+            "start": "Play solo",
+            "badge": "Solo",
+            "title": "Solo game",
+            "hint": "A private room with no host screen and no PIN. Set up the game, then press Start.",
+            "preparing": "Preparing your private game, {{name}}…",
+            "closed": "Your previous game was closed.",
+            "create": "Play solo again",
+            "soloTitle": "Play solo",
+            "soloBody": "No projector and no PIN. Play straight from this device.",
+            "openSolo": "Play solo"
         }
     },
     "crossword": {
@@ -3994,5 +4011,145 @@
         "telegram": "Telegram",
         "copyLink": "Copy link",
         "copied": "Link copied!"
+    },
+    "eduKart": {
+        "title": "EduKart Quiz Racing",
+        "eyebrow": "3D kart racing",
+        "subtitle": "3D kart racing: crash into the right answer box and grab weapons!",
+        "unavailable": "The racing server is not ready yet. Try again soon.",
+        "intro": "Hi {{name}}, ready to race? Create a race room or join with a PIN.",
+        "rules": "A 3D race like CTR. Mid-track a true/false or multiple choice question appears: steer your kart and crash into the answer box you choose. Right answers give Stars, a turbo and a weapon (Rocket, TNT, NOS, Shield).",
+        "soloHint": "Race alone against bots, or share the PIN with friends (up to 8 racers).",
+        "mute": "Mute",
+        "unmute": "Unmute",
+        "loading": "Loading the 3D circuit…",
+        "noWebgl": "This device does not support 3D graphics (WebGL). Try another browser.",
+        "arenaLabel": "3D race arena",
+        "laps": "Laps",
+        "lapCount": "{{count}} laps",
+        "bots": "Fill empty seats with bots",
+        "botName": "Bot {{number}}",
+        "true": "TRUE",
+        "false": "FALSE",
+        "trueFalse": "True or false?",
+        "multipleChoice": "Multiple choice",
+        "toGate": "Answer boxes in {{meters}} m",
+        "hitToAnswer": "Steer into your answer box and crash through it!",
+        "correct": "Correct! Turbo!",
+        "wrong": "Wrong!",
+        "gotItem": "Weapon: {{item}}",
+        "rightAnswer": "Right answer: {{answer}}",
+        "go": "GO!",
+        "tntShake": "TNT on your head! Tap Drift again and again to shake it off!",
+        "finishedRank": "Finished! Position {{rank}}",
+        "won": "1st place! Great job!",
+        "finished": "Race over: position {{rank}}",
+        "stopped": "The host stopped the race",
+        "points": "+{{points}} points",
+        "playAgain": "Race again",
+        "dnf": "Not finished",
+        "correctCount": "{{count}} correct",
+        "hud": {
+            "lap": "Lap",
+            "position": "Pos",
+            "time": "Time",
+            "stars": "Stars",
+            "noItem": "No weapon yet"
+        },
+        "items": {
+            "rocket": {
+                "name": "Rocket"
+            },
+            "tnt": {
+                "name": "TNT"
+            },
+            "nos": {
+                "name": "NOS"
+            },
+            "shield": {
+                "name": "Shield"
+            }
+        },
+        "controls": {
+            "steer": "Steer (joystick)",
+            "gas": "Gas",
+            "brake": "Brake / reverse",
+            "drift": "Hop, drift and turbo",
+            "item": "Fire weapon",
+            "keyboard": "Arrows/WASD: steer & gas · Space/Shift: drift, press again when the meter is red = turbo · E/F: weapon"
+        },
+        "track": {
+            "label": "Circuit",
+            "forest": {
+                "name": "Jungle Forest",
+                "note": "Hills, jumps, trees"
+            },
+            "beach": {
+                "name": "Surf Beach",
+                "note": "Sand, pier, palm trees"
+            },
+            "mandalika": {
+                "name": "Mandalika Circuit",
+                "note": "Real 17-turn layout, Lombok"
+            }
+        },
+        "vehicle": {
+            "label": "Pick your vehicle",
+            "speed": "Speed",
+            "accel": "Accel",
+            "turn": "Turning",
+            "classic": "Classic Kart",
+            "formula": "Formula",
+            "buggy": "Desert Buggy",
+            "hover": "Hover Kart",
+            "monster": "Monster Truck",
+            "bajaj": "Turbo Bajaj",
+            "drifter": "Drifter",
+            "rocket": "Rocket Kart",
+            "class": {
+                "balanced": "Balanced",
+                "speed": "Speed",
+                "accel": "Acceleration",
+                "turn": "Turning"
+            }
+        },
+        "howTo": {
+            "title": "How to play",
+            "step": "Step {{step}} of {{total}}",
+            "previous": "Previous",
+            "next": "Next",
+            "pause": "Pause",
+            "replay": "Replay",
+            "video": "Download tutorial video",
+            "pdf": "Download PDF guide",
+            "demoPoints": "+ account points",
+            "scenes": {
+                "room": {
+                    "title": "Create a room & pick a kart",
+                    "body": "Create a race room, share the PIN, pick your vehicle and circuit: Forest, Beach or Mandalika. You can also race alone against bots."
+                },
+                "drive": {
+                    "title": "Race & collect Stars",
+                    "body": "Press the green button or arrow up to drive, steer with the joystick. Grab Stars: each Star adds speed, 10 Stars make your weapons stronger."
+                },
+                "drift": {
+                    "title": "Drift and turbo",
+                    "body": "Hold Drift while turning. When the turbo meter turns red and the smoke goes black, press Drift again for a turbo. Chain up to 3 turbos!"
+                },
+                "question": {
+                    "title": "Crash into your answer",
+                    "body": "A question appears before each gate. True/false has 2 boxes, multiple choice 4. Steer into your answer box and crash through it. Right = turbo + weapon, wrong = your kart slows down."
+                },
+                "weapons": {
+                    "title": "Use weapons",
+                    "body": "Rockets chase the kart ahead, TNT is dropped behind you (shake it off by tapping Drift), NOS gives a long turbo, the Shield blocks one attack."
+                },
+                "finish": {
+                    "title": "Finish & earn points",
+                    "body": "Complete every lap. Each right answer and a 1st place add points to your account."
+                }
+            },
+            "videoLabel": "EduKart Quiz Racing how-to-play video"
+        }
     }
 }

@@ -103,6 +103,7 @@
     },
     "player": {
         "pingPong": "Ping Pong",
+        "eduKart": "Balap Kuis EduKart",
         "navigation": "Menu pengguna",
         "dashboard": "Beranda",
         "character": "Karakter",
@@ -444,6 +445,7 @@
         },
         "games": {
             "pingPong": "Kembalikan bola dengan menjawab soal kuis dari semua mata pelajaran. Main solo melawan robot atau undang teman lewat PIN.",
+            "eduKart": "Balap kart 3D: jawab soal dengan menabrak kotak jawaban, kumpulkan Bintang, dan pakai senjata untuk menyalip lawan.",
             "title": "Permainan edukasi",
             "flagQuest": "Jelajahi peta, selesaikan kuis, ular tangga, dan sprint hitung di tiap pos, lalu kibarkan bendera.",
             "snakes": "Ular tangga 100 petak dengan kuis: main sendiri, 2–4 pemain di satu perangkat, atau online bersama teman lewat PIN dan link.",
@@ -1295,7 +1297,10 @@
             "invalid_order_id": "Pesanan itu sudah tidak ada.",
             "no_pie": "Kamu belum punya pie.",
             "invalid_rat": "Tikus itu sudah pergi.",
-            "no_classroom": "Ruang ini hanya untuk anggota kelas yang aktif."
+            "no_classroom": "Ruang ini hanya untuk anggota kelas yang aktif.",
+            "invalid_track": "Sirkuit tidak dikenal.",
+            "invalid_vehicle": "Kendaraan tidak dikenal.",
+            "invalid_laps": "Jumlah lap tidak valid."
         },
         "copyPinLabel": "Salin PIN",
         "copyLinkLabel": "Salin link",
@@ -1325,6 +1330,18 @@
             "preparing": "Menyiapkan ruang kelas…",
             "returning": "Kembali ke ruang kelas…",
             "retry": "Coba lagi"
+        },
+        "solo": {
+            "start": "Main sendiri",
+            "badge": "Main sendiri",
+            "title": "Main sendiri",
+            "hint": "Ruang pribadi tanpa layar host dan tanpa PIN. Atur permainan lalu tekan Mulai.",
+            "preparing": "Menyiapkan permainan pribadimu, {{name}}…",
+            "closed": "Permainan sebelumnya sudah ditutup.",
+            "create": "Main lagi sendiri",
+            "soloTitle": "Main sendiri",
+            "soloBody": "Tanpa proyektor dan tanpa PIN. Kamu langsung main dari perangkat ini.",
+            "openSolo": "Main sendiri"
         }
     },
     "crossword": {
@@ -3993,5 +4010,145 @@
         "telegram": "Telegram",
         "copyLink": "Salin tautan",
         "copied": "Tautan disalin!"
+    },
+    "eduKart": {
+        "title": "Balap Kuis EduKart",
+        "eyebrow": "Balap kart 3D",
+        "subtitle": "Balap kart 3D: tabrak kotak jawaban yang benar, dapatkan senjata!",
+        "unavailable": "Server balap belum siap. Coba lagi sebentar lagi.",
+        "intro": "Halo {{name}}, siap ngebut? Buat ruang balap atau masuk dengan PIN.",
+        "rules": "Balapan 3D seperti CTR. Di tengah lintasan muncul soal Benar/Salah atau pilihan ganda: setir kart dan tabrak kotak jawaban yang kamu pilih. Jawaban benar memberi Bintang, turbo, dan senjata (Roket, TNT, NOS, Perisai).",
+        "soloHint": "Bisa main sendiri melawan bot, atau bagikan PIN ke teman (maks. 8 pembalap).",
+        "mute": "Matikan suara",
+        "unmute": "Nyalakan suara",
+        "loading": "Menyiapkan sirkuit 3D…",
+        "noWebgl": "Perangkat ini tidak mendukung grafik 3D (WebGL). Coba browser lain.",
+        "arenaLabel": "Arena balap 3D",
+        "laps": "Jumlah lap",
+        "lapCount": "{{count}} lap",
+        "bots": "Isi kursi kosong dengan bot",
+        "botName": "Bot {{number}}",
+        "true": "BENAR",
+        "false": "SALAH",
+        "trueFalse": "Benar atau salah?",
+        "multipleChoice": "Pilihan ganda",
+        "toGate": "Kotak jawaban {{meters}} m lagi",
+        "hitToAnswer": "Setir kart ke kotak jawabanmu lalu tabrak!",
+        "correct": "Benar! Turbo!",
+        "wrong": "Salah!",
+        "gotItem": "Dapat senjata: {{item}}",
+        "rightAnswer": "Jawaban benar: {{answer}}",
+        "go": "GO!",
+        "tntShake": "TNT di kepalamu! Tekan Drift berkali-kali untuk melepasnya!",
+        "finishedRank": "Finis! Posisi {{rank}}",
+        "won": "Juara 1! Hebat!",
+        "finished": "Balapan selesai: posisi {{rank}}",
+        "stopped": "Balapan dihentikan host",
+        "points": "+{{points}} poin",
+        "playAgain": "Balapan lagi",
+        "dnf": "Belum finis",
+        "correctCount": "{{count}} benar",
+        "hud": {
+            "lap": "Lap",
+            "position": "Posisi",
+            "time": "Waktu",
+            "stars": "Bintang",
+            "noItem": "Belum ada senjata"
+        },
+        "items": {
+            "rocket": {
+                "name": "Roket"
+            },
+            "tnt": {
+                "name": "TNT"
+            },
+            "nos": {
+                "name": "NOS"
+            },
+            "shield": {
+                "name": "Perisai"
+            }
+        },
+        "controls": {
+            "steer": "Setir (joystick)",
+            "gas": "Gas",
+            "brake": "Rem / mundur",
+            "drift": "Lompat, drift, dan turbo",
+            "item": "Tembakkan senjata",
+            "keyboard": "Panah/WASD: setir & gas · Spasi/Shift: drift, tekan lagi saat meter merah = turbo · E/F: senjata"
+        },
+        "track": {
+            "label": "Sirkuit",
+            "forest": {
+                "name": "Hutan Rimba",
+                "note": "Tanjakan, lompatan, pepohonan"
+            },
+            "beach": {
+                "name": "Pantai Ombak",
+                "note": "Pasir, dermaga, nyiur"
+            },
+            "mandalika": {
+                "name": "Sirkuit Mandalika",
+                "note": "Bentuk asli 17 tikungan, Lombok"
+            }
+        },
+        "vehicle": {
+            "label": "Pilih kendaraan",
+            "speed": "Kecepatan",
+            "accel": "Akselerasi",
+            "turn": "Belok",
+            "classic": "Kart Klasik",
+            "formula": "Formula",
+            "buggy": "Buggy Gurun",
+            "hover": "Hover Kart",
+            "monster": "Monster Truk",
+            "bajaj": "Bajaj Turbo",
+            "drifter": "Drifter",
+            "rocket": "Kart Roket",
+            "class": {
+                "balanced": "Seimbang",
+                "speed": "Kecepatan",
+                "accel": "Akselerasi",
+                "turn": "Lincah belok"
+            }
+        },
+        "howTo": {
+            "title": "Cara bermain",
+            "step": "Langkah {{step}} dari {{total}}",
+            "previous": "Sebelumnya",
+            "next": "Berikutnya",
+            "pause": "Jeda",
+            "replay": "Putar ulang",
+            "video": "Unduh video tutorial",
+            "pdf": "Unduh panduan PDF",
+            "demoPoints": "+ poin akun",
+            "scenes": {
+                "room": {
+                    "title": "Buat ruang & pilih kart",
+                    "body": "Buat ruang balap, bagikan PIN, pilih kendaraan dan sirkuit: Hutan, Pantai, atau Mandalika. Main sendiri melawan bot juga bisa."
+                },
+                "drive": {
+                    "title": "Ngebut & kumpulkan Bintang",
+                    "body": "Gas dengan tombol hijau atau panah atas, setir dengan joystick. Ambil Bintang: tiap Bintang menambah kecepatan, 10 Bintang membuat senjata lebih kuat."
+                },
+                "drift": {
+                    "title": "Drift dan turbo",
+                    "body": "Tahan tombol Drift sambil belok. Saat meter turbo merah dan asap menghitam, tekan Drift lagi untuk turbo. Bisa sampai 3 turbo berturut-turut!"
+                },
+                "question": {
+                    "title": "Tabrak jawabanmu",
+                    "body": "Soal muncul sebelum gerbang. Benar/Salah punya 2 kotak, pilihan ganda 4 kotak. Setir kart ke kotak jawabanmu lalu tabrak. Benar = turbo + senjata, salah = kart melambat."
+                },
+                "weapons": {
+                    "title": "Pakai senjata",
+                    "body": "Roket mengejar kart di depan, TNT dijatuhkan di belakang (lepaskan dengan menekan Drift berkali-kali), NOS memberi turbo panjang, Perisai menahan satu serangan."
+                },
+                "finish": {
+                    "title": "Finis & dapat poin",
+                    "body": "Selesaikan semua lap. Setiap jawaban benar dan juara 1 menambah poin akunmu."
+                }
+            },
+            "videoLabel": "Video cara bermain Balap Kuis EduKart"
+        }
     }
 }
