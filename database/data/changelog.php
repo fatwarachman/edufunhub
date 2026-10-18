@@ -31,6 +31,19 @@
 
 return [
     [
+        'version' => '0.53.3',
+        'date' => '2026-10-18',
+        'time' => '12:50',
+        'changes' => [
+            [
+                'key' => 'edu-kart-see-through-question',
+                'type' => 'improvement',
+                'title' => ['id' => 'EduKart: panel soal tembus pandang', 'en' => 'EduKart: see-through question panel'],
+                'body' => ['id' => 'Latar panel soal saat balapan kini transparan 50% sehingga jalur kart di belakangnya tetap terlihat. Teks soal diberi bayangan putih tipis agar tetap mudah dibaca.', 'en' => 'The question panel background during a race is now 50% transparent, so the kart track behind it stays visible. Question text has a thin white glow to stay easy to read.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.53.2',
         'date' => '2026-10-18',
         'time' => '11:00',
