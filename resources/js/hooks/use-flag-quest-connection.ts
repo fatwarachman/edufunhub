@@ -1,3 +1,4 @@
+import { SOCKET_REPLACED } from '@/hooks/use-game-socket';
 import type {
     ChallengeState,
     CompleteState,
@@ -14,7 +15,8 @@ export type ConnectionStatus =
     | 'reconnecting'
     | 'offline'
     | 'unavailable'
-    | 'grade_required';
+    | 'grade_required'
+    | 'replaced';
 
 export interface Welcome {
     player: { name: string; grade: number; color: string; accessory: string };
@@ -98,6 +100,7 @@ export function useFlagQuestConnection(
         closed.current = false;
         let timer: ReturnType<typeof setTimeout> | undefined;
         let seen = () => {};
+        let replaced = false;
 
         const handle = (raw: MessageEvent<string>) => {
             seen();
@@ -108,6 +111,10 @@ export function useFlagQuestConnection(
                 return;
             }
             switch (msg.t) {
+                case 'replaced':
+                    replaced = true;
+                    setStatus('replaced');
+                    break;
                 case 'welcome': {
                     const w = msg as unknown as Welcome & {
                         challenge?: ChallengeState;
@@ -174,14 +181,11 @@ export function useFlagQuestConnection(
                     setRaising(null);
                     setComplete(msg as unknown as CompleteState);
                     break;
-                case 'error':
-                    setNotice({
-                        code: msg.code as string,
-                        retryMs: msg.retry_ms as number | undefined,
-                        at: Date.now(),
-                    });
-                    break;
             }
+            // The page reacts to welcome/challenge/gates/complete/error
+            // (sounds and toasts). Errors used to call an undefined
+            // setNotice, which threw on every server error message.
+            handlersRef.current.onEvent?.(msg);
         };
 
         const connect = async () => {
@@ -220,9 +224,16 @@ export function useFlagQuestConnection(
                 setStatus('online');
             };
             ws.onmessage = handle;
-            ws.onclose = () => {
+            ws.onclose = (event: CloseEvent) => {
                 if (socket.current === ws) {
                     socket.current = null;
+                }
+                if (event.code === SOCKET_REPLACED || replaced) {
+                    // Another tab or device took over: never reconnect on
+                    // our own, or the two kick each other out forever.
+                    replaced = true;
+                    setStatus('replaced');
+                    return;
                 }
                 if (!closed.current) {
                     schedule();
@@ -247,6 +258,9 @@ export function useFlagQuestConnection(
             current: () => socket.current,
             ping: () => send({ t: 'ping' }),
             reconnect: () => {
+                if (replaced) {
+                    return;
+                }
                 const ws = socket.current;
                 if (ws) {
                     ws.onclose = null;

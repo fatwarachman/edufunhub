@@ -122,7 +122,7 @@ func (s *Server) serveDuel(w http.ResponseWriter, r *http.Request) {
 		defer c()
 		_ = wsjson.Write(wctx, conn, msg)
 	}
-	sub := &duelSub{claims: claims, send: send, cancel: cancel}
+	sub := &duelSub{claims: claims, send: send, cancel: replacer(conn, cancel)}
 
 	s.mu.Lock()
 	if prev, ok := s.duelSubs[claims.Subject]; ok {

@@ -348,9 +348,12 @@ func (g *Generator) bankItems(kind string) []Item {
 			return g.byLevel(out)
 		}
 	}
-	// A classroom locked to subjects keeps them even without questions for
-	// the player's grade: the nearest grades of those subjects come first.
-	if g.locked {
+	// A chosen subject (by the player or locked by a classroom) keeps its
+	// questions even without any for the player's grade: the nearest grades
+	// of those subjects come first. Only a subject without questions at all
+	// falls back to the mix (players saw other subjects although they picked
+	// one, e.g. a vocational subject chosen by a primary school player).
+	if g.locked || g.Subject != "" {
 		for _, pool := range [][]Item{
 			Current().filter(kind, anyGrade, g.Game),
 			Current().filter(kind, anyGrade, ""),
@@ -558,9 +561,21 @@ func (g *Generator) Choice() Question {
 	return q
 }
 
-// TrueFalse returns a statement question.
+// TrueFalse returns a statement question. A chosen subject without true/false
+// questions turns one of its own multiple choice questions into a statement
+// instead of borrowing another subject's statements (players saw questions of
+// other subjects in true/false gates although they picked one subject).
 func (g *Generator) TrueFalse() Question {
-	if it, ok := g.pick(g.source(TypeTrueFalse)); ok {
+	before := g.fellBack
+	items, pooled := g.source(TypeTrueFalse)
+	if g.fellBack && !before {
+		g.fellBack = before
+		if q, ok := g.choiceAsTrueFalse(); ok {
+			return q
+		}
+		g.fellBack = true
+	}
+	if it, ok := g.pick(items, pooled); ok {
 		return Question{Key: it.Key, Subject: it.Subject, Prompt: it.Prompt, Answer: it.Answer, FromBank: true, Points: it.Points, Level: points.Level(it.Level), Visual: it.Visual}
 	}
 	a, b, op, ans := g.arithmetic()
@@ -569,6 +584,52 @@ func (g *Generator) TrueFalse() Question {
 		shown, truth = ans+1+g.Rand.IntN(3), 0
 	}
 	return Question{Key: fmt.Sprintf("tfm-%d%s%d", a, op, b), Subject: "math", Prompt: same(fmt.Sprintf("%d %s %d = %d", a, op, b, shown)), Answer: truth, Level: g.level()}
+}
+
+// choiceAsTrueFalse turns a multiple choice question of the chosen subject
+// into a statement: the prompt with one option, true when it is the right
+// answer (half the time). ok is false when the subject has no usable choice
+// question either, or when its choice pool is itself a fallback.
+func (g *Generator) choiceAsTrueFalse() (Question, bool) {
+	before := g.fellBack
+	items, pooled := g.source(TypeChoice)
+	if g.fellBack && !before {
+		g.fellBack = before
+		return Question{}, false
+	}
+	usable := make([]Item, 0, len(items))
+	for _, it := range items {
+		if it.Answer < 0 || it.Answer >= len(it.Options) || len(it.Options) < 2 {
+			continue
+		}
+		plain := true
+		for _, o := range it.Options {
+			plain = plain && o.Media == nil && o.ID != ""
+		}
+		if plain {
+			usable = append(usable, it)
+		}
+	}
+	it, ok := g.pick(usable, pooled)
+	if !ok {
+		return Question{}, false
+	}
+	shown, truth := it.Answer, 1
+	if g.Rand.IntN(2) == 0 {
+		shown = (it.Answer + 1 + g.Rand.IntN(len(it.Options)-1)) % len(it.Options)
+		truth = 0
+	}
+	opt := it.Options[shown]
+	en := opt.EN
+	if en == "" {
+		en = opt.ID
+	}
+	promptEN := it.Prompt.EN
+	if promptEN == "" {
+		promptEN = it.Prompt.ID
+	}
+	prompt := Text{ID: it.Prompt.ID + "\nJawaban: " + opt.ID, EN: promptEN + "\nAnswer: " + en}
+	return Question{Key: it.Key, Subject: it.Subject, Prompt: prompt, Answer: truth, FromBank: true, Points: it.Points, Level: points.Level(it.Level), Visual: it.Visual}, true
 }
 
 // Arithmetic returns an open numeric question for the math sprint.

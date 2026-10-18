@@ -32,7 +32,7 @@ func (s *Server) servePortSorter(w http.ResponseWriter, r *http.Request) {
 	if prev, ok := s.portConns[claims.Subject]; ok {
 		prev.cancel()
 	}
-	current := &connection{cancel: cancel}
+	current := &connection{cancel: replacer(conn, cancel)}
 	s.portConns[claims.Subject] = current
 	sess, ok := s.ports[claims.Subject]
 	if !ok || sess.Claims.Name != claims.Name {

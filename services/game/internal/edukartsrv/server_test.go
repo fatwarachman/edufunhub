@@ -291,3 +291,35 @@ func TestLatestConnectionWins(t *testing.T) {
 		}
 	}
 }
+
+// A second tab/device of the same account takes over; the older socket must be
+// closed with StatusReplaced so its client stops instead of reconnecting and
+// kicking the new one out in turn (the endless "reconnecting" loop in prod).
+func TestSecondConnectionClosesTheFirstAsReplaced(t *testing.T) {
+	ts := httptest.NewServer(New(Config{Secret: secret}).Handler())
+	defer ts.Close()
+	first := dial(t, ts.URL, 77)
+	first.until("edukart_state", nil)
+	second := dial(t, ts.URL, 77)
+	second.until("edukart_state", nil)
+	told := false
+	for {
+		var msg map[string]any
+		err := wsjson.Read(first.ctx, first.conn, &msg)
+		if err == nil {
+			told = told || msg["t"] == "replaced"
+			continue
+		}
+		if !told {
+			t.Fatal(`first socket must get {"t":"replaced"} before the close`)
+		}
+		if code := websocket.CloseStatus(err); code != StatusReplaced {
+			t.Fatalf("first socket closed with %v (%v), want %d", code, err, StatusReplaced)
+		}
+		break
+	}
+	second.send(map[string]any{"t": "create"})
+	if st := second.until("edukart_state", func(m map[string]any) bool { return m["pin"] != "" }); st["pin"] == "" {
+		t.Fatal("second socket must keep working")
+	}
+}

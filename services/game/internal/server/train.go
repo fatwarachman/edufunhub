@@ -32,7 +32,7 @@ func (s *Server) serveTrain(w http.ResponseWriter, r *http.Request) {
 	if prev, ok := s.trainConns[claims.Subject]; ok {
 		prev.cancel()
 	}
-	current := &connection{cancel: cancel}
+	current := &connection{cancel: replacer(conn, cancel)}
 	s.trainConns[claims.Subject] = current
 	sess, ok := s.trains[claims.Subject]
 	if !ok || sess.Claims.Grade != claims.Grade || sess.Claims.Name != claims.Name {

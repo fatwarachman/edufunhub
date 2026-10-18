@@ -312,21 +312,85 @@ export function ConnectionBadge({
     }
     const online = status === 'online';
     return (
-        <span
-            className={cn(
-                'inline-flex min-h-9 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3 text-xs font-black text-[#1f2a44]',
-                online ? 'bg-[#c9f5e5]' : 'bg-[#ffe1e1]',
-            )}
-            data-testid="room-connection"
-            data-status={status}
+        <>
+            <span
+                className={cn(
+                    'inline-flex min-h-9 items-center gap-1.5 rounded-xl border-2 border-[#1f2a44] px-3 text-xs font-black text-[#1f2a44]',
+                    online ? 'bg-[#c9f5e5]' : 'bg-[#ffe1e1]',
+                )}
+                data-testid="room-connection"
+                data-status={status}
+            >
+                {online ? (
+                    <Wifi className="size-4" />
+                ) : status === 'replaced' ? (
+                    <MonitorSmartphone className="size-4" />
+                ) : (
+                    <WifiOff className="size-4" />
+                )}
+                {t(`room.connection.${status}`)}
+            </span>
+            <ReplacedOverlay status={status} />
+        </>
+    );
+}
+
+/**
+ * Shown when the same account opened this game in another tab or device:
+ * the referee keeps one connection per account, so this tab waits instead
+ * of reconnecting (which kicked the other one out in a loop).
+ */
+/**
+ * Full-screen ReplacedNotice for game pages: "Play here" reloads the page,
+ * which connects again and takes the game back from the other tab.
+ */
+export function ReplacedOverlay({ status }: { status: string | null }) {
+    if (status !== 'replaced') {
+        return null;
+    }
+    return (
+        <div className="fixed inset-0 z-[90] grid place-items-center bg-[#1f2a44]/75 p-4 backdrop-blur-sm">
+            <ReplacedNotice
+                status={status}
+                onTakeOver={() => window.location.reload()}
+            />
+        </div>
+    );
+}
+
+export function ReplacedNotice({
+    status,
+    onTakeOver,
+}: {
+    status: string | null;
+    onTakeOver: () => void;
+}) {
+    const { t } = useTranslations();
+    if (status !== 'replaced') {
+        return null;
+    }
+    return (
+        <div
+            className="mx-auto flex w-full max-w-xl flex-col items-center gap-3 rounded-3xl border-3 border-[#1f2a44] bg-[#FFFDE6] p-5 text-center text-[#1f2a44] shadow-[5px_5px_0px_#1f2a44]"
+            role="alert"
+            data-testid="room-replaced"
         >
-            {online ? (
-                <Wifi className="size-4" />
-            ) : (
-                <WifiOff className="size-4" />
-            )}
-            {t(`room.connection.${status}`)}
-        </span>
+            <MonitorSmartphone className="size-7" aria-hidden="true" />
+            <p className="font-display text-lg font-black">
+                {t('room.replaced.title')}
+            </p>
+            <p className="text-sm font-bold text-slate-600">
+                {t('room.replaced.body')}
+            </p>
+            <button
+                type="button"
+                className="min-h-11 rounded-xl border-2 border-[#1f2a44] bg-[#c9f5e5] px-5 font-black shadow-[3px_3px_0px_#1f2a44]"
+                onClick={onTakeOver}
+                data-testid="room-replaced-takeover"
+            >
+                {t('room.replaced.takeOver')}
+            </button>
+        </div>
     );
 }
 

@@ -180,6 +180,7 @@
     font-size: clamp(14px, 2.4vw, 19px);
     line-height: 1.25;
     overflow-wrap: anywhere;
+    white-space: pre-line;
 }
 .ek-options {
     display: grid;

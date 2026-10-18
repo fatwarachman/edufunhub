@@ -2,7 +2,19 @@ import { watchSocket } from '@/lib/socket-watchdog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type GameSocketStatus =
-    'connecting' | 'online' | 'reconnecting' | 'offline' | 'grade_required';
+    | 'connecting'
+    | 'online'
+    | 'reconnecting'
+    | 'offline'
+    | 'grade_required'
+    | 'replaced';
+
+/**
+ * Close code a game referee uses when a newer tab or device of the same
+ * account took the connection over (Go `StatusReplaced`). The old tab must
+ * not reconnect on it, or the two kick each other out forever.
+ */
+export const SOCKET_REPLACED = 4001;
 
 function csrfToken(): string {
     return (
@@ -75,6 +87,7 @@ export function useGameSocket<State>(
         }
         let closed = false;
         let connecting = false;
+        let replaced = false;
         let timer: ReturnType<typeof setTimeout> | undefined;
         const seen = { current: () => {} };
 
@@ -145,15 +158,28 @@ export function useGameSocket<State>(
                 }
                 if (msg.t === stateType) {
                     handlersRef.current.onState(msg as unknown as State);
+                } else if (msg.t === 'replaced') {
+                    // Another tab or device of this account took over. The
+                    // close code may arrive as 1006, so this message is the
+                    // reliable signal: stay put instead of reconnecting.
+                    replaced = true;
+                    setStatus('replaced');
                 } else if (msg.t === 'error') {
                     handlersRef.current.onError(msg.code as string);
                 } else if (msg.t !== 'pong') {
                     handlersRef.current.onMessage?.(msg);
                 }
             };
-            ws.onclose = () => {
+            ws.onclose = (event: CloseEvent) => {
                 if (socket.current === ws) {
                     socket.current = null;
+                }
+                if (event.code === SOCKET_REPLACED || replaced) {
+                    // Another tab or device of this account took over: stay
+                    // put instead of reconnecting and kicking it out again.
+                    replaced = true;
+                    setStatus('replaced');
+                    return;
                 }
                 if (!closed) {
                     schedule();
@@ -163,6 +189,11 @@ export function useGameSocket<State>(
 
         /** Drops the current socket without waiting for its close event and connects again. */
         const reconnect = () => {
+            // A replaced tab only comes back when the player reloads it
+            // ("Play here"), never from the watchdog's visibility checks.
+            if (replaced) {
+                return;
+            }
             const ws = socket.current;
             if (ws) {
                 ws.onclose = null;

@@ -85,9 +85,14 @@ func (s *Server) serveMonsterCafe(w http.ResponseWriter, r *http.Request) {
 	key := floorKey{id: claims.Subject, host: host}
 	s.mu.Lock()
 	if prev, ok := s.cafeConns[key]; ok {
-		prev.Close()
+		if closeOld, ok := s.replacedConns[prev]; ok {
+			closeOld()
+		} else {
+			prev.Close()
+		}
 	}
 	s.cafeConns[key] = client
+	s.replacedConns[client] = replacer(conn, func() { client.Close(); cancel() })
 	s.mu.Unlock()
 
 	// Writer: drains the client queue; a slow or closed client stops it.
@@ -208,5 +213,8 @@ func (s *Server) serveMonsterCafe(w http.ResponseWriter, r *http.Request) {
 	client.Close()
 	cancel()
 	<-writerDone
+	s.mu.Lock()
+	delete(s.replacedConns, client)
+	s.mu.Unlock()
 	conn.Close(websocket.StatusNormalClosure, "")
 }

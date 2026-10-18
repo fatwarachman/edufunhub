@@ -18,6 +18,7 @@ import (
 	"runtime"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/coder/websocket"
@@ -50,12 +51,18 @@ type Config struct {
 
 // sub is one connected player.
 type sub struct {
-	claims auth.Claims
-	out    chan edukart.Message
-	cancel context.CancelFunc
-	mu     sync.Mutex
-	track  string // track id last sent to this connection
+	claims   auth.Claims
+	out      chan edukart.Message
+	cancel   context.CancelFunc
+	mu       sync.Mutex
+	track    string // track id last sent to this connection
+	conn     *websocket.Conn
+	replaced atomic.Bool // a newer connection of the same account took over
 }
+
+// StatusReplaced closes a connection that a newer tab or device of the same
+// account took over; clients must not reconnect on it.
+const StatusReplaced websocket.StatusCode = 4001
 
 // send queues msg; a client that cannot keep up is disconnected.
 func (c *sub) send(msg edukart.Message) {
@@ -231,7 +238,7 @@ func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 
-	c := &sub{claims: claims, out: make(chan edukart.Message, outbox), cancel: cancel}
+	c := &sub{claims: claims, out: make(chan edukart.Message, outbox), cancel: cancel, conn: conn}
 	go func() {
 		defer cancel()
 		for {
@@ -251,7 +258,20 @@ func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
 
 	s.mu.Lock()
 	if prev, ok := s.subs[claims.Subject]; ok {
-		prev.cancel()
+		// Tell the older tab/device it was replaced, so it stops instead of
+		// reconnecting and kicking this one out in turn (a reconnect loop).
+		// Closing first sends the code; cancelling first would drop the TCP
+		// connection without it.
+		prev.replaced.Store(true)
+		go func() {
+			ctx, done := context.WithTimeout(context.Background(), 2*time.Second)
+			defer done()
+			// Browsers may report this close as 1006, so the message is
+			// what clients rely on.
+			_ = wsjson.Write(ctx, prev.conn, map[string]string{"t": "replaced"})
+			prev.conn.Close(StatusReplaced, "replaced")
+			prev.cancel()
+		}()
 	}
 	s.subs[claims.Subject] = c
 	s.mu.Unlock()
@@ -325,6 +345,9 @@ func (s *Server) serveWS(w http.ResponseWriter, r *http.Request) {
 	if current {
 		s.hub.Offline(claims.Subject)
 		s.push(s.hub.Peers(claims.Subject), s.cfg.Now())
+	}
+	if c.replaced.Load() {
+		return // the takeover goroutine is closing it with StatusReplaced
 	}
 	conn.Close(websocket.StatusNormalClosure, "")
 }

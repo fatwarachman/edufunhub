@@ -31,6 +31,25 @@
 
 return [
     [
+        'version' => '0.53.2',
+        'date' => '2026-10-18',
+        'time' => '11:00',
+        'changes' => [
+            [
+                'key' => 'games-no-reconnect-loop',
+                'type' => 'fix',
+                'title' => ['id' => 'Game tidak lagi terus "menyambung ulang"', 'en' => 'Games no longer keep "reconnecting"'],
+                'body' => ['id' => 'Saat akun yang sama membuka game di dua tab atau perangkat (misalnya HP dan laptop), keduanya dulu saling memutus koneksi tanpa henti sehingga status selalu berganti "Menyambung ulang" dan "Terhubung". Kini tab yang lama berhenti dan menampilkan pesan "Game ini dibuka di perangkat atau tab lain" dengan tombol "Main di sini". Berlaku untuk semua game multiplayer.', 'en' => 'When one account opened a game in two tabs or devices (for example a phone and a laptop), they kept kicking each other off, so the status flipped between "Reconnecting" and "Connected" forever. Now the older tab stops and shows "This game is open in another device or tab" with a "Play here" button. Applies to every multiplayer game.'],
+            ],
+            [
+                'key' => 'true-false-keeps-subject',
+                'type' => 'fix',
+                'title' => ['id' => 'Soal Benar/Salah sesuai pelajaran yang dipilih', 'en' => 'True/false questions follow the chosen subject'],
+                'body' => ['id' => 'Pelajaran yang belum punya soal Benar/Salah dulu meminjam soal Benar/Salah dari pelajaran lain, sehingga soal terlihat tercampur padahal pemain sudah memilih satu pelajaran. Kini soal Benar/Salah dibuat dari soal pilihan ganda pelajaran itu sendiri ("…? Jawaban: X"), di EduKart maupun Flag Quest.', 'en' => 'Subjects without true/false questions used to borrow true/false questions from other subjects, so questions looked mixed although the player had picked one subject. True/false questions now come from that subject\'s own multiple choice questions ("…? Answer: X"), in EduKart and Flag Quest.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.53.1',
         'date' => '2026-10-18',
         'time' => '07:40',

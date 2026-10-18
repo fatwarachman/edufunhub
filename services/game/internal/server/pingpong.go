@@ -86,7 +86,7 @@ func (s *Server) servePingPong(w http.ResponseWriter, r *http.Request) {
 		defer c()
 		_ = wsjson.Write(wctx, conn, msg)
 	}
-	sub := &pingpongSub{claims: claims, send: send, cancel: cancel}
+	sub := &pingpongSub{claims: claims, send: send, cancel: replacer(conn, cancel)}
 
 	s.mu.Lock()
 	if prev, ok := s.pingpongSubs[claims.Subject]; ok {

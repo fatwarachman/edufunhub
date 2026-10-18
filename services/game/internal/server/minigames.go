@@ -92,7 +92,7 @@ func (s *Server) serveMini(key string) http.HandlerFunc {
 			defer c()
 			_ = wsjson.Write(wctx, conn, msg)
 		}
-		sub := &miniSub{claims: claims, send: send, cancel: cancel}
+		sub := &miniSub{claims: claims, send: send, cancel: replacer(conn, cancel)}
 		s.mu.Lock()
 		if prev, ok := s.miniSubs[key][claims.Subject]; ok {
 			prev.cancel()
