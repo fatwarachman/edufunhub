@@ -781,19 +781,14 @@ export default function UsersIndex({
                                           cellClassName: 'whitespace-nowrap',
                                           cell: (user: AdminUser) =>
                                               user.current_page_label ? (
-                                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                                  <span className="inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                                                       <Globe
                                                           className="size-3"
                                                           aria-hidden="true"
                                                       />
-                                                      <span className="max-w-64 min-w-0 truncate">
+                                                      <span className="min-w-0 truncate">
                                                           {
                                                               user.current_page_label
-                                                          }
-                                                      </span>
-                                                      <span className="max-w-64 truncate text-xs text-muted-foreground">
-                                                          {
-                                                              user.current_page_path
                                                           }
                                                       </span>
                                                   </span>
@@ -803,7 +798,9 @@ export default function UsersIndex({
                                                           className="size-3"
                                                           aria-hidden="true"
                                                       />
-                                                      {tr('Page not recorded yet')}
+                                                      {tr(
+                                                          'Page not recorded yet',
+                                                      )}
                                                   </span>
                                               ),
                                       },
