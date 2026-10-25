@@ -4,6 +4,7 @@ import {
     EmptyState,
     QUESTION_LEVEL_LABELS,
     fieldClass,
+    formatDateTime,
     formatNumber,
     formatPercent,
     gameLabel,
@@ -13,6 +14,8 @@ import {
 import {
     type Generation,
     GenerationRow,
+    generationReviewUrl,
+    gradeLabel,
     useGenerationPolling,
 } from '@/components/admin/generation-progress';
 import {
@@ -32,6 +35,7 @@ import {
     Check,
     ChevronLeft,
     ChevronRight,
+    CircleAlert,
     CircleCheck,
     Coins,
     Gamepad2,
@@ -84,7 +88,35 @@ interface QuestionRow {
     points: number | null;
     author: string | null;
     visual_kind?: string | null;
+    generation_id?: number | null;
+    created_at?: string | null;
 }
+
+interface BatchOption {
+    id: number;
+    created_at: string | null;
+    created_count: number;
+    subjects: string[];
+    requested_by: string | null;
+}
+
+interface BatchSummary extends BatchOption {
+    status: string;
+    model: string;
+    grades: number[];
+    level: number;
+    english_only: boolean;
+    blueprint: string | null;
+    inactive: number;
+}
+
+/** Relative "created within" filter values (server: QuestionController::CREATED_WITHIN). */
+const CREATED_WITHIN: { value: string; label: string }[] = [
+    { value: '1h', label: 'Last hour' },
+    { value: '24h', label: 'Last 24 hours' },
+    { value: '7d', label: 'Last 7 days' },
+    { value: '30d', label: 'Last 30 days' },
+];
 
 /** Admin labels per question visual kind. */
 const VISUAL_LABELS: Record<string, string> = {
@@ -115,6 +147,11 @@ interface Filters {
     source?: string;
     bonus?: string;
     author?: string;
+    generation?: string;
+    created?: string;
+    created_from?: string;
+    created_to?: string;
+    per_page?: string;
 }
 
 type CreatorFilter = 'ai' | 'teacher' | 'admin' | 'system';
@@ -146,6 +183,10 @@ interface QuestionsProps {
     questions: PaginatedData<QuestionRow> | null;
     sourceCounts: SourceCounts | null;
     teachers: { id: number; name: string }[];
+    batches: BatchOption[];
+    batch: BatchSummary | null;
+    perPageOptions: number[];
+    timezone: string;
     filters: Filters;
     liveGenerations?: Generation[];
     summary: {
@@ -521,9 +562,15 @@ function QuestionList({
     subjectStats,
     sourceCounts,
     teachers,
+    batches,
+    batch,
+    perPageOptions,
 }: QuestionsProps) {
     const subjectLabel = useSubjectLabel();
     const [search, setSearch] = useState(filters.search ?? '');
+    const [customRange, setCustomRange] = useState(
+        Boolean(filters.created_from || filters.created_to),
+    );
     const [deleteTarget, setDeleteTarget] = useState<QuestionRow | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [selected, setSelected] = useState<Set<number>>(() => new Set());
@@ -613,21 +660,32 @@ function QuestionList({
         filters.status ||
         filters.source ||
         filters.bonus ||
-        filters.sort,
+        filters.sort ||
+        filters.generation ||
+        filters.created ||
+        filters.created_from ||
+        filters.created_to ||
+        filters.per_page ||
+        filters.level,
     );
-    const prev = questions.links.find((link) =>
-        link.label.includes('Previous'),
-    );
-    const next = questions.links.find((link) => link.label.includes('Next'));
+    const batchLabel = (option: BatchOption) =>
+        `#${option.id} · ${formatDateTime(option.created_at)} · ${tr(
+            '{0} questions',
+            [formatNumber(option.created_count)],
+        )} · ${option.subjects.map((key) => subjectLabel(key)).join(', ')}`;
+    const createdValue = customRange ? 'custom' : (filters.created ?? '');
     const title = subject
         ? subjectLabel(subject)
-        : filters.subject === 'all'
-          ? 'All subjects'
-          : filters.source && !filters.search
-            ? (LIST_TITLES[filters.source as CreatorFilter] ?? 'Search results')
-            : filters.bonus && !filters.search
-              ? 'Bonus questions'
-              : 'Search results';
+        : filters.generation && !filters.search
+          ? 'AI batch #{0}'
+          : filters.subject === 'all'
+            ? 'All subjects'
+            : filters.source && !filters.search
+              ? (LIST_TITLES[filters.source as CreatorFilter] ??
+                'Search results')
+              : filters.bonus && !filters.search
+                ? 'Bonus questions'
+                : 'Search results';
 
     return (
         <div className="flex flex-col gap-6">
@@ -659,7 +717,7 @@ function QuestionList({
                                 <Layers className="size-5" />
                             )}
                         </span>
-                        {tr(title)}
+                        {tr(title, [filters.generation ?? ''])}
                     </h2>
                     <p className="text-sm text-muted-foreground">
                         {formatNumber(questions.total)} {tr('questions')}
@@ -681,6 +739,14 @@ function QuestionList({
                     {tr('Add question')}
                 </Link>
             </div>
+
+            {filters.generation && (
+                <BatchBanner
+                    id={filters.generation}
+                    batch={batch}
+                    subjectLabel={subjectLabel}
+                />
+            )}
 
             <section
                 className={cn(PANEL_CLASS, 'gap-4')}
@@ -925,6 +991,107 @@ function QuestionList({
                         <option value="">{tr('Any points')}</option>
                         <option value="1">{tr('Bonus questions')}</option>
                     </select>
+                    {batches.length > 0 && (
+                        <select
+                            aria-label={tr('AI batch')}
+                            value={filters.generation ?? ''}
+                            onChange={(e) =>
+                                apply({
+                                    generation: e.target.value || undefined,
+                                })
+                            }
+                            className={cn(
+                                fieldClass,
+                                'max-w-full min-w-0 sm:max-w-80',
+                            )}
+                            data-testid="questions-batch-filter"
+                        >
+                            <option value="">{tr('All AI batches')}</option>
+                            {filters.generation &&
+                                !batches.some(
+                                    (option) =>
+                                        String(option.id) ===
+                                        filters.generation,
+                                ) && (
+                                    <option value={filters.generation}>
+                                        {batch
+                                            ? batchLabel(batch)
+                                            : `#${filters.generation}`}
+                                    </option>
+                                )}
+                            {batches.map((option) => (
+                                <option key={option.id} value={option.id}>
+                                    {batchLabel(option)}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                    <select
+                        aria-label={tr('Created')}
+                        value={createdValue}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (value === 'custom') {
+                                setCustomRange(true);
+                                return;
+                            }
+                            setCustomRange(false);
+                            apply({
+                                created: value || undefined,
+                                created_from: undefined,
+                                created_to: undefined,
+                            });
+                        }}
+                        className={fieldClass}
+                        data-testid="questions-created-filter"
+                    >
+                        <option value="">{tr('Created any time')}</option>
+                        {CREATED_WITHIN.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {tr(option.label)}
+                            </option>
+                        ))}
+                        <option value="custom">{tr('Pick dates…')}</option>
+                    </select>
+                    {customRange && (
+                        <div
+                            className="flex flex-wrap items-center gap-1.5"
+                            data-testid="questions-created-range"
+                        >
+                            <input
+                                type="date"
+                                aria-label={tr('Created from')}
+                                value={filters.created_from ?? ''}
+                                max={filters.created_to}
+                                onChange={(e) =>
+                                    apply({
+                                        created: undefined,
+                                        created_from:
+                                            e.target.value || undefined,
+                                    })
+                                }
+                                className={fieldClass}
+                                data-testid="questions-created-from"
+                            />
+                            <span className="text-xs text-muted-foreground">
+                                {tr('to')}
+                            </span>
+                            <input
+                                type="date"
+                                aria-label={tr('Created until')}
+                                value={filters.created_to ?? ''}
+                                min={filters.created_from}
+                                onChange={(e) =>
+                                    apply({
+                                        created: undefined,
+                                        created_to: e.target.value || undefined,
+                                    })
+                                }
+                                className={fieldClass}
+                                data-testid="questions-created-to"
+                            />
+                        </div>
+                    )}
                     <select
                         aria-label={tr('Sort')}
                         value={filters.sort ?? ''}
@@ -932,8 +1099,11 @@ function QuestionList({
                             apply({ sort: e.target.value || undefined })
                         }
                         className={fieldClass}
+                        data-testid="questions-sort"
                     >
                         <option value="">{tr('Sort by grade')}</option>
+                        <option value="newest">{tr('Newest first')}</option>
+                        <option value="oldest">{tr('Oldest first')}</option>
                         <option value="hardest">{tr('Hardest first')}</option>
                         <option value="most_answered">
                             {tr('Most answered')}
@@ -944,6 +1114,7 @@ function QuestionList({
                             type="button"
                             onClick={() => {
                                 setSearch('');
+                                setCustomRange(false);
                                 router.get(
                                     '/admin/questions',
                                     { subject: filters.subject ?? 'all' },
@@ -1230,6 +1401,33 @@ function QuestionList({
                                                     filters.search,
                                                 )}
                                             </span>
+                                            {question.created_at && (
+                                                <span
+                                                    className="text-muted-foreground"
+                                                    title={tr('Created')}
+                                                    data-testid="question-created-at"
+                                                >
+                                                    {tr('Created {0}', [
+                                                        formatDateTime(
+                                                            question.created_at,
+                                                        ),
+                                                    ])}
+                                                </span>
+                                            )}
+                                            {question.generation_id &&
+                                                !filters.generation && (
+                                                    <Link
+                                                        href={generationReviewUrl(
+                                                            question.generation_id,
+                                                        )}
+                                                        className="link"
+                                                        data-testid="question-batch-link"
+                                                    >
+                                                        {tr('Batch #{0}', [
+                                                            question.generation_id,
+                                                        ])}
+                                                    </Link>
+                                                )}
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 sm:shrink-0 sm:justify-start">
@@ -1303,25 +1501,13 @@ function QuestionList({
                 )}
             </div>
 
-            {questions.total > 0 && questions.last_page > 1 && (
-                <div className="flex items-center justify-between gap-4 text-sm text-muted-foreground">
-                    <span>
-                        {tr('Showing')} {questions.from}–{questions.to}{' '}
-                        {tr('of')} {questions.total}
-                    </span>
-                    <div className="flex flex-wrap items-center gap-1">
-                        <PageLink
-                            href={prev?.url ?? null}
-                            label={tr('Previous')}
-                            icon={ChevronLeft}
-                        />
-                        <PageLink
-                            href={next?.url ?? null}
-                            label={tr('Next')}
-                            icon={ChevronRight}
-                        />
-                    </div>
-                </div>
+            {questions.total > 0 && (
+                <QuestionPagination
+                    questions={questions}
+                    perPage={questions.per_page}
+                    perPageOptions={perPageOptions}
+                    onPerPage={(value) => apply({ per_page: String(value) })}
+                />
             )}
 
             {bulkConfirm && (
@@ -1660,34 +1846,210 @@ function IconButton({
     );
 }
 
-function PageLink({
+/** Page numbers with previous / next, the result range and a page size picker. */
+function QuestionPagination({
+    questions,
+    perPage,
+    perPageOptions,
+    onPerPage,
+}: {
+    questions: PaginatedData<QuestionRow>;
+    perPage: number;
+    perPageOptions: number[];
+    onPerPage: (value: number) => void;
+}) {
+    const links = questions.links;
+    const prev = links[0];
+    const next = links[links.length - 1];
+    const pages = links.slice(1, -1);
+    const button =
+        'inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-lg border px-2.5 text-sm font-medium tabular-nums transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
+
+    return (
+        <nav
+            className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+            aria-label={tr('Pagination')}
+            data-testid="questions-pagination"
+        >
+            <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                <span className="tabular-nums" data-testid="questions-range">
+                    {tr('Showing {0}–{1} of {2}', [
+                        formatNumber(questions.from ?? 0),
+                        formatNumber(questions.to ?? 0),
+                        formatNumber(questions.total),
+                    ])}
+                </span>
+                <label className="inline-flex items-center gap-1.5">
+                    {tr('Per page')}
+                    <select
+                        value={perPage}
+                        onChange={(e) => onPerPage(Number(e.target.value))}
+                        className={cn(fieldClass, 'h-8 px-2')}
+                        data-testid="questions-per-page"
+                    >
+                        {[...new Set([...perPageOptions, perPage])]
+                            .sort((a, b) => a - b)
+                            .map((value) => (
+                                <option key={value} value={value}>
+                                    {value}
+                                </option>
+                            ))}
+                    </select>
+                </label>
+            </div>
+            {questions.last_page > 1 && (
+                <div className="flex flex-wrap items-center gap-1">
+                    <PageButton
+                        href={prev?.url ?? null}
+                        className={button}
+                        label={tr('Previous')}
+                    >
+                        <ChevronLeft className="size-4" />
+                    </PageButton>
+                    {pages.map((link, index) =>
+                        link.url === null ? (
+                            <span
+                                key={`gap-${index}`}
+                                className="px-1 text-sm text-muted-foreground"
+                                aria-hidden="true"
+                            >
+                                …
+                            </span>
+                        ) : (
+                            <PageButton
+                                key={link.label}
+                                href={link.url}
+                                className={button}
+                                active={link.active}
+                                label={tr('Page {0}', [link.label])}
+                            >
+                                {link.label}
+                            </PageButton>
+                        ),
+                    )}
+                    <PageButton
+                        href={next?.url ?? null}
+                        className={button}
+                        label={tr('Next')}
+                    >
+                        <ChevronRight className="size-4" />
+                    </PageButton>
+                </div>
+            )}
+        </nav>
+    );
+}
+
+function PageButton({
     href,
+    className,
     label,
-    icon: Icon,
+    active = false,
+    children,
 }: {
     href: string | null;
+    className: string;
     label: string;
-    icon: React.ElementType;
+    active?: boolean;
+    children: ReactNode;
 }) {
-    const classes =
-        'inline-flex size-8 items-center justify-center rounded-lg border border-border';
+    if (href === null) {
+        return (
+            <span
+                className={cn(
+                    className,
+                    'border-border text-muted-foreground/40',
+                )}
+                aria-hidden="true"
+            >
+                {children}
+            </span>
+        );
+    }
 
-    return href ? (
+    return (
         <Link
             href={href}
             preserveScroll
-            className={cn(classes, 'text-foreground hover:bg-muted')}
-            aria-label={tr(label)}
+            preserveState
+            className={cn(
+                className,
+                active
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border text-foreground hover:bg-muted',
+            )}
+            aria-label={label}
+            aria-current={active ? 'page' : undefined}
+            data-testid={active ? 'questions-page-current' : undefined}
         >
-            <Icon className="size-4" />
+            {children}
         </Link>
-    ) : (
-        <span
-            className={cn(classes, 'text-muted-foreground/40')}
-            aria-hidden="true"
+    );
+}
+
+/** Summary of the AI batch whose questions are listed, with links back to the request. */
+function BatchBanner({
+    id,
+    batch,
+    subjectLabel,
+}: {
+    id: string;
+    batch: BatchSummary | null;
+    subjectLabel: (key: string) => string;
+}) {
+    if (!batch) {
+        return (
+            <div
+                className="flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200"
+                data-testid="questions-batch-missing"
+            >
+                <CircleAlert className="size-4 shrink-0" aria-hidden />
+                {tr('AI batch #{0} was not found.', [id])}
+            </div>
+        );
+    }
+
+    return (
+        <section
+            className="flex flex-col gap-2 rounded-2xl border border-violet-200 bg-violet-50/60 px-4 py-3 text-sm dark:border-violet-900/60 dark:bg-violet-950/30"
+            aria-label={tr('AI batch #{0}', [batch.id])}
+            data-testid="questions-batch-banner"
         >
-            <Icon className="size-4" />
-        </span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="flex items-center gap-2 font-semibold text-violet-800 dark:text-violet-200">
+                    <Sparkles className="size-4 shrink-0" aria-hidden />
+                    {tr('AI batch #{0}', [batch.id])}
+                </span>
+                <Link href="/admin/questions/generate" className="link text-xs">
+                    {tr('Open generate page')}
+                </Link>
+            </div>
+            <p className="text-xs break-words text-muted-foreground">
+                {formatDateTime(batch.created_at)} · {batch.requested_by ?? '—'}{' '}
+                · <span className="font-mono">{batch.model}</span> ·{' '}
+                {batch.subjects.map((key) => subjectLabel(key)).join(', ')} ·{' '}
+                {batch.grades.map(gradeLabel).join(', ')} ·{' '}
+                {tr(QUESTION_LEVEL_LABELS[batch.level] ?? 'Easy')}
+                {batch.english_only &&
+                    ` · ${tr('English questions fully in English')}`}
+                {batch.blueprint &&
+                    ` · ${tr('Blueprint: {0}', [batch.blueprint])}`}
+            </p>
+            <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                <Badge tone="primary">
+                    {tr('{0} created', [formatNumber(batch.created_count)])}
+                </Badge>
+                {batch.inactive > 0 ? (
+                    <Badge tone="amber">
+                        {tr('{0} waiting for review', [
+                            formatNumber(batch.inactive),
+                        ])}
+                    </Badge>
+                ) : (
+                    <Badge tone="success">{tr('All active')}</Badge>
+                )}
+            </div>
+        </section>
     );
 }
 
@@ -1700,10 +2062,18 @@ QuestionsIndex.layout = (page: ReactNode) => (
  * left the generate page sees the progress again, refreshed every few seconds.
  */
 function LiveGenerations({ generations }: { generations: Generation[] }) {
-    const [finished, setFinished] = useState(false);
+    const [finished, setFinished] = useState<number[] | null>(null);
+    const seenRef = useRef<number[]>([]);
+    useEffect(() => {
+        seenRef.current = [
+            ...new Set([...seenRef.current, ...generations.map((g) => g.id)]),
+        ];
+    }, [generations]);
     const settle = useCallback(() => {
-        setFinished(true);
-        router.reload({ only: ['subjectStats', 'summary', 'questions'] });
+        setFinished([...seenRef.current].sort((a, b) => b - a));
+        router.reload({
+            only: ['subjectStats', 'summary', 'questions', 'batches'],
+        });
     }, []);
     useGenerationPolling(generations, ['liveGenerations'], settle);
 
@@ -1718,9 +2088,29 @@ function LiveGenerations({ generations }: { generations: Generation[] }) {
                     <CircleCheck className="size-4 shrink-0" aria-hidden />
                     {tr('AI question generation finished.')}
                 </span>
-                <Link href="/admin/questions?source=ai" className="link">
-                    {tr('Review AI questions')}
-                </Link>
+                <span className="flex flex-wrap items-center gap-3">
+                    {finished.length > 0 ? (
+                        finished.map((id) => (
+                            <Link
+                                key={id}
+                                href={generationReviewUrl(id)}
+                                className="link"
+                                data-testid={`live-generations-review-${id}`}
+                            >
+                                {finished.length > 1
+                                    ? tr('Review batch #{0}', [id])
+                                    : tr('Review AI questions')}
+                            </Link>
+                        ))
+                    ) : (
+                        <Link
+                            href="/admin/questions?source=ai&sort=newest"
+                            className="link"
+                        >
+                            {tr('Review AI questions')}
+                        </Link>
+                    )}
+                </span>
             </div>
         ) : null;
     }

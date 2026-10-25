@@ -1,5 +1,10 @@
 import { AiBadge, FlashMessages } from '@/components/admin/admin-kit';
 import {
+    type Blueprint,
+    type BlueprintLimits,
+    BlueprintPicker,
+} from '@/components/admin/blueprint-picker';
+import {
     fieldClass,
     gameLabel,
     Panel,
@@ -28,6 +33,7 @@ import {
     Gauge,
     GraduationCap,
     History,
+    Languages,
     Loader2,
     Minus,
     Plus,
@@ -49,6 +55,9 @@ interface TopicOption {
 interface Props {
     ai: { configured: boolean; model: string | null };
     subjects: string[];
+    englishSubject: string;
+    blueprints: Blueprint[];
+    blueprintLimits: BlueprintLimits;
     topics: TopicOption[];
     grades: number[];
     games: string[];
@@ -62,6 +71,9 @@ interface Props {
 export default function GenerateQuestions({
     ai,
     subjects,
+    englishSubject,
+    blueprints,
+    blueprintLimits,
     topics,
     grades,
     games,
@@ -80,6 +92,8 @@ export default function GenerateQuestions({
         level: 1,
         games: [...games],
         activate: false,
+        english_only: false,
+        blueprint_id: null as number | null,
     });
     const { data, setData, errors, processing } = form;
     const pickedSubjects = data.scope === 'all' ? subjects : data.subjects;
@@ -93,6 +107,13 @@ export default function GenerateQuestions({
             0,
         ) + pickedTopicIds.length;
     const total = targets * pickedGrades.length * data.per_combination;
+    const englishPicked =
+        pickedSubjects.includes(englishSubject) ||
+        topics.some(
+            (topic) =>
+                topic.subject_key === englishSubject &&
+                pickedTopicIds.includes(topic.id),
+        );
     const running = useGenerationPolling(generations, [
         'generations',
         'aiTotal',
@@ -100,6 +121,10 @@ export default function GenerateQuestions({
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
+        form.transform((current) => ({
+            ...current,
+            english_only: englishPicked && current.english_only,
+        }));
         form.post('/admin/questions/generate', { preserveScroll: true });
     };
 
@@ -217,6 +242,27 @@ export default function GenerateQuestions({
                             </>
                         )}
 
+                        <BlueprintPicker
+                            blueprints={blueprints}
+                            limits={blueprintLimits}
+                            subjects={subjects}
+                            pickedSubjects={[
+                                ...new Set([
+                                    ...pickedSubjects,
+                                    ...topics
+                                        .filter((topic) =>
+                                            pickedTopicIds.includes(topic.id),
+                                        )
+                                        .map((topic) => topic.subject_key),
+                                ]),
+                            ]}
+                            value={data.blueprint_id}
+                            error={
+                                (errors as Record<string, string>).blueprint_id
+                            }
+                            onChange={(id) => setData('blueprint_id', id)}
+                        />
+
                         <LevelPicker
                             level={data.level}
                             perCombination={data.per_combination}
@@ -235,6 +281,42 @@ export default function GenerateQuestions({
                             error={errors.games}
                             onChange={(next) => setData('games', next)}
                         />
+
+                        {englishPicked && (
+                            <label
+                                className="flex items-start gap-2 rounded-xl border-2 border-sky-300 bg-sky-50 p-3 text-sm text-foreground dark:border-sky-800 dark:bg-sky-950/40"
+                                data-testid="gen-english-only"
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={data.english_only}
+                                    onChange={(event) =>
+                                        setData(
+                                            'english_only',
+                                            event.target.checked,
+                                        )
+                                    }
+                                    className="mt-0.5 size-4 rounded border-input"
+                                    data-testid="gen-english-only-input"
+                                />
+                                <span className="flex min-w-0 flex-col gap-0.5">
+                                    <span className="flex items-center gap-1.5 font-medium">
+                                        <Languages
+                                            className="size-4 shrink-0 text-sky-600 dark:text-sky-300"
+                                            aria-hidden="true"
+                                        />
+                                        {tr(
+                                            'English questions fully in English',
+                                        )}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                        {tr(
+                                            'For the English subject, the question, options and explanation are written in English (no Indonesian question sentence). Other subjects stay bilingual.',
+                                        )}
+                                    </span>
+                                </span>
+                            </label>
+                        )}
 
                         <label className="flex items-start gap-2 text-sm text-foreground">
                             <input
@@ -321,7 +403,7 @@ export default function GenerateQuestions({
 }
 
 const PANEL_CLASS =
-    'flex flex-col gap-3 rounded-2xl border-2 border-[#1f2a44] bg-card p-3 shadow-[2px_2px_0_#1f2a44] sm:p-4 dark:border-white/20 dark:shadow-none';
+    'flex min-w-0 flex-col gap-3 rounded-2xl border-2 border-[#1f2a44] bg-card p-3 shadow-[2px_2px_0_#1f2a44] sm:p-4 dark:border-white/20 dark:shadow-none';
 
 function PanelHeader({
     icon: Icon,
@@ -720,7 +802,7 @@ function GamePicker({
                             onChange={(event) => setQuery(event.target.value)}
                             placeholder={tr('Search games…')}
                             aria-label={tr('Search games')}
-                            className={cn(fieldClass, 'pr-8 pl-9')}
+                            className={cn(fieldClass, 'w-full pr-8 pl-9')}
                             data-testid="gen-games-search"
                         />
                         {query && (
@@ -877,7 +959,10 @@ function SubjectTopicTree({
         expandable.every((subject) => open.has(subject));
 
     return (
-        <fieldset className="flex flex-col gap-2" data-testid="gen-tree">
+        <fieldset
+            className="flex min-w-0 flex-col gap-2"
+            data-testid="gen-tree"
+        >
             <legend className="mb-2 flex w-full items-center justify-between gap-2 text-sm font-medium text-foreground">
                 <span>
                     {tr('Subjects & topics')}

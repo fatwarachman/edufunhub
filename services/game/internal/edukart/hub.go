@@ -34,7 +34,7 @@ const (
 	// DefaultVehicle is every seat's kart until the player picks one.
 	DefaultVehicle = "classic"
 	// MaxInputsPerSecond bounds accepted input messages per player.
-	MaxInputsPerSecond = 60
+	MaxInputsPerSecond = 120
 	// StateType is the room state message type.
 	StateType = "edukart_state"
 )

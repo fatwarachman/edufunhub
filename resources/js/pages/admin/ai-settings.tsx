@@ -14,6 +14,7 @@ import {
     CircleCheck,
     CircleDashed,
     KeyRound,
+    Layers,
     Loader2,
     PlugZap,
     RefreshCw,
@@ -40,6 +41,7 @@ interface Props {
     models: AiModel[];
     modelsFetchedAt: string | null;
     autoAssessment: AutoAssessment;
+    embeddingModel: string | null;
     errors?: Record<string, string>;
 }
 
@@ -56,8 +58,19 @@ export default function AiSettings({
     models,
     modelsFetchedAt,
     autoAssessment,
+    embeddingModel,
     errors: pageErrors,
 }: Props) {
+    const embeddingForm = useForm({ embedding_model: embeddingModel ?? '' });
+    const saveEmbedding = (event: FormEvent) => {
+        event.preventDefault();
+        embeddingForm.put('/admin/ai-settings/embedding-model', {
+            preserveScroll: true,
+        });
+    };
+    const embeddingSuggestions = models
+        .map((model) => model.id)
+        .filter((id) => /embed/i.test(id));
     const form = useForm({ base_url: connection.base_url, api_key: '' });
     const autoForm = useForm({
         enabled: autoAssessment.enabled,
@@ -258,6 +271,79 @@ export default function AiSettings({
                                     <Loader2 className="size-4 animate-spin" />
                                 )}
                                 {tr('Save and load models')}
+                            </button>
+                        </div>
+                    </form>
+                </Panel>
+
+                <Panel
+                    title={tr('Blueprint search (RAG)')}
+                    icon={Layers}
+                    description={tr(
+                        'Long question blueprints are split into sections; the AI gets only the sections that fit each subject and grade.',
+                    )}
+                >
+                    <form
+                        onSubmit={saveEmbedding}
+                        className="flex flex-col gap-3"
+                        data-testid="ai-embedding-form"
+                    >
+                        <label className="flex flex-col gap-1.5">
+                            <span className="text-sm font-medium text-foreground">
+                                {tr('Embedding model (optional)')}
+                            </span>
+                            <input
+                                list="ai-embedding-models"
+                                value={embeddingForm.data.embedding_model}
+                                onChange={(event) =>
+                                    embeddingForm.setData(
+                                        'embedding_model',
+                                        event.target.value,
+                                    )
+                                }
+                                placeholder="text-embedding-3-small"
+                                className={`${fieldClass} font-mono`}
+                                autoComplete="off"
+                                data-testid="ai-embedding-model"
+                            />
+                            <datalist id="ai-embedding-models">
+                                {[
+                                    ...new Set([
+                                        ...embeddingSuggestions,
+                                        'text-embedding-3-small',
+                                    ]),
+                                ].map((id) => (
+                                    <option key={id} value={id} />
+                                ))}
+                            </datalist>
+                            <span className="text-xs text-muted-foreground">
+                                {embeddingModel
+                                    ? tr(
+                                          'Semantic + keyword search with {0}. Empty it to use keyword search only.',
+                                          [embeddingModel],
+                                      )
+                                    : tr(
+                                          'Empty: keyword search only. With a model from /embeddings the search also understands meaning. The model is tested before saving.',
+                                      )}
+                            </span>
+                            <InputError
+                                message={embeddingForm.errors.embedding_model}
+                            />
+                        </label>
+                        <div className="flex justify-end border-t border-border pt-4">
+                            <button
+                                type="submit"
+                                disabled={
+                                    embeddingForm.processing ||
+                                    !connection.has_key
+                                }
+                                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                                data-testid="ai-embedding-save"
+                            >
+                                {embeddingForm.processing && (
+                                    <Loader2 className="size-4 animate-spin" />
+                                )}
+                                {tr('Test and save')}
                             </button>
                         </div>
                     </form>

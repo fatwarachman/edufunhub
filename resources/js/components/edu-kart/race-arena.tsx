@@ -7,11 +7,13 @@ import {
     Interpolator,
     Predictor,
     pressDrift,
+    shouldSendInput,
     toInput,
 } from '@/lib/edu-kart/netcode';
 import {
     FX_BACKFIRE,
     FX_TURBO,
+    type Input,
     MAX_FRUIT,
     TURBO_WINDOW,
     vehicleById,
@@ -87,8 +89,6 @@ const ITEM_ICONS: Record<ItemKind, typeof Rocket> = {
     nos: Flame,
     shield: Shield,
 };
-
-const SEND_INTERVAL = 33;
 
 function emptyHud(laps: number): Hud {
     return {
@@ -167,6 +167,8 @@ export function RaceArena({
     const seq = useRef(0);
     const lastSent = useRef<string>('');
     const lastSendAt = useRef(0);
+    /** Last input sent; prediction uses it so it matches the referee. */
+    const lastInput = useRef<Input | null>(null);
     const latest = useRef<RaceFrame | null>(null);
     const latestAt = useRef(0);
     const interp = useRef(new Interpolator());
@@ -414,28 +416,35 @@ export function RaceArena({
             const racing = Boolean(frame && frame.you >= 0);
             const countdown = !frame || frame.ms < 0;
 
-            // Send inputs first (on change immediately, otherwise ~30/s as
+            // Send inputs first (on change at most ~40/s, otherwise ~30/s as
             // keep-alive), so the steps predicted below carry the seq of the
             // message that delivers their input and `ack` matches exactly.
             if (online && racing) {
                 const input = toInput(c, seq.current + 1);
                 const signature = JSON.stringify({ ...input, seq: 0 });
                 if (
-                    signature !== lastSent.current ||
-                    now - lastSendAt.current > SEND_INTERVAL
+                    shouldSendInput(
+                        signature !== lastSent.current,
+                        now - lastSendAt.current,
+                    )
                 ) {
                     if (send({ t: 'input', ...input })) {
                         seq.current += 1;
                         lastSent.current = signature;
                         lastSendAt.current = now;
+                        lastInput.current = input;
                     }
                 }
             }
             if (p && racing) {
+                // Predict with what the referee will apply for these steps
+                // (the last input sent), not the newest unsent controls.
                 p.advance(
                     elapsed,
                     seq.current,
-                    toInput(c, seq.current),
+                    lastInput.current && lastInput.current.seq === seq.current
+                        ? lastInput.current
+                        : toInput(c, seq.current),
                     countdown,
                 );
             }

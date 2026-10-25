@@ -19,8 +19,11 @@ class QuestionGeneration extends Model
     /** Questions asked from the model per call. */
     public const BATCH = 5;
 
+    /** Subject whose questions may be written fully in English (`english_only`). */
+    public const ENGLISH_SUBJECT = 'english';
+
     protected $fillable = [
-        'requested_by', 'model', 'subjects', 'grades', 'level', 'topic_id', 'topic_ids', 'per_combination', 'games', 'activate',
+        'requested_by', 'model', 'subjects', 'grades', 'level', 'topic_id', 'topic_ids', 'per_combination', 'games', 'activate', 'english_only', 'blueprint_id',
         'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error', 'cancelled_at', 'finished_at',
     ];
 
@@ -32,10 +35,12 @@ class QuestionGeneration extends Model
             'grades' => 'array',
             'games' => 'array',
             'activate' => 'boolean',
+            'english_only' => 'boolean',
             'per_combination' => 'integer',
             'level' => 'integer',
             'topic_id' => 'integer',
             'topic_ids' => 'array',
+            'blueprint_id' => 'integer',
             'total_jobs' => 'integer',
             'done_jobs' => 'integer',
             'created_count' => 'integer',
@@ -55,6 +60,12 @@ class QuestionGeneration extends Model
     public function topic(): BelongsTo
     {
         return $this->belongsTo(SubjectTopic::class, 'topic_id');
+    }
+
+    /** @return BelongsTo<QuestionBlueprint, $this> */
+    public function blueprint(): BelongsTo
+    {
+        return $this->belongsTo(QuestionBlueprint::class, 'blueprint_id');
     }
 
     /** @return HasMany<Question, $this> */
@@ -135,7 +146,7 @@ class QuestionGeneration extends Model
     {
         return self::query()
             ->whereIn('status', ['queued', 'running'])
-            ->with(['requester:id,name', 'topic:id,name_id,name_en', 'items' => fn ($query) => $query->with('topic:id,name_id,name_en')->orderBy('id')])
+            ->with(['requester:id,name', 'topic:id,name_id,name_en', 'blueprint:id,title', 'items' => fn ($query) => $query->with('topic:id,name_id,name_en')->orderBy('id')])
             ->latest('id')
             ->limit(5)
             ->get()
@@ -151,14 +162,21 @@ class QuestionGeneration extends Model
     public function toProgressPayload(): array
     {
         return [
-            ...$this->only(['id', 'model', 'subjects', 'grades', 'level', 'per_combination', 'activate', 'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error']),
+            ...$this->only(['id', 'model', 'subjects', 'grades', 'level', 'per_combination', 'activate', 'english_only', 'status', 'total_jobs', 'done_jobs', 'created_count', 'skipped_count', 'error']),
             'cancelled_at' => $this->cancelled_at?->toIso8601String(),
             'requested_by' => $this->requester?->name,
             'topic' => $this->topic?->only(['id', 'name_id', 'name_en']),
+            'blueprint' => $this->blueprint_id !== null ? $this->blueprint?->only(['id', 'title']) : null,
             'created_at' => $this->created_at?->toIso8601String(),
             'finished_at' => $this->finished_at?->toIso8601String(),
             'items' => $this->items->map(fn (QuestionGenerationItem $item): array => $item->toProgress())->values()->all(),
         ];
+    }
+
+    /** True when questions of this subject must be written fully in English. */
+    public function writesEnglishOnly(string $subject): bool
+    {
+        return $this->english_only && $subject === self::ENGLISH_SUBJECT;
     }
 
     public function isLive(): bool

@@ -31,6 +31,76 @@
 
 return [
     [
+        'version' => '0.57.0',
+        'date' => '2026-10-25',
+        'time' => '22:30',
+        'changes' => [
+            [
+                'key' => 'ai-blueprint-rag',
+                'type' => 'feature',
+                'title' => ['id' => 'Kisi-kisi panjang dibaca AI per bagian (RAG)', 'en' => 'Long blueprints read by the AI per section (RAG)'],
+                'body' => ['id' => 'Kisi-kisi soal kini diindeks: teks dipecah per bagian (BAGIAN, STIMULUS, Soal No., kelas), lalu setiap permintaan AI hanya menerima bagian yang paling cocok dengan mapel, kelas, dan topiknya, bukan lagi 12.000 karakter pertama. Pencarian memakai kata kunci, dan bisa ditambah pencarian makna dengan model embedding di Pengaturan AI. Di dialog kisi-kisi ada status indeks, tombol indeks ulang, dan uji "bagian yang dibaca AI" per mapel dan kelas. Batas teks kisi-kisi dinaikkan menjadi 200.000 karakter.', 'en' => 'Question blueprints are now indexed: the text is split into sections (BAGIAN, STIMULUS, Soal No., grade), and every AI request only receives the sections that best match its subject, grade and topic instead of the first 12,000 characters. Search uses keywords and can add meaning-based search with an embedding model in AI Settings. The blueprint dialog shows the index status, a reindex button and a "what the AI reads" test per subject and grade. The blueprint text limit is raised to 200,000 characters.'],
+            ],
+            [
+                'key' => 'blueprint-pdf-reading-fix',
+                'type' => 'fix',
+                'title' => ['id' => 'Teks PDF kisi-kisi terbaca rapi', 'en' => 'Blueprint PDF text read cleanly'],
+                'body' => ['id' => 'PDF hasil cetak browser (Chrome) sebelumnya terbaca dengan spasi di antara setiap huruf dan angka berubah menjadi tanda tanya. Kini kata dan angka terbaca utuh, header dan footer halaman yang berulang dibuang, sehingga teks kisi-kisi jauh lebih ringkas.', 'en' => 'PDFs printed from a browser (Chrome) used to be read with a space between every letter and with digits turned into question marks. Words and digits are now read intact and repeated page headers and footers are dropped, so the blueprint text is much shorter.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.56.0',
+        'date' => '2026-10-25',
+        'time' => '20:30',
+        'changes' => [
+            [
+                'key' => 'ai-question-blueprint-upload',
+                'type' => 'feature',
+                'title' => ['id' => 'Unggah kisi-kisi soal sebagai panduan AI', 'en' => 'Upload question blueprints to guide the AI'],
+                'body' => ['id' => 'Di halaman Buat soal dengan AI, admin bisa mengunggah dokumen kisi-kisi soal (PDF berisi teks, DOCX, XLSX, TXT, MD, atau CSV, maksimal 10 MB) lalu memilihnya sebagai panduan. AI akan mengikuti kompetensi, indikator, cakupan materi, dan level kognitif di kisi-kisi tersebut. Teks yang terbaca bisa dilihat dan dirapikan, file asli bisa diunduh, dan nama kisi-kisi tercatat di setiap permintaan serta ringkasan batch.', 'en' => 'On the Generate questions with AI page, admins can upload a question blueprint document (text PDF, DOCX, XLSX, TXT, MD or CSV, up to 10 MB) and pick it as a guide. The AI follows the competencies, indicators, material scope and cognitive level in the blueprint. The extracted text can be reviewed and cleaned up, the original file can be downloaded, and the blueprint name is recorded on every request and batch summary.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.55.0',
+        'date' => '2026-10-25',
+        'time' => '12:00',
+        'changes' => [
+            [
+                'key' => 'question-bank-pagination',
+                'type' => 'improvement',
+                'title' => ['id' => 'Bank Soal: halaman bernomor dan jumlah per halaman', 'en' => 'Question Bank: numbered pages and page size'],
+                'body' => ['id' => 'Daftar soal (termasuk "Semua mata pelajaran" dan soal AI) kini memakai nomor halaman, tombol sebelumnya/berikutnya, dan pilihan 20, 50, atau 100 soal per halaman. Filter tetap terbawa saat pindah halaman.', 'en' => 'The question list (including "All subjects" and AI questions) now has page numbers, previous/next buttons and a choice of 20, 50 or 100 questions per page. Filters are kept when changing pages.'],
+            ],
+            [
+                'key' => 'question-bank-ai-batch-review',
+                'type' => 'feature',
+                'title' => ['id' => 'Tinjau soal AI per batch', 'en' => 'Review AI questions per batch'],
+                'body' => ['id' => 'Tombol "Tinjau soal AI" di Permintaan terbaru dan di Bank Soal kini langsung membuka soal dari batch tersebut saja, lengkap dengan ringkasan batch (waktu, mata pelajaran, kelas, level, jumlah yang menunggu tinjauan). Daftar soal juga punya filter batch AI, filter waktu dibuat (1 jam, 24 jam, 7 hari, 30 hari, atau rentang tanggal), urutan terbaru/terlama, serta tanggal dibuat di setiap soal.', 'en' => 'The "Review AI questions" button in Recent requests and on the Question Bank now opens only the questions of that batch, with a batch summary (time, subjects, grades, level, number waiting for review). The question list also gains an AI batch filter, a created-time filter (1 hour, 24 hours, 7 days, 30 days or a date range), newest/oldest sorting and the creation date on every question.'],
+            ],
+            [
+                'key' => 'ai-english-only-questions',
+                'type' => 'feature',
+                'title' => ['id' => 'Soal AI Bahasa Inggris full bahasa Inggris', 'en' => 'English AI questions fully in English'],
+                'body' => ['id' => 'Saat membuat soal AI untuk pelajaran Bahasa Inggris, admin bisa memilih agar kalimat soal, pilihan jawaban, dan pembahasan ditulis full dalam bahasa Inggris, tanpa kalimat tanya bahasa Indonesia. Pelajaran lain dalam permintaan yang sama tetap dua bahasa.', 'en' => 'When generating AI questions for the English subject, admins can choose to have the question, options and explanation written fully in English, without an Indonesian question sentence. Other subjects in the same request stay bilingual.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.54.1',
+        'date' => '2026-10-18',
+        'time' => '17:30',
+        'changes' => [
+            [
+                'key' => 'edu-kart-no-pull-back',
+                'type' => 'fix',
+                'title' => ['id' => 'EduKart: mobil tidak lagi muncul ulang dari belakang', 'en' => 'EduKart: kart no longer reappears from behind'],
+                'body' => ['id' => 'Di HP dengan layar 90/120 Hz atau saat memakai joystick, game mengirim kontrol terlalu sering sehingga sebagian ditolak server. Server tetap memakai arah lama, lalu mobil ditarik mundur beberapa meter dan tampak muncul ulang dari belakang. Kini kontrol dikirim dalam batas yang aman dan server memberi ruang lebih, jadi mobil melaju mulus.', 'en' => 'On 90/120 Hz phone screens or with the joystick, the game sent controls too often and the server dropped some of them. The server kept the old steering, then the kart was pulled back a few metres and looked like it reappeared from behind. Controls are now sent within a safe limit and the server allows more headroom, so the kart drives smoothly.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.54.0',
         'date' => '2026-10-18',
         'time' => '15:30',

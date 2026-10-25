@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\PlayerProgressController;
 use App\Http\Controllers\Admin\PlayerSchoolGradeController;
 use App\Http\Controllers\Admin\PlayingTimeController;
 use App\Http\Controllers\Admin\PointRulesController;
+use App\Http\Controllers\Admin\QuestionBlueprintController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\QuestionGenerationController;
 use App\Http\Controllers\Admin\RoleController;
@@ -123,6 +124,12 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::get('/questions/generate', [QuestionGenerationController::class, 'index'])->name('questions.generate');
             Route::post('/questions/generate', [QuestionGenerationController::class, 'store'])->name('questions.generate.store');
             Route::post('/questions/generate/{generation}/cancel', [QuestionGenerationController::class, 'cancel'])->middleware('throttle:20,1,questions.generate.cancel')->name('questions.generate.cancel');
+            Route::post('/questions/blueprints', [QuestionBlueprintController::class, 'store'])->middleware('throttle:20,1,questions.blueprints.store')->name('questions.blueprints.store');
+            Route::put('/questions/blueprints/{blueprint}', [QuestionBlueprintController::class, 'update'])->middleware('throttle:60,1,questions.blueprints.update')->name('questions.blueprints.update');
+            Route::post('/questions/blueprints/{blueprint}/reindex', [QuestionBlueprintController::class, 'reindex'])->middleware('throttle:20,1,questions.blueprints.reindex')->name('questions.blueprints.reindex');
+            Route::get('/questions/blueprints/{blueprint}/preview', [QuestionBlueprintController::class, 'preview'])->middleware('throttle:60,1,questions.blueprints.preview')->name('questions.blueprints.preview');
+            Route::get('/questions/blueprints/{blueprint}/download', [QuestionBlueprintController::class, 'download'])->name('questions.blueprints.download');
+            Route::delete('/questions/blueprints/{blueprint}', [QuestionBlueprintController::class, 'destroy'])->name('questions.blueprints.destroy');
             Route::post('/users/{user}/ability-assessments', [AbilityAssessmentController::class, 'store'])->middleware('throttle:5,1,users.ability-assessments.store')->name('users.ability-assessments.store');
             Route::get('/questions/search', [QuestionController::class, 'search'])->middleware('throttle:120,1,questions.search')->name('questions.search');
             Route::post('/questions/bulk', [QuestionController::class, 'bulk'])->middleware('throttle:30,1,questions.bulk')->name('questions.bulk');
@@ -143,6 +150,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::put('/ai-settings', [AiSettingsController::class, 'update'])->name('ai-settings.update');
             Route::post('/ai-settings/models', [AiSettingsController::class, 'refresh'])->name('ai-settings.models');
             Route::put('/ai-settings/model', [AiSettingsController::class, 'model'])->name('ai-settings.model');
+            Route::put('/ai-settings/embedding-model', [AiSettingsController::class, 'embeddingModel'])->middleware('throttle:20,1,ai-settings.embedding')->name('ai-settings.embedding-model');
             Route::delete('/ai-settings/key', [AiSettingsController::class, 'forgetKey'])->name('ai-settings.key');
             Route::put('/ai-settings/auto-assessment', [AiSettingsController::class, 'autoAssessment'])->name('ai-settings.auto-assessment');
             Route::get('/whatsapp', [WhatsAppController::class, 'index'])->name('whatsapp.index');

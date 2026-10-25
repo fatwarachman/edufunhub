@@ -40,6 +40,8 @@ export interface Generation {
     per_combination: number;
     topic?: { id: number; name_id: string; name_en: string | null } | null;
     activate: boolean;
+    english_only?: boolean;
+    blueprint?: { id: number; title: string } | null;
     status: 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
     total_jobs: number;
     done_jobs: number;
@@ -52,6 +54,10 @@ export interface Generation {
     finished_at: string | null;
     items?: GenerationItem[];
 }
+
+/** Question bank list showing only the questions of one AI batch. */
+export const generationReviewUrl = (id: number) =>
+    `/admin/questions?generation=${id}`;
 
 export const gradeLabel = (grade: number) =>
     grade === 0 ? tr('TK') : tr('Grade {0}', [grade]);
@@ -212,7 +218,19 @@ export function GenerationRow({ generation: g }: { generation: Generation }) {
                 )}{' '}
                 · {g.grades.map(gradeLabel).join(', ')} · {g.per_combination}{' '}
                 {tr('each ·')}{' '}
-                {g.activate ? 'active' : tr('inactive for review')}
+                {g.activate ? tr('active') : tr('inactive for review')}
+                {g.blueprint && (
+                    <span data-testid={`generation-${g.id}-blueprint`}>
+                        {' '}
+                        · {tr('Blueprint: {0}', [g.blueprint.title])}
+                    </span>
+                )}
+                {g.english_only && (
+                    <span data-testid={`generation-${g.id}-english-only`}>
+                        {' '}
+                        · {tr('English questions fully in English')}
+                    </span>
+                )}
             </p>
             {live && (
                 <div
@@ -242,10 +260,13 @@ export function GenerationRow({ generation: g }: { generation: Generation }) {
             )}
             {g.created_count > 0 && !live && (
                 <Link
-                    href="/admin/questions?source=ai"
+                    href={generationReviewUrl(g.id)}
                     className="self-start link text-xs"
+                    data-testid={`generation-${g.id}-review`}
                 >
-                    {tr('Review AI questions')}
+                    {tr('Review the {0} questions of this batch', [
+                        g.created_count,
+                    ])}
                 </Link>
             )}
         </li>
