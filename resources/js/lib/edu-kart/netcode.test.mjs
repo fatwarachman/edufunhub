@@ -18,8 +18,16 @@ registerHooks({
 
 const { Track } = await import('./track.ts');
 const { DT, newKart, step, vehicleById } = await import('./physics.ts');
-const { Interpolator, Predictor, pressDrift, toInput, emptyControls, kartOf } =
-    await import('./netcode.ts');
+const {
+    Interpolator,
+    Predictor,
+    pressDrift,
+    toInput,
+    emptyControls,
+    kartOf,
+    shouldSendInput,
+    MIN_SEND_GAP,
+} = await import('./netcode.ts');
 const { isRaceFrame, isTrackMessage } = await import('./protocol.ts');
 
 const root = new URL(
@@ -345,4 +353,37 @@ test('interpolator ignores stale frames and snaps on respawn jumps', () => {
     it.push(raceFrame(100, r(60)), 1100); // respawn jump
     const s = it.sample(1, 1075 + it.playbackDelay);
     assert.ok(s.p === 60 || s.p <= 1, String(s.p));
+});
+
+test('input sending stays inside the referee budget on 120 Hz screens with an analog stick', () => {
+    // The referee (Go hub.go MaxInputsPerSecond = 120) drops anything above
+    // its budget; dropped steering made the kart get pulled back metres.
+    const budget = 120;
+    for (const frameMs of [6.9, 8.3, 11.1, 16.7]) {
+        let last = -Infinity;
+        let sent = 0;
+        for (let now = 0; now < 1000; now += frameMs) {
+            // steering changes on every frame (analog stick)
+            if (shouldSendInput(true, now - last)) {
+                sent++;
+                last = now;
+            }
+        }
+        assert.ok(
+            sent <= 1000 / MIN_SEND_GAP + 1,
+            `${frameMs} ms frames sent ${sent}/s`,
+        );
+        assert.ok(
+            sent <= budget / 2,
+            `${frameMs} ms frames must leave headroom: ${sent}/s`,
+        );
+        assert.ok(
+            sent >= 30,
+            `${frameMs} ms frames still send often: ${sent}/s`,
+        );
+    }
+    // Unchanged controls keep a ~30/s keep-alive.
+    assert.equal(shouldSendInput(false, 20), false);
+    assert.equal(shouldSendInput(false, 40), true);
+    assert.equal(shouldSendInput(true, MIN_SEND_GAP - 1), false);
 });

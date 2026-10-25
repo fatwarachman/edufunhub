@@ -31,6 +31,19 @@
 
 return [
     [
+        'version' => '0.54.1',
+        'date' => '2026-10-18',
+        'time' => '17:30',
+        'changes' => [
+            [
+                'key' => 'edu-kart-no-pull-back',
+                'type' => 'fix',
+                'title' => ['id' => 'EduKart: mobil tidak lagi muncul ulang dari belakang', 'en' => 'EduKart: kart no longer reappears from behind'],
+                'body' => ['id' => 'Di HP dengan layar 90/120 Hz atau saat memakai joystick, game mengirim kontrol terlalu sering sehingga sebagian ditolak server. Server tetap memakai arah lama, lalu mobil ditarik mundur beberapa meter dan tampak muncul ulang dari belakang. Kini kontrol dikirim dalam batas yang aman dan server memberi ruang lebih, jadi mobil melaju mulus.', 'en' => 'On 90/120 Hz phone screens or with the joystick, the game sent controls too often and the server dropped some of them. The server kept the old steering, then the kart was pulled back a few metres and looked like it reappeared from behind. Controls are now sent within a safe limit and the server allows more headroom, so the kart drives smoothly.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.54.0',
         'date' => '2026-10-18',
         'time' => '15:30',

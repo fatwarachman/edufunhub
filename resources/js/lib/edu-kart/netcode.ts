@@ -384,6 +384,28 @@ function blend(ra: RacerFrame, rc: RacerFrame, f: number): RacerFrame {
     };
 }
 
+/** Keep-alive input interval while nothing changes (ms). */
+export const SEND_INTERVAL = 33;
+/**
+ * Shortest gap between two input messages (ms), ~40 per second. The
+ * referee drops inputs above its per-second budget; an analog stick or a
+ * 90/120 Hz screen changes the steering every frame, so sending on every
+ * change went over it. The referee then kept the old steering while the
+ * client predicted the new one, and every correction pulled the kart
+ * metres back (it looked like a respawn from behind).
+ */
+export const MIN_SEND_GAP = 25;
+
+/** Whether the arena should send an input now. */
+export function shouldSendInput(
+    changed: boolean,
+    sinceLastMs: number,
+): boolean {
+    return (
+        (changed && sinceLastMs >= MIN_SEND_GAP) || sinceLastMs > SEND_INTERVAL
+    );
+}
+
 /** Raw controls of the page (keyboard + touch merged). */
 export interface Controls {
     steer: number;

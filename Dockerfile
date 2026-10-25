@@ -39,7 +39,8 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 RUN echo "upload_max_filesize = 400M" >> /usr/local/etc/php/php.ini && \
-    echo "post_max_size = 500M" >> /usr/local/etc/php/php.ini
+    echo "post_max_size = 500M" >> /usr/local/etc/php/php.ini && \
+    echo "session.upload_progress.enabled = Off" >> /usr/local/etc/php/php.ini
 
 EXPOSE 8000
 
