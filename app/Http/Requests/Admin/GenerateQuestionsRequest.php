@@ -20,6 +20,8 @@ class GenerateQuestionsRequest extends FormRequest
         $this->merge([
             'grades' => $this->input('scope') === 'all' ? Question::GRADES : $this->input('grades'),
             'activate' => $this->boolean('activate'),
+            'english_only' => $this->boolean('english_only'),
+            'blueprint_id' => $this->filled('blueprint_id') ? $this->input('blueprint_id') : null,
             'subjects' => $this->input('scope') === 'all' ? Subject::activeKeys() : array_values((array) $this->input('subjects', [])),
             'topic_ids' => $this->input('scope') === 'all' ? [] : array_values((array) $this->input('topic_ids', [])),
         ]);
@@ -39,6 +41,8 @@ class GenerateQuestionsRequest extends FormRequest
             'games' => ['required', 'array', 'min:1'],
             'games.*' => ['required', 'distinct', Rule::in(Question::GAMES)],
             'activate' => ['boolean'],
+            'english_only' => ['boolean'],
+            'blueprint_id' => ['nullable', 'integer', Rule::exists('question_blueprints', 'id')->where('is_active', true)],
             'topic_ids' => ['present', 'array'],
             'topic_ids.*' => ['integer', 'distinct', Rule::exists('subject_topics', 'id')->where('is_active', true)],
         ];
@@ -53,6 +57,8 @@ class GenerateQuestionsRequest extends FormRequest
             'games.required' => __('Distribute the question to at least one game.'),
             'topic_ids.*.exists' => __('ai.topic_invalid'),
             'topic_ids.*.integer' => __('ai.topic_invalid'),
+            'blueprint_id.exists' => __('blueprint.invalid'),
+            'blueprint_id.integer' => __('blueprint.invalid'),
         ];
     }
 }

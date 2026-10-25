@@ -14,6 +14,7 @@ use App\Services\ActivityLogPresenter;
 use App\Services\PointRules;
 use App\Services\QuestionAnalytics;
 use App\Services\QuestionVisual;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -28,14 +29,27 @@ class QuestionController extends Controller
     /** Creator filters for the question list (`teacher` covers teacher-written and imported questions). */
     public const CREATOR_FILTERS = ['ai', 'teacher', 'admin', 'system'];
 
+    /** Relative "created within" filters, in hours. */
+    public const CREATED_WITHIN = ['1h' => 1, '24h' => 24, '7d' => 168, '30d' => 720];
+
+    /** Page sizes an admin may pick for the question list. */
+    public const PER_PAGE = [20, 50, 100];
+
+    /** Default page size when reviewing one AI batch. */
+    public const BATCH_PER_PAGE = 50;
+
+    /** Recent AI batches offered in the batch filter. */
+    private const RECENT_BATCHES = 30;
+
     /**
      * Subject overview first; choosing a subject (or searching) opens the question list.
      */
     public function index(Request $request): Response
     {
-        $filters = $this->normalizeFilters($request->only(['search', 'game', 'band', 'level', 'subject', 'type', 'status', 'sort', 'source', 'bonus', 'author']));
+        $filters = $this->normalizeFilters($request->only(['search', 'game', 'band', 'level', 'subject', 'type', 'status', 'sort', 'source', 'bonus', 'author', 'generation', 'created', 'created_from', 'created_to', 'per_page']));
         $subject = $filters['subject'] ?? null;
-        $showList = in_array($subject, [...Subject::keys(), 'all'], true) || filled($filters['search'] ?? null) || filled($filters['source'] ?? null) || filled($filters['bonus'] ?? null);
+        $showList = in_array($subject, [...Subject::keys(), 'all'], true)
+            || collect(['search', 'source', 'bonus', 'generation', 'created', 'created_from', 'created_to'])->contains(fn (string $key): bool => filled($filters[$key] ?? null));
         $bySource = Question::query()->selectRaw('source, COUNT(*) as total, SUM(CASE WHEN is_active THEN 0 ELSE 1 END) as inactive')->groupBy('source')->get()->toBase()->keyBy('source');
 
         return Inertia::render('admin/questions/index', [
@@ -45,6 +59,10 @@ class QuestionController extends Controller
             'questions' => $showList ? $this->questionList($filters) : null,
             'sourceCounts' => $showList ? $this->sourceCounts($filters) : null,
             'teachers' => $showList && ($filters['source'] ?? null) === 'teacher' ? $this->teacherAuthors() : [],
+            'batches' => $showList ? $this->recentBatches() : [],
+            'batch' => $showList && isset($filters['generation']) ? $this->batchSummary((int) $filters['generation']) : null,
+            'perPageOptions' => self::PER_PAGE,
+            'timezone' => $this->timezone(),
             'filters' => (object) $filters,
             'summary' => [
                 'total' => (int) $bySource->sum('total'),
@@ -113,6 +131,28 @@ class QuestionController extends Controller
 
         if (isset($filters['author']) && (($filters['source'] ?? null) !== 'teacher' || ! ctype_digit($filters['author']))) {
             unset($filters['author']);
+        }
+
+        if (isset($filters['generation']) && ! ctype_digit($filters['generation'])) {
+            unset($filters['generation']);
+        }
+
+        if (isset($filters['created']) && ! array_key_exists($filters['created'], self::CREATED_WITHIN)) {
+            unset($filters['created']);
+        }
+
+        foreach (['created_from', 'created_to'] as $key) {
+            if (isset($filters[$key]) && $this->localDay($filters[$key]) === null) {
+                unset($filters[$key]);
+            }
+        }
+
+        if (isset($filters['per_page']) && ! in_array((int) $filters['per_page'], self::PER_PAGE, true)) {
+            unset($filters['per_page']);
+        }
+
+        if (isset($filters['sort']) && ! in_array($filters['sort'], ['hardest', 'most_answered', 'newest', 'oldest'], true)) {
+            unset($filters['sort']);
         }
 
         return $filters;
@@ -222,7 +262,82 @@ class QuestionController extends Controller
             ->when(($filters['status'] ?? null) === 'active', fn (Builder $q) => $q->where('is_active', true))
             ->when(($filters['status'] ?? null) === 'inactive', fn (Builder $q) => $q->where('is_active', false))
             ->when(($filters['status'] ?? null) === 'played', fn (Builder $q) => $q->where('times_answered', '>', 0))
-            ->when(($filters['status'] ?? null) === 'unplayed', fn (Builder $q) => $q->where('times_answered', 0));
+            ->when(($filters['status'] ?? null) === 'unplayed', fn (Builder $q) => $q->where('times_answered', 0))
+            ->when($filters['generation'] ?? null, fn (Builder $q, string $generation) => $q->where('generation_id', (int) $generation))
+            ->when(self::CREATED_WITHIN[$filters['created'] ?? ''] ?? null, fn (Builder $q, int $hours) => $q->where('created_at', '>=', now()->subHours($hours)))
+            ->when($this->localDay($filters['created_from'] ?? null), fn (Builder $q, CarbonImmutable $day) => $q->where('created_at', '>=', $day->startOfDay()->utc()))
+            ->when($this->localDay($filters['created_to'] ?? null), fn (Builder $q, CarbonImmutable $day) => $q->where('created_at', '<', $day->addDay()->startOfDay()->utc()));
+    }
+
+    /** Admin-facing timezone for created-at dates (same as the screen-time reports). */
+    private function timezone(): string
+    {
+        return (string) config('screen-time.timezone', 'UTC');
+    }
+
+    /** A `Y-m-d` date in the admin timezone, or null when it is not a valid date. */
+    private function localDay(?string $value): ?CarbonImmutable
+    {
+        if ($value === null || preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) !== 1) {
+            return null;
+        }
+
+        $day = CarbonImmutable::createFromFormat('!Y-m-d', $value, $this->timezone());
+
+        return $day !== false && $day->format('Y-m-d') === $value ? $day : null;
+    }
+
+    /**
+     * Latest AI batches that produced questions, for the batch filter.
+     *
+     * @return list<array{id: int, created_at: ?string, created_count: int, subjects: list<string>, requested_by: ?string}>
+     */
+    private function recentBatches(): array
+    {
+        return QuestionGeneration::query()
+            ->with('requester:id,name')
+            ->where('created_count', '>', 0)
+            ->latest('id')
+            ->limit(self::RECENT_BATCHES)
+            ->get()
+            ->map(fn (QuestionGeneration $generation): array => $this->batchPayload($generation))
+            ->all();
+    }
+
+    /**
+     * One AI batch shown above its questions; null when it does not exist.
+     *
+     * @return array{id: int, created_at: ?string, created_count: int, subjects: list<string>, requested_by: ?string, status: string, model: string, grades: list<int>, level: int, english_only: bool, blueprint: ?string, inactive: int}|null
+     */
+    private function batchSummary(int $id): ?array
+    {
+        $generation = QuestionGeneration::query()->with(['requester:id,name', 'blueprint:id,title'])->find($id);
+        if ($generation === null) {
+            return null;
+        }
+
+        return [
+            ...$this->batchPayload($generation),
+            'status' => $generation->status,
+            'model' => $generation->model,
+            'grades' => array_values(array_map('intval', $generation->grades ?? [])),
+            'level' => Question::normalizeLevel($generation->level),
+            'english_only' => (bool) $generation->english_only,
+            'blueprint' => $generation->blueprint?->title,
+            'inactive' => $generation->questions()->where('is_active', false)->count(),
+        ];
+    }
+
+    /** @return array{id: int, created_at: ?string, created_count: int, subjects: list<string>, requested_by: ?string} */
+    private function batchPayload(QuestionGeneration $generation): array
+    {
+        return [
+            'id' => $generation->id,
+            'created_at' => $generation->created_at?->toIso8601String(),
+            'created_count' => $generation->created_count,
+            'subjects' => array_values($generation->subjects ?? []),
+            'requested_by' => $generation->requester?->name,
+        ];
     }
 
     /**
@@ -234,18 +349,23 @@ class QuestionController extends Controller
             ->with('author:id,name')
             ->when(($filters['sort'] ?? null) === 'hardest', fn (Builder $q) => $q->where('times_answered', '>', 0)->orderByRaw('times_correct * 1.0 / times_answered asc'))
             ->when(($filters['sort'] ?? null) === 'most_answered', fn (Builder $q) => $q->orderByDesc('times_answered'))
+            ->when(($filters['sort'] ?? null) === 'newest', fn (Builder $q) => $q->orderByDesc('created_at')->orderByDesc('id'))
+            ->when(($filters['sort'] ?? null) === 'oldest', fn (Builder $q) => $q->orderBy('created_at')->orderBy('id'))
             ->orderBy('band')
             ->orderBy('level')
             ->orderBy('id');
 
-        // AI-created questions are reviewed in one go: show all of them on one page.
-        $perPage = ($filters['source'] ?? null) === 'ai' ? max(1, (clone $query)->count()) : 20;
+        $perPage = isset($filters['per_page'])
+            ? (int) $filters['per_page']
+            : (isset($filters['generation']) ? self::BATCH_PER_PAGE : self::PER_PAGE[0]);
 
         return $query
             ->paginate($perPage)
+            ->onEachSide(1)
             ->withQueryString()
             ->through(fn (Question $question): array => [
-                ...$question->only(['id', 'key', 'type', 'band', 'grades', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct']),
+                ...$question->only(['id', 'key', 'type', 'band', 'grades', 'level', 'subject', 'prompt_id', 'prompt_en', 'options', 'answer', 'games', 'is_active', 'source', 'points', 'times_answered', 'times_correct', 'generation_id']),
+                'created_at' => $question->created_at?->toIso8601String(),
                 'author' => $question->author?->name,
                 'visual_kind' => $question->visual['kind'] ?? null,
                 'success_rate' => $question->successRate(),

@@ -6,10 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\GenerateQuestionsRequest;
 use App\Jobs\GenerateQuestions;
 use App\Models\Question;
+use App\Models\QuestionBlueprint;
 use App\Models\QuestionGeneration;
 use App\Models\Subject;
 use App\Models\SubjectTopic;
 use App\Services\Ai\AiSettings;
+use App\Services\Ai\BlueprintRetriever;
+use App\Services\Ai\BlueprintTextExtractor;
+use App\Services\Ai\EmbeddingClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +34,20 @@ class QuestionGenerationController extends Controller
         return Inertia::render('admin/questions/generate', [
             'ai' => ['configured' => $settings->configured(), 'model' => $settings->model()],
             'subjects' => Subject::activeKeys(),
+            'englishSubject' => QuestionGeneration::ENGLISH_SUBJECT,
+            'blueprints' => QuestionBlueprint::query()
+                ->with('uploader:id,name')
+                ->withCount('generations')
+                ->latest('id')
+                ->get()
+                ->map(fn (QuestionBlueprint $blueprint): array => $blueprint->toAdminPayload()),
+            'blueprintLimits' => [
+                'extensions' => BlueprintTextExtractor::EXTENSIONS,
+                'maxKb' => QuestionBlueprint::MAX_KB,
+                'maxContent' => QuestionBlueprint::MAX_CONTENT,
+                'budget' => BlueprintRetriever::BUDGET,
+                'embeddingModel' => app(EmbeddingClient::class)->model(),
+            ],
             'topics' => SubjectTopic::query()->active()->ordered()->get(['id', 'subject_key', 'name_id', 'name_en', 'material'])
                 ->map(fn (SubjectTopic $topic): array => $topic->only(['id', 'subject_key', 'name_id', 'name_en', 'material']))
                 ->values(),
@@ -39,7 +57,7 @@ class QuestionGenerationController extends Controller
             'maxTotal' => self::MAX_TOTAL,
             'aiTotal' => Question::query()->where('source', Question::SOURCE_AI)->count(),
             'generations' => QuestionGeneration::query()
-                ->with(['requester:id,name', 'topic:id,name_id,name_en', 'items' => fn ($query) => $query->with('topic:id,name_id,name_en')->orderBy('id')])
+                ->with(['requester:id,name', 'topic:id,name_id,name_en', 'blueprint:id,title', 'items' => fn ($query) => $query->with('topic:id,name_id,name_en')->orderBy('id')])
                 ->latest('id')
                 ->limit(15)
                 ->get()
@@ -72,6 +90,8 @@ class QuestionGenerationController extends Controller
                 'per_combination' => $data['per_combination'],
                 'games' => array_values($data['games']),
                 'activate' => $data['activate'],
+                'english_only' => $data['english_only'] && in_array(QuestionGeneration::ENGLISH_SUBJECT, $plan['subjects'], true),
+                'blueprint_id' => $data['blueprint_id'] ?? null,
                 'status' => 'queued',
                 'total_jobs' => count($plan['targets']) * count($data['grades']),
             ]);

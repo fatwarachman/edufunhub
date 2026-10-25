@@ -10,15 +10,15 @@ beforeEach(function (): void {
     $this->admin = User::factory()->superadmin()->create();
 });
 
-it('lists every AI-created question on one page without pagination', function (): void {
+it('paginates AI-created questions like every other list', function (): void {
     Question::factory()->count(27)->create(['source' => Question::SOURCE_AI, 'is_active' => false]);
     Question::factory()->count(3)->create(['source' => 'admin']);
 
     $this->actingAs($this->admin)->get('/admin/questions?source=ai')->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('admin/questions/index')
         ->where('questions.total', 27)
-        ->where('questions.last_page', 1)
-        ->has('questions.data', 27));
+        ->where('questions.last_page', 2)
+        ->has('questions.data', 20));
 });
 
 it('keeps other question lists paginated', function (): void {

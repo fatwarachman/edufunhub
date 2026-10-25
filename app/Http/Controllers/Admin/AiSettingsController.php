@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AiConnectionRequest;
 use App\Http\Requests\Admin\AutoAssessmentRequest;
+use App\Jobs\IndexQuestionBlueprint;
+use App\Models\QuestionBlueprint;
 use App\Services\Ai\AiSettings;
 use App\Services\Ai\AutoAbilityAssessment;
+use App\Services\Ai\EmbeddingClient;
 use App\Services\Ai\OpenAiCompatibleClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,6 +40,7 @@ class AiSettingsController extends Controller
             'models' => $this->settings->cachedModels(),
             'modelsFetchedAt' => $this->settings->modelsFetchedAt(),
             'autoAssessment' => $auto->toArray(),
+            'embeddingModel' => app(EmbeddingClient::class)->model(),
         ]);
     }
 
@@ -81,6 +85,37 @@ class AiSettingsController extends Controller
         activity()->causedBy($request->user())->withProperties($data)->log('Selected AI model');
 
         return back()->with('success', __('ai.model_saved', ['model' => $data['model']]));
+    }
+
+    /**
+     * Embedding model for blueprint search (RAG). Empty turns semantic
+     * search off; a model is tested with one real request before saving.
+     */
+    public function embeddingModel(Request $request, EmbeddingClient $embeddings): RedirectResponse
+    {
+        $data = $request->validate(['embedding_model' => ['nullable', 'string', 'max:150', 'regex:/^[\w.\/:@+-]+$/']]);
+        $model = trim((string) ($data['embedding_model'] ?? ''));
+
+        if ($model !== '') {
+            try {
+                $embeddings->embed(['kisi-kisi soal'], $model);
+            } catch (RuntimeException $exception) {
+                return back()->withErrors(['embedding_model' => $exception->getMessage()]);
+            }
+        }
+
+        $previous = $embeddings->model();
+        $embeddings->saveModel($model);
+        activity()->causedBy($request->user())->withProperties(['embedding_model' => $model])->log('Selected AI embedding model');
+
+        if ($previous !== ($model !== '' ? $model : null)) {
+            QuestionBlueprint::query()->get()->each(function (QuestionBlueprint $blueprint): void {
+                $blueprint->forceFill(['index_status' => QuestionBlueprint::INDEX_PENDING])->save();
+                IndexQuestionBlueprint::dispatch($blueprint);
+            });
+        }
+
+        return back()->with('success', $model !== '' ? __('blueprint.embedding_saved', ['model' => $model]) : __('blueprint.embedding_cleared'));
     }
 
     public function forgetKey(Request $request): RedirectResponse

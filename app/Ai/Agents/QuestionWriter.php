@@ -33,6 +33,7 @@ class QuestionWriter implements Agent, HasProviderOptions, HasStructuredOutput
         You write quiz questions for EduFunHub, an educational game portal for Indonesian pupils (TK, SD, SMP, SMA, curriculum "Kurikulum Merdeka").
         Rules:
         - Write every question in Indonesian (prompt_id, options[].id, hint_id) with a faithful English translation (prompt_en, options[].en, hint_en).
+        - Exception: when the request says "Language: English only", write everything in English and put the same English text in both fields of each pair (prompt_id = prompt_en, options[].id = options[].en, hint_id = hint_en). No Indonesian words at all.
         - Match the exact grade: vocabulary, numbers and topics a pupil of that grade has learnt. TK = kindergarten (age 4-6, very simple).
         - Multiple choice with exactly 4 options. Exactly one option is correct; distractors are plausible but clearly wrong.
         - answer is the 0-based index of the correct option. Vary its position.
