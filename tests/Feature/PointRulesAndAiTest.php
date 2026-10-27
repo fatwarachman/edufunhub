@@ -14,6 +14,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Sleep;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -244,6 +245,7 @@ describe('question generation', function (): void {
     });
 
     it('records the error when the model fails', function (): void {
+        Sleep::fake();
         QuestionWriter::fake(fn () => throw new RuntimeException('model overloaded'));
 
         $this->post('/admin/questions/generate', ['scope' => 'custom', 'subjects' => ['math'], 'grades' => [5], 'per_combination' => 1, 'games' => ['sky-quiz'], 'activate' => true]);

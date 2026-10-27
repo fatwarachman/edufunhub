@@ -20,6 +20,7 @@ return [
     'generation_started' => 'Generating :total questions in the background.',
     'generation_stopped' => 'Question generation stopped. Questions already created are kept.',
     'generation_not_running' => 'This request has already finished or been stopped.',
+    'generation_incomplete' => 'Only :created of :target questions were created; the AI replies were empty or invalid. Run it again to fill the rest.',
     'teacher_assigned' => ':name is now a teacher and can open Ruang Guru.',
     'teacher_removed' => ':name is no longer a teacher.',
     'teacher_subjects_updated' => ':name teacher subjects updated successfully.',
