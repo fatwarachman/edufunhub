@@ -31,6 +31,18 @@
 
 return [
     [
+        'version' => '0.57.1',
+        'date' => '2026-10-27',
+        'changes' => [
+            [
+                'key' => 'ai-generation-full-count',
+                'type' => 'fix',
+                'title' => ['id' => 'Buat soal AI kini memenuhi jumlah yang diminta', 'en' => 'AI question generation now reaches the requested count'],
+                'body' => ['id' => 'Sebelumnya satu balasan AI yang kosong atau dibungkus blok kode ```json langsung menghentikan pembuatan soal, sehingga permintaan 20 soal sering hanya menghasilkan 5 atau 15 soal tanpa keterangan. Kini balasan dalam blok kode tetap dibaca, batch yang kosong atau gagal dicoba ulang sampai 3 kali berturut-turut, dan bila jumlahnya tetap kurang, progres menampilkan berapa soal yang berhasil dari target.', 'en' => 'One empty AI reply, or a reply wrapped in a ```json code block, used to stop the run, so a request for 20 questions often made only 5 or 15 with no message. Replies inside code blocks are now read, empty or failed batches are retried up to 3 times in a row, and when the count still falls short the progress shows how many of the target were made.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.57.0',
         'date' => '2026-10-25',
         'time' => '22:30',

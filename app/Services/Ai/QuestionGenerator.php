@@ -10,9 +10,11 @@ use App\Models\Subject;
 use App\Models\SubjectTopic;
 use App\Services\QuestionVisual;
 use Closure;
+use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use JsonException;
 use RuntimeException;
+use Throwable;
 use TypeError;
 
 /**
@@ -32,6 +34,9 @@ class QuestionGenerator
     private ?SubjectTopic $topic = null;
 
     private bool $topicSet = false;
+
+    /** Empty or failed model replies in a row before a run gives up. */
+    public const MAX_FAILED_BATCHES = 3;
 
     /** Extra instruction for TK and SD: picture questions built from emoji. */
     private const PICTURE_GUIDE = "Picture questions (TK and SD): make about half of the questions picture questions.\n"
@@ -78,16 +83,32 @@ class QuestionGenerator
         $this->topic = null;
         $this->topicSet = false;
         $blueprint = $generation->blueprint_id !== null ? QuestionBlueprint::query()->find($generation->blueprint_id) : null;
+        $failures = 0;
 
         while ($created < $count) {
             if ($shouldStop !== null && $shouldStop()) {
                 return ['created' => $created, 'skipped' => $skipped, 'stopped' => true];
             }
             $want = min(QuestionGeneration::BATCH, $count - $created);
-            $items = $this->ask($provider, $generation->model, $subject, $grade, $want, Question::normalizeLevel($generation->level), $topic, $generation->writesEnglishOnly($subject), $blueprint);
-            if ($items === []) {
-                break;
+            try {
+                $items = $this->ask($provider, $generation->model, $subject, $grade, $want, Question::normalizeLevel($generation->level), $topic, $generation->writesEnglishOnly($subject), $blueprint);
+            } catch (Throwable $exception) {
+                if (++$failures > self::MAX_FAILED_BATCHES) {
+                    throw $exception;
+                }
+                $this->pause($failures);
+
+                continue;
             }
+            if ($items === []) {
+                if (++$failures > self::MAX_FAILED_BATCHES) {
+                    break;
+                }
+                $this->pause($failures);
+
+                continue;
+            }
+            $failures = 0;
             foreach ($items as $item) {
                 if ($created >= $count) {
                     break;
@@ -157,9 +178,37 @@ class QuestionGenerator
         } catch (TypeError|JsonException $exception) {
             throw new RuntimeException(__('ai.bad_response', ['model' => $model]), previous: $exception);
         }
-        $questions = $response['questions'] ?? null;
+        $questions = $response['questions'] ?? self::decodeLoose((string) $response->text)['questions'] ?? null;
 
         return is_array($questions) ? array_values($questions) : [];
+    }
+
+    /**
+     * Reads a JSON object from a reply the SDK could not parse: models
+     * sometimes wrap it in a ```json fence or add a sentence around it.
+     *
+     * @return array<string, mixed>
+     */
+    public static function decodeLoose(string $text): array
+    {
+        $text = trim($text);
+        if (preg_match('/```(?:json)?\s*(.*?)\s*```/s', $text, $fence) === 1) {
+            $text = $fence[1];
+        }
+        $start = strpos($text, '{');
+        $end = strrpos($text, '}');
+        if ($start === false || $end === false || $end <= $start) {
+            return [];
+        }
+        $decoded = json_decode(substr($text, $start, $end - $start + 1), true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /** Short, growing wait before asking again after a failed batch. */
+    private function pause(int $failures): void
+    {
+        Sleep::for($failures * 2)->seconds();
     }
 
     /**

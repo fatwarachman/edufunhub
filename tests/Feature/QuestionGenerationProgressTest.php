@@ -14,6 +14,7 @@ use App\Services\Ai\QuestionGenerator;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Sleep;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function (): void {
@@ -268,4 +269,103 @@ it('asks the model about a newly added subject by its catalog description', func
     QuestionWriter::assertPrompted(fn ($prompt) => str_contains($prompt->prompt, 'Pelajaran teknologi informasi'));
     expect($generation->items()->sole()->only(['status', 'error']))->toBe(['status' => 'done', 'error' => null])
         ->and(Question::query()->where('subject', $subject->key)->count())->toBe(1);
+});
+
+/** A valid generated question whose prompt is made unique by $n. */
+function retryQuestion(int $n): array
+{
+    return [
+        'prompt_id' => "Hasil {$n} + 1 adalah…", 'prompt_en' => "What is {$n} + 1?",
+        'options' => [['id' => (string) ($n + 1), 'en' => (string) ($n + 1)], ['id' => (string) ($n + 2), 'en' => (string) ($n + 2)], ['id' => (string) ($n + 3), 'en' => (string) ($n + 3)], ['id' => (string) ($n + 4), 'en' => (string) ($n + 4)]],
+        'answer' => 0, 'picture' => [], 'option_emoji' => [], 'hint_id' => 'Tambah satu.', 'hint_en' => 'Add one.',
+    ];
+}
+
+function connectRetryAi(): void
+{
+    Setting::set('ai.base_url', 'https://ai.test/v1', 'ai');
+    Setting::set('ai.api_key', Crypt::encryptString('sk-test-1234'), 'ai');
+    Setting::set('ai.model', 'gpt-4o-mini', 'ai');
+}
+
+it('asks again after an empty batch instead of stopping short of the target', function (): void {
+    Sleep::fake();
+    connectRetryAi();
+    $generation = progressGeneration(['math'], [4], 10);
+    QuestionWriter::fake([
+        ['questions' => array_map(retryQuestion(...), range(101, 105))],
+        ['questions' => []],
+        ['questions' => array_map(retryQuestion(...), range(106, 110))],
+    ]);
+
+    (new GenerateQuestions($generation, 'math', 4))->handle(app(QuestionGenerator::class));
+
+    expect($generation->items()->sole()->only(['status', 'created_count', 'error']))->toBe(['status' => 'done', 'created_count' => 10, 'error' => null])
+        ->and(Question::query()->where('generation_id', $generation->id)->count())->toBe(10);
+});
+
+it('reads questions from a reply wrapped in a json code fence', function (): void {
+    connectRetryAi();
+    $generation = progressGeneration(['math'], [4], 2);
+    $reply = "```json\n".json_encode(['questions' => [retryQuestion(201), retryQuestion(202)]])."\n```";
+    Http::fake(['ai.test/v1/chat/completions' => Http::response([
+        'id' => 'chatcmpl-1', 'object' => 'chat.completion', 'model' => 'gpt-4o-mini',
+        'choices' => [['index' => 0, 'message' => ['role' => 'assistant', 'content' => $reply], 'finish_reason' => 'stop']],
+        'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 10, 'total_tokens' => 20],
+    ])]);
+
+    (new GenerateQuestions($generation, 'math', 4))->handle(app(QuestionGenerator::class));
+
+    expect($generation->items()->sole()->only(['status', 'created_count']))->toBe(['status' => 'done', 'created_count' => 2]);
+    Http::assertSentCount(1);
+});
+
+it('retries a failed model call and keeps going', function (): void {
+    Sleep::fake();
+    connectRetryAi();
+    $generation = progressGeneration(['math'], [4], 5);
+    $calls = 0;
+    QuestionWriter::fake(function () use (&$calls): array {
+        if (++$calls === 1) {
+            throw new RuntimeException('gateway timeout');
+        }
+
+        return ['questions' => array_map(retryQuestion(...), range(301, 305))];
+    });
+
+    (new GenerateQuestions($generation, 'math', 4))->handle(app(QuestionGenerator::class));
+
+    expect($calls)->toBe(2)
+        ->and($generation->items()->sole()->only(['status', 'created_count', 'error']))->toBe(['status' => 'done', 'created_count' => 5, 'error' => null]);
+});
+
+it('explains a short run after the model keeps replying empty', function (): void {
+    Sleep::fake();
+    connectRetryAi();
+    $generation = progressGeneration(['math'], [4], 10);
+    $calls = 0;
+    QuestionWriter::fake(function () use (&$calls): array {
+        return ['questions' => ++$calls === 1 ? array_map(retryQuestion(...), range(401, 405)) : []];
+    });
+
+    (new GenerateQuestions($generation, 'math', 4))->handle(app(QuestionGenerator::class));
+
+    $item = $generation->items()->sole();
+    expect($calls)->toBe(1 + QuestionGenerator::MAX_FAILED_BATCHES + 1)
+        ->and($item->status)->toBe('done')
+        ->and($item->created_count)->toBe(5)
+        ->and($item->error)->toContain('math/4')->toContain('5')->toContain('10');
+    expect($generation->fresh()->status)->toBe('done');
+});
+
+it('gives up with the model error when every call fails', function (): void {
+    Sleep::fake();
+    connectRetryAi();
+    $generation = progressGeneration(['math'], [4], 5);
+    QuestionWriter::fake(fn () => throw new RuntimeException('model overloaded'));
+
+    (new GenerateQuestions($generation, 'math', 4))->handle(app(QuestionGenerator::class));
+
+    expect($generation->items()->sole()->only(['status', 'created_count']))->toBe(['status' => 'failed', 'created_count' => 0])
+        ->and($generation->fresh()->status)->toBe('failed');
 });

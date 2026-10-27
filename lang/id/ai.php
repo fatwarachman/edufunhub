@@ -20,6 +20,7 @@ return [
     'generation_started' => 'Membuat :total soal di latar belakang.',
     'generation_stopped' => 'Pembuatan soal dihentikan. Soal yang sudah jadi tetap disimpan.',
     'generation_not_running' => 'Permintaan ini sudah selesai atau sudah dihentikan.',
+    'generation_incomplete' => 'Hanya :created dari :target soal yang berhasil dibuat; balasan AI kosong atau tidak valid. Jalankan lagi untuk melengkapi.',
     'teacher_assigned' => ':name sekarang guru dan dapat membuka Ruang Guru.',
     'teacher_removed' => ':name bukan guru lagi.',
     'teacher_subjects_updated' => 'Mata pelajaran guru :name berhasil diperbarui.',
