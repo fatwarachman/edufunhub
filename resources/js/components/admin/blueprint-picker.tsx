@@ -1,4 +1,3 @@
-import { ConfirmDialog } from '@/components/admin/admin-kit';
 import {
     fieldClass,
     formatDateTime,
@@ -15,18 +14,18 @@ import {
 } from '@/components/ui/dialog';
 import { tr } from '@/lib/admin-i18n';
 import { cn } from '@/lib/utils';
-import { router, useForm, usePoll } from '@inertiajs/react';
+import { Link, router, useForm, usePoll } from '@inertiajs/react';
 import {
     Check,
     Download,
     FileText,
+    FolderOpen,
     Layers,
+    Library,
     Loader2,
-    Pencil,
     RefreshCw,
     Search,
     Sparkles,
-    Trash2,
     TriangleAlert,
     Upload,
     X,
@@ -71,41 +70,14 @@ export interface BlueprintLimits {
 const PANEL_CLASS =
     'flex min-w-0 flex-col gap-3 rounded-2xl border-2 border-[#1f2a44] bg-card p-3 shadow-[2px_2px_0_#1f2a44] sm:p-4 dark:border-white/20 dark:shadow-none';
 
-function formatSize(bytes: number): string {
+export function formatSize(bytes: number): string {
     return bytes >= 1024 * 1024
         ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
         : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
-/**
- * Pick the blueprint the AI follows for one request, plus upload, preview,
- * edit and delete of blueprints. Lives inside the generate form, so every
- * dialog form stops its submit event from reaching the outer form.
- */
-export function BlueprintPicker({
-    blueprints,
-    limits,
-    subjects,
-    pickedSubjects,
-    value,
-    error,
-    onChange,
-}: {
-    blueprints: Blueprint[];
-    limits: BlueprintLimits;
-    subjects: string[];
-    pickedSubjects: string[];
-    value: number | null;
-    error?: string;
-    onChange: (id: number | null) => void;
-}) {
-    const subjectLabel = useSubjectLabel();
-    const [query, setQuery] = useState('');
-    const [uploading, setUploading] = useState(false);
-    const [editing, setEditing] = useState<Blueprint | null>(null);
-    const [deleting, setDeleting] = useState<Blueprint | null>(null);
-    const [deleteBusy, setDeleteBusy] = useState(false);
-    const selected = blueprints.find((row) => row.id === value) ?? null;
+/** Polls the blueprint list while any blueprint is still being indexed. */
+export function useBlueprintIndexPolling(blueprints: Blueprint[]): void {
     const indexing = blueprints.some(
         (row) =>
             row.index_status === 'pending' || row.index_status === 'running',
@@ -123,41 +95,80 @@ export function BlueprintPicker({
         }
         return stop;
     }, [indexing, start, stop]);
-    const needle = query.trim().toLowerCase();
-    const rank = (row: Blueprint) =>
-        row.subject_key === null
-            ? 1
-            : pickedSubjects.includes(row.subject_key)
-              ? 0
-              : 2;
-    const visible = blueprints
-        .filter(
-            (row) =>
-                !needle ||
-                row.title.toLowerCase().includes(needle) ||
-                row.original_name.toLowerCase().includes(needle),
-        )
-        .sort((a, b) => rank(a) - rank(b) || b.id - a.id);
+}
 
-    const remove = () => {
-        if (!deleting) {
-            return;
-        }
-        router.delete(`/admin/questions/blueprints/${deleting.id}`, {
-            preserveScroll: true,
-            preserveState: true,
-            onStart: () => setDeleteBusy(true),
-            onSuccess: () => {
-                if (value === deleting.id) {
-                    onChange(null);
-                }
-            },
-            onFinish: () => {
-                setDeleteBusy(false);
-                setDeleting(null);
-            },
-        });
-    };
+/** Subject, file type, size, length and index state of a blueprint as chips. */
+export function BlueprintMeta({ blueprint }: { blueprint: Blueprint }) {
+    const subjectLabel = useSubjectLabel();
+
+    return (
+        <span className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+            <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium">
+                {blueprint.subject_key
+                    ? subjectLabel(blueprint.subject_key)
+                    : tr('All subjects')}
+            </span>
+            <span className="uppercase">{blueprint.extension}</span>·{' '}
+            {formatSize(blueprint.size)} ·{' '}
+            {tr('{0} characters', [formatNumber(blueprint.characters)])}
+            <IndexBadge blueprint={blueprint} />
+            {!blueprint.is_active && (
+                <span className="rounded-full bg-amber-100 px-1.5 py-0.5 font-medium text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                    {tr('Inactive')}
+                </span>
+            )}
+        </span>
+    );
+}
+
+/** Checkbox look shared by the blueprint list and the chooser modal. */
+export function BlueprintCheck({ checked }: { checked: boolean }) {
+    return (
+        <span
+            className={cn(
+                'grid size-5 shrink-0 place-items-center rounded-md border-2 transition-colors',
+                checked
+                    ? 'border-violet-600 bg-violet-600 text-white'
+                    : 'border-input bg-background',
+            )}
+            aria-hidden="true"
+        >
+            {checked && <Check className="size-3.5" strokeWidth={3} />}
+        </span>
+    );
+}
+
+/**
+ * The blueprints the AI follows for one request: shows the picked ones and
+ * a button that opens a modal with checkboxes to choose (or upload) them.
+ * Lives inside the generate form, so every dialog form stops its submit
+ * event from reaching the outer form.
+ */
+export function BlueprintPicker({
+    blueprints,
+    limits,
+    subjects,
+    pickedSubjects,
+    value,
+    max,
+    error,
+    onChange,
+}: {
+    blueprints: Blueprint[];
+    limits: BlueprintLimits;
+    subjects: string[];
+    pickedSubjects: string[];
+    value: number[];
+    max: number;
+    error?: string;
+    onChange: (ids: number[]) => void;
+}) {
+    const [choosing, setChoosing] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const selected = value
+        .map((id) => blueprints.find((row) => row.id === id))
+        .filter((row): row is Blueprint => row !== undefined);
+    useBlueprintIndexPolling(blueprints);
 
     return (
         <fieldset className={PANEL_CLASS} data-testid="gen-blueprint">
@@ -176,146 +187,102 @@ export function BlueprintPicker({
                             aria-live="polite"
                             data-testid="gen-blueprint-selected"
                         >
-                            {selected
-                                ? tr('AI follows: {0}', [selected.title])
+                            {selected.length > 0
+                                ? tr('AI follows {0} of max {1} blueprints', [
+                                      selected.length,
+                                      max,
+                                  ])
                                 : tr(
-                                      'Upload a kisi-kisi document so the AI follows its competencies and indicators.',
+                                      'Pick kisi-kisi documents so the AI follows their competencies and indicators.',
                                   )}
                         </span>
                     </span>
                 </div>
                 <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-                    {blueprints.length > 3 && (
-                        <div className="relative min-w-0 flex-1 sm:w-56 sm:flex-none">
-                            <Search
-                                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                                aria-hidden="true"
-                            />
-                            <input
-                                type="search"
-                                value={query}
-                                onChange={(event) =>
-                                    setQuery(event.target.value)
-                                }
-                                placeholder={tr('Search blueprints…')}
-                                aria-label={tr('Search blueprints')}
-                                className={cn(fieldClass, 'w-full pr-8 pl-9')}
-                                data-testid="gen-blueprint-search"
-                            />
-                            {query && (
-                                <button
-                                    type="button"
-                                    onClick={() => setQuery('')}
-                                    aria-label={tr('Clear search')}
-                                    className="absolute top-1/2 right-2 grid size-6 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-                                >
-                                    <X className="size-3.5" />
-                                </button>
-                            )}
-                        </div>
-                    )}
+                    <Link
+                        href="/admin/questions/blueprints"
+                        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-semibold text-foreground hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        data-testid="gen-blueprint-library"
+                    >
+                        <Library className="size-4" aria-hidden="true" />
+                        {tr('Blueprint library')}
+                    </Link>
                     <button
                         type="button"
-                        onClick={() => setUploading(true)}
+                        onClick={() => setChoosing(true)}
                         className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-emerald-400 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:bg-emerald-950/70"
-                        data-testid="gen-blueprint-upload"
+                        aria-haspopup="dialog"
+                        data-testid="gen-blueprint-open"
                     >
-                        <Upload className="size-4" aria-hidden="true" />
-                        {tr('Upload blueprint')}
+                        <FolderOpen className="size-4" aria-hidden="true" />
+                        {selected.length > 0
+                            ? tr('Change blueprints')
+                            : tr('Choose blueprints')}
                     </button>
                 </div>
             </div>
 
-            <ul
-                className="grid max-h-80 gap-2 overflow-y-auto pr-1 md:grid-cols-2"
-                role="radiogroup"
-                aria-label={tr('Question blueprint')}
-                data-testid="gen-blueprint-list"
-            >
-                <li className="min-w-0">
-                    <BlueprintOption
-                        checked={value === null}
-                        onSelect={() => onChange(null)}
-                        testId="gen-blueprint-none"
-                    >
-                        <span className="text-sm font-medium text-foreground">
-                            {tr('No blueprint')}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                            {tr(
-                                'AI follows only the subject, topic, grade and level.',
-                            )}
-                        </span>
-                    </BlueprintOption>
-                </li>
-                {visible.map((row) => (
-                    <li
-                        key={row.id}
-                        className="flex min-w-0 items-stretch gap-1"
-                    >
-                        <BlueprintOption
-                            checked={value === row.id}
-                            disabled={!row.is_active}
-                            onSelect={() => onChange(row.id)}
-                            testId={`gen-blueprint-${row.id}`}
+            {selected.length > 0 ? (
+                <ul
+                    className="grid gap-2 md:grid-cols-2"
+                    data-testid="gen-blueprint-current"
+                >
+                    {selected.map((row) => (
+                        <li
+                            key={row.id}
+                            className="flex min-w-0 items-start gap-2.5 rounded-xl border border-violet-400 bg-violet-50 p-2.5 dark:border-violet-700 dark:bg-violet-950/40"
+                            data-testid={`gen-blueprint-current-${row.id}`}
                         >
-                            <span className="text-sm font-medium break-words text-foreground">
-                                {row.title}
-                            </span>
-                            <span className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
-                                <span className="rounded-full bg-muted px-1.5 py-0.5 font-medium">
-                                    {row.subject_key
-                                        ? subjectLabel(row.subject_key)
-                                        : tr('All subjects')}
+                            <BlueprintCheck checked />
+                            <span className="flex min-w-0 flex-1 flex-col gap-1">
+                                <span className="text-sm font-medium break-words text-foreground">
+                                    {row.title}
                                 </span>
-                                <span className="uppercase">
-                                    {row.extension}
-                                </span>
-                                · {formatSize(row.size)} ·{' '}
-                                {tr('{0} characters', [
-                                    formatNumber(row.characters),
-                                ])}
-                                <IndexBadge blueprint={row} />
-                                {!row.is_active && (
-                                    <span className="rounded-full bg-amber-100 px-1.5 py-0.5 font-medium text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-                                        {tr('Inactive')}
-                                    </span>
-                                )}
+                                <BlueprintMeta blueprint={row} />
                             </span>
-                        </BlueprintOption>
-                        <div className="flex shrink-0 flex-col justify-center gap-1">
                             <button
                                 type="button"
-                                onClick={() => setEditing(row)}
-                                className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                aria-label={tr('View or edit {0}', [row.title])}
-                                title={tr('View or edit')}
-                                data-testid={`gen-blueprint-${row.id}-edit`}
+                                onClick={() =>
+                                    onChange(
+                                        value.filter((id) => id !== row.id),
+                                    )
+                                }
+                                className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                aria-label={tr('Remove {0}', [row.title])}
+                                title={tr('Remove blueprint')}
+                                data-testid={`gen-blueprint-remove-${row.id}`}
                             >
-                                <Pencil className="size-4" />
+                                <X className="size-4" />
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => setDeleting(row)}
-                                className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                aria-label={tr('Delete {0}', [row.title])}
-                                title={tr('Delete')}
-                                data-testid={`gen-blueprint-${row.id}-delete`}
-                            >
-                                <Trash2 className="size-4" />
-                            </button>
-                        </div>
-                    </li>
-                ))}
-            </ul>
-            {blueprints.length > 0 && visible.length === 0 && (
-                <p className="rounded-xl border border-dashed border-border px-3 py-4 text-center text-sm text-muted-foreground">
-                    {tr('No blueprint matches “{0}”.', [query.trim()])}
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p className="rounded-xl border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
+                    {tr('AI follows only the subject, topic, grade and level.')}
                 </p>
             )}
-            {selected && <RetrievalNote blueprint={selected} limits={limits} />}
+            {selected.length > 0 && (
+                <RetrievalNote blueprints={selected} limits={limits} />
+            )}
             <InputError message={error} />
 
+            <BlueprintChooserDialog
+                open={choosing}
+                blueprints={blueprints}
+                pickedSubjects={pickedSubjects}
+                value={value}
+                max={max}
+                onClose={() => setChoosing(false)}
+                onChoose={(ids) => {
+                    onChange(ids);
+                    setChoosing(false);
+                }}
+                onUpload={() => {
+                    setChoosing(false);
+                    setUploading(true);
+                }}
+            />
             <UploadDialog
                 open={uploading}
                 limits={limits}
@@ -326,28 +293,222 @@ export function BlueprintPicker({
                 onClose={() => setUploading(false)}
                 onUploaded={(id) => {
                     setUploading(false);
-                    onChange(id);
+                    if (!value.includes(id) && value.length < max) {
+                        onChange([...value, id]);
+                    }
                 }}
             />
-            <EditDialog
-                blueprint={editing}
-                limits={limits}
-                subjects={subjects}
-                onClose={() => setEditing(null)}
-            />
-            <ConfirmDialog
-                open={deleting !== null}
-                title="Delete question blueprint?"
-                message={tr(
-                    '“{0}” and its file will be removed. Questions already generated with it stay in the bank.',
-                    [deleting?.title ?? ''],
-                )}
-                confirmLabel={tr('Delete')}
-                processing={deleteBusy}
-                onClose={() => setDeleting(null)}
-                onConfirm={remove}
-            />
         </fieldset>
+    );
+}
+
+/**
+ * Modal list of blueprints with checkboxes: search, the ones matching the
+ * picked subjects first, and a confirm button that applies the ticks.
+ */
+function BlueprintChooserDialog({
+    open,
+    blueprints,
+    pickedSubjects,
+    value,
+    max,
+    onClose,
+    onChoose,
+    onUpload,
+}: {
+    open: boolean;
+    blueprints: Blueprint[];
+    pickedSubjects: string[];
+    value: number[];
+    max: number;
+    onClose: () => void;
+    onChoose: (ids: number[]) => void;
+    onUpload: () => void;
+}) {
+    return (
+        <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+            <DialogContent
+                className={cn(DIALOG_CLASS, 'flex flex-col sm:max-w-3xl')}
+                data-testid="blueprint-chooser"
+            >
+                {open && (
+                    <ChooserBody
+                        blueprints={blueprints}
+                        pickedSubjects={pickedSubjects}
+                        value={value}
+                        max={max}
+                        onClose={onClose}
+                        onChoose={onChoose}
+                        onUpload={onUpload}
+                    />
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+/** Content of the chooser; mounted on open so it starts from the current picks. */
+function ChooserBody({
+    blueprints,
+    pickedSubjects,
+    value,
+    max,
+    onClose,
+    onChoose,
+    onUpload,
+}: {
+    blueprints: Blueprint[];
+    pickedSubjects: string[];
+    value: number[];
+    max: number;
+    onClose: () => void;
+    onChoose: (ids: number[]) => void;
+    onUpload: () => void;
+}) {
+    const [query, setQuery] = useState('');
+    const [pending, setPending] = useState<number[]>(value);
+    const full = pending.length >= max;
+    const toggle = (id: number) =>
+        setPending((current) =>
+            current.includes(id)
+                ? current.filter((item) => item !== id)
+                : current.length >= max
+                  ? current
+                  : [...current, id],
+        );
+    const needle = query.trim().toLowerCase();
+    const rank = (row: Blueprint) =>
+        row.subject_key === null
+            ? 1
+            : pickedSubjects.includes(row.subject_key)
+              ? 0
+              : 2;
+    const visible = blueprints
+        .filter(
+            (row) =>
+                !needle ||
+                row.title.toLowerCase().includes(needle) ||
+                row.original_name.toLowerCase().includes(needle),
+        )
+        .sort(
+            (a, b) =>
+                Number(b.is_active) - Number(a.is_active) ||
+                rank(a) - rank(b) ||
+                b.id - a.id,
+        );
+
+    return (
+        <>
+            <DialogHeader>
+                <DialogTitle>{tr('Choose question blueprints')}</DialogTitle>
+                <DialogDescription>
+                    {tr(
+                        'Tick the documents the AI follows for this request (max {0}).',
+                        [max],
+                    )}
+                </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="relative min-w-0 flex-1">
+                    <Search
+                        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                        aria-hidden="true"
+                    />
+                    <input
+                        type="search"
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        placeholder={tr('Search blueprints…')}
+                        aria-label={tr('Search blueprints')}
+                        className={cn(fieldClass, 'w-full pr-3 pl-9')}
+                        data-testid="blueprint-chooser-search"
+                    />
+                </div>
+                <button
+                    type="button"
+                    onClick={onUpload}
+                    className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-emerald-400 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:bg-emerald-950/70"
+                    data-testid="blueprint-chooser-upload"
+                >
+                    <Upload className="size-4" aria-hidden="true" />
+                    {tr('Upload blueprint')}
+                </button>
+            </div>
+            <ul
+                className="grid max-h-[55dvh] gap-2 overflow-y-auto pr-1 md:grid-cols-2"
+                aria-label={tr('Question blueprint')}
+                data-testid="gen-blueprint-list"
+            >
+                {visible.map((row) => {
+                    const checked = pending.includes(row.id);
+                    return (
+                        <li key={row.id} className="min-w-0">
+                            <BlueprintOption
+                                checked={checked}
+                                disabled={!row.is_active || (!checked && full)}
+                                onSelect={() => toggle(row.id)}
+                                testId={`gen-blueprint-${row.id}`}
+                            >
+                                <span className="text-sm font-medium break-words text-foreground">
+                                    {row.title}
+                                </span>
+                                <BlueprintMeta blueprint={row} />
+                            </BlueprintOption>
+                        </li>
+                    );
+                })}
+            </ul>
+            {blueprints.length === 0 && (
+                <p className="rounded-xl border border-dashed border-border px-3 py-4 text-center text-sm text-muted-foreground">
+                    {tr('No question blueprints yet. Upload one first.')}
+                </p>
+            )}
+            {blueprints.length > 0 && visible.length === 0 && (
+                <p className="rounded-xl border border-dashed border-border px-3 py-4 text-center text-sm text-muted-foreground">
+                    {tr('No blueprint matches “{0}”.', [query.trim()])}
+                </p>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <span
+                    className="text-xs text-muted-foreground tabular-nums"
+                    aria-live="polite"
+                    data-testid="blueprint-chooser-count"
+                >
+                    {tr('{0} of max {1} picked', [pending.length, max])}
+                    {pending.length > 0 && (
+                        <>
+                            {' · '}
+                            <button
+                                type="button"
+                                onClick={() => setPending([])}
+                                className="link"
+                                data-testid="blueprint-chooser-clear"
+                            >
+                                {tr('Clear')}
+                            </button>
+                        </>
+                    )}
+                </span>
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="h-9 rounded-lg px-4 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                        {tr('Cancel')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => onChoose(pending)}
+                        className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                        data-testid="blueprint-chooser-confirm"
+                    >
+                        <Check className="size-4" aria-hidden="true" />
+                        {tr('Use blueprints')}
+                    </button>
+                </div>
+            </div>
+        </>
     );
 }
 
@@ -367,7 +528,7 @@ function BlueprintOption({
     return (
         <button
             type="button"
-            role="radio"
+            role="checkbox"
             aria-checked={checked}
             disabled={disabled}
             onClick={onSelect}
@@ -379,16 +540,8 @@ function BlueprintOption({
             )}
             data-testid={testId}
         >
-            <span
-                className={cn(
-                    'mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border transition-colors',
-                    checked
-                        ? 'border-violet-600 bg-violet-600 text-white'
-                        : 'border-input bg-background',
-                )}
-                aria-hidden="true"
-            >
-                {checked && <Check className="size-3.5" />}
+            <span className="mt-0.5">
+                <BlueprintCheck checked={checked} />
             </span>
             <span className="flex min-w-0 flex-col gap-1">{children}</span>
         </button>
@@ -426,7 +579,7 @@ function SubjectSelect({
 }
 
 /** Retrieval state of a blueprint as a small chip. */
-function IndexBadge({ blueprint }: { blueprint: Blueprint }) {
+export function IndexBadge({ blueprint }: { blueprint: Blueprint }) {
     if (
         blueprint.index_status === 'pending' ||
         blueprint.index_status === 'running'
@@ -476,17 +629,20 @@ function IndexBadge({ blueprint }: { blueprint: Blueprint }) {
     );
 }
 
-/** How the AI reads the picked blueprint: only the sections that fit each subject and grade. */
+/** How the AI reads the picked blueprints: only the sections that fit each subject and grade. */
 function RetrievalNote({
-    blueprint,
+    blueprints,
     limits,
 }: {
-    blueprint: Blueprint;
+    blueprints: Blueprint[];
     limits: BlueprintLimits;
 }) {
-    const searching = blueprint.embedding_model
-        ? tr('semantic + keyword search ({0})', [blueprint.embedding_model])
+    const budget = Math.floor(limits.budget / Math.max(1, blueprints.length));
+    const embedding = blueprints.find((row) => row.embedding_model);
+    const searching = embedding
+        ? tr('semantic + keyword search ({0})', [embedding.embedding_model])
         : tr('keyword search');
+    const long = blueprints.some((row) => row.characters > budget);
 
     return (
         <div
@@ -498,40 +654,63 @@ function RetrievalNote({
                     className="mt-0.5 size-3.5 shrink-0"
                     aria-hidden="true"
                 />
-                {blueprint.characters <= limits.budget
-                    ? tr('Short blueprint: the AI reads all of it.')
-                    : tr(
-                          'Long blueprint ({0} characters): for every subject and grade the AI gets only the most relevant sections, up to {1} characters, found with {2}.',
-                          [
-                              formatNumber(blueprint.characters),
-                              formatNumber(limits.budget),
-                              searching,
-                          ],
-                      )}
+                {!long
+                    ? blueprints.length > 1
+                        ? tr('Short blueprints: the AI reads all of them.')
+                        : tr('Short blueprint: the AI reads all of it.')
+                    : blueprints.length > 1
+                      ? tr(
+                            '{0} blueprints share {1} characters: for every subject and grade the AI gets up to {2} characters of the most relevant sections of each, found with {3}.',
+                            [
+                                blueprints.length,
+                                formatNumber(limits.budget),
+                                formatNumber(budget),
+                                searching,
+                            ],
+                        )
+                      : tr(
+                            'Long blueprint ({0} characters): for every subject and grade the AI gets only the most relevant sections, up to {1} characters, found with {2}.',
+                            [
+                                formatNumber(blueprints[0].characters),
+                                formatNumber(limits.budget),
+                                searching,
+                            ],
+                        )}
             </span>
-            {blueprint.index_status === 'failed' && blueprint.index_error && (
-                <span className="flex items-start gap-2 text-red-700 dark:text-red-300">
-                    <TriangleAlert
-                        className="mt-0.5 size-3.5 shrink-0"
-                        aria-hidden="true"
-                    />
-                    {blueprint.index_error}
-                </span>
-            )}
-            {blueprint.index_status === 'ready' && blueprint.index_error && (
-                <span className="flex items-start gap-2 text-amber-700 dark:text-amber-300">
-                    <TriangleAlert
-                        className="mt-0.5 size-3.5 shrink-0"
-                        aria-hidden="true"
-                    />
-                    {tr(
-                        'Semantic search unavailable, keyword search is used: {0}',
-                        [blueprint.index_error],
-                    )}
-                </span>
-            )}
+            {blueprints.map((blueprint) => (
+                <IndexWarning key={blueprint.id} blueprint={blueprint} />
+            ))}
         </div>
     );
+}
+
+function IndexWarning({ blueprint }: { blueprint: Blueprint }) {
+    if (!blueprint.index_error) {
+        return null;
+    }
+    const prefix = `${blueprint.title}: `;
+
+    return blueprint.index_status === 'failed' ? (
+        <span className="flex items-start gap-2 text-red-700 dark:text-red-300">
+            <TriangleAlert
+                className="mt-0.5 size-3.5 shrink-0"
+                aria-hidden="true"
+            />
+            {prefix}
+            {blueprint.index_error}
+        </span>
+    ) : blueprint.index_status === 'ready' ? (
+        <span className="flex items-start gap-2 text-amber-700 dark:text-amber-300">
+            <TriangleAlert
+                className="mt-0.5 size-3.5 shrink-0"
+                aria-hidden="true"
+            />
+            {prefix}
+            {tr('Semantic search unavailable, keyword search is used: {0}', [
+                blueprint.index_error,
+            ])}
+        </span>
+    ) : null;
 }
 
 interface PreviewSection {
@@ -755,7 +934,7 @@ const gradeShort = (grade: number) =>
 const DIALOG_CLASS =
     'max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-xl dark:border-white/15 dark:shadow-[0_0_24px_rgba(255,255,255,0.06)]';
 
-function UploadDialog({
+export function UploadDialog({
     open,
     limits,
     subjects,
@@ -971,7 +1150,7 @@ function UploadDialog({
     );
 }
 
-function EditDialog({
+export function EditDialog({
     blueprint,
     limits,
     subjects,

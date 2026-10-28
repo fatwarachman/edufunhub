@@ -31,8 +31,34 @@
 
 return [
     [
+        'version' => '0.58.0',
+        'date' => '2026-10-28',
+        'time' => '11:05',
+        'changes' => [
+            [
+                'key' => 'question-blueprint-library',
+                'type' => 'feature',
+                'title' => ['id' => 'Halaman daftar kisi-kisi soal', 'en' => 'Question blueprint library page'],
+                'body' => ['id' => 'Halaman baru Kisi-kisi soal (/admin/questions/blueprints) menampilkan semua dokumen kisi-kisi beserta mapel, ukuran, status indeks, jumlah pemakaian, dan pengunggah. Admin bisa mencari, memfilter per mapel dan status, mengunggah, melihat/mengedit teks, mengunduh file asli, dan menghapus kisi-kisi. Tombol ke halaman ini ada di Bank Soal dan di halaman Buat soal AI.', 'en' => 'The new Question blueprints page (/admin/questions/blueprints) lists every blueprint document with its subject, size, index status, usage count and uploader. Admins can search, filter by subject and status, upload, view/edit the text, download the original file and delete blueprints. The page is linked from the Question Bank and the Generate questions with AI page.'],
+            ],
+            [
+                'key' => 'blueprint-chooser-modal',
+                'type' => 'improvement',
+                'title' => ['id' => 'Pilih beberapa kisi-kisi dengan centang', 'en' => 'Pick several blueprints with checkboxes'],
+                'body' => ['id' => 'Satu permintaan soal AI kini bisa mengikuti sampai 5 kisi-kisi sekaligus. Di halaman Kisi-kisi soal, setiap baris punya kotak centang (plus Pilih semua) dan tombol Gunakan untuk buat soal AI yang membuka form Buat soal AI dengan kisi-kisi tersebut sudah terpilih. Di form Buat soal AI, tombol Pilih kisi-kisi membuka modal berisi pencarian dan kotak centang; kisi-kisi terpilih tampil ringkas dan bisa dilepas satu per satu. Jatah teks kisi-kisi untuk AI dibagi rata antar kisi-kisi, jadi prompt tetap ringkas.', 'en' => 'One AI question request can now follow up to 5 blueprints at once. On the Question blueprints page every row has a checkbox (plus Pick all) and a Use to generate questions button that opens the Generate questions with AI form with those blueprints already picked. On that form, the Choose blueprints button opens a modal with search and checkboxes; picked blueprints are shown compactly and can be removed one by one. The blueprint text budget sent to the AI is split evenly between them, so the prompt stays short.'],
+            ],
+            [
+                'key' => 'ai-batch-max-40',
+                'type' => 'improvement',
+                'title' => ['id' => 'Maksimal 40 soal AI per topik & kelas', 'en' => 'Up to 40 AI questions per topic & grade'],
+                'body' => ['id' => 'Batas jumlah soal yang dibuat AI per topik dan kelas dalam satu permintaan dinaikkan dari 20 menjadi 40. Batas total 800 soal per permintaan tetap berlaku. Kolom jumlah soal kini berupa kotak teks biasa yang hanya menerima angka (1–40, awalnya 5): isinya bisa dihapus lalu diketik ulang, dan bila dibiarkan kosong kembali ke 5.', 'en' => 'The number of questions the AI writes per topic and grade in one request is raised from 20 to 40. The overall limit of 800 questions per request still applies. The amount field is now a plain text box that only accepts digits (1–40, 5 by default): it can be cleared and retyped, and an empty field returns to 5.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.57.1',
         'date' => '2026-10-27',
+        'time' => '22:59',
         'changes' => [
             [
                 'key' => 'ai-generation-full-count',

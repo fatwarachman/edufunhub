@@ -60,6 +60,7 @@ function humanize(segment: string): string {
     }
     const words = decodeURIComponent(segment).replace(/[-_]+/g, ' ').trim();
     const known: Record<string, string> = {
+        blueprints: 'Question blueprints',
         create: 'Create',
         edit: 'Edit',
         generate: 'Generate',

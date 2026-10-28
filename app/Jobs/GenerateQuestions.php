@@ -21,7 +21,7 @@ class GenerateQuestions implements ShouldQueue
 
     public int $tries = 1;
 
-    public int $timeout = 1200;
+    public int $timeout = 2400;
 
     public function __construct(public QuestionGeneration $generation, public string $subject, public int $grade, public ?int $topicId = null)
     {

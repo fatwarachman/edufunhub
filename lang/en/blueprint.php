@@ -10,6 +10,7 @@ return [
     'saved' => 'Question blueprint saved.',
     'deleted' => 'Question blueprint deleted.',
     'invalid' => 'The question blueprint is missing or inactive.',
+    'too_many' => 'Pick at most :max question blueprints.',
     'reindexing' => 'The blueprint is being reindexed.',
     'embedding_off' => 'No embedding model is set.',
     'embedding_http' => 'The AI server answered HTTP :status for embedding model :model. Make sure the model supports /embeddings.',

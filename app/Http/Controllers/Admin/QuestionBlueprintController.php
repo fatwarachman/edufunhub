@@ -6,15 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\QuestionBlueprintRequest;
 use App\Jobs\IndexQuestionBlueprint;
 use App\Models\QuestionBlueprint;
+use App\Models\QuestionGeneration;
+use App\Models\Subject;
 use App\Services\Ai\BlueprintChunker;
 use App\Services\Ai\BlueprintRetriever;
 use App\Services\Ai\BlueprintTextExtractor;
+use App\Services\Ai\EmbeddingClient;
 use App\Services\Ai\QuestionGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -24,6 +29,33 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class QuestionBlueprintController extends Controller
 {
+    /**
+     * Upload and parsing limits shown next to the blueprint forms.
+     *
+     * @return array{extensions: list<string>, maxKb: int, maxContent: int, budget: int, embeddingModel: ?string}
+     */
+    public static function limits(): array
+    {
+        return [
+            'extensions' => BlueprintTextExtractor::EXTENSIONS,
+            'maxKb' => QuestionBlueprint::MAX_KB,
+            'maxContent' => QuestionBlueprint::MAX_CONTENT,
+            'budget' => BlueprintRetriever::BUDGET,
+            'embeddingModel' => app(EmbeddingClient::class)->model(),
+        ];
+    }
+
+    /** Library of every uploaded blueprint (kisi-kisi soal) with its index state. */
+    public function index(): Response
+    {
+        return Inertia::render('admin/questions/blueprints', [
+            'blueprints' => QuestionBlueprint::adminList(),
+            'blueprintLimits' => self::limits(),
+            'subjects' => Subject::activeKeys(),
+            'maxBlueprints' => QuestionGeneration::MAX_BLUEPRINTS,
+        ]);
+    }
+
     public function store(QuestionBlueprintRequest $request, BlueprintTextExtractor $extractor): RedirectResponse
     {
         $file = $request->file('file');

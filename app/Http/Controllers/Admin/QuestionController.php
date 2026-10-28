@@ -311,7 +311,7 @@ class QuestionController extends Controller
      */
     private function batchSummary(int $id): ?array
     {
-        $generation = QuestionGeneration::query()->with(['requester:id,name', 'blueprint:id,title'])->find($id);
+        $generation = QuestionGeneration::query()->with(['requester:id,name', 'blueprint:id,title', 'blueprints:id,title'])->find($id);
         if ($generation === null) {
             return null;
         }
@@ -323,7 +323,7 @@ class QuestionController extends Controller
             'grades' => array_values(array_map('intval', $generation->grades ?? [])),
             'level' => Question::normalizeLevel($generation->level),
             'english_only' => (bool) $generation->english_only,
-            'blueprint' => $generation->blueprint?->title,
+            'blueprint' => $generation->blueprintList()->pluck('title')->implode(', ') ?: null,
             'inactive' => $generation->questions()->where('is_active', false)->count(),
         ];
     }
