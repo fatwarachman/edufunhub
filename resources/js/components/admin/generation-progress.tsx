@@ -42,6 +42,7 @@ export interface Generation {
     activate: boolean;
     english_only?: boolean;
     blueprint?: { id: number; title: string } | null;
+    blueprints?: { id: number; title: string }[];
     status: 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
     total_jobs: number;
     done_jobs: number;
@@ -219,10 +220,17 @@ export function GenerationRow({ generation: g }: { generation: Generation }) {
                 · {g.grades.map(gradeLabel).join(', ')} · {g.per_combination}{' '}
                 {tr('each ·')}{' '}
                 {g.activate ? tr('active') : tr('inactive for review')}
-                {g.blueprint && (
+                {(g.blueprints?.length || g.blueprint) && (
                     <span data-testid={`generation-${g.id}-blueprint`}>
                         {' '}
-                        · {tr('Blueprint: {0}', [g.blueprint.title])}
+                        ·{' '}
+                        {tr('Blueprint: {0}', [
+                            g.blueprints?.length
+                                ? g.blueprints
+                                      .map((blueprint) => blueprint.title)
+                                      .join(', ')
+                                : (g.blueprint?.title ?? ''),
+                        ])}
                     </span>
                 )}
                 {g.english_only && (

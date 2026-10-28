@@ -124,6 +124,7 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::get('/questions/generate', [QuestionGenerationController::class, 'index'])->name('questions.generate');
             Route::post('/questions/generate', [QuestionGenerationController::class, 'store'])->name('questions.generate.store');
             Route::post('/questions/generate/{generation}/cancel', [QuestionGenerationController::class, 'cancel'])->middleware('throttle:20,1,questions.generate.cancel')->name('questions.generate.cancel');
+            Route::get('/questions/blueprints', [QuestionBlueprintController::class, 'index'])->name('questions.blueprints.index');
             Route::post('/questions/blueprints', [QuestionBlueprintController::class, 'store'])->middleware('throttle:20,1,questions.blueprints.store')->name('questions.blueprints.store');
             Route::put('/questions/blueprints/{blueprint}', [QuestionBlueprintController::class, 'update'])->middleware('throttle:60,1,questions.blueprints.update')->name('questions.blueprints.update');
             Route::post('/questions/blueprints/{blueprint}/reindex', [QuestionBlueprintController::class, 'reindex'])->middleware('throttle:20,1,questions.blueprints.reindex')->name('questions.blueprints.reindex');

@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -80,10 +82,14 @@ class QuestionBlueprint extends Model
         return in_array($this->index_status, [self::INDEX_PENDING, self::INDEX_RUNNING], true);
     }
 
-    /** @return HasMany<QuestionGeneration, $this> */
-    public function generations(): HasMany
+    /**
+     * AI requests that followed this blueprint.
+     *
+     * @return BelongsToMany<QuestionGeneration, $this>
+     */
+    public function generations(): BelongsToMany
     {
-        return $this->hasMany(QuestionGeneration::class, 'blueprint_id');
+        return $this->belongsToMany(QuestionGeneration::class, 'question_blueprint_generation', 'blueprint_id', 'generation_id');
     }
 
     /** @param  Builder<QuestionBlueprint>  $query */
@@ -96,6 +102,21 @@ class QuestionBlueprint extends Model
     public function promptText(): string
     {
         return Str::limit(trim($this->content), self::MAX_PROMPT, "\n[...]");
+    }
+
+    /**
+     * Every blueprint, newest first, in the admin payload shape.
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    public static function adminList(): Collection
+    {
+        return static::query()
+            ->with('uploader:id,name')
+            ->withCount('generations')
+            ->latest('id')
+            ->get()
+            ->map(fn (QuestionBlueprint $blueprint): array => $blueprint->toAdminPayload());
     }
 
     /**

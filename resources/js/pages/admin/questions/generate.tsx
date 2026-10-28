@@ -36,7 +36,6 @@ import {
     Languages,
     Loader2,
     Minus,
-    Plus,
     Search,
     Sparkles,
     Star,
@@ -62,11 +61,16 @@ interface Props {
     grades: number[];
     games: string[];
     maxPerCombination: number;
+    maxBlueprints: number;
+    preselectedBlueprints: number[];
     maxTotal: number;
     aiTotal: number;
     generations: Generation[];
     errors?: Record<string, string>;
 }
+
+/** Questions per topic & grade when the form opens or the field is left empty. */
+const DEFAULT_PER_COMBINATION = 5;
 
 export default function GenerateQuestions({
     ai,
@@ -78,6 +82,8 @@ export default function GenerateQuestions({
     grades,
     games,
     maxPerCombination,
+    maxBlueprints,
+    preselectedBlueprints,
     maxTotal,
     aiTotal,
     generations,
@@ -88,12 +94,12 @@ export default function GenerateQuestions({
         subjects: [] as string[],
         topic_ids: [] as number[],
         grades: [] as number[],
-        per_combination: 5,
+        per_combination: DEFAULT_PER_COMBINATION,
         level: 1,
         games: [...games],
         activate: false,
         english_only: false,
-        blueprint_id: null as number | null,
+        blueprint_ids: [...preselectedBlueprints],
     });
     const { data, setData, errors, processing } = form;
     const pickedSubjects = data.scope === 'all' ? subjects : data.subjects;
@@ -256,11 +262,16 @@ export default function GenerateQuestions({
                                         .map((topic) => topic.subject_key),
                                 ]),
                             ]}
-                            value={data.blueprint_id}
+                            value={data.blueprint_ids}
+                            max={maxBlueprints}
                             error={
-                                (errors as Record<string, string>).blueprint_id
+                                Object.entries(
+                                    errors as Record<string, string>,
+                                ).find(([key]) =>
+                                    key.startsWith('blueprint_ids'),
+                                )?.[1]
                             }
-                            onChange={(id) => setData('blueprint_id', id)}
+                            onChange={(ids) => setData('blueprint_ids', ids)}
                         />
 
                         <LevelPicker
@@ -606,8 +617,19 @@ function LevelPicker({
     onLevel: (level: number) => void;
     onPer: (value: number) => void;
 }) {
-    const clamp = (value: number) =>
-        Math.min(maxPerCombination, Math.max(1, Math.round(value) || 1));
+    const [perText, setPerText] = useState(String(perCombination));
+    const typePer = (raw: string) => {
+        const digits = raw.replace(/\D/g, '').replace(/^0+/, '').slice(0, 3);
+        const value = Math.min(maxPerCombination, Number(digits || 0));
+        setPerText(digits === '' ? '' : String(value));
+        onPer(value);
+    };
+    const settlePer = () => {
+        if (perCombination < 1) {
+            setPerText(String(DEFAULT_PER_COMBINATION));
+            onPer(DEFAULT_PER_COMBINATION);
+        }
+    };
 
     return (
         <fieldset className={PANEL_CLASS} data-testid="gen-level">
@@ -686,43 +708,31 @@ function LevelPicker({
                     >
                         {tr('Questions per topic & grade')}
                     </label>
-                    <div className="flex items-center gap-1.5">
-                        <button
-                            type="button"
-                            onClick={() => onPer(clamp(perCombination - 1))}
-                            disabled={perCombination <= 1}
-                            aria-label={tr('Fewer questions')}
-                            className="grid size-9 place-items-center rounded-lg border border-border text-foreground hover:bg-muted disabled:opacity-40"
-                        >
-                            <Minus className="size-4" />
-                        </button>
-                        <input
-                            id="gen-per"
-                            type="number"
-                            min={1}
-                            max={maxPerCombination}
-                            value={perCombination}
-                            onChange={(event) =>
-                                onPer(clamp(Number(event.target.value)))
-                            }
-                            className={cn(
-                                fieldClass,
-                                'w-16 text-center tabular-nums',
-                            )}
-                            data-testid="gen-per"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => onPer(clamp(perCombination + 1))}
-                            disabled={perCombination >= maxPerCombination}
-                            aria-label={tr('More questions')}
-                            className="grid size-9 place-items-center rounded-lg border border-border text-foreground hover:bg-muted disabled:opacity-40"
-                        >
-                            <Plus className="size-4" />
-                        </button>
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">
-                        {tr('Max {0}', [maxPerCombination])}
+                    <input
+                        id="gen-per"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        autoComplete="off"
+                        maxLength={3}
+                        value={perText}
+                        onChange={(event) => typePer(event.target.value)}
+                        onBlur={settlePer}
+                        aria-describedby="gen-per-hint"
+                        aria-invalid={perCombination < 1}
+                        className={cn(
+                            fieldClass,
+                            'w-24 text-center tabular-nums',
+                            perCombination < 1 &&
+                                'border-destructive focus-visible:ring-destructive',
+                        )}
+                        data-testid="gen-per"
+                    />
+                    <span
+                        id="gen-per-hint"
+                        className="text-[11px] text-muted-foreground"
+                    >
+                        {tr('Whole number 1–{0}', [maxPerCombination])}
                     </span>
                 </div>
             </div>

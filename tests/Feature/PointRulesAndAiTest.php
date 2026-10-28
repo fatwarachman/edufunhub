@@ -196,9 +196,22 @@ describe('question generation', function (): void {
         'unknown subject' => [['subjects' => ['music']], 'subjects.0'],
         'grade 13' => [['grades' => [13]], 'grades.0'],
         'too many per pair' => [['per_combination' => QuestionGeneration::MAX_PER_COMBINATION + 1], 'per_combination'],
+        'zero per pair' => [['per_combination' => 0], 'per_combination'],
+        'decimal per pair' => [['per_combination' => '2.5'], 'per_combination'],
+        'text per pair' => [['per_combination' => 'abc'], 'per_combination'],
         'no game' => [['games' => []], 'games'],
         'over the request limit' => [['scope' => 'all', 'per_combination' => 11], 'per_combination'],
     ]);
+
+    it('accepts up to 40 questions per subject and grade', function (): void {
+        Queue::fake();
+        expect(QuestionGeneration::MAX_PER_COMBINATION)->toBe(40);
+
+        $this->post('/admin/questions/generate', ['scope' => 'custom', 'subjects' => ['math'], 'grades' => [1], 'per_combination' => 40, 'games' => ['sky-quiz']])
+            ->assertSessionHasNoErrors();
+        expect(QuestionGeneration::query()->sole()->per_combination)->toBe(40);
+        Queue::assertPushed(GenerateQuestions::class, 1);
+    });
 
     it('refuses to generate before a model is chosen', function (): void {
         Queue::fake();

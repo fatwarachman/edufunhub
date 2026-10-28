@@ -10,6 +10,7 @@ return [
     'saved' => 'Kisi-kisi soal disimpan.',
     'deleted' => 'Kisi-kisi soal dihapus.',
     'invalid' => 'Kisi-kisi soal tidak ditemukan atau nonaktif.',
+    'too_many' => 'Pilih paling banyak :max kisi-kisi soal.',
     'reindexing' => 'Kisi-kisi sedang diindeks ulang.',
     'embedding_off' => 'Model embedding belum diatur.',
     'embedding_http' => 'Server AI membalas HTTP :status untuk model embedding :model. Pastikan model mendukung /embeddings.',

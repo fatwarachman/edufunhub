@@ -11,9 +11,6 @@ use App\Models\QuestionGeneration;
 use App\Models\Subject;
 use App\Models\SubjectTopic;
 use App\Services\Ai\AiSettings;
-use App\Services\Ai\BlueprintRetriever;
-use App\Services\Ai\BlueprintTextExtractor;
-use App\Services\Ai\EmbeddingClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,35 +26,26 @@ class QuestionGenerationController extends Controller
     /** Hard limit of questions one request may produce. */
     public const MAX_TOTAL = 800;
 
-    public function index(AiSettings $settings): Response
+    public function index(Request $request, AiSettings $settings): Response
     {
         return Inertia::render('admin/questions/generate', [
+            'preselectedBlueprints' => $this->preselectedBlueprints((string) $request->query('blueprints', '')),
             'ai' => ['configured' => $settings->configured(), 'model' => $settings->model()],
             'subjects' => Subject::activeKeys(),
             'englishSubject' => QuestionGeneration::ENGLISH_SUBJECT,
-            'blueprints' => QuestionBlueprint::query()
-                ->with('uploader:id,name')
-                ->withCount('generations')
-                ->latest('id')
-                ->get()
-                ->map(fn (QuestionBlueprint $blueprint): array => $blueprint->toAdminPayload()),
-            'blueprintLimits' => [
-                'extensions' => BlueprintTextExtractor::EXTENSIONS,
-                'maxKb' => QuestionBlueprint::MAX_KB,
-                'maxContent' => QuestionBlueprint::MAX_CONTENT,
-                'budget' => BlueprintRetriever::BUDGET,
-                'embeddingModel' => app(EmbeddingClient::class)->model(),
-            ],
+            'blueprints' => QuestionBlueprint::adminList(),
+            'blueprintLimits' => QuestionBlueprintController::limits(),
             'topics' => SubjectTopic::query()->active()->ordered()->get(['id', 'subject_key', 'name_id', 'name_en', 'material'])
                 ->map(fn (SubjectTopic $topic): array => $topic->only(['id', 'subject_key', 'name_id', 'name_en', 'material']))
                 ->values(),
             'grades' => Question::GRADES,
             'games' => Question::GAMES,
             'maxPerCombination' => QuestionGeneration::MAX_PER_COMBINATION,
+            'maxBlueprints' => QuestionGeneration::MAX_BLUEPRINTS,
             'maxTotal' => self::MAX_TOTAL,
             'aiTotal' => Question::query()->where('source', Question::SOURCE_AI)->count(),
             'generations' => QuestionGeneration::query()
-                ->with(['requester:id,name', 'topic:id,name_id,name_en', 'blueprint:id,title', 'items' => fn ($query) => $query->with('topic:id,name_id,name_en')->orderBy('id')])
+                ->with(['requester:id,name', 'topic:id,name_id,name_en', 'blueprint:id,title', 'blueprints:id,title', 'items' => fn ($query) => $query->with('topic:id,name_id,name_en')->orderBy('id')])
                 ->latest('id')
                 ->limit(15)
                 ->get()
@@ -91,10 +79,11 @@ class QuestionGenerationController extends Controller
                 'games' => array_values($data['games']),
                 'activate' => $data['activate'],
                 'english_only' => $data['english_only'] && in_array(QuestionGeneration::ENGLISH_SUBJECT, $plan['subjects'], true),
-                'blueprint_id' => $data['blueprint_id'] ?? null,
+                'blueprint_id' => isset($data['blueprint_ids'][0]) ? (int) $data['blueprint_ids'][0] : null,
                 'status' => 'queued',
                 'total_jobs' => count($plan['targets']) * count($data['grades']),
             ]);
+            $generation->blueprints()->sync(collect($data['blueprint_ids'])->values()->mapWithKeys(fn ($id, int $position): array => [(int) $id => ['position' => $position]])->all());
             $generation->createItems();
 
             return $generation;
@@ -109,6 +98,28 @@ class QuestionGenerationController extends Controller
         activity()->causedBy($request->user())->performedOn($generation)->withProperties(['total' => $total])->log('Started AI question generation');
 
         return redirect()->route('admin.questions.generate')->with('success', __('ai.generation_started', ['total' => $total]));
+    }
+
+    /**
+     * Active blueprints ticked on the blueprint library (`?blueprints=3,7`),
+     * in the order given, so the generate form starts with them picked.
+     *
+     * @return list<int>
+     */
+    private function preselectedBlueprints(string $list): array
+    {
+        $ids = collect(explode(',', $list))
+            ->map(fn (string $id): int => (int) trim($id))
+            ->filter(fn (int $id): bool => $id > 0)
+            ->unique()
+            ->take(QuestionGeneration::MAX_BLUEPRINTS)
+            ->values();
+        if ($ids->isEmpty()) {
+            return [];
+        }
+        $active = QuestionBlueprint::query()->active()->whereIn('id', $ids)->pluck('id')->map(fn ($id): int => (int) $id)->all();
+
+        return $ids->filter(fn (int $id): bool => in_array($id, $active, true))->values()->all();
     }
 
     /**

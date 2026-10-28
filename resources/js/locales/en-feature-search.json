@@ -141,6 +141,12 @@
             "superadminOnly": true,
             "teacherOnly": false
         },
+        "questionBlueprints": {
+            "href": "/admin/questions/blueprints",
+            "title": "Question blueprints",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
         "words": {
             "href": "/admin/games/crossword/words",
             "title": "Crossword word bank",

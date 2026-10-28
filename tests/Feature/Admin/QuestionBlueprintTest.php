@@ -116,6 +116,23 @@ describe('managing blueprints', function (): void {
             ->where('blueprints.0.index_status', $blueprint->index_status));
     });
 
+    it('lists every blueprint on the blueprint library page', function (): void {
+        $active = QuestionBlueprint::factory()->create(['title' => 'Kisi PAS Matematika', 'subject_key' => 'math', 'uploaded_by' => $this->admin->id]);
+        $inactive = QuestionBlueprint::factory()->inactive()->create(['title' => 'Kisi lama']);
+
+        $this->get('/admin/questions/blueprints')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->component('admin/questions/blueprints')
+            ->has('blueprints', 2)
+            ->where('blueprints.0.id', $inactive->id)
+            ->where('blueprints.0.is_active', false)
+            ->where('blueprints.1.id', $active->id)
+            ->where('blueprints.1.uploaded_by', $this->admin->name)
+            ->missing('blueprints.0.path')
+            ->where('blueprintLimits.maxKb', QuestionBlueprint::MAX_KB)
+            ->where('subjects', fn ($subjects): bool => collect($subjects)->contains('math'))
+            ->where('maxBlueprints', QuestionGeneration::MAX_BLUEPRINTS));
+    });
+
     it('lets the admin correct the text, download the original and delete it', function (): void {
         Storage::disk('local')->put('question-blueprints/a.txt', 'asli');
         $blueprint = QuestionBlueprint::factory()->create(['path' => 'question-blueprints/a.txt', 'original_name' => 'kisi asli.txt']);
@@ -138,6 +155,7 @@ describe('managing blueprints', function (): void {
         $blueprint = QuestionBlueprint::factory()->create();
         $this->actingAs(User::factory()->teacher()->create());
 
+        $this->get('/admin/questions/blueprints')->assertForbidden();
         $this->post('/admin/questions/blueprints', ['title' => 'X', 'file' => blueprintUpload('kisi.docx')])->assertForbidden();
         $this->get("/admin/questions/blueprints/{$blueprint->id}/download")->assertForbidden();
         $this->delete("/admin/questions/blueprints/{$blueprint->id}")->assertForbidden();
@@ -180,6 +198,48 @@ describe('generating with a blueprint', function (): void {
         $this->get("/admin/questions?generation={$generation->id}")->assertInertia(fn (Assert $page) => $page->where('batch.blueprint', 'Kisi PAS'));
     });
 
+    it('follows several picked blueprints in one request', function (): void {
+        $first = QuestionBlueprint::factory()->create(['title' => 'Kisi PAS', 'content' => 'Indikator 7: menentukan ide pokok paragraf deskriptif.']);
+        $second = QuestionBlueprint::factory()->create(['title' => 'Kisi PTS', 'content' => 'Indikator 3: menyimpulkan isi teks narasi pendek.']);
+        QuestionWriter::fake([['questions' => [blueprintQuestion()]]]);
+
+        $this->post('/admin/questions/generate', ['scope' => 'custom', 'subjects' => ['language'], 'grades' => [8], 'per_combination' => 1, 'games' => ['sky-quiz'], 'blueprint_ids' => [$second->id, $first->id]])
+            ->assertSessionHasNoErrors();
+
+        $generation = QuestionGeneration::query()->sole();
+        expect($generation->blueprints->pluck('id')->all())->toBe([$second->id, $first->id])
+            ->and($generation->blueprint_id)->toBe($second->id)
+            ->and($generation->toProgressPayload()['blueprints'])->toBe([['id' => $second->id, 'title' => 'Kisi PTS'], ['id' => $first->id, 'title' => 'Kisi PAS']]);
+        QuestionWriter::assertPrompted(fn ($prompt) => str_contains($prompt->prompt, 'Indikator 7: menentukan ide pokok')
+            && str_contains($prompt->prompt, 'Indikator 3: menyimpulkan isi teks')
+            && substr_count($prompt->prompt, '<<<BLUEPRINT') === 2);
+        $this->get("/admin/questions?generation={$generation->id}")->assertInertia(fn (Assert $page) => $page->where('batch.blueprint', 'Kisi PTS, Kisi PAS'));
+        $this->get('/admin/questions/blueprints')->assertInertia(fn (Assert $page) => $page->where('blueprints.0.generations_count', 1)->where('blueprints.1.generations_count', 1));
+    });
+
+    it('limits how many blueprints one request may follow', function (): void {
+        Queue::fake();
+        $ids = QuestionBlueprint::factory()->count(QuestionGeneration::MAX_BLUEPRINTS + 1)->create()->pluck('id')->all();
+
+        $this->post('/admin/questions/generate', ['scope' => 'custom', 'subjects' => ['language'], 'grades' => [8], 'per_combination' => 1, 'games' => ['sky-quiz'], 'blueprint_ids' => $ids])
+            ->assertSessionHasErrors('blueprint_ids');
+        $this->post('/admin/questions/generate', ['scope' => 'custom', 'subjects' => ['language'], 'grades' => [8], 'per_combination' => 1, 'games' => ['sky-quiz'], 'blueprint_ids' => [$ids[0], $ids[0]]])
+            ->assertSessionHasErrors('blueprint_ids.0');
+        expect(QuestionGeneration::query()->count())->toBe(0);
+    });
+
+    it('starts the generate form with the blueprints ticked on the library', function (): void {
+        $first = QuestionBlueprint::factory()->create();
+        $second = QuestionBlueprint::factory()->create();
+        $inactive = QuestionBlueprint::factory()->inactive()->create();
+
+        $this->get("/admin/questions/generate?blueprints={$second->id},{$inactive->id},abc,{$first->id},{$second->id}")
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('preselectedBlueprints', [$second->id, $first->id])
+                ->where('maxBlueprints', QuestionGeneration::MAX_BLUEPRINTS));
+        $this->get('/admin/questions/generate')->assertInertia(fn (Assert $page) => $page->where('preselectedBlueprints', []));
+    });
+
     it('sends only the sections of a long blueprint that match the grade and subject', function (): void {
         $blueprint = QuestionBlueprint::factory()->create(['subject_key' => 'math', 'content' => longBlueprint()]);
         app(BlueprintIndexer::class)->index($blueprint);
@@ -197,11 +257,12 @@ describe('generating with a blueprint', function (): void {
         $inactive = QuestionBlueprint::factory()->inactive()->create();
         $payload = ['scope' => 'custom', 'subjects' => ['language'], 'grades' => [8], 'per_combination' => 1, 'games' => ['sky-quiz']];
 
-        $this->post('/admin/questions/generate', [...$payload, 'blueprint_id' => $inactive->id])->assertSessionHasErrors('blueprint_id');
-        $this->post('/admin/questions/generate', [...$payload, 'blueprint_id' => 99999])->assertSessionHasErrors('blueprint_id');
+        $this->post('/admin/questions/generate', [...$payload, 'blueprint_ids' => [$inactive->id]])->assertSessionHasErrors('blueprint_ids.0');
+        $this->post('/admin/questions/generate', [...$payload, 'blueprint_ids' => [99999]])->assertSessionHasErrors('blueprint_ids.0');
+        $this->post('/admin/questions/generate', [...$payload, 'blueprint_id' => 99999])->assertSessionHasErrors('blueprint_ids.0');
 
         QuestionWriter::fake([['questions' => [blueprintQuestion()]]]);
-        $this->post('/admin/questions/generate', [...$payload, 'blueprint_id' => ''])->assertSessionHasNoErrors();
+        $this->post('/admin/questions/generate', [...$payload, 'blueprint_ids' => []])->assertSessionHasNoErrors();
         expect(QuestionGeneration::query()->sole()->blueprint_id)->toBeNull();
         QuestionWriter::assertNotPrompted(fn ($prompt) => str_contains($prompt->prompt, 'BLUEPRINT'));
     });

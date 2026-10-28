@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -14,10 +16,13 @@ class QuestionGeneration extends Model
     public const STATUSES = ['queued', 'running', 'done', 'failed', 'cancelled'];
 
     /** Most questions one request may ask per subject/grade pair. */
-    public const MAX_PER_COMBINATION = 20;
+    public const MAX_PER_COMBINATION = 40;
 
     /** Questions asked from the model per call. */
     public const BATCH = 5;
+
+    /** Most question blueprints one request may follow. */
+    public const MAX_BLUEPRINTS = 5;
 
     /** Subject whose questions may be written fully in English (`english_only`). */
     public const ENGLISH_SUBJECT = 'english';
@@ -68,6 +73,18 @@ class QuestionGeneration extends Model
         return $this->belongsTo(QuestionBlueprint::class, 'blueprint_id');
     }
 
+    /**
+     * Every blueprint the request follows, in the order they were picked.
+     *
+     * @return BelongsToMany<QuestionBlueprint, $this>
+     */
+    public function blueprints(): BelongsToMany
+    {
+        return $this->belongsToMany(QuestionBlueprint::class, 'question_blueprint_generation', 'generation_id', 'blueprint_id')
+            ->withPivot('position')
+            ->orderBy('question_blueprint_generation.position');
+    }
+
     /** @return HasMany<Question, $this> */
     public function questions(): HasMany
     {
@@ -78,6 +95,22 @@ class QuestionGeneration extends Model
     public function items(): HasMany
     {
         return $this->hasMany(QuestionGenerationItem::class, 'generation_id');
+    }
+
+    /**
+     * Blueprints the request follows; requests made before several could be
+     * picked only have `blueprint_id`.
+     *
+     * @return Collection<int, QuestionBlueprint>
+     */
+    public function blueprintList(): Collection
+    {
+        $blueprints = $this->blueprints;
+        if ($blueprints->isEmpty() && $this->blueprint_id !== null && $this->blueprint !== null) {
+            return new Collection([$this->blueprint]);
+        }
+
+        return $blueprints;
     }
 
     /**
@@ -146,7 +179,7 @@ class QuestionGeneration extends Model
     {
         return self::query()
             ->whereIn('status', ['queued', 'running'])
-            ->with(['requester:id,name', 'topic:id,name_id,name_en', 'blueprint:id,title', 'items' => fn ($query) => $query->with('topic:id,name_id,name_en')->orderBy('id')])
+            ->with(['requester:id,name', 'topic:id,name_id,name_en', 'blueprint:id,title', 'blueprints:id,title', 'items' => fn ($query) => $query->with('topic:id,name_id,name_en')->orderBy('id')])
             ->latest('id')
             ->limit(5)
             ->get()
@@ -167,6 +200,7 @@ class QuestionGeneration extends Model
             'requested_by' => $this->requester?->name,
             'topic' => $this->topic?->only(['id', 'name_id', 'name_en']),
             'blueprint' => $this->blueprint_id !== null ? $this->blueprint?->only(['id', 'title']) : null,
+            'blueprints' => $this->blueprintList()->map(fn (QuestionBlueprint $blueprint): array => $blueprint->only(['id', 'title']))->values()->all(),
             'created_at' => $this->created_at?->toIso8601String(),
             'finished_at' => $this->finished_at?->toIso8601String(),
             'items' => $this->items->map(fn (QuestionGenerationItem $item): array => $item->toProgress())->values()->all(),
