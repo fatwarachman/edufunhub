@@ -35,6 +35,9 @@ return [
         'taken' => 'Nomor WhatsApp ini sudah dipakai akun lain.',
         'filter' => 'Filter log tidak valid.',
         'events' => 'Pengaturan notifikasi tidak valid.',
+        'template_required' => 'Isi pesan wajib diisi untuk bahasa Indonesia dan Inggris.',
+        'template_max' => 'Isi pesan maksimal :max karakter.',
+        'template_placeholders' => 'Penanda tidak dikenal: :placeholders. Pakai penanda yang tersedia di bawah kotak pesan.',
     ],
     'errors' => [
         'not_configured' => 'Layanan WhatsApp belum dikonfigurasi.',
@@ -56,5 +59,7 @@ return [
         'reconnected' => 'Menyambung ulang ke WhatsApp.',
         'test_queued' => 'Pesan uji dikirim ke antrean.',
         'retried' => 'Pesan dikirim ulang ke antrean.',
+        'template_saved' => 'Template pesan WhatsApp tersimpan.',
+        'template_reset' => 'Template pesan dikembalikan ke teks bawaan.',
     ],
 ];

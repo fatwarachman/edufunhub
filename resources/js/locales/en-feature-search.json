@@ -177,6 +177,12 @@
             "superadminOnly": true,
             "teacherOnly": false
         },
+        "whatsappTemplates": {
+            "href": "/admin/whatsapp#templates",
+            "title": "WhatsApp message templates (edit notification text)",
+            "superadminOnly": true,
+            "teacherOnly": false
+        },
         "whatsappLog": {
             "href": "/admin/whatsapp/log",
             "title": "WhatsApp message log (sent & failed history)",

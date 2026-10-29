@@ -18,10 +18,11 @@ use Illuminate\Support\Str;
  */
 class WhatsAppNotifier
 {
-    public function __construct(private WhatsAppSettings $settings) {}
+    public function __construct(private WhatsAppSettings $settings, private WhatsAppTemplates $templates) {}
 
     /**
-     * Render the event template in the player's language and queue it.
+     * Render the event template (admin custom text or the default) in the
+     * player's language and queue it.
      *
      * @param  array<string, scalar|null>  $params
      */
@@ -32,12 +33,12 @@ class WhatsAppNotifier
         }
 
         $locale = $user->locale === 'en' ? 'en' : 'id';
-        $body = trim(__("whatsapp.events.{$event}", [
+        $body = $this->templates->render($event, $locale, [
             'name' => $user->playerProfile?->nickname ?: $user->name,
             'app' => config('app.name'),
             'url' => url('/'),
             ...array_map(fn (mixed $value): string => Str::limit((string) $value, 900), $params),
-        ], $locale));
+        ]);
 
         $skipReason = $this->skipReason($event);
         if ($skipReason !== null) {

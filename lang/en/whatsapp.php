@@ -35,6 +35,9 @@ return [
         'taken' => 'This WhatsApp number is already used by another account.',
         'filter' => 'Invalid log filter.',
         'events' => 'Invalid notification settings.',
+        'template_required' => 'The message text is required in Indonesian and English.',
+        'template_max' => 'The message text may not be longer than :max characters.',
+        'template_placeholders' => 'Unknown placeholders: :placeholders. Use the placeholders listed below the message box.',
     ],
     'errors' => [
         'not_configured' => 'The WhatsApp service is not configured.',
@@ -56,5 +59,7 @@ return [
         'reconnected' => 'Reconnecting to WhatsApp.',
         'test_queued' => 'Test message queued.',
         'retried' => 'Message queued again.',
+        'template_saved' => 'WhatsApp message template saved.',
+        'template_reset' => 'Message template restored to the default text.',
     ],
 ];

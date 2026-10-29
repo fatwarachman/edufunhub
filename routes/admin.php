@@ -156,6 +156,8 @@ Route::middleware(['web', 'auth', EnsureAdmin::class, 'verified'])
             Route::put('/ai-settings/auto-assessment', [AiSettingsController::class, 'autoAssessment'])->name('ai-settings.auto-assessment');
             Route::get('/whatsapp', [WhatsAppController::class, 'index'])->name('whatsapp.index');
             Route::put('/whatsapp', [WhatsAppController::class, 'update'])->name('whatsapp.update');
+            Route::put('/whatsapp/templates/{event}', [WhatsAppController::class, 'updateTemplate'])->where('event', '[a-z_]+')->middleware('throttle:30,1,whatsapp.template')->name('whatsapp.templates.update');
+            Route::delete('/whatsapp/templates/{event}', [WhatsAppController::class, 'resetTemplate'])->where('event', '[a-z_]+')->middleware('throttle:30,1,whatsapp.template')->name('whatsapp.templates.reset');
             Route::get('/whatsapp/log', [WhatsAppController::class, 'log'])->name('whatsapp.log');
             Route::get('/whatsapp/log/{message}', [WhatsAppController::class, 'show'])->whereNumber('message')->name('whatsapp.log.show');
             Route::get('/whatsapp/status', [WhatsAppController::class, 'status'])->middleware('throttle:60,1,whatsapp.status')->name('whatsapp.status');

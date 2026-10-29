@@ -31,6 +31,19 @@
 
 return [
     [
+        'version' => '0.59.0',
+        'date' => '2026-10-29',
+        'time' => '12:23',
+        'changes' => [
+            [
+                'key' => 'whatsapp-custom-templates',
+                'type' => 'feature',
+                'title' => ['id' => 'Template pesan WhatsApp bisa diubah', 'en' => 'Customisable WhatsApp message templates'],
+                'body' => ['id' => 'Halaman Notifikasi WhatsApp punya panel baru Template pesan. Superadmin bisa mengubah teks pesan sambutan, permintaan pertemanan, permintaan guru, dan pesan uji dalam bahasa Indonesia dan Inggris. Penanda seperti :name, :from, dan :link bisa disisipkan dengan sekali klik, pratinjau bergaya WhatsApp (tebal, miring, coret) tampil langsung dengan data contoh, penanda yang tidak dikenal ditolak, dan template bisa dikembalikan ke teks bawaan kapan saja. Pemain menerima versi sesuai bahasa akunnya.', 'en' => 'The WhatsApp Notifications page has a new Message templates panel. Superadmins can edit the text of the welcome, friend request, teacher request and test messages in Indonesian and English. Placeholders such as :name, :from and :link are inserted with one click, a WhatsApp-style preview (bold, italic, strikethrough) updates live with example data, unknown placeholders are rejected, and any template can be reset to the default text. Players get the version that matches their account language.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.58.0',
         'date' => '2026-10-28',
         'time' => '11:05',
