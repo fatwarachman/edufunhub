@@ -61,4 +61,27 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Editable message templates
+    |--------------------------------------------------------------------------
+    |
+    | Events whose text the admin can customise on /admin/whatsapp, with the
+    | placeholders each template may use (`:name`, `:link` …). The default
+    | text lives in lang/{id,en}/whatsapp.php `events.<key>`; a saved custom
+    | text overrides it per language. `ability_analysis` is built from the
+    | AI report (AbilityReportMessage), so it is not listed here.
+    |
+    */
+
+    'templates' => [
+        'welcome' => ['name', 'app', 'url'],
+        'friend_request' => ['name', 'app', 'url', 'from', 'link'],
+        'teacher_request' => ['name', 'app', 'url', 'from', 'subject', 'note', 'link'],
+        'test' => ['app'],
+    ],
+
+    // Longest custom template accepted (WhatsApp allows far more, this keeps messages readable).
+    'template_max_length' => 2000,
+
 ];

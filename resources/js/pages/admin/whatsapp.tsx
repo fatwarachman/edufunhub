@@ -8,6 +8,10 @@ import {
     WhatsAppRecipient,
     WhatsAppStatusBadge,
 } from '@/components/admin/whatsapp-log';
+import {
+    type WhatsAppTemplate,
+    WhatsAppTemplateList,
+} from '@/components/admin/whatsapp-template-editor';
 import InputError from '@/components/input-error';
 import { WhatsAppIcon } from '@/components/whatsapp-share-button';
 import { useVisibleInterval } from '@/hooks/use-visible-interval';
@@ -28,6 +32,7 @@ import {
     Link2,
     Loader2,
     LogOut,
+    MessageSquareText,
     QrCode,
     RefreshCw,
     RotateCcw,
@@ -69,6 +74,8 @@ interface Stats {
 interface Props {
     connection: Connection;
     settings: { enabled: boolean; events: Record<string, EventSetting> };
+    templates: Record<string, WhatsAppTemplate>;
+    templateMaxLength: number;
     deviceId: string;
     stats: Stats;
     messages: WhatsAppLogEntry[];
@@ -92,6 +99,8 @@ const primaryClass =
 export default function WhatsAppSettings({
     connection: initialConnection,
     settings,
+    templates,
+    templateMaxLength,
     deviceId,
     stats,
     messages,
@@ -428,6 +437,27 @@ export default function WhatsAppSettings({
                         </form>
                     </Panel>
                 </div>
+
+                <Panel
+                    title="Message templates"
+                    icon={MessageSquareText}
+                    description="Customise the text of each automatic message. Placeholders like :name are filled in for every player."
+                    className="scroll-mt-20"
+                    id="templates"
+                >
+                    <WhatsAppTemplateList
+                        templates={templates}
+                        labels={{
+                            ...Object.fromEntries(
+                                Object.entries(settings.events).map(
+                                    ([key, event]) => [key, event.label],
+                                ),
+                            ),
+                            test: 'Test message',
+                        }}
+                        maxLength={templateMaxLength}
+                    />
+                </Panel>
 
                 <Panel
                     title="Test message"

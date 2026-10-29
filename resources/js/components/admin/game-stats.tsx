@@ -144,8 +144,10 @@ export function Panel({
     actions,
     children,
     className,
+    id,
 }: {
     title: string;
+    id?: string;
     description?: string;
     icon?: React.ElementType;
     actions?: ReactNode;
@@ -154,6 +156,7 @@ export function Panel({
 }) {
     return (
         <section
+            id={id}
             className={cn(
                 'flex min-w-0 flex-col rounded-2xl border border-border bg-card shadow-sm',
                 className,

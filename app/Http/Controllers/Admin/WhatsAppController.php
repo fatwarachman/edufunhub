@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\WhatsAppLogRequest;
 use App\Http\Requests\Admin\WhatsAppPhoneRequest;
 use App\Http\Requests\Admin\WhatsAppSettingsRequest;
+use App\Http\Requests\Admin\WhatsAppTemplateRequest;
 use App\Jobs\SendWhatsAppMessage;
 use App\Models\WhatsAppMessage;
 use App\Services\WhatsApp\GowaClient;
 use App\Services\WhatsApp\PhoneNumber;
 use App\Services\WhatsApp\WhatsAppSettings;
 use App\Services\WhatsApp\WhatsAppStats;
+use App\Services\WhatsApp\WhatsAppTemplates;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -22,8 +24,8 @@ use RuntimeException;
 
 /**
  * WhatsApp notifications (GOWA container): link the sender number by QR or
- * pairing code, master and per-event switches, test message, delivery log
- * and its detail modal.
+ * pairing code, master and per-event switches, custom message templates,
+ * test message, delivery log and its detail modal.
  */
 class WhatsAppController extends Controller
 {
@@ -32,7 +34,7 @@ class WhatsAppController extends Controller
 
     public const LOG_PER_PAGE = 25;
 
-    public function __construct(private GowaClient $client, private WhatsAppSettings $settings) {}
+    public function __construct(private GowaClient $client, private WhatsAppSettings $settings, private WhatsAppTemplates $templates) {}
 
     public function index(WhatsAppStats $stats): Response
     {
@@ -44,6 +46,8 @@ class WhatsAppController extends Controller
                 'enabled' => $this->settings->enabled(),
                 'events' => $this->settings->events(),
             ],
+            'templates' => $this->templates->forAdmin(),
+            'templateMaxLength' => (int) config('whatsapp.template_max_length'),
             'deviceId' => $this->client->deviceId(),
             'stats' => $stats->summary(),
             'messages' => WhatsAppMessage::query()
@@ -169,13 +173,35 @@ class WhatsAppController extends Controller
         return back()->with('success', __('whatsapp.flash.settings_saved'));
     }
 
+    /** Save the custom text of one message type (both languages). */
+    public function updateTemplate(WhatsAppTemplateRequest $request, string $event): RedirectResponse
+    {
+        abort_unless($this->templates->isEditable($event), 404);
+
+        $this->templates->save($event, (array) $request->validated('templates'));
+        activity()->causedBy($request->user())->withProperties(['event' => $event])->log('Updated WhatsApp message template');
+
+        return back()->with('success', __('whatsapp.flash.template_saved'));
+    }
+
+    /** Drop the custom text of one message type and use the default again. */
+    public function resetTemplate(Request $request, string $event): RedirectResponse
+    {
+        abort_unless($this->templates->isEditable($event), 404);
+
+        $this->templates->reset($event);
+        activity()->causedBy($request->user())->withProperties(['event' => $event])->log('Reset WhatsApp message template');
+
+        return back()->with('success', __('whatsapp.flash.template_reset'));
+    }
+
     public function test(WhatsAppPhoneRequest $request): RedirectResponse
     {
         $message = WhatsAppMessage::query()->create([
             'user_id' => $request->user()->id,
             'event' => WhatsAppMessage::TEST_EVENT,
             'phone' => $request->validated('phone'),
-            'body' => __('whatsapp.events.test', ['app' => config('app.name')]),
+            'body' => $this->templates->render(WhatsAppMessage::TEST_EVENT, (string) $request->user()->locale, ['app' => config('app.name')]),
         ]);
         SendWhatsAppMessage::dispatch($message);
         activity()->causedBy($request->user())->withProperties(['phone' => PhoneNumber::mask($message->phone)])->log('Sent WhatsApp test message');
