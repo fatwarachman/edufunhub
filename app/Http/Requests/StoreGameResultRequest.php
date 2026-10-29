@@ -42,6 +42,7 @@ class StoreGameResultRequest extends FormRequest
         'monster-cafe' => ['event_id' => '/^mc-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 12150, 'max_players' => 40, 'max_level' => 7],
         'snake' => ['event_id' => '/^sn-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 12150, 'max_players' => 4, 'max_level' => 10],
         'edu-kart' => ['event_id' => '/^ek-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 4650, 'max_players' => 8, 'max_level' => 15],
+        'tug-of-war' => ['event_id' => '/^tw-[0-9]+-room-[0-9]+$/', 'missions' => ['room'], 'max_points' => 9170, 'max_players' => 21, 'max_level' => 3],
     ];
 
     public function authorize(): bool

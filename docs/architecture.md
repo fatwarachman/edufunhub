@@ -101,6 +101,8 @@ Tetris Kuis / Block Battle (`block-battle`): game balok kuis dua layar dengan ti
 
 Monster Café (`monster-cafe`): kuis memasak mandiri 1–40 pemain. Halaman `/games/monster-cafe` (layar host token `game=monster-cafe-host`, pad pemain token `game=monster-cafe`) lewat WebSocket `/game-ws/monster-cafe` ke `GET /ws/monster-cafe` (paket `internal/monstercafe`). Go memegang soal per bahan, dapur tiap pemain (nampan, piring, oven gosong), pesanan monster dan kesabaran, tikus pencuri, power-up pie, koin, dan poin. Detail kontrak di `docs/multiplayer.md`.
 
+Tarik Tambang (`tug-of-war`): kuis beregu 1–20 pemain (`lobby.Hub`, PIN + link). Halaman `/games/tug-of-war`, WebSocket `/game-ws/tug-of-war` ke `GET /ws/tug-of-war` (paket `internal/tugofwar`). Go memegang pembagian tim, soal bersama, jawaban benar pertama yang menarik tambang, timer, tim komputer untuk main sendiri, poin tim, dan bonus penarik terbanyak. Detail kontrak di `docs/multiplayer.md`.
+
 State `port_state` memuat `set{key,title,description}`, `bins[{key,name,color}]`, `packet{id,label,column,delay,fall_ms,elapsed_ms}` (tanpa jawaban), `history`, `level`; di luar permainan juga `sets` (pemilih topik) dan `legend` (contekan). `result` memuat `missed` (item yang salah). Hasil dikirim dengan `event_id` `ps-{user}-sort-{nanos}` dan `mission=sort`.
 
 Pesan Go → client: `welcome`, `correct{x,y}`, `challenge`, `gates`, `raise`, `complete`, `error{code}`, `pong`.

@@ -198,7 +198,8 @@
         "shareWaGame": "Bagikan game",
         "shareWaRoomText": "🎮 Ayo main {{game}} bareng di EduFunHub!\nKode PIN: {{pin}}\nLink gabung: {{url}}\nEduFunHub — Portal Edukasi Seru!",
         "shareWaGameText": "🏆 Coba game {{game}} di EduFunHub!\nLink: {{url}}\nEduFunHub — Portal Edukasi Seru!",
-        "gradeAndLevel": "Kelas & level soal"
+        "gradeAndLevel": "Kelas & level soal",
+        "tugOfWar": "Tarik Tambang"
     },
     "flagQuest": {
         "title": "Misi Bendera",
@@ -465,7 +466,8 @@
             "turboTrivia": "Balap gokart kuis di proyektor kelas! Jawab benar untuk Nitro, lempar Kulit Pisang, tembak Rudal ke posisi 1, dan panggil Petir.",
             "blockBattle": "Adu balok di proyektor kelas! Jawab benar untuk balok I atau serangan, susun baris, rangkai kata & rumus, atau bangun benteng bersama melawan monster.",
             "monsterCafe": "Jadi koki di restoran monster untuk 1–40 pemain! Jawab kuis untuk dapat bahan, rakit burger & pizza sebelum monster marah, usir tikus, dan lempar pie ke teman.",
-            "snake": "Game ular edukatif model Potong Ekor! Jawab kuis dengan benar untuk memotong ekor dan menangkan permainan. Tersedia mode Solo, Shared Grid Battle, dan Split Grid Duel."
+            "snake": "Game ular edukatif model Potong Ekor! Jawab kuis dengan benar untuk memotong ekor dan menangkan permainan. Tersedia mode Solo, Shared Grid Battle, dan Split Grid Duel.",
+            "tugOfWar": "Dua tim beradu tarik tambang dengan menjawab kuis. Jawaban benar pertama menarik tambang satu langkah. Main melawan komputer atau ajak teman dalam tim genap."
         },
         "detailsFirst": "Isi data peserta dulu",
         "detailsNoticeTitle": "Lengkapi data peserta dulu, ya!",
@@ -1305,7 +1307,12 @@
             "no_classroom": "Ruang ini hanya untuk anggota kelas yang aktif.",
             "invalid_track": "Sirkuit tidak dikenal.",
             "invalid_vehicle": "Kendaraan tidak dikenal.",
-            "invalid_laps": "Jumlah lap tidak valid."
+            "invalid_laps": "Jumlah lap tidak valid.",
+            "invalid_team": "Tim tidak valid.",
+            "odd_players": "Jumlah pemain harus genap untuk main beregu.",
+            "teams_unbalanced": "Jumlah pemain kedua tim harus sama.",
+            "invalid_question_count": "Jumlah soal tidak tersedia.",
+            "watching": "Layar wasit tidak ikut menjawab."
         },
         "copyPinLabel": "Salin PIN",
         "copyLinkLabel": "Salin link",
@@ -4185,5 +4192,110 @@
         "hint": "Pembahasan",
         "statusRight": "Kamu benar",
         "statusWrong": "Kamu salah"
+    },
+    "tugOfWar": {
+        "title": "Tarik Tambang",
+        "eyebrow": "KUIS TIM · SEMUA MAPEL",
+        "subtitle": "Jawab cepat, tarik tambang untuk timmu.",
+        "unavailable": "Arena belum tersedia. Pelajari cara bermain sambil menunggu.",
+        "intro": "Halo {{name}}! Lawan komputer sendirian, atau buat ruang dan bagi teman ke dua tim.",
+        "rules": "Semua pemain mendapat soal yang sama. Jawaban benar pertama menarik tambang satu langkah ke arah timnya; jawaban salah mengunci pemain itu sampai soal berikutnya. Tim yang menarik tambang {{steps}} langkah lebih dulu, atau unggul saat soal habis, menang.",
+        "soloHint": "Sendirian? Kamu melawan tim komputer. Lebih dari satu pemain wajib genap dan dibagi rata.",
+        "mute": "Bisukan suara sponsor",
+        "unmute": "Aktifkan suara sponsor",
+        "team": {
+            "0": "Tim Merah",
+            "1": "Tim Biru",
+            "2": "Layar wasit"
+        },
+        "teamShort": {
+            "0": "Merah",
+            "1": "Biru"
+        },
+        "computer": "Komputer",
+        "settings": {
+            "questions": "Jumlah soal",
+            "questionsHint": "Tim yang menarik {{steps}} langkah lebih dulu langsung menang.",
+            "teams": "Pembagian tim",
+            "teamsHint": "Host mengatur tim. Jumlah pemain harus genap dan sama banyak.",
+            "shuffle": "Acak tim",
+            "moveTo": "Pindahkan {{name}} ke {{team}}",
+            "watch": "Saya jadi layar wasit (tidak ikut menjawab)",
+            "watchHint": "Cocok untuk proyektor kelas: layar ini menampilkan tarik tambang, pemain menjawab dari HP masing-masing.",
+            "empty": "Belum ada pemain",
+            "soloReady": "Siap melawan komputer.",
+            "oddWarning": "Jumlah pemain {{count}} (ganjil). Tambah atau kurangi satu pemain.",
+            "unbalancedWarning": "Tim belum seimbang ({{red}} lawan {{blue}}).",
+            "ready": "{{red}} lawan {{blue}}, siap mulai."
+        },
+        "countdown": "Bersiap… {{count}}",
+        "question": "Soal {{number}} / {{total}}",
+        "seconds": "{{count}} dtk",
+        "answerHint": "Ketuk jawaban secepatnya. Jawaban benar pertama dari timmu menarik tambang.",
+        "answered": "Jawaban terkirim. Menunggu pemain lain…",
+        "lockedWrong": "Jawabanmu salah. Tunggu soal berikutnya, timmu masih bisa menjawab.",
+        "watching": "Kamu layar wasit. Pemain menjawab dari perangkat masing-masing.",
+        "answeredCount": "{{count}}/{{total}} sudah menjawab",
+        "pulled": "{{name}} menarik untuk {{team}}!",
+        "nobody": "Tidak ada yang benar. Tambang tidak bergerak.",
+        "answer": "Jawaban: {{answer}}",
+        "hint": "Petunjuk: {{hint}}",
+        "rope": "Posisi tambang",
+        "ropeLabel": "Tarik tambang. {{lead}}",
+        "ropeEven": "Tambang di tengah.",
+        "ropeLead": "{{team}} unggul {{steps}} langkah.",
+        "pulls": "{{count}} tarikan",
+        "teamPoints": "{{points}} poin tim",
+        "won": "{{team}} menang!",
+        "youWon": "Timmu menang!",
+        "youLost": "Timmu kalah. Coba lagi!",
+        "draw": "Seri! Tambang tepat di tengah.",
+        "stopped": "Permainan dihentikan",
+        "forfeit": "Tim lawan keluar semua.",
+        "points": "+{{points}} poin akun",
+        "mvp": "Bonus penarik terbanyak +{{bonus}}",
+        "mvpBadge": "Penarik terbanyak",
+        "playAgain": "Main lagi",
+        "standings": "Tarikan per pemain",
+        "howTo": {
+            "title": "Cara bermain",
+            "step": "Langkah {{step}}/{{total}}",
+            "previous": "Sebelumnya",
+            "next": "Berikutnya",
+            "pause": "Jeda",
+            "replay": "Putar ulang",
+            "video": "Unduh video (ID)",
+            "pdf": "Unduh slide (ID)",
+            "demoQuestion": "Berapa hasil 6 × 7?",
+            "demoOptions": [
+                "36",
+                "42",
+                "48",
+                "56"
+            ],
+            "demoName": "Rani",
+            "scenes": {
+                "setup": {
+                    "title": "Atur soal dan tim",
+                    "body": "Host memilih mapel dan jumlah soal, lalu membagi pemain ke Tim Merah dan Tim Biru. Sendirian? Kamu melawan komputer."
+                },
+                "read": {
+                    "title": "Semua menjawab soal yang sama",
+                    "body": "Soal muncul di layar setiap pemain. Ketuk jawaban secepat mungkin untuk timmu."
+                },
+                "pull": {
+                    "title": "Benar pertama = tarik satu langkah",
+                    "body": "Jawaban benar pertama menarik tambang satu langkah ke arah tim penjawab. Jawaban salah mengunci pemain sampai soal berikutnya."
+                },
+                "win": {
+                    "title": "Tarik sampai garis menang",
+                    "body": "Tim yang menarik {{steps}} langkah lebih dulu menang. Kalau soal habis, tim yang unggul menang."
+                },
+                "points": {
+                    "title": "Poin tim dan bonus",
+                    "body": "Semua anggota tim mendapat poin yang sama. Penarik terbanyak di tiap tim mendapat bonus tambahan."
+                }
+            }
+        }
     }
 }

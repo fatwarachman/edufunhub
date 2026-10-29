@@ -179,7 +179,7 @@ it('serves live campaigns into every game page through the game middleware', fun
     AdCampaign::factory()->withCreative()->create();
     $player = adsPlayer();
 
-    foreach (['quiz-duel', 'sky-quiz', 'knowledge-train', 'crossword', 'snakes-and-ladders', 'market-math', 'flag-quest', 'port-sorter', 'turbo-trivia', 'block-battle', 'monster-cafe', 'ping-pong', 'edu-kart'] as $game) {
+    foreach (['quiz-duel', 'sky-quiz', 'knowledge-train', 'crossword', 'snakes-and-ladders', 'market-math', 'flag-quest', 'port-sorter', 'turbo-trivia', 'block-battle', 'monster-cafe', 'ping-pong', 'edu-kart', 'tug-of-war'] as $game) {
         $this->actingAs($player)->get('/games/'.$game)->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('adGame', $game)

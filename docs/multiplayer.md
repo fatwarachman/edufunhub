@@ -111,6 +111,7 @@ Game yang biasanya butuh layar host/proyektor (Lantai Runtuh, Peti Emas Misteri,
 | Turbo Trivia | 5 | benar × 10, maks. 15 soal (+20 juara 1) | 1650 |
 | Tetris Kuis / Block Battle | 5 | benar × 10, maks. 40 jawaban dibayar (+20 juara 1 / benteng menang) | 4150 |
 | Monster Café | 5 | benar × 10, maks. 40 jawaban dibayar (+20 juara 1 koin) | `points.Cap(40)` = 12150 |
+| Tarik Tambang | 5 | poin tim = jumlah `Worth()` tarikan seluruh tim, sama untuk semua anggota (+20 tim menang, +20 penarik terbanyak tim) | `points.Cap(30) + 20` = 9170 |
 
 ### Ular Tangga (`internal/snakes`)
 
@@ -503,6 +504,29 @@ Kontrak WebSocket `GET /game-ws/monster-cafe?token=…&locale=id|en`:
 | server → klien | `leaderboard_sync` | `{leaderboard[], remaining_ms}` (maks. 4×/detik) |
 | server → klien | `podium_result` | `{podium[3], ranking[], you}` |
 | server → klien | `error` | `{code, for}` → `room.errors.*` |
+
+### Tarik Tambang / Tug of War (`internal/tugofwar`)
+
+Kuis beregu untuk 1–20 pemain (arketipe A, `lobby.Hub`, PIN + link).
+
+- **Mode:** 1 pemain = melawan **tim komputer** (`match.mode` `bot`, peluang benar 60 %, menjawab di 35–85 % waktu soal). Lebih dari 1 pemain wajib **genap** dan kedua tim sama besar (`odd_players`, `teams_unbalanced`). Maks. 20 pemain (10 lawan 10).
+- **Tim (host, lobi):** pemain baru otomatis masuk tim yang lebih kecil; host memindahkan pemain (`team{seat, team}`) atau mengacak (`shuffle_teams`). Host boleh memilih `team: 2` (layar wasit) untuk dirinya sendiri: tidak menjawab, tidak dihitung, tidak dibayar; layarnya menampilkan arena besar untuk proyektor. Pembagian tim bertahan untuk main lagi.
+- **Soal:** semua pemain menjawab soal yang sama (`gen.Present`, 4 opsi). Jumlah soal 5/10/15/20/30 (host, bawaan 10), waktu jawab 20 dtk (25 dtk bila ada kelas 0–2) atau `answer_time`. Hitung mundur 3 dtk sebelum soal pertama, jeda pembahasan 3 dtk setelah tiap soal.
+- **Tarik:** jawaban **benar pertama** menutup soal dan menarik tambang satu langkah ke tim penjawab (`rope` −1 merah, +1 biru). Jawaban salah mengunci pemain itu sampai soal berikutnya (`already_answered`). Semua salah / waktu habis → tambang diam. Jawaban < 300 ms ditolak `too_early`.
+- **Akhir:** tambang mencapai ±5 (`win_steps`), soal habis (menang = sisi tambang, 0 = seri), host `stop`, atau satu tim keluar semua (`forfeit`).
+- **Poin:** setiap pemain di tim mendapat poin tim yang sama = jumlah `Worth()` seluruh tarikan timnya + `points.Outcome` (menang/seri) + partisipasi; pemain dengan tarikan terbanyak di timnya (> 0, seri ikut) mendapat `MVPBonus` +20. Keluar di tengah = `points.Abandoned` dari tarikan sendiri. `event_id` `tw-{user}-room-{nanos}`, misi `room`, `match.players[].score` = jumlah tarikan, maks. 21 kursi (20 + komputer).
+
+| Arah | Pesan | Isi |
+|---|---|---|
+| klien → server | standar | `create`, `join{pin}`, `classroom`, `leave`, `start`, `stop`, `subject{subject}`, `answer_time{seconds}`, `sync`, `locale{locale}`, `ping` |
+| klien → server | `questions` | `{count: 5\|10\|15\|20\|30}` (host, lobi) |
+| klien → server | `team` | `{seat, team: 0\|1\|2}` (host, lobi; 2 hanya untuk kursi host) |
+| klien → server | `shuffle_teams` | host, lobi |
+| klien → server | `answer` | `{round, option}` (indeks opsi yang ditampilkan) |
+| server → klien | `tugofwar_state` | payload ruang standar (+ `players[].team, pulls, answered, mvp, bot`) + `question_count, question_counts, win_steps, stage: countdown\|question\|reveal, round, number, rope, remaining_ms, question (tanpa kunci), your_choice, reveal{team, name, correct_index, answer, hint}, teams[{team, size, pulls, points}], winner?, forfeit, solo, result{points, mvp, team, team_points, won, watching}` |
+| server → klien | `left` / `error` / `pong` | standar |
+
+Kode error baru: `invalid_team`, `odd_players`, `teams_unbalanced`, `invalid_question_count`, `watching`.
 
 ### EduKart / Balap Kuis 3D (`internal/edukart`, container `edufunhub-edukart`)
 

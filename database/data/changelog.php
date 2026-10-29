@@ -31,6 +31,32 @@
 
 return [
     [
+        'version' => '0.61.0',
+        'date' => '2026-10-29',
+        'time' => '16:30',
+        'changes' => [
+            [
+                'key' => 'tug-of-war-game',
+                'type' => 'feature',
+                'title' => ['id' => 'Game baru: Tarik Tambang', 'en' => 'New game: Tug of War'],
+                'body' => ['id' => 'Dua tim beradu tarik tambang dengan menjawab kuis yang sama. Jawaban benar pertama menarik tambang satu langkah ke arah tim penjawab, jawaban salah mengunci pemain itu sampai soal berikutnya. Tim yang menarik 5 langkah lebih dulu, atau unggul saat soal habis, menang. Bisa dimainkan sendiri melawan komputer atau bersama teman lewat PIN dan link (jumlah pemain wajib genap, maksimal 10 lawan 10). Host mengatur mata pelajaran, jumlah soal (5 sampai 30), waktu menjawab, dan membagi tim secara manual atau acak; host juga bisa menjadi layar wasit untuk proyektor yang menampilkan avatar semua pemain saat tarik-menarik. Semua anggota tim pemenang mendapat poin tim yang sama, dan penarik terbanyak di setiap tim mendapat bonus 20 poin.', 'en' => 'Two teams pull a rope by answering the same quiz question. The first correct answer pulls the rope one step toward that team; a wrong answer locks the player out until the next question. The team that pulls 5 steps first, or leads when the questions run out, wins. Play alone against the computer or with friends by PIN and link (an even number of players, up to 10 vs 10). The host sets the subject, number of questions (5 to 30) and answer time, splits the teams by hand or at random, and can act as a referee screen for a projector that shows every player\'s avatar pulling the rope. Every member of a team earns the same team points, and the top puller of each team earns a 20 point bonus.'],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.60.0',
+        'date' => '2026-10-29',
+        'time' => '14:00',
+        'changes' => [
+            [
+                'key' => 'admin-users-total-cards',
+                'type' => 'feature',
+                'title' => ['id' => 'Kartu total pengguna dan sekolah di halaman Pengguna', 'en' => 'Total users and schools cards on the Users page'],
+                'body' => ['id' => 'Halaman Pengguna (/admin/users) kini menampilkan dua kartu informasi di atas daftar: Total pengguna (beserta jumlah yang bergabung hari ini) dan Total sekolah (jumlah sekolah berbeda dari profil pemain, beserta jumlah pelajar yang sudah mengisi sekolah). Angka ini menghitung seluruh data dan tidak berubah oleh pencarian atau filter.', 'en' => 'The Users page (/admin/users) now shows two info cards above the list: Total users (with how many joined today) and Total schools (distinct schools from player profiles, with how many learners have filled in a school). The figures cover all data and are not affected by search or filters.'],
+            ],
+        ],
+    ],
+    [
         'version' => '0.59.0',
         'date' => '2026-10-29',
         'time' => '12:23',

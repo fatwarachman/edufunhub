@@ -64,6 +64,7 @@ use App\Http\Controllers\Teacher\TeacherAiAssistantController;
 use App\Http\Controllers\Teacher\TeacherQuestionController;
 use App\Http\Controllers\Teacher\TeacherTopicController;
 use App\Http\Controllers\TeacherRequestController;
+use App\Http\Controllers\TugOfWarController;
 use App\Http\Controllers\TurboTriviaController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Middleware\EnsurePlayerDetailsComplete;
@@ -259,6 +260,8 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::get('/play/block-battle/{pin?}', [BlockBattleController::class, 'play'])->where('pin', '[0-9]{6}')->middleware(RecordGameAccess::class.':block-battle')->name('games.block-battle.play');
         Route::get('/games/ping-pong', [PingPongController::class, 'show'])->middleware(RecordGameAccess::class.':ping-pong')->name('games.ping-pong');
         Route::post('/games/ping-pong/token', [PingPongController::class, 'token'])->middleware('throttle:30,1,games.ping-pong.token')->name('games.ping-pong.token');
+        Route::get('/games/tug-of-war', [TugOfWarController::class, 'show'])->middleware(RecordGameAccess::class.':tug-of-war')->name('games.tug-of-war');
+        Route::post('/games/tug-of-war/token', [TugOfWarController::class, 'token'])->middleware('throttle:30,1,games.tug-of-war.token')->name('games.tug-of-war.token');
         Route::get('/games/edu-kart', [EduKartController::class, 'show'])->middleware(RecordGameAccess::class.':edu-kart')->name('games.edu-kart');
         Route::post('/games/edu-kart/token', [EduKartController::class, 'token'])->middleware('throttle:30,1,games.edu-kart.token')->name('games.edu-kart.token');
         Route::get('/games/{game}/join/{pin}', GameInviteController::class)->where(['game' => '[a-z-]+', 'pin' => '[0-9]{6}'])->name('games.join');

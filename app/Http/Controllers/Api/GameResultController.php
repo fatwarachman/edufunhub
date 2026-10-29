@@ -224,6 +224,10 @@ class GameResultController extends Controller
             return __('ping_pong.history_name', [], $locale);
         }
 
+        if ($gameKey === 'tug-of-war') {
+            return __('tug_of_war.history_name', [], $locale);
+        }
+
         if ($gameKey === 'block-battle') {
             return __('block_battle.history_name', [], $locale);
         }

@@ -25,6 +25,7 @@ func TestCapsMatchLaravel(t *testing.T) {
 		"ping-pong":          {Cap(60), 18150},
 		"snake":              {Cap(40), 12150},
 		"edu-kart":           {Cap(15), 4650},
+		"tug-of-war":         {Cap(30) + 20, 9170},
 	}
 	for game, c := range cases {
 		if c[0] != c[1] {

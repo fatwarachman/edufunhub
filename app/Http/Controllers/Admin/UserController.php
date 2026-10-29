@@ -37,7 +37,7 @@ class UserController extends Controller
     /**
      * Paginated user list with search (name, school, email, phone), filters and sort.
      */
-    public function index(Request $request, PlayerBadges $badges): Response
+    public function index(Request $request, PlayerBadges $badges, UserAnalytics $analytics): Response
     {
         $query = User::query()
             ->with(['roles', 'playerProfile:id,user_id,birth_date,school_name'])
@@ -86,6 +86,7 @@ class UserController extends Controller
 
         return Inertia::render('admin/users/index', [
             'users' => $users,
+            'totals' => $analytics->userTotals(),
             'roles' => Role::query()->select('id', 'name', 'slug')->get(),
             'filters' => (object) $request->only(['search', 'search_by', 'role', 'signup', 'activity', 'sort', 'direction']),
             'canImpersonate' => $request->user()->hasPermission(ImpersonationController::PERMISSION)

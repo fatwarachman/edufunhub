@@ -10,6 +10,7 @@ import {
     Flower2,
     Gamepad2,
     Grid3x3,
+    HandGrab,
     Layers,
     type LucideIcon,
     Map as MapIcon,
@@ -43,6 +44,7 @@ export const GAME_ICONS: Record<string, LucideIcon> = {
     blocks: Blocks,
     chef: ChefHat,
     school: School,
+    rope: HandGrab,
 };
 
 export function gameIcon(icon: string): LucideIcon {

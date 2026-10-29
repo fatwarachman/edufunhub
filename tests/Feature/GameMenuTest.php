@@ -34,15 +34,18 @@ it('shares the grouped game menu with every catalog game', function (): void {
         ->where('gameMenu.2.games.6.key', 'block-battle')
         ->where('gameMenu.2.games.6.url', '/games/block-battle')
         ->where('gameMenu.2.games.6.minGrade', 1)
-        ->where('gameMenu.2.games.8.key', 'monster-cafe')
-        ->where('gameMenu.2.games.8.url', '/games/monster-cafe')
-        ->where('gameMenu.2.games.8.minGrade', 0)
+        ->where('gameMenu.2.games.9.key', 'monster-cafe')
+        ->where('gameMenu.2.games.9.url', '/games/monster-cafe')
+        ->where('gameMenu.2.games.9.minGrade', 0)
         ->where('gameMenu.2.games.7.key', 'ping-pong')
         ->where('gameMenu.2.games.7.url', '/games/ping-pong')
         ->where('gameMenu.2.games.7.minGrade', 1)
-        ->where('gameMenu.2.games.9.key', 'edu-kart')
-        ->where('gameMenu.2.games.9.url', '/games/edu-kart')
-        ->where('gameMenu.2.games.9.minGrade', 1)
+        ->where('gameMenu.2.games.8.key', 'tug-of-war')
+        ->where('gameMenu.2.games.8.url', '/games/tug-of-war')
+        ->where('gameMenu.2.games.8.minGrade', 0)
+        ->where('gameMenu.2.games.10.key', 'edu-kart')
+        ->where('gameMenu.2.games.10.url', '/games/edu-kart')
+        ->where('gameMenu.2.games.10.minGrade', 1)
         ->where('gameMenu.3.key', 'puzzle')
         ->where('gameMenu.3.games.0.key', 'crossword')
         ->where('gameMenu.3.games.0.minGrade', 0)
@@ -84,7 +87,7 @@ it('links every game from the landing page menu', function (string $url): void {
     $landing = file_get_contents(public_path('new-landing/index.html'));
 
     expect($landing)->toContain('href="'.$url.'"');
-})->with(['/games/flag-quest', '/games/sky-quiz', '/games/quiz-duel', '/games/knowledge-train', '/games/snakes-and-ladders', '/games/market-math', '/games/number-garden', '/games/explore-indonesia', '/games/mini-lab', '/games/floor-drop', '/games/economy-heist', '/games/order-rush', '/games/port-sorter', '/games/turbo-trivia', '/games/block-battle', '/games/monster-cafe', '/games/ping-pong', '/games/edu-kart']);
+})->with(['/games/flag-quest', '/games/sky-quiz', '/games/quiz-duel', '/games/knowledge-train', '/games/snakes-and-ladders', '/games/market-math', '/games/number-garden', '/games/explore-indonesia', '/games/mini-lab', '/games/floor-drop', '/games/economy-heist', '/games/order-rush', '/games/port-sorter', '/games/turbo-trivia', '/games/block-battle', '/games/monster-cafe', '/games/ping-pong', '/games/edu-kart', '/games/tug-of-war']);
 
 it('labels the list-view accordion and filter counts in both locales', function (): void {
     foreach (['id', 'en'] as $locale) {

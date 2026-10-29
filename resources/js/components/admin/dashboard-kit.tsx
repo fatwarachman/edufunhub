@@ -39,6 +39,7 @@ export const GAME_COLORS: Record<string, string> = {
     'block-battle': '#ca8a04',
     'monster-cafe': '#ea580c',
     'edu-kart': '#e11d48',
+    'tug-of-war': '#9333ea',
     'knowledge-train': 'var(--color-bubble-purple)',
 };
 

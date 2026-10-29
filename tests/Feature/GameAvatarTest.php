@@ -73,6 +73,7 @@ it('signs the avatar look into game tokens so Go can show it to room players', f
     '/games/order-rush/token',
     '/games/monster-cafe/token',
     '/games/edu-kart/token',
+    '/games/tug-of-war/token',
 ]);
 
 it('shares the superadmin flag that shows the admin button only to superadmins', function (): void {

@@ -93,6 +93,16 @@ func (s *Server) closeClassroom(id int64) {
 		s.pushPingPong(ids, now)
 		s.reportPingPong()
 	}
+	if ids := s.tug.CloseClassroom(id, now); len(ids) > 0 {
+		s.mu.Lock()
+		subs := pickSubs(s.tugSubs, ids)
+		s.mu.Unlock()
+		for _, sub := range subs {
+			sub.send(ended)
+		}
+		s.pushTugOfWar(ids, now)
+		s.reportTugOfWar()
+	}
 	if ids := s.snake.CloseClassroom(id, now); len(ids) > 0 {
 		s.mu.Lock()
 		subs := pickSubs(s.snakeSubs, ids)

@@ -38,6 +38,7 @@ func (s *Server) LiveRooms() []LiveRoom {
 	addLobby("snakes-and-ladders", s.snakes.RoomsSummary())
 	addLobby("snake", s.snake.RoomsSummary())
 	addLobby("ping-pong", s.pingpong.RoomsSummary())
+	addLobby("tug-of-war", s.tug.RoomsSummary())
 	addLobby("crossword", s.crosswords.RoomsSummary())
 	addLobby("floor-drop", s.floor.RoomsSummary())
 	addLobby("economy-heist", s.heist.RoomsSummary())
@@ -80,6 +81,8 @@ func (s *Server) Presence(uid int64) []Activity {
 	lobbyRoom("snake", p, ok)
 	p, ok = s.pingpong.Presence(uid)
 	lobbyRoom("ping-pong", p, ok)
+	p, ok = s.tug.Presence(uid)
+	lobbyRoom("tug-of-war", p, ok)
 	p, ok = s.crosswords.Presence(uid)
 	lobbyRoom("crossword", p, ok)
 	for _, key := range minigames.Keys {

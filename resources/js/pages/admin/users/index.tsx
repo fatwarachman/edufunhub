@@ -1,3 +1,5 @@
+import { KpiCard } from '@/components/admin/dashboard-kit';
+import { formatNumber } from '@/components/admin/game-stats';
 import { BadgeChips } from '@/components/badges';
 import { OnlineDot } from '@/components/online-dot';
 import { ResponsiveTable } from '@/components/responsive-table';
@@ -25,8 +27,10 @@ import {
     Megaphone,
     MoreHorizontal,
     Plus,
+    School,
     Search,
     Trash2,
+    Users,
     UserX,
 } from 'lucide-react';
 import {
@@ -142,8 +146,16 @@ const SEARCH_FIELDS: {
     },
 ];
 
+interface UserTotals {
+    users: number;
+    users_today: number;
+    schools: number;
+    learners_with_school: number;
+}
+
 interface UsersIndexProps {
     users: PaginatedData<AdminUser>;
+    totals: UserTotals;
     roles: Role[];
     canImpersonate: boolean;
     viewerIsSuperadmin: boolean;
@@ -283,6 +295,7 @@ function Pagination({
 
 export default function UsersIndex({
     users,
+    totals,
     roles,
     filters,
     canImpersonate,
@@ -409,6 +422,38 @@ export default function UsersIndex({
                         <Plus className="size-4" />
                         {tr('Add User')}
                     </Link>
+                </div>
+
+                <div
+                    className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+                    data-testid="users-totals"
+                >
+                    <KpiCard
+                        label="Total users"
+                        value={formatNumber(totals.users)}
+                        icon={Users}
+                        accent="var(--color-bubble-orange)"
+                        footer={
+                            <span className="text-xs text-muted-foreground">
+                                {tr('{0} joined today', [
+                                    formatNumber(totals.users_today),
+                                ])}
+                            </span>
+                        }
+                    />
+                    <KpiCard
+                        label="Total schools"
+                        value={formatNumber(totals.schools)}
+                        icon={School}
+                        accent="var(--color-bubble-blue)"
+                        footer={
+                            <span className="text-xs text-muted-foreground">
+                                {tr('{0} learners with a school', [
+                                    formatNumber(totals.learners_with_school),
+                                ])}
+                            </span>
+                        }
+                    />
                 </div>
 
                 {/* Filters */}

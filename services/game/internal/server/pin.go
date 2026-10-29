@@ -41,6 +41,8 @@ func (s *Server) FindPin(pin string) []RoomMatch {
 	lobbyRoom("snake", phase, ok)
 	phase, ok = s.pingpong.RoomPhase(pin)
 	lobbyRoom("ping-pong", phase, ok)
+	phase, ok = s.tug.RoomPhase(pin)
+	lobbyRoom("tug-of-war", phase, ok)
 	phase, ok = s.crosswords.RoomPhase(pin)
 	lobbyRoom("crossword", phase, ok)
 	for _, key := range minigames.Keys {
