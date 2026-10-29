@@ -182,7 +182,9 @@ Route::middleware(['auth', EnsurePlayerIsActive::class])->group(function (): voi
         Route::get('/questions/import', [TeacherQuestionController::class, 'importForm'])->name('questions.import');
         Route::post('/questions/import', [TeacherQuestionController::class, 'import'])->middleware('throttle:10,1,questions.import.store')->name('questions.import.store');
         Route::get('/questions/template', [TeacherQuestionController::class, 'template'])->name('questions.template');
+        Route::get('/questions/list', [TeacherQuestionController::class, 'list'])->name('questions.list');
         Route::resource('questions', TeacherQuestionController::class)->except(['store', 'update']);
+        Route::patch('/questions/{question}/games', [TeacherQuestionController::class, 'updateGames'])->middleware('throttle:60,1,teacher.questions.games')->name('questions.games');
         Route::post('/questions', [TeacherQuestionController::class, 'store'])->middleware('throttle:30,1,teacher.questions.store')->name('questions.store');
         Route::post('/questions/media', [QuestionMediaController::class, 'store'])->middleware('throttle:30,1,teacher.questions.media')->name('questions.media.store');
         Route::put('/questions/{question}', [TeacherQuestionController::class, 'update'])->middleware('throttle:60,1,teacher.questions.update')->name('questions.update');

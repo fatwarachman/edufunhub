@@ -282,12 +282,32 @@ export function QuestionVisualEditor({
     onChange,
     errors,
     endpoint = '/admin/questions/media',
+    portal = false,
 }: {
     value: VisualDraft;
     onChange: (next: VisualDraft) => void;
     errors: Record<string, string>;
     endpoint?: string;
+    /** Player-portal surface (teacher pages): thick ink buttons instead of admin tokens. */
+    portal?: boolean;
 }) {
+    const choiceClass = (selected: boolean): string =>
+        portal
+            ? cn(
+                  'inline-flex min-h-11 items-center gap-2 rounded-xl border-2 border-[#151b2e] px-3.5 py-2 text-sm font-bold transition-colors',
+                  selected
+                      ? 'bg-[#151b2e] text-white shadow-[2px_2px_0_#f5a623]'
+                      : 'bg-white text-[#151b2e] hover:bg-[#fff0cf]',
+              )
+            : cn(
+                  'inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium',
+                  selected
+                      ? 'border-primary bg-primary/10 text-foreground'
+                      : 'border-input text-muted-foreground hover:text-foreground',
+              );
+    const actionClass = portal
+        ? 'border-2 border-[#151b2e] bg-white font-bold text-[#151b2e] shadow-[2px_2px_0_#151b2e] hover:bg-[#fff0cf]'
+        : 'border border-input font-medium text-foreground hover:bg-muted';
     const fileInput = useRef<HTMLInputElement | null>(null);
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
@@ -368,12 +388,7 @@ export function QuestionVisualEditor({
                         aria-pressed={value.kind === kind}
                         onClick={() => set({ kind })}
                         data-testid={`question-visual-kind-${kind || 'none'}`}
-                        className={cn(
-                            'inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium',
-                            value.kind === kind
-                                ? 'border-primary bg-primary/10 text-foreground'
-                                : 'border-input text-muted-foreground hover:text-foreground',
-                        )}
+                        className={choiceClass(value.kind === kind)}
                     >
                         <Icon className="size-4" aria-hidden />
                         {tr(label)}
@@ -402,7 +417,10 @@ export function QuestionVisualEditor({
                                             fileInput.current?.click()
                                         }
                                         disabled={uploading}
-                                        className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-input px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-50"
+                                        className={cn(
+                                            'inline-flex min-h-11 items-center gap-2 rounded-lg px-4 py-2 text-sm disabled:opacity-50',
+                                            actionClass,
+                                        )}
                                     >
                                         {uploading ? (
                                             <Loader2 className="size-4 animate-spin" />
@@ -484,14 +502,22 @@ export function QuestionVisualEditor({
                                                 })
                                             }
                                             data-testid={`question-visual-preset-${preset.key}`}
-                                            className="min-h-9 rounded-lg border border-input px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+                                            className={cn(
+                                                'min-h-9 rounded-lg px-3 py-1.5 text-xs',
+                                                actionClass,
+                                            )}
                                         >
                                             {preset.label}
                                         </button>
                                     ))}
                                 </div>
                                 <div
-                                    className="inline-flex w-fit rounded-lg border border-input p-1"
+                                    className={cn(
+                                        'inline-flex w-fit rounded-lg p-1',
+                                        portal
+                                            ? 'border-2 border-[#151b2e] bg-white'
+                                            : 'border border-input',
+                                    )}
                                     role="group"
                                     aria-label={tr('Cable type')}
                                 >
@@ -507,8 +533,12 @@ export function QuestionVisualEditor({
                                                 className={cn(
                                                     'rounded-md px-3 py-1.5 text-sm font-medium',
                                                     value.style === style
-                                                        ? 'bg-primary text-primary-foreground'
-                                                        : 'text-muted-foreground hover:text-foreground',
+                                                        ? portal
+                                                            ? 'bg-[#151b2e] font-bold text-white'
+                                                            : 'bg-primary text-primary-foreground'
+                                                        : portal
+                                                          ? 'font-bold text-[#151b2e] hover:bg-[#fff0cf]'
+                                                          : 'text-muted-foreground hover:text-foreground',
                                                 )}
                                             >
                                                 {style === 'utp'
@@ -617,7 +647,12 @@ export function QuestionVisualEditor({
                                                 ],
                                             })
                                         }
-                                        className="inline-flex w-fit items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10"
+                                        className={cn(
+                                            'inline-flex w-fit items-center gap-1.5 rounded-lg px-3 py-2 text-sm',
+                                            portal
+                                                ? 'min-h-11 font-bold text-[#6c5ce7] hover:bg-[#efeaff]'
+                                                : 'font-medium text-primary hover:bg-primary/10',
+                                        )}
                                     >
                                         <Plus className="size-4" />
                                         {tr('Add wire')}
@@ -643,11 +678,8 @@ export function QuestionVisualEditor({
                                             aria-pressed={value.shape === shape}
                                             onClick={() => set({ shape })}
                                             data-testid={`question-visual-shape-${shape}`}
-                                            className={cn(
-                                                'min-h-11 rounded-lg border px-3 py-2 text-sm font-medium',
-                                                value.shape === shape
-                                                    ? 'border-primary bg-primary/10 text-foreground'
-                                                    : 'border-input text-muted-foreground hover:text-foreground',
+                                            className={choiceClass(
+                                                value.shape === shape,
                                             )}
                                         >
                                             {tr(TOPOLOGY_LABELS[shape])}
@@ -722,7 +754,12 @@ export function QuestionVisualEditor({
                                                 value.emoji.length >= MAX_EMOJI
                                             }
                                             aria-label={tr('Add {0}', [emoji])}
-                                            className="grid size-10 place-items-center rounded-lg border border-input text-xl hover:bg-muted disabled:opacity-40"
+                                            className={cn(
+                                                'grid size-11 place-items-center rounded-lg text-xl disabled:opacity-40',
+                                                portal
+                                                    ? 'border-2 border-[#151b2e] bg-white hover:bg-[#fff0cf]'
+                                                    : 'border border-input hover:bg-muted',
+                                            )}
                                         >
                                             {emoji}
                                         </button>

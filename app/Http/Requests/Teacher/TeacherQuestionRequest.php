@@ -30,7 +30,31 @@ class TeacherQuestionRequest extends FormRequest
             'is_active' => $this->boolean('is_active'),
             'level' => $this->parseLevel($this->input('level')),
             'topic_id' => $this->filled('topic_id') ? (is_numeric($this->input('topic_id')) ? (int) $this->input('topic_id') : $this->input('topic_id')) : null,
+            'games' => $this->has('games') ? $this->input('games') : $this->defaultGames(),
         ]);
+    }
+
+    /**
+     * Games used when the form sends none: teachers pick games later from
+     * their question list. An edited question keeps the games it still
+     * supports; a new one goes to every game that supports its type.
+     *
+     * @return list<string>
+     */
+    private function defaultGames(): array
+    {
+        $type = $this->input('type');
+        $compatible = Question::gamesForType(is_string($type) ? $type : Question::TYPE_CHOICE);
+        $question = $this->route('question');
+
+        if ($question instanceof Question) {
+            $kept = array_values(array_intersect($question->games ?? [], $compatible));
+            if ($kept !== []) {
+                return $kept;
+            }
+        }
+
+        return $compatible;
     }
 
     /** @return array<string, array<mixed>> */

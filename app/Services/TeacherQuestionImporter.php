@@ -23,41 +23,80 @@ class TeacherQuestionImporter
 
     public const MAX_ROWS = 500;
 
-    /** Column order of the template. */
+    /**
+     * Column order of the template. Games are not part of a row: imported
+     * questions go to every matching game and the teacher picks games later
+     * in the question list. An old `games` column is ignored.
+     */
     public const COLUMNS = [
-        'type', 'grades', 'subject', 'games',
+        'type', 'grades', 'subject', 'topic', 'level',
         'question_id', 'question_en',
         'option_1_id', 'option_1_en', 'option_2_id', 'option_2_en', 'option_3_id', 'option_3_en',
         'option_4_id', 'option_4_en', 'option_5_id', 'option_5_en', 'option_6_id', 'option_6_en',
-        'answer', 'hint_id', 'hint_en', 'level', 'topic',
+        'answer', 'hint_id', 'hint_en',
     ];
+
+    /** Delimiter of the template: Excel in Indonesian locale opens semicolon files in columns. */
+    public const DELIMITER = ';';
 
     private const REQUIRED_COLUMNS = ['type', 'grades', 'subject', 'question_id', 'answer'];
 
     /**
-     * Sample rows written into the template (Indonesian defaults, English optional).
+     * Sample rows written into the template (Indonesian defaults, English
+     * optional). Only samples of subjects the teacher may write for are kept;
+     * when none match, every sample uses the teacher's first subject, so the
+     * downloaded file always imports cleanly.
      *
+     * @param  list<string>  $subjects
      * @return list<list<string>>
      */
-    public function sampleRows(): array
+    public function sampleRows(array $subjects): array
     {
-        return [
-            ['choice', 'TK;1', 'math', 'flag-quest;sky-quiz', 'Berapa 2 + 3?', 'What is 2 + 3?', '5', '5', '4', '4', '6', '6', '7', '7', '', '', '', '', '1', '2 ditambah 3 sama dengan 5.', '2 plus 3 equals 5.', 'mudah', ''],
-            ['choice', '4;5;6', 'science', 'sky-quiz', 'Planet terbesar di tata surya adalah…', 'The largest planet in the solar system is…', 'Jupiter', 'Jupiter', 'Mars', 'Mars', 'Bumi', 'Earth', '', '', '', '', '', '', '1', '', '', 'menengah', ''],
-            ['true_false', '7;8;9', 'social', 'flag-quest', 'Ibu kota Indonesia adalah Jakarta.', 'The capital of Indonesia is Jakarta.', '', '', '', '', '', '', '', '', '', '', '', '', 'true', '', '', 'sulit', ''],
+        $samples = [
+            ['type' => 'choice', 'grades' => 'TK,1', 'subject' => 'math', 'level' => 'mudah', 'question_id' => 'Berapa 2 + 3?', 'question_en' => 'What is 2 + 3?', 'options' => [['5', '5'], ['4', '4'], ['6', '6'], ['7', '7']], 'answer' => '1', 'hint_id' => '2 ditambah 3 sama dengan 5.', 'hint_en' => '2 plus 3 equals 5.'],
+            ['type' => 'choice', 'grades' => '4-6', 'subject' => 'science', 'level' => 'menengah', 'question_id' => 'Planet terbesar di tata surya adalah…', 'question_en' => 'The largest planet in the solar system is…', 'options' => [['Jupiter', 'Jupiter'], ['Mars', 'Mars'], ['Bumi', 'Earth']], 'answer' => 'A', 'hint_id' => '', 'hint_en' => ''],
+            ['type' => 'true_false', 'grades' => '7,8,9', 'subject' => 'social', 'level' => 'sulit', 'question_id' => 'Ibu kota Indonesia adalah Jakarta.', 'question_en' => 'The capital of Indonesia is Jakarta.', 'options' => [], 'answer' => 'benar', 'hint_id' => '', 'hint_en' => ''],
         ];
+
+        $allowed = array_values(array_filter($samples, fn (array $sample): bool => $subjects === [] || in_array($sample['subject'], $subjects, true)));
+        if ($allowed === []) {
+            $allowed = array_map(fn (array $sample): array => [...$sample, 'subject' => $subjects[0]], $samples);
+        }
+
+        return array_map(function (array $sample): array {
+            $values = [
+                'type' => $sample['type'],
+                'grades' => $sample['grades'],
+                'subject' => $sample['subject'],
+                'topic' => '',
+                'level' => $sample['level'],
+                'question_id' => $sample['question_id'],
+                'question_en' => $sample['question_en'],
+                'answer' => $sample['answer'],
+                'hint_id' => $sample['hint_id'],
+                'hint_en' => $sample['hint_en'],
+            ];
+            for ($i = 1; $i <= 6; $i++) {
+                $values["option_{$i}_id"] = $sample['options'][$i - 1][0] ?? '';
+                $values["option_{$i}_en"] = $sample['options'][$i - 1][1] ?? '';
+            }
+
+            return array_map(fn (string $column): string => $values[$column], self::COLUMNS);
+        }, $allowed);
     }
 
     /**
      * CSV body of the downloadable template (UTF-8 with BOM so Excel keeps accents).
+     *
+     * @param  list<string>  $subjects  subjects the teacher may write for
      */
-    public function template(): string
+    public function template(array $subjects): string
     {
         $handle = fopen('php://temp', 'r+');
         fwrite($handle, "\u{FEFF}");
-        fputcsv($handle, self::COLUMNS, ',', '"', '');
-        foreach ($this->sampleRows() as $row) {
-            fputcsv($handle, $row, ',', '"', '');
+        fputcsv($handle, self::COLUMNS, self::DELIMITER, '"', '');
+        foreach ($this->sampleRows($subjects) as $row) {
+            fputcsv($handle, $row, self::DELIMITER, '"', '');
         }
         rewind($handle);
         $csv = (string) stream_get_contents($handle);
@@ -92,8 +131,11 @@ class TeacherQuestionImporter
                 ...$this->gradeRules(),
             ];
             $validator = Validator::make($attributes, $rules, $this->questionMessages());
-            $validator->after(function ($v) use ($attributes, $topicName, $row): void {
+            $validator->after(function ($v) use ($attributes, $topicName, $row, $teacher): void {
                 $this->validateQuestionConsistency($v, $attributes);
+                if (is_string($attributes['subject']) && $attributes['subject'] !== '' && ! $teacher->canTeachSubject($attributes['subject'])) {
+                    $v->errors()->add('subject', __('questions.import.subject_not_assigned', ['subject' => $attributes['subject']]));
+                }
                 if ($topicName !== '' && $attributes['topic_id'] === null) {
                     $v->errors()->add('topic_id', __('questions.import.unknown_topic', ['topic' => trim($row['topic'] ?? '')]));
                 }
@@ -213,13 +255,11 @@ class TeacherQuestionImporter
             $options[] = ['id' => $row["option_{$i}_id"] ?? '', 'en' => $row["option_{$i}_en"] ?? ''];
         }
 
-        $games = collect(preg_split('/[;|,]/', $row['games'] ?? '') ?: [])->map(fn ($game): string => trim(Str::lower($game)))->filter()->values()->all();
-
         return [
             'type' => $type,
             'grades' => $this->parseGrades($row['grades'] ?? ''),
             'subject' => Str::lower($row['subject'] ?? ''),
-            'games' => $games !== [] ? $games : ($type === Question::TYPE_TRUE_FALSE ? array_values(array_diff(Question::GAMES, Question::CHOICE_ONLY_GAMES)) : Question::GAMES),
+            'games' => Question::gamesForType($type),
             'prompt_id' => $row['question_id'] ?? '',
             'prompt_en' => ($row['question_en'] ?? '') ?: null,
             'options' => $this->normalizeOptions($options, $type),

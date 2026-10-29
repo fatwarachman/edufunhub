@@ -31,6 +31,90 @@
 
 return [
     [
+        'version' => '0.64.0',
+        'date' => '2026-10-29',
+        'time' => '19:00',
+        'changes' => [
+            [
+                'key' => 'teacher-question-list-accordion',
+                'type' => 'feature',
+                'title' => ['id' => 'Daftar soal guru berbentuk akordion bernomor', 'en' => 'Numbered accordion question list for teachers'],
+                'body' => [
+                    'id' => 'Daftar soal saya kini berupa daftar lengkap bernomor urut dengan ikon keterangan (mapel, materi, jenis, level, kelas, permainan, pemakaian, gambar, status). Klik soal untuk membuka detailnya dengan animasi halus: pilihan jawaban dan kunci, penjelasan, statistik, permainan, serta tombol atur permainan, analisis, ubah, dan hapus. Tersedia tombol buka atau tutup semua.',
+                    'en' => 'My questions is now a full numbered list with info icons (subject, topic, type, level, grades, games, usage, picture, status). Click a question to smoothly open its details: answer options and key, explanation, stats, games, and buttons to choose games, analyse, edit or delete. Expand all and collapse all are available.',
+                ],
+            ],
+            [
+                'key' => 'teacher-question-list-search-filters',
+                'type' => 'feature',
+                'title' => ['id' => 'Pencarian, filter, dan pagination daftar soal guru', 'en' => 'Search, filters and pagination for teacher questions'],
+                'body' => [
+                    'id' => 'Pencarian langsung mencari di semua soal buatan guru (bukan hanya halaman yang tampil): pertanyaan, pilihan jawaban, penjelasan, atau nomor ID. Filter baru: mapel, materi, kelas, level, jenis, status, permainan, gambar, dan urutan, dengan tombol atur ulang. Pagination 30, 50, 100, atau 200 soal per halaman dengan nomor halaman.',
+                    'en' => 'Live search looks through every question the teacher wrote (not only the visible page): question, answer options, explanation or ID number. New filters: subject, topic, grade, level, type, status, game, picture and sort, with a reset button. Pagination shows 30, 50, 100 or 200 questions per page with page numbers.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.63.0',
+        'date' => '2026-10-29',
+        'time' => '18:30',
+        'changes' => [
+            [
+                'key' => 'teacher-import-template-format',
+                'type' => 'improvement',
+                'title' => ['id' => 'Format template impor soal guru diperbarui', 'en' => 'Updated teacher question import template'],
+                'body' => [
+                    'id' => 'Template CSV tidak lagi punya kolom games: soal impor otomatis tampil di semua permainan yang cocok dan permainannya diatur di Daftar soal saya. Kolom materi dan level kini ada di depan, file memakai pemisah titik koma agar langsung rapi per kolom di Excel, contoh soal hanya memakai mata pelajaran yang boleh diisi guru, dan halaman impor menampilkan daftar kode mapel tersebut. File lama berkolom games tetap bisa diimpor (kolomnya diabaikan), dan baris dengan mapel di luar tugas guru ditolak dengan pesan jelas.',
+                    'en' => 'The CSV template no longer has a games column: imported questions are shown in every matching game and their games are set in My questions. Topic and level columns now come first, the file uses semicolons so Excel opens it in columns, sample rows only use the teacher\'s own subjects, and the import page lists those subject codes. Old files with a games column still import (the column is ignored), and rows for subjects the teacher is not assigned to are rejected with a clear message.',
+                ],
+            ],
+        ],
+    ],
+    [
+        'version' => '0.62.0',
+        'date' => '2026-10-29',
+        'time' => '18:00',
+        'changes' => [
+            [
+                'key' => 'teacher-question-save-fix',
+                'type' => 'fix',
+                'title' => ['id' => 'Soal manual guru kini tersimpan', 'en' => 'Teacher questions now save'],
+                'body' => [
+                    'id' => 'Tombol Simpan soal di halaman Buat soal sebelumnya hanya memuat lalu kembali tanpa menyimpan, karena tingkat kesulitan tidak terkirim. Kini guru memilih tingkat kesulitan dan materi, muncul popup konfirmasi setelah soal tersimpan, lalu formulir kosong kembali untuk soal berikutnya. Bila ada isian yang salah, muncul pesan yang jelas.',
+                    'en' => 'Save question on the Create question page used to load and return without saving, because the difficulty was never sent. Teachers now pick a difficulty and topic, a confirmation popup appears once the question is saved, and the form empties for the next question. Invalid fields now show a clear message.',
+                ],
+            ],
+            [
+                'key' => 'teacher-question-list',
+                'type' => 'feature',
+                'title' => ['id' => 'Halaman Daftar soal saya untuk guru', 'en' => 'My questions page for teachers'],
+                'body' => [
+                    'id' => 'Ruang Guru punya tombol Daftar soal saya yang membuka semua soal buatan guru dengan filter, statistik, analisis, ubah, dan hapus. Beranda Ruang Guru menampilkan 5 soal terbaru.',
+                    'en' => 'The teacher room has a My questions button that opens every question the teacher wrote, with filters, stats, analysis, edit and delete. The teacher home shows the 5 latest questions.',
+                ],
+            ],
+            [
+                'key' => 'teacher-question-games-later',
+                'type' => 'improvement',
+                'title' => ['id' => 'Permainan soal dipilih dari daftar soal', 'en' => 'Pick question games from the list'],
+                'body' => [
+                    'id' => 'Saat membuat soal, guru tidak perlu lagi memilih permainan: soal otomatis tampil di semua permainan yang cocok. Permainan tiap soal bisa diatur kapan saja lewat tombol Atur permainan di Daftar soal saya.',
+                    'en' => 'Teachers no longer pick games while writing a question: it is shown in every matching game. Each question\'s games can be changed any time with Choose games in My questions.',
+                ],
+            ],
+            [
+                'key' => 'teacher-visual-buttons',
+                'type' => 'fix',
+                'title' => ['id' => 'Tombol ilustrasi soal guru lebih jelas', 'en' => 'Clearer illustration buttons for teachers'],
+                'body' => [
+                    'id' => 'Tombol jenis ilustrasi, unggah gambar, preset kabel, topologi, dan emoji di halaman buat soal guru kini memakai warna tegas sehingga tidak lagi terlihat seperti tombol nonaktif.',
+                    'en' => 'Illustration type, picture upload, cable preset, topology and emoji buttons on the teacher question form now use strong colours, so they no longer look disabled.',
+                ],
+            ],
+        ],
+    ],
+    [
         'version' => '0.61.0',
         'date' => '2026-10-29',
         'time' => '16:30',

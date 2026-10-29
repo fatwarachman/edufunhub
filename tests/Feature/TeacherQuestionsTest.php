@@ -6,8 +6,10 @@ use App\Models\QuestionAnswer;
 use App\Models\QuestionCompensationRate;
 use App\Models\Role;
 use App\Models\SubjectTopic;
+use App\Models\TeacherSubject;
 use App\Models\User;
 use App\Services\PointRules;
+use App\Services\TeacherQuestionImporter;
 use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -83,12 +85,13 @@ test('only users with the teacher role can open the teacher portal', function (s
     $this->actingAs(User::factory()->create())->get($path)->assertForbidden();
     $this->actingAs(User::factory()->superadmin()->create())->get($path)->assertForbidden();
     $this->actingAs($this->teacher)->get($path)->assertOk();
-})->with(['/teacher/questions', '/teacher/questions/create', '/teacher/questions/import', '/teacher/questions/template']);
+})->with(['/teacher/questions', '/teacher/questions/list', '/teacher/questions/create', '/teacher/questions/import', '/teacher/questions/template']);
 
 test('teacher creates a question for selected grades including kindergarten', function (): void {
     $this->actingAs($this->teacher)->post('/teacher/questions', teacherQuestionPayload())
-        ->assertRedirect(route('teacher.questions.index'))
-        ->assertSessionHasNoErrors();
+        ->assertRedirect(route('teacher.questions.create'))
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', __('questions.created'));
 
     $question = Question::query()->where('source', 'teacher')->sole();
 
@@ -155,19 +158,19 @@ test('teacher list filters by topic and level and exposes level and topic', func
     Question::factory()->byTeacher($this->teacher, [5])->create(['subject' => 'math', 'level' => 3, 'topic_id' => $topic->id, 'prompt_id' => 'Sulit bertopik']);
     Question::factory()->byTeacher($this->teacher, [5])->create(['subject' => 'math', 'level' => 1, 'prompt_id' => 'Mudah']);
 
-    $this->actingAs($this->teacher)->get("/teacher/questions?topic={$topic->id}")->assertInertia(fn (Assert $page) => $page
+    $this->actingAs($this->teacher)->get("/teacher/questions/list?topic={$topic->id}")->assertInertia(fn (Assert $page) => $page
         ->where('questions.total', 1)
         ->where('questions.data.0.prompt_id', 'Sulit bertopik')
         ->where('questions.data.0.level', 3)
         ->where('questions.data.0.topic.id', $topic->id)
         ->where('filters.topic', $topic->id));
 
-    $this->actingAs($this->teacher)->get('/teacher/questions?level=1')->assertInertia(fn (Assert $page) => $page
+    $this->actingAs($this->teacher)->get('/teacher/questions/list?level=1')->assertInertia(fn (Assert $page) => $page
         ->where('questions.total', 1)
         ->where('questions.data.0.prompt_id', 'Mudah')
         ->where('questions.data.0.topic', null));
 
-    $this->actingAs($this->teacher)->get('/teacher/questions?level=9&topic=abc')->assertInertia(fn (Assert $page) => $page
+    $this->actingAs($this->teacher)->get('/teacher/questions/list?level=9&topic=abc')->assertInertia(fn (Assert $page) => $page
         ->where('questions.total', 2)
         ->missing('filters.level')
         ->missing('filters.topic'));
@@ -217,10 +220,10 @@ test('teachers can only edit and delete their own questions', function (): void 
         ->assertInertia(fn (Assert $page) => $page->component('teacher/form')->where('question.grades', [3]));
 
     $this->actingAs($this->teacher)->put("/teacher/questions/{$mine->id}", teacherQuestionPayload(['grades' => [10, 11]]))
-        ->assertRedirect(route('teacher.questions.index'));
+        ->assertRedirect(route('teacher.questions.list'));
     expect($mine->fresh())->grades->toBe([10, 11])->band->toBe(3);
 
-    $this->actingAs($this->teacher)->delete("/teacher/questions/{$mine->id}")->assertRedirect(route('teacher.questions.index'));
+    $this->actingAs($this->teacher)->from('/teacher/questions/list')->delete("/teacher/questions/{$mine->id}")->assertRedirect('/teacher/questions/list');
     $this->assertModelMissing($mine);
     $this->assertModelExists($theirs);
 });
@@ -232,10 +235,14 @@ test('teacher list only shows own questions and filters by grade', function (): 
 
     $this->actingAs($this->teacher)->get('/teacher/questions')->assertInertia(fn (Assert $page) => $page
         ->component('teacher/index')
-        ->where('questions.total', 2)
+        ->has('recent', 2)
         ->where('overview.summary.questions', 2));
 
-    $this->actingAs($this->teacher)->get('/teacher/questions?grade=0')->assertInertia(fn (Assert $page) => $page
+    $this->actingAs($this->teacher)->get('/teacher/questions/list')->assertInertia(fn (Assert $page) => $page
+        ->component('teacher/questions')
+        ->where('questions.total', 2));
+
+    $this->actingAs($this->teacher)->get('/teacher/questions/list?grade=0')->assertInertia(fn (Assert $page) => $page
         ->where('questions.total', 1)
         ->where('questions.data.0.prompt_id', 'Soal TK'));
 });
@@ -245,15 +252,61 @@ test('template download contains the documented columns and sample rows', functi
 
     expect($response->headers->get('content-disposition'))->toContain('template-soal-edufunhub.csv');
     $lines = array_values(array_filter(explode("\n", $response->streamedContent())));
-    expect($lines[0])->toStartWith("\u{FEFF}type,grades,subject,games,question_id")
-        ->and($lines)->toHaveCount(4);
+    expect($lines[0])->toBe("\u{FEFF}".implode(';', TeacherQuestionImporter::COLUMNS))
+        ->and($lines[0])->not->toContain('games')
+        ->and($lines)->toHaveCount(4)
+        ->and($lines[1])->toStartWith('choice;TK,1;math;;mudah;');
+});
+
+test('template samples only use subjects the teacher is assigned to', function (): void {
+    TeacherSubject::query()->create(['user_id' => $this->teacher->id, 'subject_key' => 'science']);
+
+    $lines = array_values(array_filter(explode("\n", $this->actingAs($this->teacher)->get('/teacher/questions/template')->streamedContent())));
+    expect($lines)->toHaveCount(2)
+        ->and(str_getcsv($lines[1], ';', '"', '')[2])->toBe('science');
+
+    $this->actingAs($this->teacher)->post('/teacher/questions/import', ['file' => teacherCsvUpload(implode("\n", $lines))])
+        ->assertSessionHasNoErrors();
+    expect(Question::query()->where('source', 'import')->pluck('subject')->all())->toBe(['science']);
+});
+
+test('import rejects subjects the teacher is not assigned to', function (): void {
+    TeacherSubject::query()->create(['user_id' => $this->teacher->id, 'subject_key' => 'math']);
+    $csv = "type,grades,subject,question_id,option_1_id,option_2_id,option_3_id,answer\n"
+        ."choice,5,science,Soal IPA?,A,B,C,1\n";
+
+    $this->actingAs($this->teacher)->post('/teacher/questions/import', ['file' => teacherCsvUpload($csv)])
+        ->assertSessionHasErrors('file')
+        ->assertSessionHas('importErrors', fn (array $errors): bool => $errors[0]['row'] === 2);
+    expect(Question::query()->where('source', 'import')->count())->toBe(0);
+});
+
+test('import ignores an old games column and sends every row to all matching games', function (): void {
+    $csv = "type,grades,subject,games,question_id,option_1_id,option_2_id,option_3_id,answer\n"
+        ."choice,5,math,flag-quest,Soal lama?,A,B,C,1\n"
+        ."true_false,5,math,sky-quiz,Pernyataan lama.,,,,benar\n";
+
+    $this->actingAs($this->teacher)->post('/teacher/questions/import', ['file' => teacherCsvUpload($csv)])->assertSessionHasNoErrors();
+
+    $imported = Question::query()->where('source', 'import')->orderBy('id')->get();
+    expect($imported[0]->games)->toBe(Question::GAMES)
+        ->and($imported[1]->games)->toBe(Question::gamesForType(Question::TYPE_TRUE_FALSE));
+});
+
+test('import page lists the teacher subject codes and no games column', function (): void {
+    TeacherSubject::query()->create(['user_id' => $this->teacher->id, 'subject_key' => 'math']);
+
+    $this->actingAs($this->teacher)->get('/teacher/questions/import')->assertInertia(fn (Assert $page) => $page
+        ->component('teacher/import')
+        ->where('subjects', ['math'])
+        ->where('columns', fn ($columns): bool => ! collect($columns)->contains('games') && collect($columns)->contains('level')));
 });
 
 test('the downloaded template imports cleanly', function (): void {
     $template = $this->actingAs($this->teacher)->get('/teacher/questions/template')->streamedContent();
 
     $this->actingAs($this->teacher)->post('/teacher/questions/import', ['file' => teacherCsvUpload($template)])
-        ->assertRedirect(route('teacher.questions.index'))
+        ->assertRedirect(route('teacher.questions.list'))
         ->assertSessionHasNoErrors();
 
     $imported = Question::query()->where('source', 'import')->orderBy('id')->get();
@@ -266,7 +319,8 @@ test('the downloaded template imports cleanly', function (): void {
         ->and($imported[1]->band)->toBe(1)
         ->and($imported[2]->type)->toBe('true_false')
         ->and($imported[2]->answer)->toBe(1)
-        ->and($imported[2]->games)->toBe(['flag-quest']);
+        ->and($imported[0]->games)->toBe(Question::GAMES)
+        ->and($imported[2]->games)->toBe(Question::gamesForType(Question::TYPE_TRUE_FALSE));
 });
 
 test('import accepts semicolon separated files, letters and grade ranges', function (): void {
@@ -331,10 +385,12 @@ test('correct answers to teacher questions earn the rate for the player grade', 
         ->where('overview.byLevel.0.label', 'tk')
         ->where('overview.byLevel.0.compensation', 150)
         ->where('overview.byLevel.1.compensation', 300)
+        ->where('rates.5', 999));
+
+    $this->actingAs($this->teacher)->get('/teacher/questions/list')->assertInertia(fn (Assert $page) => $page
         ->where('questions.data.0.stats.answered', 3)
         ->where('questions.data.0.stats.games', ['flag-quest', 'sky-quiz'])
-        ->where('questions.data.0.stats.grades', [0, 5])
-        ->where('rates.5', 999));
+        ->where('questions.data.0.stats.grades', [0, 5]));
 });
 
 test('teacher stats exclude other teachers and built-in questions', function (): void {
@@ -423,4 +479,166 @@ test('game history is kept when a teacher question is deleted', function (): voi
     $this->actingAs($this->teacher)->delete("/teacher/questions/{$question->id}");
 
     expect(GameHistory::query()->count())->toBe(1)->and(QuestionAnswer::query()->count())->toBe(0);
+});
+
+test('teacher form without games or level fields still saves the question to every matching game', function (): void {
+    $payload = teacherQuestionPayload(['type' => 'true_false', 'answer' => 1, 'options' => null]);
+    unset($payload['games']);
+
+    $this->actingAs($this->teacher)->post('/teacher/questions', $payload)
+        ->assertRedirect(route('teacher.questions.create'))
+        ->assertSessionHasNoErrors();
+
+    $question = Question::query()->where('source', 'teacher')->sole();
+    expect($question->games)->toBe(Question::gamesForType(Question::TYPE_TRUE_FALSE))
+        ->and(array_intersect($question->games, Question::CHOICE_ONLY_GAMES))->toBe([]);
+
+    $choice = teacherQuestionPayload(['prompt_id' => 'Soal pilihan ganda tanpa game?']);
+    unset($choice['games']);
+    $this->actingAs($this->teacher)->post('/teacher/questions', $choice)->assertSessionHasNoErrors();
+    expect(Question::query()->where('prompt_id', 'Soal pilihan ganda tanpa game?')->sole()->games)->toBe(Question::GAMES);
+});
+
+test('editing a question without games keeps the games picked in the list', function (): void {
+    $question = Question::factory()->byTeacher($this->teacher, [3])->create(['type' => 'choice', 'games' => ['sky-quiz']]);
+    $payload = teacherQuestionPayload();
+    unset($payload['games']);
+
+    $this->actingAs($this->teacher)->put("/teacher/questions/{$question->id}", $payload)
+        ->assertRedirect(route('teacher.questions.list'))
+        ->assertSessionHasNoErrors();
+
+    expect($question->fresh()->games)->toBe(['sky-quiz']);
+});
+
+test('teacher question list page renders own questions with their games', function (): void {
+    $mine = Question::factory()->byTeacher($this->teacher, [4])->create(['games' => ['flag-quest']]);
+    Question::factory()->byTeacher(User::factory()->teacher()->create(), [4])->create();
+
+    $this->actingAs($this->teacher)->get('/teacher/questions/list')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('teacher/questions')
+        ->where('questions.total', 1)
+        ->where('questions.data.0.id', $mine->id)
+        ->where('questions.data.0.games', ['flag-quest'])
+        ->where('games', Question::GAMES)
+        ->where('choiceOnlyGames', Question::CHOICE_ONLY_GAMES));
+
+    $this->actingAs(User::factory()->create())->get('/teacher/questions/list')->assertForbidden();
+});
+
+test('teacher home links the question list and previews the latest questions', function (): void {
+    Question::factory()->byTeacher($this->teacher, [2])->count(7)->create();
+
+    $this->actingAs($this->teacher)->get('/teacher/questions')->assertInertia(fn (Assert $page) => $page
+        ->component('teacher/index')
+        ->has('recent', 5)
+        ->missing('questions'));
+});
+
+test('teacher picks the games of a question from the list', function (): void {
+    $question = Question::factory()->byTeacher($this->teacher, [3])->create(['type' => 'choice', 'games' => Question::GAMES]);
+
+    $this->actingAs($this->teacher)->from('/teacher/questions/list')
+        ->patch("/teacher/questions/{$question->id}/games", ['games' => ['sky-quiz', 'flag-quest']])
+        ->assertRedirect('/teacher/questions/list')
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('success', __('questions.games_updated'));
+
+    expect($question->fresh()->games)->toBe(['sky-quiz', 'flag-quest']);
+    $this->assertDatabaseHas('activity_log', ['subject_id' => $question->id, 'description' => 'Teacher updated question games']);
+});
+
+test('question games validation', function (array $games, string $type, string $field): void {
+    $question = Question::factory()->byTeacher($this->teacher, [3])->create(['type' => $type, 'answer' => $type === 'true_false' ? 1 : 0, 'games' => ['flag-quest']]);
+
+    $this->actingAs($this->teacher)->patch("/teacher/questions/{$question->id}/games", ['games' => $games])->assertSessionHasErrors($field);
+    expect($question->fresh()->games)->toBe(['flag-quest']);
+})->with([
+    'no games' => [[], 'choice', 'games'],
+    'unknown game' => [['chess'], 'choice', 'games.0'],
+    'duplicate game' => [['flag-quest', 'flag-quest'], 'choice', 'games.0'],
+    'true/false in choice-only game' => [['sky-quiz'], 'true_false', 'games'],
+]);
+
+test('teachers cannot pick games for questions they do not own', function (): void {
+    $theirs = Question::factory()->byTeacher(User::factory()->teacher()->create(), [3])->create(['games' => ['flag-quest']]);
+    $system = Question::query()->where('source', 'system')->first();
+
+    $this->actingAs($this->teacher)->patch("/teacher/questions/{$theirs->id}/games", ['games' => ['sky-quiz']])->assertForbidden();
+    $this->actingAs($this->teacher)->patch("/teacher/questions/{$system->id}/games", ['games' => ['sky-quiz']])->assertForbidden();
+    expect($theirs->fresh()->games)->toBe(['flag-quest']);
+});
+
+test('teacher question list paginates with 30, 50, 100 or 200 per page', function (int|string $perPage, int $expected): void {
+    Question::factory()->byTeacher($this->teacher, [3])->count(35)->create();
+
+    $this->actingAs($this->teacher)->get("/teacher/questions/list?per_page={$perPage}")->assertInertia(fn (Assert $page) => $page
+        ->where('perPageOptions', [30, 50, 100, 200])
+        ->where('questions.per_page', $expected)
+        ->where('questions.total', 35)
+        ->where('totalQuestions', 35)
+        ->has('questions.data', min(35, $expected))
+        ->has('questions.links'));
+})->with([
+    'default' => ['', 30],
+    '50' => [50, 50],
+    '200' => [200, 200],
+    'not allowed falls back' => [7, 30],
+]);
+
+test('teacher question list search covers every own question, not only the current page', function (): void {
+    $needle = Question::factory()->byTeacher($this->teacher, [3])->create(['prompt_id' => 'Ibu kota Kalimantan Timur?']);
+    Question::factory()->byTeacher($this->teacher, [3])->count(40)->create(['prompt_id' => 'Soal pengisi']);
+    Question::factory()->byTeacher(User::factory()->teacher()->create(), [3])->create(['prompt_id' => 'Ibu kota milik guru lain?']);
+
+    expect($needle->id)->toBeLessThan(Question::query()->max('id'));
+
+    $this->actingAs($this->teacher)->get('/teacher/questions/list?search=kalimantan')->assertInertia(fn (Assert $page) => $page
+        ->where('questions.total', 1)
+        ->where('questions.data.0.id', $needle->id)
+        ->where('totalQuestions', 42 - 1)
+        ->where('filters.search', 'kalimantan'));
+
+    $this->actingAs($this->teacher)->get("/teacher/questions/list?search=%23{$needle->id}")->assertInertia(fn (Assert $page) => $page
+        ->where('questions.data.0.id', $needle->id));
+});
+
+test('teacher question list search matches options and explanations and escapes wildcards', function (): void {
+    $option = Question::factory()->byTeacher($this->teacher, [3])->create(['prompt_id' => 'Soal A', 'options' => [['id' => 'Samarinda', 'en' => ''], ['id' => 'Balikpapan', 'en' => ''], ['id' => 'Bontang', 'en' => '']]]);
+    $hint = Question::factory()->byTeacher($this->teacher, [3])->create(['prompt_id' => 'Soal B', 'hint_id' => 'Fotosintesis butuh cahaya']);
+    Question::factory()->byTeacher($this->teacher, [3])->create(['prompt_id' => 'Diskon 50% hari ini']);
+    Question::factory()->byTeacher($this->teacher, [3])->create(['prompt_id' => 'Diskon 50 persen']);
+
+    $ids = fn (string $search): array => collect($this->actingAs($this->teacher)->get('/teacher/questions/list?search='.urlencode($search))->viewData('page')['props']['questions']['data'])->pluck('id')->all();
+
+    expect($ids('balikpapan'))->toBe([$option->id])
+        ->and($ids('fotosintesis'))->toBe([$hint->id])
+        ->and($ids('50%'))->toHaveCount(1);
+});
+
+test('teacher question list filters by type, status, game, picture and sort', function (): void {
+    $tf = Question::factory()->byTeacher($this->teacher, [3])->create(['type' => 'true_false', 'answer' => 1, 'options' => null, 'games' => ['flag-quest'], 'prompt_id' => 'B benar salah', 'visual' => null]);
+    $off = Question::factory()->byTeacher($this->teacher, [3])->create(['type' => 'choice', 'is_active' => false, 'games' => ['sky-quiz'], 'prompt_id' => 'A nonaktif', 'visual' => ['kind' => 'emoji', 'items' => ['🍎']]]);
+
+    $get = fn (string $query): array => collect($this->actingAs($this->teacher)->get("/teacher/questions/list?{$query}")->viewData('page')['props']['questions']['data'])->pluck('id')->all();
+
+    expect($get('type=true_false'))->toBe([$tf->id])
+        ->and($get('status=inactive'))->toBe([$off->id])
+        ->and($get('game=sky-quiz'))->toBe([$off->id])
+        ->and($get('picture=with'))->toBe([$off->id])
+        ->and($get('picture=without'))->toBe([$tf->id])
+        ->and($get('sort=oldest'))->toBe([$tf->id, $off->id])
+        ->and($get('sort=prompt'))->toBe([$off->id, $tf->id])
+        ->and($get('type=bogus&status=bogus&game=chess'))->toHaveCount(2);
+});
+
+test('teacher question list sends the full question for the accordion detail', function (): void {
+    $question = Question::factory()->byTeacher($this->teacher, [3])->create(['type' => 'choice', 'answer' => 1, 'hint_id' => 'Penjelasan']);
+
+    $this->actingAs($this->teacher)->get('/teacher/questions/list')->assertInertia(fn (Assert $page) => $page
+        ->where('questions.data.0.id', $question->id)
+        ->where('questions.data.0.answer', 1)
+        ->where('questions.data.0.hint_id', 'Penjelasan')
+        ->has('questions.data.0.options')
+        ->has('questions.data.0.stats'));
 });

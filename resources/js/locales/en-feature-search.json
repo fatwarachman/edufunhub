@@ -227,6 +227,13 @@
             "teacherOnly": true,
             "keywords": "write new question bank"
         },
+        "teacherQuestionList": {
+            "href": "/teacher/questions/list",
+            "title": "My questions (teacher)",
+            "superadminOnly": false,
+            "teacherOnly": true,
+            "keywords": "list all written questions choose games"
+        },
         "teacherClassroomCreate": {
             "href": "/teacher/classrooms/create",
             "title": "Create a classroom",

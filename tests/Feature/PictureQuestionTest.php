@@ -131,7 +131,7 @@ it('flags picture questions in the teacher list and shows option pictures on the
     ]);
     $plain = Question::factory()->byTeacher($this->teacher)->create(['subject' => 'science', 'visual' => null]);
 
-    $this->actingAs($this->teacher)->get('/teacher/questions?subject=science')->assertOk()
+    $this->actingAs($this->teacher)->get('/teacher/questions/list?subject=science')->assertOk()
         ->assertInertia(fn ($page) => $page
             ->where('questions.data', fn ($rows): bool => collect($rows)->firstWhere('id', $picture->id)['has_picture'] === true
                 && collect($rows)->firstWhere('id', $plain->id)['has_picture'] === false));
