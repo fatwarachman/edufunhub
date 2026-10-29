@@ -3,7 +3,11 @@ import {
     visualDraft,
     visualPayload,
 } from '@/components/admin/question-visual-editor';
-import { useGameCatalog } from '@/components/classroom/classroom-ui';
+import {
+    actionButtonClass,
+    ClassroomDialog,
+    primaryButtonClass,
+} from '@/components/classroom/classroom-ui';
 import InputError from '@/components/input-error';
 import { type QuestionMediaData } from '@/components/question-media';
 import {
@@ -15,10 +19,18 @@ import { teacherFieldClass, Toggle } from '@/components/teacher/teacher-ui';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { GRADE_LEVELS, gradeLabel } from '@/lib/grade';
+import { QUESTION_LEVELS } from '@/lib/question-levels';
 import { useSubjectName } from '@/lib/subjects';
 import { Link, useForm } from '@inertiajs/react';
-import { CircleCheck, Loader2, Plus, X } from 'lucide-react';
-import { type FormEvent, type ReactNode } from 'react';
+import {
+    CircleAlert,
+    CircleCheck,
+    ListChecks,
+    Loader2,
+    Plus,
+    X,
+} from 'lucide-react';
+import { type FormEvent, type ReactNode, useState } from 'react';
 
 interface Option {
     id: string;
@@ -38,17 +50,24 @@ interface QuestionData {
     answer: number;
     hint_id: string | null;
     hint_en: string | null;
-    games: string[];
     grades: number[];
+    level: number;
+    topic_id: number | null;
     is_active: boolean;
+}
+
+interface TopicOption {
+    id: number;
+    subject_key: string;
+    name_id: string;
+    name_en: string | null;
 }
 
 interface TeacherFormProps {
     question: QuestionData | null;
-    games: string[];
-    choiceOnlyGames: string[];
     subjects: string[];
     grades: number[];
+    topics: TopicOption[];
 }
 
 const MIN_OPTIONS = 3;
@@ -57,14 +76,13 @@ const blankOption = (): Option => ({ id: '', en: '' });
 
 export default function TeacherQuestionForm({
     question,
-    games,
-    choiceOnlyGames,
     subjects,
+    topics,
 }: TeacherFormProps) {
-    const { t } = useTranslations();
-    const gameCatalog = useGameCatalog();
+    const { t, i18n } = useTranslations();
     const subjectName = useSubjectName();
     const editing = question !== null;
+    const [created, setCreated] = useState(false);
     const form = useForm({
         type: question?.type ?? ('choice' as 'choice' | 'true_false'),
         grades: question?.grades ?? ([] as number[]),
@@ -84,7 +102,8 @@ export default function TeacherQuestionForm({
         answer: question?.answer ?? 0,
         hint_id: question?.hint_id ?? '',
         hint_en: question?.hint_en ?? '',
-        games: question?.games ?? [...games],
+        level: question?.level ?? 1,
+        topic_id: question?.topic_id ?? (null as number | null),
         is_active: question?.is_active ?? true,
         visual: visualDraft(question?.visual ?? null),
     });
@@ -92,6 +111,11 @@ export default function TeacherQuestionForm({
     const isChoice = data.type === 'choice';
     const errorFor = (key: string): string | undefined =>
         (errors as Record<string, string>)[key];
+    const subjectTopics = topics.filter(
+        (topic) => topic.subject_key === data.subject,
+    );
+    const topicName = (topic: TopicOption): string =>
+        i18n.language === 'en' && topic.name_en ? topic.name_en : topic.name_id;
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
@@ -99,10 +123,31 @@ export default function TeacherQuestionForm({
             ...rest,
             visual: visualPayload(visual),
         }));
+        const options = {
+            preserveScroll: 'errors' as const,
+            onError: () => {
+                requestAnimationFrame(() =>
+                    document
+                        .querySelector('[data-testid="teacher-form-errors"]')
+                        ?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center',
+                        }),
+                );
+            },
+        };
         if (editing) {
-            form.put(`/teacher/questions/${question.id}`);
+            form.put(`/teacher/questions/${question.id}`, options);
         } else {
-            form.post('/teacher/questions');
+            form.post('/teacher/questions', {
+                ...options,
+                preserveState: true,
+                onSuccess: () => {
+                    form.reset();
+                    form.clearErrors();
+                    setCreated(true);
+                },
+            });
         }
     };
 
@@ -111,12 +156,6 @@ export default function TeacherQuestionForm({
             ...current,
             type,
             answer: type === 'true_false' ? 1 : 0,
-            games:
-                type === 'true_false'
-                    ? current.games.filter(
-                          (game) => !choiceOnlyGames.includes(game),
-                      )
-                    : current.games,
             options:
                 current.options.length >= MIN_OPTIONS
                     ? current.options
@@ -172,15 +211,6 @@ export default function TeacherQuestionForm({
                     : current.answer > index
                       ? current.answer - 1
                       : current.answer,
-        }));
-    };
-
-    const toggleGame = (game: string) => {
-        setData((current) => ({
-            ...current,
-            games: current.games.includes(game)
-                ? current.games.filter((g) => g !== game)
-                : [...current.games, game],
         }));
     };
 
@@ -293,9 +323,14 @@ export default function TeacherQuestionForm({
                                 id="subject"
                                 value={data.subject}
                                 onChange={(e) =>
-                                    setData('subject', e.target.value)
+                                    setData((current) => ({
+                                        ...current,
+                                        subject: e.target.value,
+                                        topic_id: null,
+                                    }))
                                 }
                                 className={teacherFieldClass}
+                                data-testid="teacher-subject"
                             >
                                 {subjects.map((subject) => (
                                     <option key={subject} value={subject}>
@@ -304,6 +339,41 @@ export default function TeacherQuestionForm({
                                 ))}
                             </select>
                         </Field>
+                        <Field
+                            label={t('teacher.form.topic')}
+                            htmlFor="topic_id"
+                            error={errors.topic_id}
+                        >
+                            <select
+                                id="topic_id"
+                                value={data.topic_id ?? ''}
+                                onChange={(e) =>
+                                    setData(
+                                        'topic_id',
+                                        e.target.value
+                                            ? Number(e.target.value)
+                                            : null,
+                                    )
+                                }
+                                disabled={subjectTopics.length === 0}
+                                className={`${teacherFieldClass} disabled:cursor-not-allowed disabled:bg-[#f1efe8]`}
+                                data-testid="teacher-topic"
+                            >
+                                <option value="">
+                                    {subjectTopics.length === 0
+                                        ? t('teacher.form.topicNone')
+                                        : t('teacher.form.topicAll')}
+                                </option>
+                                {subjectTopics.map((topic) => (
+                                    <option key={topic.id} value={topic.id}>
+                                        {topicName(topic)}
+                                    </option>
+                                ))}
+                            </select>
+                        </Field>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
                         <Field
                             label={t('teacher.form.type')}
                             error={errors.type}
@@ -325,38 +395,33 @@ export default function TeacherQuestionForm({
                                 </Toggle>
                             </div>
                         </Field>
+                        <Field
+                            label={t('teacher.form.level')}
+                            error={errors.level}
+                        >
+                            <div
+                                className="flex flex-wrap gap-2"
+                                role="group"
+                                data-testid="teacher-level"
+                            >
+                                {QUESTION_LEVELS.map((level) => (
+                                    <Toggle
+                                        key={level.value}
+                                        pressed={data.level === level.value}
+                                        onClick={() =>
+                                            setData('level', level.value)
+                                        }
+                                        testId={`teacher-level-${level.value}`}
+                                    >
+                                        {t(`questionLevel.levels.${level.key}`)}
+                                    </Toggle>
+                                ))}
+                            </div>
+                        </Field>
                     </div>
-
-                    <Field
-                        label={t('teacher.form.games')}
-                        error={errors.games ?? errorFor('games.0')}
-                    >
-                        <div className="flex flex-wrap gap-2">
-                            {games.map((game) => (
-                                <Toggle
-                                    key={game}
-                                    pressed={data.games.includes(game)}
-                                    onClick={() => toggleGame(game)}
-                                    disabled={
-                                        choiceOnlyGames.includes(game) &&
-                                        !isChoice
-                                    }
-                                    testId={`teacher-game-${game}`}
-                                >
-                                    {gameCatalog.title(game)}
-                                </Toggle>
-                            ))}
-                        </div>
-                        {!isChoice && (
-                            <p className="text-xs text-muted-foreground">
-                                {t('teacher.form.skyChoiceOnly', {
-                                    games: choiceOnlyGames
-                                        .map((game) => gameCatalog.title(game))
-                                        .join(', '),
-                                })}
-                            </p>
-                        )}
-                    </Field>
+                    <p className="text-xs text-muted-foreground">
+                        {t('teacher.form.gamesLater')}
+                    </p>
                 </Section>
 
                 <Section
@@ -407,6 +472,7 @@ export default function TeacherQuestionForm({
                         onChange={(visual) => setData('visual', visual)}
                         errors={errors as Record<string, string>}
                         endpoint="/teacher/questions/media"
+                        portal
                     />
                 </Section>
 
@@ -611,6 +677,20 @@ export default function TeacherQuestionForm({
                     )}
                 </Section>
 
+                {form.hasErrors && (
+                    <p
+                        role="alert"
+                        className="flex items-start gap-2 rounded-2xl border-[3px] border-[#151b2e] bg-[#ffe1e6] px-4 py-3 text-sm font-semibold text-[#8e2a3f]"
+                        data-testid="teacher-form-errors"
+                    >
+                        <CircleAlert
+                            className="mt-0.5 size-5 shrink-0"
+                            aria-hidden="true"
+                        />
+                        {t('teacher.form.fixErrors')}
+                    </p>
+                )}
+
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <label className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold">
                         <input
@@ -624,7 +704,14 @@ export default function TeacherQuestionForm({
                         {t('teacher.form.active')}
                     </label>
                     <div className="flex items-center gap-2">
-                        <Link href="/teacher/questions" className="edu-nav-btn">
+                        <Link
+                            href={
+                                editing
+                                    ? '/teacher/questions/list'
+                                    : '/teacher/questions'
+                            }
+                            className="edu-nav-btn"
+                        >
                             {t('teacher.form.cancel')}
                         </Link>
                         <button
@@ -645,6 +732,46 @@ export default function TeacherQuestionForm({
                     </div>
                 </div>
             </form>
+
+            <ClassroomDialog
+                open={created}
+                onClose={() => setCreated(false)}
+                title={t('teacher.form.createdTitle')}
+                description={t('teacher.form.createdBody')}
+                testId="teacher-created-dialog"
+                footer={
+                    <>
+                        <Link
+                            href="/teacher/questions/list"
+                            className={actionButtonClass}
+                            data-testid="teacher-created-list"
+                        >
+                            <ListChecks className="size-4" aria-hidden="true" />
+                            {t('teacher.form.createdList')}
+                        </Link>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setCreated(false);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className={primaryButtonClass}
+                            data-testid="teacher-created-again"
+                        >
+                            <Plus className="size-4" aria-hidden="true" />
+                            {t('teacher.form.createdAgain')}
+                        </button>
+                    </>
+                }
+            >
+                <p className="flex items-center gap-2 text-sm font-semibold text-[#0d5a48]">
+                    <CircleCheck
+                        className="size-5 shrink-0"
+                        aria-hidden="true"
+                    />
+                    {t('teacher.form.createdHint')}
+                </p>
+            </ClassroomDialog>
         </PlayerLayout>
     );
 }

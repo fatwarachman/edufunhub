@@ -3,6 +3,7 @@ import { ResponsiveTable } from '@/components/responsive-table';
 import { BackButton, NavButton } from '@/components/site-nav';
 import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
+import { useSubjectName } from '@/lib/subjects';
 import { type SharedData } from '@/types';
 import { useForm, usePage } from '@inertiajs/react';
 import {
@@ -17,6 +18,7 @@ import { type FormEvent, useRef } from 'react';
 interface ImportProps {
     columns: string[];
     maxRows: number;
+    subjects: string[];
 }
 
 /** Column docs grouped so option_1..6 and hint columns share one row. */
@@ -24,7 +26,8 @@ const COLUMN_GUIDE: { key: string; columns: string; required: boolean }[] = [
     { key: 'type', columns: 'type', required: true },
     { key: 'grades', columns: 'grades', required: true },
     { key: 'subject', columns: 'subject', required: true },
-    { key: 'games', columns: 'games', required: false },
+    { key: 'topic', columns: 'topic', required: false },
+    { key: 'level', columns: 'level', required: false },
     { key: 'question_id', columns: 'question_id', required: true },
     { key: 'question_en', columns: 'question_en', required: false },
     {
@@ -36,8 +39,9 @@ const COLUMN_GUIDE: { key: string; columns: string; required: boolean }[] = [
     { key: 'hint', columns: 'hint_id, hint_en', required: false },
 ];
 
-export default function TeacherImport({ maxRows }: ImportProps) {
+export default function TeacherImport({ maxRows, subjects }: ImportProps) {
     const { t } = useTranslations();
+    const subjectName = useSubjectName();
     const { flash } = usePage<SharedData>().props;
     const input = useRef<HTMLInputElement>(null);
     const form = useForm<{ file: File | null }>({ file: null });
@@ -85,6 +89,7 @@ export default function TeacherImport({ maxRows }: ImportProps) {
                             <li>{t('teacher.importPage.step1')}</li>
                             <li>{t('teacher.importPage.step2')}</li>
                             <li>{t('teacher.importPage.step3')}</li>
+                            <li>{t('teacher.importPage.step4')}</li>
                         </ol>
                         <NavButton
                             href="/teacher/questions/template"
@@ -221,7 +226,35 @@ export default function TeacherImport({ maxRows }: ImportProps) {
                                 key: 'description',
                                 header: t('teacher.importPage.description'),
                                 cell: (row) =>
-                                    t(`teacher.importPage.docs.${row.key}`),
+                                    row.key === 'subject' ? (
+                                        <span className="flex flex-col gap-2">
+                                            {t(
+                                                'teacher.importPage.docs.subject',
+                                            )}
+                                            <span
+                                                className="flex flex-wrap gap-1.5"
+                                                data-testid="import-subject-codes"
+                                            >
+                                                {subjects.map((subject) => (
+                                                    <span
+                                                        key={subject}
+                                                        className="inline-flex items-center gap-1.5 rounded-full border-2 border-[#151b2e] bg-white px-2 py-0.5 text-xs"
+                                                    >
+                                                        <code className="font-mono font-bold">
+                                                            {subject}
+                                                        </code>
+                                                        <span>
+                                                            {subjectName(
+                                                                subject,
+                                                            )}
+                                                        </span>
+                                                    </span>
+                                                ))}
+                                            </span>
+                                        </span>
+                                    ) : (
+                                        t(`teacher.importPage.docs.${row.key}`)
+                                    ),
                             },
                             {
                                 key: 'required',

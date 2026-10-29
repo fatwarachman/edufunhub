@@ -2,11 +2,9 @@ import { useGameCatalog } from '@/components/classroom/classroom-ui';
 import { NavButton } from '@/components/site-nav';
 import { TeacherTabs } from '@/components/teacher/teacher-tabs';
 import {
-    GradeChips,
     OutcomeBar,
     StatCard,
     SuccessNotice,
-    teacherFieldClass,
     type UsageStats,
     useTeacherFormat,
 } from '@/components/teacher/teacher-ui';
@@ -14,26 +12,20 @@ import { useTranslations } from '@/hooks/use-translations';
 import PlayerLayout from '@/layouts/player-layout';
 import { GRADE_LEVELS, gradeLabel } from '@/lib/grade';
 import { useSubjectName } from '@/lib/subjects';
-import { Link, router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import {
     BookOpenCheck,
-    ChevronLeft,
-    ChevronRight,
     CircleCheck,
     CircleX,
     Coins,
     FileUp,
     Gamepad2,
     GraduationCap,
-    Image as ImageIcon,
-    Pencil,
+    ListChecks,
     Plus,
     School,
-    Search,
-    Trash2,
     Users,
 } from 'lucide-react';
-import { type FormEvent, useState } from 'react';
 
 interface Bucket extends UsageStats {
     label: string;
@@ -43,28 +35,14 @@ interface GradeBucket extends UsageStats {
     grade: number;
 }
 
-interface QuestionRow {
+interface RecentQuestion {
     id: number;
     type: 'choice' | 'true_false';
     subject: string;
     prompt_id: string;
     prompt_en: string | null;
-    games: string[];
-    grades: number[];
-    has_picture?: boolean;
     is_active: boolean;
-    source: string;
     created_at: string | null;
-    stats: UsageStats & { games: string[]; grades: number[] };
-}
-
-interface Paginated<T> {
-    data: T[];
-    current_page: number;
-    last_page: number;
-    total: number;
-    prev_page_url: string | null;
-    next_page_url: string | null;
 }
 
 interface TeacherIndexProps {
@@ -79,19 +57,13 @@ interface TeacherIndexProps {
         byLevel: Bucket[];
     };
     rates: Record<string, number>;
-    filters: { search?: string; grade?: number; subject?: string };
-    questions: Paginated<QuestionRow>;
-    subjects: string[];
-    grades: number[];
+    recent: RecentQuestion[];
 }
 
 export default function TeacherIndex({
     overview,
     rates,
-    filters,
-    questions,
-    subjects,
-    grades,
+    recent,
 }: TeacherIndexProps) {
     const { t } = useTranslations();
     const games = useGameCatalog();
@@ -117,6 +89,12 @@ export default function TeacherIndex({
                         icon={School}
                         label={t('teacher.tabs.classrooms')}
                         testId="teacher-classrooms-link"
+                    />
+                    <NavButton
+                        href="/teacher/questions/list"
+                        icon={ListChecks}
+                        label={t('teacher.myQuestions')}
+                        testId="teacher-list-link"
                     />
                     <NavButton
                         href="/teacher/questions/import"
@@ -226,12 +204,7 @@ export default function TeacherIndex({
 
             <RatesCard rates={rates} />
 
-            <QuestionList
-                questions={questions}
-                filters={filters}
-                subjects={subjects}
-                grades={grades}
-            />
+            <RecentQuestions recent={recent} />
         </PlayerLayout>
     );
 }
@@ -358,335 +331,64 @@ function RatesCard({ rates }: { rates: Record<string, number> }) {
     );
 }
 
-function QuestionList({
-    questions,
-    filters,
-    subjects,
-    grades,
-}: {
-    questions: Paginated<QuestionRow>;
-    filters: TeacherIndexProps['filters'];
-    subjects: string[];
-    grades: number[];
-}) {
+function RecentQuestions({ recent }: { recent: RecentQuestion[] }) {
     const { t, i18n } = useTranslations();
     const subjectName = useSubjectName();
-    const format = useTeacherFormat();
-    const games = useGameCatalog();
-    const [search, setSearch] = useState(filters.search ?? '');
-    const hasFilters = Boolean(
-        filters.search || filters.subject || filters.grade !== undefined,
-    );
-
-    const apply = (next: Partial<Record<string, string | undefined>>) => {
-        const query = {
-            search: filters.search,
-            subject: filters.subject,
-            grade:
-                filters.grade === undefined ? undefined : String(filters.grade),
-            ...next,
-        };
-        router.get(
-            '/teacher/questions',
-            Object.fromEntries(
-                Object.entries(query).filter(([, value]) => value),
-            ),
-            { preserveScroll: true, preserveState: true },
-        );
-    };
-
-    const submitSearch = (event: FormEvent) => {
-        event.preventDefault();
-        apply({ search: search.trim() || undefined });
-    };
-
-    const destroy = (question: QuestionRow) => {
-        if (window.confirm(t('teacher.list.confirmDelete'))) {
-            router.delete(`/teacher/questions/${question.id}`, {
-                preserveScroll: true,
-            });
-        }
-    };
 
     return (
         <section
-            className="auth-card flex min-w-0 flex-col gap-5 !p-5"
-            aria-labelledby="teacher-list-title"
+            className="auth-card flex min-w-0 flex-col gap-4 !p-5"
+            aria-labelledby="teacher-recent-title"
+            data-testid="teacher-recent"
         >
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2
-                    id="teacher-list-title"
+                    id="teacher-recent-title"
                     className="flex items-center gap-2 text-xl font-bold"
                 >
                     <BookOpenCheck className="size-5" aria-hidden="true" />
-                    {t('teacher.list.title')}
-                    <span className="rounded-full border-2 border-[#151b2e] bg-[#ffd93d] px-2 text-sm tabular-nums">
-                        {format.number(questions.total)}
-                    </span>
+                    {t('teacher.recent.title')}
                 </h2>
+                <NavButton
+                    href="/teacher/questions/list"
+                    icon={ListChecks}
+                    label={t('teacher.recent.all')}
+                    testId="teacher-recent-all"
+                />
             </div>
-
-            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_200px_200px]">
-                <form
-                    onSubmit={submitSearch}
-                    className="relative"
-                    role="search"
-                >
-                    <Search
-                        className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
-                        aria-hidden="true"
-                    />
-                    <input
-                        type="search"
-                        value={search}
-                        onChange={(event) => setSearch(event.target.value)}
-                        placeholder={t('teacher.list.search')}
-                        aria-label={t('teacher.list.search')}
-                        className={`${teacherFieldClass} !pl-10`}
-                        data-testid="teacher-search"
-                    />
-                </form>
-                <select
-                    value={filters.grade ?? ''}
-                    onChange={(event) =>
-                        apply({ grade: event.target.value || undefined })
-                    }
-                    aria-label={t('teacher.list.grades')}
-                    className={teacherFieldClass}
-                    data-testid="teacher-filter-grade"
-                >
-                    <option value="">{t('teacher.list.allGrades')}</option>
-                    {grades.map((grade) => (
-                        <option key={grade} value={grade}>
-                            {gradeLabel(t, grade)}
-                        </option>
-                    ))}
-                </select>
-                <select
-                    value={filters.subject ?? ''}
-                    onChange={(event) =>
-                        apply({ subject: event.target.value || undefined })
-                    }
-                    aria-label={t('teacher.form.subject')}
-                    className={teacherFieldClass}
-                    data-testid="teacher-filter-subject"
-                >
-                    <option value="">{t('teacher.list.allSubjects')}</option>
-                    {subjects.map((subject) => (
-                        <option key={subject} value={subject}>
-                            {subjectName(subject)}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {questions.data.length === 0 ? (
-                <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-[#151b2e]/30 px-4 py-10 text-center">
-                    <BookOpenCheck
-                        className="size-9 text-muted-foreground"
-                        aria-hidden="true"
-                    />
-                    <p className="font-bold">
-                        {hasFilters
-                            ? t('teacher.list.noMatch')
-                            : t('teacher.list.emptyTitle')}
+            {recent.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-[#151b2e]/30 px-4 py-8 text-center">
+                    <p className="font-bold">{t('teacher.list.emptyTitle')}</p>
+                    <p className="text-sm text-muted-foreground">
+                        {t('teacher.list.emptyHint')}
                     </p>
-                    {!hasFilters && (
-                        <p className="text-sm text-muted-foreground">
-                            {t('teacher.list.emptyHint')}
-                        </p>
-                    )}
                 </div>
             ) : (
-                <ul
-                    className="flex flex-col gap-3"
-                    data-testid="teacher-question-list"
-                >
-                    {questions.data.map((question) => {
-                        const prompt =
-                            i18n.language === 'en' && question.prompt_en
-                                ? question.prompt_en
-                                : question.prompt_id;
-                        return (
-                            <li
-                                key={question.id}
-                                className="grid gap-4 rounded-2xl border-2 border-[#151b2e] bg-white p-4 lg:grid-cols-[minmax(0,1fr)_260px_auto] lg:items-center"
-                                data-testid="teacher-question-row"
+                <ul className="flex flex-col gap-2">
+                    {recent.map((question) => (
+                        <li key={question.id}>
+                            <Link
+                                href={`/teacher/questions/${question.id}`}
+                                className="flex min-h-11 min-w-0 items-center gap-3 rounded-xl border-2 border-[#151b2e] bg-white px-3 py-2 transition-colors hover:bg-[#fff0cf]"
                             >
-                                <div className="flex min-w-0 flex-col gap-2">
-                                    <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
-                                        <span className="rounded-full border-2 border-[#151b2e] bg-[#fff0cf] px-2 py-0.5">
-                                            {subjectName(question.subject)}
-                                        </span>
-                                        <span className="rounded-full border-2 border-[#151b2e] bg-white px-2 py-0.5">
-                                            {question.type === 'choice'
-                                                ? t('teacher.form.choice')
-                                                : t('teacher.form.trueFalse')}
-                                        </span>
-                                        {question.has_picture && (
-                                            <span
-                                                className="inline-flex items-center gap-1 rounded-full border-2 border-[#151b2e] bg-[#dbeafe] px-2 py-0.5"
-                                                data-testid="teacher-question-picture"
-                                            >
-                                                <ImageIcon
-                                                    className="size-3"
-                                                    aria-hidden="true"
-                                                />
-                                                {t('teacher.list.picture')}
-                                            </span>
-                                        )}
-                                        {!question.is_active && (
-                                            <span className="rounded-full border-2 border-[#151b2e] bg-[#ffe1e6] px-2 py-0.5">
-                                                {t('teacher.list.inactive')}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="font-semibold break-words">
-                                        {prompt}
-                                    </p>
-                                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                                        <span className="font-semibold">
-                                            {t('teacher.list.grades')}:
-                                        </span>
-                                        <GradeChips grades={question.grades} />
-                                    </div>
-                                </div>
-
-                                <div className="flex min-w-0 flex-col gap-1.5 text-sm">
-                                    <div className="flex justify-between gap-2">
-                                        <span className="text-muted-foreground">
-                                            {t('teacher.list.usage')}
-                                        </span>
-                                        <strong className="tabular-nums">
-                                            {format.number(
-                                                question.stats.answered,
-                                            )}
-                                            ×
-                                        </strong>
-                                    </div>
-                                    <OutcomeBar
-                                        correct={question.stats.correct}
-                                        wrong={question.stats.wrong}
-                                    />
-                                    <div className="flex justify-between gap-2 text-xs font-semibold">
-                                        <span className="text-[#116a56]">
-                                            <CircleCheck
-                                                className="mr-1 inline size-3.5"
-                                                aria-hidden="true"
-                                            />
-                                            {format.number(
-                                                question.stats.correct,
-                                            )}
-                                        </span>
-                                        <span className="text-[#b23a52]">
-                                            <CircleX
-                                                className="mr-1 inline size-3.5"
-                                                aria-hidden="true"
-                                            />
-                                            {format.number(
-                                                question.stats.wrong,
-                                            )}
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <Coins
-                                                className="size-3.5"
-                                                aria-hidden="true"
-                                            />
-                                            {format.money(
-                                                question.stats.compensation,
-                                            )}
-                                        </span>
-                                    </div>
-                                    {question.stats.answered > 0 && (
-                                        <p className="text-xs text-muted-foreground">
-                                            {t('teacher.list.playedIn')}:{' '}
-                                            {question.stats.games
-                                                .map((game) =>
-                                                    games.title(game),
-                                                )
-                                                .join(', ')}
-                                            {question.stats.grades.length >
-                                                0 && (
-                                                <>
-                                                    {' · '}
-                                                    {t('teacher.list.playedBy')}
-                                                    :{' '}
-                                                    {question.stats.grades
-                                                        .map((grade) =>
-                                                            gradeLabel(
-                                                                t,
-                                                                grade,
-                                                            ),
-                                                        )
-                                                        .join(', ')}
-                                                </>
-                                            )}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="flex gap-2 lg:flex-col">
-                                    <Link
-                                        href={`/teacher/questions/${question.id}/edit`}
-                                        className="edu-nav-btn"
-                                        aria-label={t('teacher.list.edit')}
-                                        data-testid="teacher-edit"
-                                    >
-                                        <Pencil aria-hidden="true" />
-                                        <span className="edu-nav-label">
-                                            {t('teacher.list.edit')}
-                                        </span>
-                                    </Link>
-                                    <button
-                                        type="button"
-                                        onClick={() => destroy(question)}
-                                        className="edu-nav-btn"
-                                        aria-label={t('teacher.list.delete')}
-                                        data-testid="teacher-delete"
-                                    >
-                                        <Trash2 aria-hidden="true" />
-                                        <span className="edu-nav-label">
-                                            {t('teacher.list.delete')}
-                                        </span>
-                                    </button>
-                                </div>
-                            </li>
-                        );
-                    })}
+                                <span className="shrink-0 rounded-full border-2 border-[#151b2e] bg-[#fff0cf] px-2 py-0.5 text-xs font-bold">
+                                    {subjectName(question.subject)}
+                                </span>
+                                <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+                                    {i18n.language === 'en' &&
+                                    question.prompt_en
+                                        ? question.prompt_en
+                                        : question.prompt_id}
+                                </span>
+                                {!question.is_active && (
+                                    <span className="shrink-0 rounded-full border-2 border-[#151b2e] bg-[#ffe1e6] px-2 py-0.5 text-xs font-bold">
+                                        {t('teacher.list.inactive')}
+                                    </span>
+                                )}
+                            </Link>
+                        </li>
+                    ))}
                 </ul>
-            )}
-
-            {questions.last_page > 1 && (
-                <nav
-                    className="flex flex-wrap items-center justify-between gap-3"
-                    aria-label={t('teacher.list.page', {
-                        current: questions.current_page,
-                        last: questions.last_page,
-                    })}
-                >
-                    <span className="text-sm text-muted-foreground">
-                        {t('teacher.list.page', {
-                            current: questions.current_page,
-                            last: questions.last_page,
-                        })}
-                    </span>
-                    <div className="flex gap-2">
-                        {questions.prev_page_url && (
-                            <NavButton
-                                href={questions.prev_page_url}
-                                icon={ChevronLeft}
-                                label={t('teacher.list.prev')}
-                            />
-                        )}
-                        {questions.next_page_url && (
-                            <NavButton
-                                href={questions.next_page_url}
-                                icon={ChevronRight}
-                                label={t('teacher.list.next')}
-                            />
-                        )}
-                    </div>
-                </nav>
             )}
         </section>
     );

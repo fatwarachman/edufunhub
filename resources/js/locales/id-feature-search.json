@@ -227,6 +227,13 @@
             "teacherOnly": true,
             "keywords": "tulis soal baru bank soal"
         },
+        "teacherQuestionList": {
+            "href": "/teacher/questions/list",
+            "title": "Daftar soal saya (guru)",
+            "superadminOnly": false,
+            "teacherOnly": true,
+            "keywords": "list semua soal buatan atur permainan"
+        },
         "teacherClassroomCreate": {
             "href": "/teacher/classrooms/create",
             "title": "Buat ruang kelas",

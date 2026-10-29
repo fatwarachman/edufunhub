@@ -193,6 +193,19 @@ class Question extends Model
         ];
     }
 
+    /**
+     * Games that can show a question of the given type: true/false questions
+     * skip the multiple-choice-only games.
+     *
+     * @return list<string>
+     */
+    public static function gamesForType(string $type): array
+    {
+        return $type === self::TYPE_TRUE_FALSE
+            ? array_values(array_diff(self::GAMES, self::CHOICE_ONLY_GAMES))
+            : self::GAMES;
+    }
+
     /** Clamps a level to 1..3 (unknown values are easy). */
     public static function normalizeLevel(mixed $level): int
     {
