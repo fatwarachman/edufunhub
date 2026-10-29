@@ -2504,5 +2504,9 @@
     "Mathematics": "Matematika",
     "I teach grade 5.": "Saya mengajar kelas 5.",
     "Updated WhatsApp message template": "Mengubah template pesan WhatsApp",
-    "Reset WhatsApp message template": "Mengembalikan template pesan WhatsApp ke bawaan"
+    "Reset WhatsApp message template": "Mengembalikan template pesan WhatsApp ke bawaan",
+    "Total users": "Total pengguna",
+    "Total schools": "Total sekolah",
+    "{0} joined today": "{0} bergabung hari ini",
+    "{0} learners with a school": "{0} pelajar sudah mengisi sekolah"
 }

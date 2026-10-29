@@ -49,6 +49,8 @@ func (s *Server) Spectate(game, pin, locale string) (map[string]any, bool) {
 		msg = s.snake.State(claims, now)
 	case "ping-pong":
 		msg = s.pingpong.State(claims, now)
+	case "tug-of-war":
+		msg = s.tug.State(claims, now)
 	case "crossword":
 		msg = s.crosswords.State(claims, now)
 	default:

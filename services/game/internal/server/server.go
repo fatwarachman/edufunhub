@@ -35,6 +35,7 @@ import (
 	"edufunhub/game/internal/sky"
 	"edufunhub/game/internal/snakes"
 	"edufunhub/game/internal/train"
+	"edufunhub/game/internal/tugofwar"
 	"edufunhub/game/internal/turbotrivia"
 )
 
@@ -109,6 +110,8 @@ type Server struct {
 	duelRooms     *lobby.Hub[struct{}, struct{}]
 	pingpong      *pingpong.Hub
 	pingpongSubs  map[int64]*pingpongSub
+	tug           *tugofwar.Hub
+	tugSubs       map[int64]*tugSub
 	snakes        *snakes.Hub
 	snakesSubs    map[int64]*snakesSub
 	crosswords    *crossword.Hub
@@ -175,6 +178,7 @@ func New(cfg Config) *Server {
 		duels: duel.NewHub(uint64(cfg.Now().UnixNano())), duelSubs: map[int64]*duelSub{},
 		duelRooms: lobby.New[struct{}, struct{}](uint64(cfg.Now().UnixNano())^0xd0e1, lobby.Config{Min: 2, Max: 2}),
 		pingpong:  pingpong.NewHub(uint64(cfg.Now().UnixNano()) ^ 0x9913), pingpongSubs: map[int64]*pingpongSub{},
+		tug: tugofwar.NewHub(uint64(cfg.Now().UnixNano()) ^ 0x7a60), tugSubs: map[int64]*tugSub{},
 		snakes: snakes.NewHub(uint64(cfg.Now().UnixNano()) ^ 0x51ed), snakesSubs: map[int64]*snakesSub{},
 		crosswords: crossword.NewHub(uint64(cfg.Now().UnixNano()) ^ 0xc055), crosswordSubs: map[int64]*crosswordSub{},
 		minis: map[string]*minigames.Hub{}, miniSubs: map[string]map[int64]*miniSub{},
@@ -216,6 +220,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /ws/port-sorter", s.servePortSorter)
 	mux.HandleFunc("GET /ws/snakes", s.serveSnakes)
 	mux.HandleFunc("GET /ws/ping-pong", s.servePingPong)
+	mux.HandleFunc("GET /ws/tug-of-war", s.serveTugOfWar)
 	mux.HandleFunc("GET /ws/crossword", s.serveCrossword)
 	for _, key := range minigames.Keys {
 		mux.HandleFunc("GET /ws/"+key, s.serveMini(key))
@@ -437,6 +442,8 @@ func (s *Server) Prune(ttl time.Duration) {
 	s.duelRooms.Prune(s.cfg.Now(), 30*time.Minute, 5*time.Minute, nil)
 	s.pingpong.Prune(s.cfg.Now())
 	s.reportPingPong()
+	s.tug.Prune(s.cfg.Now())
+	s.reportTugOfWar()
 	s.snakes.Prune(s.cfg.Now())
 	s.reportSnakes()
 	s.crosswords.Prune(s.cfg.Now())

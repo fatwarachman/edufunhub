@@ -34,6 +34,24 @@ class UserAnalytics
     public function __construct(private GameAnalytics $games) {}
 
     /**
+     * Headline totals for the admin user list: every account and the distinct
+     * schools named in player profiles (same school count as the dashboard).
+     *
+     * @return array{users: int, users_today: int, schools: int, learners_with_school: int}
+     */
+    public function userTotals(): array
+    {
+        $withSchool = $this->profileRows()->whereNotNull('school_key');
+
+        return [
+            'users' => User::query()->count(),
+            'users_today' => User::query()->where('created_at', '>=', now()->startOfDay())->count(),
+            'schools' => $withSchool->pluck('school_key')->unique()->count(),
+            'learners_with_school' => $withSchool->count(),
+        ];
+    }
+
+    /**
      * Everything the admin dashboard renders.
      *
      * @return array<string, mixed>

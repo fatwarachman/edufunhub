@@ -44,6 +44,7 @@ dataset('multiplayer games', [
     'monster cafe' => ['monster-cafe', '/games/monster-cafe'],
     'ping pong network' => ['ping-pong', '/games/ping-pong'],
     'edukart racing' => ['edu-kart', '/games/edu-kart'],
+    'tug of war' => ['tug-of-war', '/games/tug-of-war'],
 ]);
 
 it('marks every multiplayer game in the catalog', function (string $key): void {
@@ -117,6 +118,7 @@ it('records results for room games and adds them to the point total', function (
     'monster cafe' => ['monster-cafe', 'mc-%d-room-1790000000000', 'room', 45, 'Monster Café'],
     'ping pong network' => ['ping-pong', 'pp-%d-room-1790000000000', 'room', 45, 'Ping Pong'],
     'edukart racing' => ['edu-kart', 'ek-%d-room-1790000000000', 'room', 45, 'Balap Kuis EduKart'],
+    'tug of war' => ['tug-of-war', 'tw-%d-room-1790000000000', 'room', 45, 'Tarik Tambang'],
 ]);
 
 it('caps room game points and missions', function (array $override): void {

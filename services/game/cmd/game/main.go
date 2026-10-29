@@ -59,6 +59,7 @@ func main() {
 	go srv.RunDuels(ctx, 250*time.Millisecond)
 	go srv.RunSnakes(ctx, 250*time.Millisecond)
 	go srv.RunPingPong(ctx, 250*time.Millisecond)
+	go srv.RunTugOfWar(ctx, 250*time.Millisecond)
 	go srv.RunCrosswords(ctx, time.Second)
 	go srv.RunMinigames(ctx, 250*time.Millisecond)
 	go srv.RunFloorDrop(ctx, time.Second)

@@ -199,7 +199,8 @@
         "shareWaGame": "Share game",
         "shareWaRoomText": "🎮 Let's play {{game}} together on EduFunHub!\nPIN Code: {{pin}}\nJoin link: {{url}}\nEduFunHub — Portal Edukasi Seru!",
         "shareWaGameText": "🏆 Try {{game}} on EduFunHub!\nLink: {{url}}\nEduFunHub — Portal Edukasi Seru!",
-        "gradeAndLevel": "Grade & question level"
+        "gradeAndLevel": "Grade & question level",
+        "tugOfWar": "Tug of War"
     },
     "flagQuest": {
         "title": "Flag Quest",
@@ -466,7 +467,8 @@
             "turboTrivia": "A quiz kart race on the classroom projector! Answer right for Nitro, drop Banana Peels, fire Missiles at first place and call Lightning.",
             "blockBattle": "A block battle on the classroom projector! Answer right for an I piece or an attack, clear lines, build words & equations, or build a fortress together against a monster.",
             "monsterCafe": "Cook in a monster restaurant for 1–40 players! Answer quizzes to earn ingredients, build burgers & pizzas before the monsters get angry, shoo rats and throw pies at friends.",
-            "snake": "Educational tail-cut snake game! Answer quiz questions correctly to cut your tail and win. Play solo, in a Shared Arena or in Split Arenas."
+            "snake": "Educational tail-cut snake game! Answer quiz questions correctly to cut your tail and win. Play solo, in a Shared Arena or in Split Arenas.",
+            "tugOfWar": "Two teams pull a rope by answering quiz questions. The first correct answer pulls the rope one step. Play against the computer or invite friends in even teams."
         },
         "detailsFirst": "Complete details first",
         "detailsNoticeTitle": "Complete your participant details first!",
@@ -1306,7 +1308,12 @@
             "no_classroom": "This room is only for active classroom members.",
             "invalid_track": "Unknown circuit.",
             "invalid_vehicle": "Unknown vehicle.",
-            "invalid_laps": "Invalid number of laps."
+            "invalid_laps": "Invalid number of laps.",
+            "invalid_team": "Invalid team.",
+            "odd_players": "Team play needs an even number of players.",
+            "teams_unbalanced": "Both teams need the same number of players.",
+            "invalid_question_count": "That number of questions is not available.",
+            "watching": "The referee screen does not answer."
         },
         "copyPinLabel": "Copy PIN",
         "copyLinkLabel": "Copy link",
@@ -4186,5 +4193,110 @@
         "hint": "Explanation",
         "statusRight": "You got it",
         "statusWrong": "You missed"
+    },
+    "tugOfWar": {
+        "title": "Tug of War",
+        "eyebrow": "TEAM QUIZ · ALL SUBJECTS",
+        "subtitle": "Answer fast, pull the rope for your team.",
+        "unavailable": "The arena is not available yet. Learn how to play while you wait.",
+        "intro": "Hi {{name}}! Play the computer alone, or create a room and split friends into two teams.",
+        "rules": "Everyone gets the same question. The first correct answer pulls the rope one step toward that team; a wrong answer locks the player out until the next question. The team that pulls the rope {{steps}} steps first, or leads when the questions run out, wins.",
+        "soloHint": "Alone? You play against a computer team. More than one player must be an even number split equally.",
+        "mute": "Mute sponsor audio",
+        "unmute": "Unmute sponsor audio",
+        "team": {
+            "0": "Red Team",
+            "1": "Blue Team",
+            "2": "Referee screen"
+        },
+        "teamShort": {
+            "0": "Red",
+            "1": "Blue"
+        },
+        "computer": "Computer",
+        "settings": {
+            "questions": "Number of questions",
+            "questionsHint": "The team that pulls {{steps}} steps first wins straight away.",
+            "teams": "Teams",
+            "teamsHint": "The host sets the teams. Player count must be even and equal.",
+            "shuffle": "Shuffle teams",
+            "moveTo": "Move {{name}} to {{team}}",
+            "watch": "I'm the referee screen (not answering)",
+            "watchHint": "Great for a classroom projector: this screen shows the tug of war while players answer on their own phones.",
+            "empty": "No players yet",
+            "soloReady": "Ready to play the computer.",
+            "oddWarning": "{{count}} players (odd). Add or remove one player.",
+            "unbalancedWarning": "Teams are not balanced yet ({{red}} vs {{blue}}).",
+            "ready": "{{red}} vs {{blue}}, ready to start."
+        },
+        "countdown": "Get ready… {{count}}",
+        "question": "Question {{number}} / {{total}}",
+        "seconds": "{{count}} sec",
+        "answerHint": "Tap an answer as fast as you can. Your team's first correct answer pulls the rope.",
+        "answered": "Answer sent. Waiting for the others…",
+        "lockedWrong": "Wrong answer. Wait for the next question; your team can still answer.",
+        "watching": "You are the referee screen. Players answer on their own devices.",
+        "answeredCount": "{{count}}/{{total}} answered",
+        "pulled": "{{name}} pulls for {{team}}!",
+        "nobody": "Nobody got it right. The rope stays put.",
+        "answer": "Answer: {{answer}}",
+        "hint": "Hint: {{hint}}",
+        "rope": "Rope position",
+        "ropeLabel": "Tug of war. {{lead}}",
+        "ropeEven": "The rope is in the middle.",
+        "ropeLead": "{{team}} leads by {{steps}} steps.",
+        "pulls": "{{count}} pulls",
+        "teamPoints": "{{points}} team points",
+        "won": "{{team}} wins!",
+        "youWon": "Your team won!",
+        "youLost": "Your team lost. Try again!",
+        "draw": "A tie! The rope is right in the middle.",
+        "stopped": "Game stopped",
+        "forfeit": "The other team all left.",
+        "points": "+{{points}} account points",
+        "mvp": "Top puller bonus +{{bonus}}",
+        "mvpBadge": "Top puller",
+        "playAgain": "Play again",
+        "standings": "Pulls per player",
+        "howTo": {
+            "title": "How to play",
+            "step": "Step {{step}}/{{total}}",
+            "previous": "Previous",
+            "next": "Next",
+            "pause": "Pause",
+            "replay": "Replay",
+            "video": "Download video (Indonesian)",
+            "pdf": "Download slides (Indonesian)",
+            "demoQuestion": "What is 6 × 7?",
+            "demoOptions": [
+                "36",
+                "42",
+                "48",
+                "56"
+            ],
+            "demoName": "Rani",
+            "scenes": {
+                "setup": {
+                    "title": "Set the questions and teams",
+                    "body": "The host picks the subject and the number of questions, then splits players into Red and Blue. Alone? You play the computer."
+                },
+                "read": {
+                    "title": "Everyone answers the same question",
+                    "body": "The question shows on every player's screen. Tap the answer as fast as you can for your team."
+                },
+                "pull": {
+                    "title": "First correct answer = one pull",
+                    "body": "The first correct answer pulls the rope one step toward that team. A wrong answer locks the player until the next question."
+                },
+                "win": {
+                    "title": "Pull to the winning line",
+                    "body": "The team that pulls {{steps}} steps first wins. When the questions run out, the leading team wins."
+                },
+                "points": {
+                    "title": "Team points and bonus",
+                    "body": "Every team member gets the same points. The top puller of each team earns an extra bonus."
+                }
+            }
+        }
     }
 }

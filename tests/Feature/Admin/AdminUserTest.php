@@ -20,6 +20,29 @@ it('allows superadmins to view the user list', function () {
     $response->assertOk();
 });
 
+it('shows total users and distinct schools on the user list', function () {
+    $this->travelTo(now()->setTime(12, 0));
+    $admin = User::factory()->create(['is_superadmin' => true, 'created_at' => now()->subDays(3)]);
+    $first = User::factory()->create(['created_at' => now()->subDays(2)]);
+    $second = User::factory()->create();
+    $third = User::factory()->create();
+    User::factory()->create();
+
+    $first->playerProfile()->create(['school_name' => 'SDN 1 Bogor']);
+    $second->playerProfile()->create(['school_name' => '  sdn 1   bogor ']);
+    $third->playerProfile()->create(['school_name' => 'SMP Negeri 2 Bogor']);
+
+    $this->actingAs($admin)->get('/admin/users?search=nobody-matches')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/users/index')
+            ->where('users.total', 0)
+            ->where('totals.users', 5)
+            ->where('totals.users_today', 3)
+            ->where('totals.schools', 2)
+            ->where('totals.learners_with_school', 3));
+});
+
 it('supports searching users by name', function () {
     $admin = User::factory()->create(['is_superadmin' => true]);
     User::factory()->create(['name' => 'Alice Wonderland']);

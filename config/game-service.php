@@ -16,6 +16,7 @@ return [
     'public_order_rush_ws_url' => env('GAME_SERVICE_PUBLIC_ORDER_RUSH_WS_URL', '/game-ws/order-rush'),
     'public_turbo_trivia_ws_url' => env('GAME_SERVICE_PUBLIC_TURBO_TRIVIA_WS_URL', '/game-ws/turbo-trivia'),
     'public_ping_pong_ws_url' => env('GAME_SERVICE_PUBLIC_PING_PONG_WS_URL', '/game-ws/ping-pong'),
+    'public_tug_of_war_ws_url' => env('GAME_SERVICE_PUBLIC_TUG_OF_WAR_WS_URL', '/game-ws/tug-of-war'),
     'public_edu_kart_ws_url' => env('GAME_SERVICE_PUBLIC_EDU_KART_WS_URL', '/game-ws/edu-kart'),
     'public_block_battle_ws_url' => env('GAME_SERVICE_PUBLIC_BLOCK_BATTLE_WS_URL', '/game-ws/block-battle'),
     'public_monster_cafe_ws_url' => env('GAME_SERVICE_PUBLIC_MONSTER_CAFE_WS_URL', '/game-ws/monster-cafe'),
